@@ -1,0 +1,104 @@
+// Floating Temple
+// Copyright 2015 Derek S. Snyder
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package floating_temple.python;
+
+// TODO(dss): Modify the message definitions in this file to support future
+// expansion. For example, every repeated field should be a unique sub-message
+// type.
+
+message ReferenceProto {
+  required int64 object_index = 1;
+}
+
+message EmptyProto {
+}
+
+message LongProto {
+  // TODO(dss): Support values that are too big to fit in a 64-bit integer.
+  required sint64 value = 1;
+}
+
+message FloatProto {
+  required double value = 1;
+}
+
+message ComplexProto {
+  required double real = 1;
+  required double imag = 2;
+}
+
+message BytesProto {
+  required bytes value = 1;
+}
+
+message UnicodeProto {
+  required string value = 1;
+}
+
+message SequenceProto {
+  repeated floating_temple.python.ReferenceProto item = 1;
+}
+
+message MappingItemProto {
+  required floating_temple.python.ReferenceProto key = 1;
+  required floating_temple.python.ReferenceProto value = 2;
+}
+
+message MappingProto {
+  repeated floating_temple.python.MappingItemProto item = 1;
+}
+
+message UnserializableProto {
+}
+
+message ObjectProto {
+  enum Type {
+    UNKNOWN = 0;
+
+    PY_NONE = 1;
+    LONG = 2;
+    FALSE = 3;
+    TRUE = 4;
+    FLOAT = 5;
+    COMPLEX = 6;
+    BYTES = 7;
+    BYTE_ARRAY = 8;
+    UNICODE = 9;
+    TUPLE = 10;
+    LIST = 11;
+    DICT = 12;
+    SET = 13;
+    FROZEN_SET = 14;
+  }
+
+  // Exactly one of the following fields must be set.
+  optional floating_temple.python.EmptyProto py_none_object = 1;
+  optional floating_temple.python.LongProto long_object = 2;
+  optional floating_temple.python.EmptyProto false_object = 3;
+  optional floating_temple.python.EmptyProto true_object = 4;
+  optional floating_temple.python.FloatProto float_object = 5;
+  optional floating_temple.python.ComplexProto complex_object = 6;
+  optional floating_temple.python.BytesProto bytes_object = 7;
+  optional floating_temple.python.BytesProto byte_array_object = 8;
+  optional floating_temple.python.UnicodeProto unicode_object = 9;
+  optional floating_temple.python.SequenceProto tuple_object = 10;
+  optional floating_temple.python.SequenceProto list_object = 11;
+  optional floating_temple.python.MappingProto dict_object = 12;
+  optional floating_temple.python.SequenceProto set_object = 13;
+  optional floating_temple.python.SequenceProto frozen_set_object = 14;
+  optional floating_temple.python.UnserializableProto
+      unserializable_object = 15;
+}

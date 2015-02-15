@@ -1,0 +1,47 @@
+Floating Temple
+Copyright 2015 Derek S. Snyder
+
+Build Instructions - Short Version
+==================================
+
+# Install prerequisites. The following command works on Ubuntu 14.04.1 (Trusty
+# Tahr):
+sudo apt-get install binutils coreutils g++ gawk gcc google-perftools \
+  libbz2-dev libgdbm-dev libgflags-dev libgoogle-glog-dev \
+  libgoogle-perftools-dev liblzma-dev libncurses5-dev libprotobuf-dev \
+  libreadline-gplv2-dev libsqlite3-dev libssl-dev make protobuf-compiler pypy \
+  python-protobuf scons subversion tar tk-dev wget xz-utils zlib1g-dev
+
+# Install Python.
+mkdir -p ~/scratch
+cd ~/scratch
+wget http://www.python.org/ftp/python/3.4.2/Python-3.4.2.tar.xz
+tar xJf Python-3.4.2.tar.xz
+cd Python-3.4.2
+./configure
+make
+sudo make install
+
+# Install the OSSP UUID library.
+cd ~/scratch
+wget ftp://ftp.ossp.org/pkg/lib/uuid/uuid-1.6.2.tar.gz
+tar xzf uuid-1.6.2.tar.gz
+cd uuid-1.6.2
+./configure
+make
+make check
+sudo make install
+
+# Refresh the shared library cache.
+sudo ldconfig
+
+# Add the following line to your ~/.bashrc file:
+export PPROF_PATH=/usr/bin/google-pprof
+
+# Check out and build the floating_temple source.
+mkdir -p ~/projects
+cd ~/projects
+svn co -q https://wush.net/svn/dss/floating_temple
+cd floating_temple
+scons -j4
+scons check

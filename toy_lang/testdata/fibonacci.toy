@@ -1,0 +1,13 @@
+# Fibonacci sequence
+
+[
+  (set "a" 0)
+  (set "b" 1)
+
+  (for "i" (range 20) {[
+    (print a)
+    (set "temp" a)
+    (set "a" b)
+    (set "b" (+ b temp))
+  ]})
+]

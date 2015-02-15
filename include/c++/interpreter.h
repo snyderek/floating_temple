@@ -1,0 +1,48 @@
+// Floating Temple
+// Copyright 2015 Derek S. Snyder
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef INCLUDE_CPP_INTERPRETER_H_
+#define INCLUDE_CPP_INTERPRETER_H_
+
+#include <cstddef>
+
+namespace floating_temple {
+
+class DeserializationContext;
+class LocalObject;
+
+// This interface is implemented by the local interpreter. It represents the
+// local interpreter itself.
+//
+// Subclasses of this class are thread-safe.
+class Interpreter {
+ public:
+  virtual ~Interpreter() {}
+
+  // Deserializes an object and creates it in the local interpreter.
+  //
+  // buffer points to a buffer that contains the serialized form of the object.
+  // buffer_size is the size of the buffer in bytes.
+  //
+  // Returns a pointer to a newly created LocalObject object. The caller must
+  // take ownership of this object.
+  virtual LocalObject* DeserializeObject(const void* buffer,
+                                         std::size_t buffer_size,
+                                         DeserializationContext* context) = 0;
+};
+
+}  // namespace floating_temple
+
+#endif  // INCLUDE_CPP_INTERPRETER_H_

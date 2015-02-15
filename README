@@ -22,10 +22,14 @@ cd Python-3.4.2
 make
 sudo make install
 
+# Check out the floating_temple source.
+mkdir -p ~/projects
+cd ~/projects
+git clone https://github.com/snyderek/floating_temple.git
+
 # Install the OSSP UUID library.
 cd ~/scratch
-wget ftp://ftp.ossp.org/pkg/lib/uuid/uuid-1.6.2.tar.gz
-tar xzf uuid-1.6.2.tar.gz
+tar xzf ~/projects/floating_temple/third_party/uuid-1.6.2.tar.gz
 cd uuid-1.6.2
 ./configure
 make
@@ -38,10 +42,7 @@ sudo ldconfig
 # Add the following line to your ~/.bashrc file:
 export PPROF_PATH=/usr/bin/google-pprof
 
-# Check out and build the floating_temple source.
-mkdir -p ~/projects
-cd ~/projects
-git clone https://github.com/snyderek/floating_temple.git
-cd floating_temple
+# Build the floating_temple source.
+cd ~/projects/floating_temple
 scons -j4
 scons check

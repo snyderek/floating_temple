@@ -31,7 +31,16 @@ struct floatingtemple_PeerObject;
  * definition of the corresponding VALUE PyPy object (in
  * third_party/pypy-2.4.0-src/pypy/objspace/floating_temple/peer_ffi.py). */
 struct floatingtemple_Value {
-  char padding[24];
+  union {
+    // Ensure that the struct is large enough.
+    char padding[24];
+
+    // Ensure that the struct is properly aligned.
+    int64_t alignment1;
+    double alignment2;
+    float alignment3;
+    void* alignment4;
+  };
 };
 
 enum {

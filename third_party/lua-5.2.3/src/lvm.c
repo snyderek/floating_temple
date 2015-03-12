@@ -14,7 +14,6 @@
 
 #include "lua.h"
 
-#include "floating_temple.h"
 #include "ldebug.h"
 #include "ldo.h"
 #include "lfunc.h"
@@ -52,7 +51,7 @@ int luaV_tostring (lua_State *L, StkId obj) {
     char s[LUAI_MAXNUMBER2STR];
     lua_Number n = nvalue(obj);
     int l = lua_number2str(s, n);
-    (*ft_newstringhook)(L, obj, s, l);
+    setsvalue2s(L, obj, luaS_newlstr(L, s, l));
     return 1;
   }
 }
@@ -325,7 +324,7 @@ void luaV_concat (lua_State *L, int total) {
         memcpy(buffer+tl, svalue(top-i), l * sizeof(char));
         tl += l;
       } while (--i > 0);
-      (*ft_newstringhook)(L, top-n, buffer, tl);
+      setsvalue2s(L, top-n, luaS_newlstr(L, buffer, tl));
     }
     total -= n-1;  /* got 'n' strings to create 1 new */
     L->top -= n-1;  /* popped 'n' strings and pushed one */
@@ -604,7 +603,10 @@ void luaV_execute (lua_State *L) {
       vmcase(OP_NEWTABLE,
         int b = GETARG_B(i);
         int c = GETARG_C(i);
-        (*ft_newtablehook)(L, ra, b, c);
+        Table *t = luaH_new(L);
+        sethvalue(L, ra, t);
+        if (b != 0 || c != 0)
+          luaH_resize(L, t, luaO_fb2int(b), luaO_fb2int(c));
         checkGC(L, ra + 1);
       )
       vmcase(OP_SELF,

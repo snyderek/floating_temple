@@ -30,11 +30,11 @@ extern "C" {
 
 FT_DECLARE_HOOK_FUNC(ft_installnewstringhook, ft_NewStringHook,
                      ft_newstringhook,
-                     (lua_State *, StkId, const char *, size_t))
+                     (lua_State *L, StkId obj, const char *str, size_t len))
 
 FT_DECLARE_HOOK_FUNC(ft_installnewtablehook, ft_NewTableHook,
                      ft_newtablehook,
-                     (lua_State *, StkId, int, int))
+                     (lua_State *L, StkId obj, int b, int c))
 
 
 #undef FT_DECLARE_HOOK_FUNC

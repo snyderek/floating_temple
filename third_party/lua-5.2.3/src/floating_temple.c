@@ -14,21 +14,15 @@
 
 #include "floating_temple.h"
 #include "lobject.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "ltable.h"
 
 
-static void ft_defaultnewstringhook (lua_State *L, StkId obj, const char * str,
-                                     size_t len) {
-  setsvalue2s(L, obj, luaS_newlstr(L, str, len));
+static int ft_defaultnewstringhook (lua_State *L, StkId obj, const char * str,
+                                    size_t len) {
+  return 0;
 }
 
-static void ft_defaultnewtablehook (lua_State *L, StkId obj, int b, int c) {
-  Table *t = luaH_new(L);
-  sethvalue(L, obj, t);
-  if (b != 0 || c != 0)
-    luaH_resize(L, t, luaO_fb2int(b), luaO_fb2int(c));
+static int ft_defaultnewtablehook (lua_State *L, StkId obj, int b, int c) {
+  return 0;
 }
 
 

@@ -14,6 +14,7 @@
 
 #include "floating_temple.h"
 #include "lobject.h"
+#include "luaconf.h"
 
 
 static int ft_defaultnewstringhook (lua_State *L, StkId obj, const char * str,

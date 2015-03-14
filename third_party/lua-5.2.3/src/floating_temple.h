@@ -22,14 +22,22 @@ extern "C" {
 #include "luaconf.h"
 
 
-typedef void (*ft_NewStringHook) (lua_State *, StkId, const char *, size_t);
-typedef void (*ft_NewTableHook) (lua_State *, StkId, int, int);
+#define FT_DECLARE_HOOK_FUNC(install_func, hook_type, hook_var, hook_params) \
+  typedef void (*hook_type) hook_params; \
+  LUAI_DDEC hook_type hook_var; \
+  LUA_API hook_type install_func (hook_type hook);
 
-LUAI_DDEC ft_NewStringHook ft_newstringhook;
-LUAI_DDEC ft_NewTableHook ft_newtablehook;
 
-LUA_API ft_NewStringHook ft_installnewstringhook (ft_NewStringHook hook);
-LUA_API ft_NewTableHook ft_installnewtablehook (ft_NewTableHook hook);
+FT_DECLARE_HOOK_FUNC(ft_installnewstringhook, ft_NewStringHook,
+                     ft_newstringhook,
+                     (lua_State *, StkId, const char *, size_t))
+
+FT_DECLARE_HOOK_FUNC(ft_installnewtablehook, ft_NewTableHook,
+                     ft_newtablehook,
+                     (lua_State *, StkId, int, int))
+
+
+#undef FT_DECLARE_HOOK_FUNC
 
 
 #ifdef __cplusplus

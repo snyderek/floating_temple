@@ -32,18 +32,22 @@ static void ft_defaultnewtablehook (lua_State *L, StkId obj, int b, int c) {
 }
 
 
-LUAI_DDEF ft_NewStringHook ft_newstringhook = &ft_defaultnewstringhook;
-LUAI_DDEF ft_NewTableHook ft_newtablehook = &ft_defaultnewtablehook;
+#define FT_DEFINE_HOOK_FUNC(install_func, hook_type, hook_var, \
+                            default_hook_func) \
+  LUAI_DDEF hook_type hook_var = &default_hook_func; \
+\
+  LUA_API hook_type install_func (hook_type hook) { \
+    hook_type old_hook = hook_var; \
+    hook_var = hook; \
+    return old_hook; \
+  }
 
 
-LUA_API ft_NewStringHook ft_installnewstringhook (ft_NewStringHook hook) {
-  ft_NewStringHook old_hook = ft_newstringhook;
-  ft_newstringhook = hook;
-  return old_hook;
-}
+FT_DEFINE_HOOK_FUNC(ft_installnewstringhook, ft_NewStringHook, ft_newstringhook,
+                    ft_defaultnewstringhook)
 
-LUA_API ft_NewTableHook ft_installnewtablehook (ft_NewTableHook hook) {
-  ft_NewTableHook old_hook = ft_newtablehook;
-  ft_newtablehook = hook;
-  return old_hook;
-}
+FT_DEFINE_HOOK_FUNC(ft_installnewtablehook, ft_NewTableHook, ft_newtablehook,
+                    ft_defaultnewtablehook)
+
+
+#undef FT_DEFINE_HOOK_FUNC

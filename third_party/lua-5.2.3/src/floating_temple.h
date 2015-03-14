@@ -22,7 +22,7 @@ extern "C" {
 #include "luaconf.h"
 
 
-// The hook function returns non-zero if it performed the operation.
+/* The hook function returns non-zero if it performed the operation. */
 #define FT_DECLARE_HOOK_FUNC(install_func, hook_type, hook_var, hook_params) \
   typedef int (*hook_type) hook_params; \
   LUAI_DDEC hook_type hook_var; \

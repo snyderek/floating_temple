@@ -119,6 +119,7 @@ lua_env.Append(
 lua_lib = lua_env.Library(
     target = 'lua/lua',
     source = Split("""
+        lua/convert_value.cc
         lua/interpreter_impl.cc
       """),
   )

@@ -19,6 +19,14 @@ extern "C" {
 #include "luaconf.h"
 
 
+/* This hook function returns non-zero if the objects are equal. */
+typedef int (*ft_PeerObjectsEqualHook) (const struct PeerObject *po1,
+                                        const struct PeerObject *po2);
+LUAI_DDEC ft_PeerObjectsEqualHook ft_peerobjectsequalhook;
+LUA_API ft_PeerObjectsEqualHook ft_installpeerobjectsequalhook
+    (ft_PeerObjectsEqualHook hook);
+
+
 /* Each of these hook functions returns non-zero if it performed the operation.
  */
 #define FT_DECLARE_HOOK_FUNC(install_func, hook_type, hook_var, hook_params) \

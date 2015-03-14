@@ -4,6 +4,10 @@
 */
 
 
+#include <assert.h>
+#include <stddef.h>
+
+
 #define floating_temple_c
 #define LUA_CORE
 
@@ -12,6 +16,25 @@
 #include "floating_temple.h"
 #include "lobject.h"
 #include "luaconf.h"
+
+
+static int ft_defaultpeerobjectsequalhook (const struct PeerObject *po1,
+                                           const struct PeerObject *po2) {
+  assert(po1 != NULL);
+  assert(po2 != NULL);
+
+  return (po1 == po2) ? 1 : 0;
+}
+
+LUAI_DDEF ft_PeerObjectsEqualHook ft_peerobjectsequalhook =
+    &ft_defaultpeerobjectsequalhook;
+
+LUA_API ft_PeerObjectsEqualHook ft_installpeerobjectsequalhook
+    (ft_PeerObjectsEqualHook hook) {
+  ft_PeerObjectsEqualHook old_hook = ft_peerobjectsequalhook;
+  ft_peerobjectsequalhook = hook;
+  return old_hook;
+}
 
 
 #define FT_DEFINE_HOOK_FUNC(install_func, hook_type, hook_var, hook_params, \

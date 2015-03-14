@@ -121,6 +121,7 @@ lua_lib = lua_env.Library(
     source = Split("""
         lua/convert_value.cc
         lua/interpreter_impl.cc
+        lua/thread_substitution.cc
       """),
   )
 

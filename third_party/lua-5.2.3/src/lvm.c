@@ -14,6 +14,7 @@
 
 #include "lua.h"
 
+#include "floating_temple.h"
 #include "ldebug.h"
 #include "ldo.h"
 #include "lfunc.h"
@@ -280,6 +281,8 @@ int luaV_equalobj_ (lua_State *L, const TValue *t1, const TValue *t2) {
       tm = get_equalTM(L, hvalue(t1)->metatable, hvalue(t2)->metatable, TM_EQ);
       break;  /* will try TM */
     }
+    case LUA_TPEEROBJECT:
+      return (*ft_peerobjectsequalhook)(&val_(t1).po, &val_(t2).po);
     default:
       lua_assert(iscollectable(t1));
       return gcvalue(t1) == gcvalue(t2);
@@ -583,14 +586,26 @@ void luaV_execute (lua_State *L) {
       )
       vmcase(OP_GETTABUP,
         int b = GETARG_B(i);
-        Protect(luaV_gettable(L, cl->upvals[b]->v, RKC(i), ra));
+        Protect(
+          if ((*ft_gettablehook)(L, cl->upvals[b]->v, RKC(i), ra) == 0) {
+            luaV_gettable(L, cl->upvals[b]->v, RKC(i), ra);
+          }
+        )
       )
       vmcase(OP_GETTABLE,
-        Protect(luaV_gettable(L, RB(i), RKC(i), ra));
+        Protect(
+          if ((*ft_gettablehook)(L, RB(i), RKC(i), ra) == 0) {
+            luaV_gettable(L, RB(i), RKC(i), ra);
+          }
+        )
       )
       vmcase(OP_SETTABUP,
         int a = GETARG_A(i);
-        Protect(luaV_settable(L, cl->upvals[a]->v, RKB(i), RKC(i)));
+        Protect(
+          if ((*ft_settablehook)(L, cl->upvals[a]->v, RKB(i), RKC(i)) == 0) {
+            luaV_settable(L, cl->upvals[a]->v, RKB(i), RKC(i));
+          }
+        )
       )
       vmcase(OP_SETUPVAL,
         UpVal *uv = cl->upvals[GETARG_B(i)];
@@ -598,15 +613,21 @@ void luaV_execute (lua_State *L) {
         luaC_barrier(L, uv, ra);
       )
       vmcase(OP_SETTABLE,
-        Protect(luaV_settable(L, ra, RKB(i), RKC(i)));
+        Protect(
+          if ((*ft_settablehook)(L, ra, RKB(i), RKC(i)) == 0) {
+            luaV_settable(L, ra, RKB(i), RKC(i));
+          }
+        )
       )
       vmcase(OP_NEWTABLE,
         int b = GETARG_B(i);
         int c = GETARG_C(i);
-        Table *t = luaH_new(L);
-        sethvalue(L, ra, t);
-        if (b != 0 || c != 0)
-          luaH_resize(L, t, luaO_fb2int(b), luaO_fb2int(c));
+        if ((*ft_newtablehook)(L, ra, b, c) == 0) {
+          Table *t = luaH_new(L);
+          sethvalue(L, ra, t);
+          if (b != 0 || c != 0)
+            luaH_resize(L, t, luaO_fb2int(b), luaO_fb2int(c));
+        }
         checkGC(L, ra + 1);
       )
       vmcase(OP_SELF,
@@ -648,7 +669,11 @@ void luaV_execute (lua_State *L) {
         setbvalue(ra, res);
       )
       vmcase(OP_LEN,
-        Protect(luaV_objlen(L, ra, RB(i)));
+        Protect(
+          if ((*ft_objlenhook)(L, ra, RB(i)) == 0) {
+            luaV_objlen(L, ra, RB(i));
+          }
+        )
       )
       vmcase(OP_CONCAT,
         int b = GETARG_B(i);
@@ -811,22 +836,24 @@ void luaV_execute (lua_State *L) {
       vmcase(OP_SETLIST,
         int n = GETARG_B(i);
         int c = GETARG_C(i);
-        int last;
-        Table *h;
         if (n == 0) n = cast_int(L->top - ra) - 1;
         if (c == 0) {
           lua_assert(GET_OPCODE(*ci->u.l.savedpc) == OP_EXTRAARG);
           c = GETARG_Ax(*ci->u.l.savedpc++);
         }
-        luai_runtimecheck(L, ttistable(ra));
-        h = hvalue(ra);
-        last = ((c-1)*LFIELDS_PER_FLUSH) + n;
-        if (last > h->sizearray)  /* needs more space? */
-          luaH_resizearray(L, h, last);  /* pre-allocate it at once */
-        for (; n > 0; n--) {
-          TValue *val = ra+n;
-          luaH_setint(L, h, last--, val);
-          luaC_barrierback(L, obj2gco(h), val);
+        if ((*ft_setlisthook)(L, ra, n, c) == 0) {
+          int last;
+          Table *h;
+          luai_runtimecheck(L, ttistable(ra));
+          h = hvalue(ra);
+          last = ((c-1)*LFIELDS_PER_FLUSH) + n;
+          if (last > h->sizearray)  /* needs more space? */
+            luaH_resizearray(L, h, last);  /* pre-allocate it at once */
+          for (; n > 0; n--) {
+            TValue *val = ra+n;
+            luaH_setint(L, h, last--, val);
+            luaC_barrierback(L, obj2gco(h), val);
+          }
         }
         L->top = ci->top;  /* correct top (in case of previous open call) */
       )

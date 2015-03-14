@@ -17,7 +17,7 @@
 #include "luaconf.h"
 
 
-static int ft_defaultnewstringhook (lua_State *L, StkId obj, const char * str,
+static int ft_defaultnewstringhook (lua_State *L, StkId obj, const char *str,
                                     size_t len) {
   return 0;
 }

@@ -17,18 +17,12 @@
 #include "luaconf.h"
 
 
-static int ft_defaultnewstringhook (lua_State *L, StkId obj, const char *str,
-                                    size_t len) {
-  return 0;
-}
-
-static int ft_defaultnewtablehook (lua_State *L, StkId obj, int b, int c) {
-  return 0;
-}
-
-
-#define FT_DEFINE_HOOK_FUNC(install_func, hook_type, hook_var, \
+#define FT_DEFINE_HOOK_FUNC(install_func, hook_type, hook_var, hook_params, \
                             default_hook_func) \
+  static int default_hook_func hook_params { \
+    return 0; \
+  } \
+\
   LUAI_DDEF hook_type hook_var = &default_hook_func; \
 \
   LUA_API hook_type install_func (hook_type hook) { \
@@ -39,9 +33,11 @@ static int ft_defaultnewtablehook (lua_State *L, StkId obj, int b, int c) {
 
 
 FT_DEFINE_HOOK_FUNC(ft_installnewstringhook, ft_NewStringHook, ft_newstringhook,
+                    (lua_State *L, StkId obj, const char *str, size_t len),
                     ft_defaultnewstringhook)
 
 FT_DEFINE_HOOK_FUNC(ft_installnewtablehook, ft_NewTableHook, ft_newtablehook,
+                    (lua_State *L, StkId obj, int b, int c),
                     ft_defaultnewtablehook)
 
 

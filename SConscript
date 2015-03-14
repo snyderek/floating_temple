@@ -102,6 +102,27 @@ fake_peer_lib = ft_env.Library(
       """),
   )
 
+# "lua" subdirectory
+#
+# Implementation of the local interpreter for the Lua language. Uses the
+# third-party Lua interpreter.
+
+lua_env = ft_env.Clone()
+lua_env.Append(
+    CFLAGS = Split('-DLUA_COMPAT_ALL -DLUA_USE_LINUX'),
+
+    CPPPATH = Split("""
+        third_party/lua-5.2.3/src
+      """),
+  )
+
+lua_lib = lua_env.Library(
+    target = 'lua/lua',
+    source = Split("""
+        lua/interpreter_impl.cc
+      """),
+  )
+
 # "peer" subdirectory
 #
 # The core of the distributed interpreter (i.e., the "peer").
@@ -321,6 +342,8 @@ third_party_lua_lib = third_party_lua_env.Library(
         third_party/lua-5.2.3/src/lzio.c
       """),
   )
+
+lua_env.Depends(lua_lib, third_party_lua_lib)
 
 third_party_lua_env.Program(
     target = 'third_party/lua-5.2.3/lua',

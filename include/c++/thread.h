@@ -29,9 +29,6 @@ class PeerObject;
 // This interface is implemented by the peer. The local interpreter uses it to
 // perform any operations that require assistance from the peer during the
 // duration of a method call.
-//
-// TODO(dss): Rename this class to indicate that it represents a method
-// execution context, not a thread.
 class Thread {
  public:
   virtual ~Thread() {}

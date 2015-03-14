@@ -4,9 +4,6 @@
 */
 
 
-#include <stddef.h>
-
-
 #define floating_temple_c
 #define LUA_CORE
 
@@ -31,10 +28,6 @@
     return old_hook; \
   }
 
-
-FT_DEFINE_HOOK_FUNC(ft_installnewstringhook, ft_NewStringHook, ft_newstringhook,
-                    (lua_State *L, StkId obj, const char *str, size_t len),
-                    ft_defaultnewstringhook)
 
 FT_DEFINE_HOOK_FUNC(ft_installnewtablehook, ft_NewTableHook, ft_newtablehook,
                     (lua_State *L, StkId obj, int b, int c),

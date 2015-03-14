@@ -8,9 +8,6 @@
 #define floating_temple_h
 
 
-#include <stddef.h>
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,10 +25,6 @@ extern "C" {
   LUAI_DDEC hook_type hook_var; \
   LUA_API hook_type install_func (hook_type hook);
 
-
-FT_DECLARE_HOOK_FUNC(ft_installnewstringhook, ft_NewStringHook,
-                     ft_newstringhook,
-                     (lua_State *L, StkId obj, const char *str, size_t len))
 
 FT_DECLARE_HOOK_FUNC(ft_installnewtablehook, ft_NewTableHook,
                      ft_newtablehook,

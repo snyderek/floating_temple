@@ -64,6 +64,13 @@ typename Container::iterator FindInContainer(
   return it;
 }
 
+template<class Set>
+Set MakeSingletonSet(const typename Set::value_type& element) {
+  Set s;
+  s.insert(element);
+  return s;
+}
+
 }  // namespace floating_temple
 
 #endif  // UTIL_STL_UTIL_H_

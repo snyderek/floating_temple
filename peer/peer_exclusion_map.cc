@@ -24,7 +24,7 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "peer/canonical_peer.h"
-#include "peer/interval_map.h"
+#include "peer/interval_set.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/transaction_id_util.h"
 
@@ -59,7 +59,7 @@ bool PeerExclusionMap::IsTransactionExcluded(
     const TransactionId& transaction_id) const {
   CHECK(origin_peer != NULL);
 
-  const map<const CanonicalPeer*, IntervalMap<TransactionId> >::const_iterator
+  const map<const CanonicalPeer*, IntervalSet<TransactionId> >::const_iterator
       it = map_.find(origin_peer);
 
   if (it == map_.end()) {
@@ -85,48 +85,48 @@ string PeerExclusionMap::Dump() const {
   } else {
     exclusion_map_string = "{";
 
-    for (map<const CanonicalPeer*, IntervalMap<TransactionId> >::const_iterator
+    for (map<const CanonicalPeer*, IntervalSet<TransactionId> >::const_iterator
              it1 = map_.begin();
          it1 != map_.end(); ++it1) {
       const CanonicalPeer* const canonical_peer = it1->first;
-      const IntervalMap<TransactionId>& interval_map = it1->second;
+      const IntervalSet<TransactionId>& interval_set = it1->second;
 
       if (it1 != map_.begin()) {
         exclusion_map_string += ",";
       }
 
       vector<TransactionId> end_points;
-      interval_map.GetEndPoints(&end_points);
+      interval_set.GetEndPoints(&end_points);
 
-      string interval_map_string;
+      string interval_set_string;
 
       if (end_points.empty()) {
-        interval_map_string = "[]";
+        interval_set_string = "[]";
       } else {
-        interval_map_string = "[";
+        interval_set_string = "[";
 
         for (vector<TransactionId>::const_iterator it2 = end_points.begin();
              it2 != end_points.end(); ++it2) {
           if (it2 != end_points.begin()) {
-            interval_map_string += ",";
+            interval_set_string += ",";
           }
 
-          StringAppendF(&interval_map_string, " [ \"%s\", ",
+          StringAppendF(&interval_set_string, " [ \"%s\", ",
                         TransactionIdToString(*it2).c_str());
 
           ++it2;
           CHECK(it2 != end_points.end());
 
-          StringAppendF(&interval_map_string, "\"%s\" ]",
+          StringAppendF(&interval_set_string, "\"%s\" ]",
                         TransactionIdToString(*it2).c_str());
         }
 
-        interval_map_string += " ]";
+        interval_set_string += " ]";
       }
 
       StringAppendF(&exclusion_map_string, " \"%s\": %s",
                     CEscape(canonical_peer->peer_id()).c_str(),
-                    interval_map_string.c_str());
+                    interval_set_string.c_str());
     }
 
     exclusion_map_string += " }";

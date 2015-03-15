@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PEER_INTERVAL_MAP_H_
-#define PEER_INTERVAL_MAP_H_
+#ifndef PEER_INTERVAL_SET_H_
+#define PEER_INTERVAL_SET_H_
 
 #include <cstddef>
 #include <map>
@@ -27,15 +27,15 @@
 namespace floating_temple {
 namespace peer {
 
-template<typename T> class IntervalMap;
-template<typename T> bool operator==(const IntervalMap<T>& a,
-                                     const IntervalMap<T>& b);
+template<typename T> class IntervalSet;
+template<typename T> bool operator==(const IntervalSet<T>& a,
+                                     const IntervalSet<T>& b);
 
 template<typename T>
-class IntervalMap {
+class IntervalSet {
  public:
-  IntervalMap() {}
-  IntervalMap(const IntervalMap<T>& other);
+  IntervalSet() {}
+  IntervalSet(const IntervalSet<T>& other);
 
   // The interval contains 'start', but not 'end'.
   void AddInterval(const T& start, const T& end);
@@ -44,22 +44,22 @@ class IntervalMap {
 
   void GetEndPoints(std::vector<T>* end_points) const;
 
-  IntervalMap<T>& operator=(const IntervalMap<T>& other);
+  IntervalSet<T>& operator=(const IntervalSet<T>& other);
 
  private:
   std::map<T, T> map_;
 
-  template<typename S> friend bool operator==(const IntervalMap<S>& a,
-                                              const IntervalMap<S>& b);
+  template<typename S> friend bool operator==(const IntervalSet<S>& a,
+                                              const IntervalSet<S>& b);
 };
 
 template<typename T>
-IntervalMap<T>::IntervalMap(const IntervalMap<T>& other)
+IntervalSet<T>::IntervalSet(const IntervalSet<T>& other)
     : map_(other.map_) {
 }
 
 template<typename T>
-void IntervalMap<T>::AddInterval(const T& start, const T& end) {
+void IntervalSet<T>::AddInterval(const T& start, const T& end) {
   if (!(start < end)) {
     return;
   }
@@ -88,7 +88,7 @@ void IntervalMap<T>::AddInterval(const T& start, const T& end) {
 }
 
 template<typename T>
-bool IntervalMap<T>::Contains(const T& t) const {
+bool IntervalSet<T>::Contains(const T& t) const {
   const typename std::map<T, T>::const_iterator it = map_.upper_bound(t);
 
   if (it == map_.begin()) {
@@ -99,7 +99,7 @@ bool IntervalMap<T>::Contains(const T& t) const {
 }
 
 template<typename T>
-void IntervalMap<T>::GetEndPoints(std::vector<T>* end_points) const {
+void IntervalSet<T>::GetEndPoints(std::vector<T>* end_points) const {
   CHECK(end_points != NULL);
 
   end_points->reserve(map_.size() * 2);
@@ -112,17 +112,17 @@ void IntervalMap<T>::GetEndPoints(std::vector<T>* end_points) const {
 }
 
 template<typename T>
-IntervalMap<T>& IntervalMap<T>::operator=(const IntervalMap<T>& other) {
+IntervalSet<T>& IntervalSet<T>::operator=(const IntervalSet<T>& other) {
   map_ = other.map_;
   return *this;
 }
 
 template<typename T>
-bool operator==(const IntervalMap<T>& a, const IntervalMap<T>& b) {
+bool operator==(const IntervalSet<T>& a, const IntervalSet<T>& b) {
   return a.map_ == b.map_;
 }
 
 }  // namespace peer
 }  // namespace floating_temple
 
-#endif  // PEER_INTERVAL_MAP_H_
+#endif  // PEER_INTERVAL_SET_H_

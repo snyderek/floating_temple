@@ -20,7 +20,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "peer/interval_map.h"
+#include "peer/interval_set.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/transaction_id_util.h"
 
@@ -52,7 +52,7 @@ class PeerExclusionMap {
   std::string Dump() const;
 
  private:
-  std::map<const CanonicalPeer*, IntervalMap<TransactionId> > map_;
+  std::map<const CanonicalPeer*, IntervalSet<TransactionId> > map_;
 
   friend bool PeerExclusionMapsAreEqual(const PeerExclusionMap& a,
                                         const PeerExclusionMap& b);

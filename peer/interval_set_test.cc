@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/interval_map.h"
+#include "peer/interval_set.h"
 
 #include <vector>
 
@@ -34,61 +34,61 @@ namespace floating_temple {
 namespace peer {
 namespace {
 
-class IntervalMapTest : public Test {
+class IntervalSetTest : public Test {
  protected:
   vector<int> GetEndPoints() const {
     vector<int> end_points;
-    interval_map_.GetEndPoints(&end_points);
+    interval_set_.GetEndPoints(&end_points);
     return end_points;
   }
 
-  IntervalMap<int> interval_map_;
+  IntervalSet<int> interval_set_;
 };
 
-TEST_F(IntervalMapTest, AddToEmptyMap) {
-  interval_map_.AddInterval(2, 5);
+TEST_F(IntervalSetTest, AddToEmptyMap) {
+  interval_set_.AddInterval(2, 5);
 
   EXPECT_THAT(GetEndPoints(), ElementsAre(2, 5));
 }
 
-TEST_F(IntervalMapTest, JoinIntervals) {
-  interval_map_.AddInterval(2, 5);
-  interval_map_.AddInterval(8, 10);
-  interval_map_.AddInterval(5, 8);
+TEST_F(IntervalSetTest, JoinIntervals) {
+  interval_set_.AddInterval(2, 5);
+  interval_set_.AddInterval(8, 10);
+  interval_set_.AddInterval(5, 8);
 
   EXPECT_THAT(GetEndPoints(), ElementsAre(2, 10));
 }
 
-TEST_F(IntervalMapTest, JoinIntervalsWithOverlap) {
-  interval_map_.AddInterval(2, 5);
-  interval_map_.AddInterval(8, 10);
-  interval_map_.AddInterval(4, 9);
+TEST_F(IntervalSetTest, JoinIntervalsWithOverlap) {
+  interval_set_.AddInterval(2, 5);
+  interval_set_.AddInterval(8, 10);
+  interval_set_.AddInterval(4, 9);
 
   EXPECT_THAT(GetEndPoints(), ElementsAre(2, 10));
 }
 
-TEST_F(IntervalMapTest, DistinctIntervals) {
-  interval_map_.AddInterval(5, 8);
-  interval_map_.AddInterval(9, 10);
-  interval_map_.AddInterval(1, 4);
+TEST_F(IntervalSetTest, DistinctIntervals) {
+  interval_set_.AddInterval(5, 8);
+  interval_set_.AddInterval(9, 10);
+  interval_set_.AddInterval(1, 4);
 
   EXPECT_THAT(GetEndPoints(), ElementsAre(1, 4, 5, 8, 9, 10));
 }
 
-TEST_F(IntervalMapTest, EmptyMapContains) {
-  EXPECT_FALSE(interval_map_.Contains(0));
-  EXPECT_FALSE(interval_map_.Contains(5));
+TEST_F(IntervalSetTest, EmptyMapContains) {
+  EXPECT_FALSE(interval_set_.Contains(0));
+  EXPECT_FALSE(interval_set_.Contains(5));
 }
 
-TEST_F(IntervalMapTest, SingleIntervalContains) {
-  interval_map_.AddInterval(2, 5);
+TEST_F(IntervalSetTest, SingleIntervalContains) {
+  interval_set_.AddInterval(2, 5);
 
-  EXPECT_FALSE(interval_map_.Contains(1));
-  EXPECT_TRUE(interval_map_.Contains(2));
-  EXPECT_TRUE(interval_map_.Contains(3));
-  EXPECT_TRUE(interval_map_.Contains(4));
-  EXPECT_FALSE(interval_map_.Contains(5));
-  EXPECT_FALSE(interval_map_.Contains(6));
+  EXPECT_FALSE(interval_set_.Contains(1));
+  EXPECT_TRUE(interval_set_.Contains(2));
+  EXPECT_TRUE(interval_set_.Contains(3));
+  EXPECT_TRUE(interval_set_.Contains(4));
+  EXPECT_FALSE(interval_set_.Contains(5));
+  EXPECT_FALSE(interval_set_.Contains(6));
 }
 
 }  // namespace

@@ -621,10 +621,10 @@ peer_interpreter_thread_test = ft_env.Program(
       ],
   )
 
-peer_interval_map_test = ft_env.Program(
-    target = 'peer/interval_map_test',
+peer_interval_set_test = ft_env.Program(
+    target = 'peer/interval_set_test',
     source = Split("""
-        peer/interval_map_test.cc
+        peer/interval_set_test.cc
       """) + [
         peer_lib,
         protocol_server_lib,
@@ -840,7 +840,7 @@ cxx_tests = [
     base_string_printf_test,
     peer_connection_manager_test,
     peer_interpreter_thread_test,
-    peer_interval_map_test,
+    peer_interval_set_test,
     peer_max_version_map_test,
     peer_peer_id_test,
     peer_peer_thread_test,

@@ -28,6 +28,7 @@
 #include "peer/live_object.h"
 #include "peer/shared_object.h"
 #include "peer/uuid_util.h"
+#include "util/stl_util.h"
 
 using std::string;
 using std::tr1::unordered_set;
@@ -96,6 +97,7 @@ void CommittedEvent::GetSelfMethodReturn(
 string CommittedEvent::GetTypeString(Type event_type) {
   switch (event_type) {
     CHECK_EVENT_TYPE(OBJECT_CREATION);
+    CHECK_EVENT_TYPE(SUB_OBJECT_CREATION);
     CHECK_EVENT_TYPE(BEGIN_TRANSACTION);
     CHECK_EVENT_TYPE(END_TRANSACTION);
     CHECK_EVENT_TYPE(METHOD_CALL);
@@ -156,6 +158,30 @@ string ObjectCreationCommittedEvent::Dump() const {
       "{ \"type\": \"OBJECT_CREATION\", \"new_shared_objects\": %s, "
       "\"live_object\": %s }",
       DumpNewSharedObjects().c_str(), live_object_->Dump().c_str());
+}
+
+SubObjectCreationCommittedEvent::SubObjectCreationCommittedEvent(
+    SharedObject* new_shared_object)
+    : CommittedEvent(
+          MakeSingletonSet<unordered_set<SharedObject*> >(
+                CHECK_NOTNULL(new_shared_object))) {
+}
+
+CommittedEvent* SubObjectCreationCommittedEvent::Clone() const {
+  CHECK_EQ(new_shared_objects().size(), 1u);
+  return new SubObjectCreationCommittedEvent(GetNewSharedObject());
+}
+
+string SubObjectCreationCommittedEvent::Dump() const {
+  CHECK_EQ(new_shared_objects().size(), 1u);
+  return StringPrintf(
+      "{ \"type\": \"SUB_OBJECT_CREATION\", \"new_shared_object\": \"%s\" }",
+      UuidToString(GetNewSharedObject()->object_id()).c_str());
+}
+
+SharedObject* SubObjectCreationCommittedEvent::GetNewSharedObject() const {
+  CHECK_EQ(new_shared_objects().size(), 1u);
+  return *new_shared_objects().begin();
 }
 
 BeginTransactionCommittedEvent::BeginTransactionCommittedEvent()

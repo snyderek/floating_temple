@@ -58,7 +58,8 @@ void PeerImpl::Start(Interpreter* interpreter,
                      const string& local_address,
                      int peer_port,
                      const vector<string>& known_peer_ids,
-                     int send_receive_thread_count) {
+                     int send_receive_thread_count,
+                     bool delay_object_binding) {
   CHECK(interpreter != NULL);
 
   state_.ChangeState(STARTING);
@@ -71,7 +72,8 @@ void PeerImpl::Start(Interpreter* interpreter,
 
   transaction_store_.reset(new TransactionStore(&canonical_peer_map_,
                                                 &connection_manager_,
-                                                interpreter, local_peer));
+                                                interpreter, local_peer,
+                                                delay_object_binding));
   connection_manager_.Start(&canonical_peer_map_, interpreter_type, local_peer,
                             transaction_store_.get(),
                             send_receive_thread_count);

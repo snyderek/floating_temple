@@ -546,11 +546,19 @@ PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version) {
 
   delete initial_version;
 
-  PeerObjectImpl* const peer_object =
-      transaction_store_->CreateUnboundPeerObject();
-  CHECK(unbound_peer_objects_.insert(peer_object).second);
-
-  return peer_object;
+  if (transaction_store_->delay_object_binding() || conflict_detected_.Get() ||
+      !CheckNextEventType(CommittedEvent::SUB_OBJECT_CREATION)) {
+    PeerObjectImpl* const peer_object =
+        transaction_store_->CreateUnboundPeerObject();
+    CHECK(unbound_peer_objects_.insert(peer_object).second);
+    return peer_object;
+  } else {
+    const unordered_set<SharedObject*>& new_shared_objects =
+        GetNextEvent()->new_shared_objects();
+    CHECK_EQ(new_shared_objects.size(), 1u);
+    SharedObject* const shared_object = *new_shared_objects.begin();
+    return shared_object->GetOrCreatePeerObject();
+  }
 }
 
 PeerObject* PeerThread::GetOrCreateNamedObject(const string& name,

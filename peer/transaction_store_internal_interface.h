@@ -36,6 +36,8 @@ class TransactionStoreInternalInterface {
  public:
   virtual ~TransactionStoreInternalInterface() {}
 
+  virtual bool delay_object_binding() const = 0;
+
   // The caller must take ownership of the returned SequencePoint instance.
   virtual SequencePoint* GetCurrentSequencePoint() const = 0;
 

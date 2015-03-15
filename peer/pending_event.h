@@ -33,6 +33,7 @@ class PeerObjectImpl;
 class PendingEvent {
  public:
   enum Type {
+    OBJECT_CREATION,
     BEGIN_TRANSACTION,
     END_TRANSACTION,
     METHOD_CALL,
@@ -66,6 +67,19 @@ class PendingEvent {
       live_objects_;
   const std::tr1::unordered_set<PeerObjectImpl*> new_peer_objects_;
   PeerObjectImpl* const prev_peer_object_;
+};
+
+class ObjectCreationPendingEvent : public PendingEvent {
+ public:
+  // prev_peer_object may be NULL.
+  ObjectCreationPendingEvent(PeerObjectImpl* prev_peer_object,
+                             PeerObjectImpl* new_peer_object,
+                             const ConstLiveObjectPtr& new_live_object);
+
+  virtual Type type() const { return OBJECT_CREATION; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObjectCreationPendingEvent);
 };
 
 class BeginTransactionPendingEvent : public PendingEvent {

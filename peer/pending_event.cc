@@ -19,12 +19,15 @@
 #include <string>
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "include/c++/value.h"
 #include "peer/const_live_object_ptr.h"
+#include "util/stl_util.h"
 
+using std::make_pair;
 using std::string;
 using std::tr1::unordered_map;
 using std::tr1::unordered_set;
@@ -59,6 +62,16 @@ void PendingEvent::GetMethodReturn(PeerObjectImpl** next_peer_object,
                                    const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
+}
+
+ObjectCreationPendingEvent::ObjectCreationPendingEvent(
+    PeerObjectImpl* prev_peer_object, PeerObjectImpl* new_peer_object,
+    const ConstLiveObjectPtr& new_live_object)
+    : PendingEvent(
+          MakeSingletonSet<unordered_map<PeerObjectImpl*, ConstLiveObjectPtr> >(
+              make_pair(CHECK_NOTNULL(new_peer_object), new_live_object)),
+          MakeSingletonSet<unordered_set<PeerObjectImpl*> >(new_peer_object),
+          prev_peer_object) {
 }
 
 BeginTransactionPendingEvent::BeginTransactionPendingEvent(

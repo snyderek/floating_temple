@@ -25,12 +25,22 @@ class Interpreter;
 class Peer;
 
 // The caller must take ownership of the returned Peer instance.
+//
+// If delay_object_binding is true, a peer object created by calling
+// Thread::CreatePeerObject will not be bound to a shared object until the peer
+// object is used. This improves performance, but it also means that the local
+// interpreter must call Thread::ObjectsAreEquivalent to determine if two
+// PeerObject pointers refer to the same shared object. If delay_object_binding
+// is false, the local interpreter can safely assume that if two PeerObject
+// pointers have unequal pointer values, then they refer to different shared
+// objects.
 Peer* CreateNetworkPeer(Interpreter* interpreter,
                         const std::string& interpreter_type,
                         const std::string& local_address,
                         int peer_port,
                         const std::vector<std::string>& known_peer_ids,
-                        int send_receive_thread_count);
+                        int send_receive_thread_count,
+                        bool delay_object_binding);
 
 // The caller must take ownership of the returned Peer instance.
 Peer* CreateStandalonePeer();

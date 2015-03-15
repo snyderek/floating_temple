@@ -68,7 +68,7 @@ floatingtemple_Peer* floatingtemple_CreateNetworkPeer(
   peer->peer.reset(CreateNetworkPeer(&peer->proxy_interpreter, interpreter_type,
                                      GetLocalAddress(), peer_port,
                                      known_peer_id_vector,
-                                     send_receive_thread_count));
+                                     send_receive_thread_count, true));
 
   return peer;
 }

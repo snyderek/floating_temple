@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
   const scoped_ptr<Peer> peer(
       CreateNetworkPeer(&interpreter, "python3", GetLocalAddress(),
                         FLAGS_peer_port, known_peer_ids,
-                        FLAGS_send_receive_thread_count));
+                        FLAGS_send_receive_thread_count, true));
   LOG(INFO) << "Peer started.";
 
   FlushLogFiles(INFO);

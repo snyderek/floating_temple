@@ -23,6 +23,9 @@ message ObjectCreationEventProto {
   repeated floating_temple.peer.Uuid referenced_object_id = 2;
 }
 
+message SubObjectCreationEventProto {
+}
+
 message BeginTransactionEventProto {
 }
 
@@ -68,6 +71,7 @@ message EventProto {
     UNKNOWN = 0;
 
     OBJECT_CREATION = 1;
+    SUB_OBJECT_CREATION = 10;
     BEGIN_TRANSACTION = 2;
     END_TRANSACTION = 3;
     METHOD_CALL = 4;
@@ -80,6 +84,8 @@ message EventProto {
 
   // Exactly one of the following fields must be set.
   optional floating_temple.peer.ObjectCreationEventProto object_creation = 1;
+  optional floating_temple.peer.SubObjectCreationEventProto
+      sub_object_creation = 11;
   optional floating_temple.peer.BeginTransactionEventProto
       begin_transaction = 2;
   optional floating_temple.peer.EndTransactionEventProto end_transaction = 3;

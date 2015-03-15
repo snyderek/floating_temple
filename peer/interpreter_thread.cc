@@ -130,13 +130,19 @@ PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version) {
   PeerObjectImpl* const peer_object =
       transaction_store_->CreateUnboundPeerObject();
 
-  pair<PeerObjectImpl*, NewObject> new_map_value;
-  new_map_value.first = peer_object;
-  NewObject* const new_object = &new_map_value.second;
-  new_object->live_object = new_live_object;
-  new_object->object_is_named = false;
+  if (transaction_store_->delay_object_binding()) {
+    pair<PeerObjectImpl*, NewObject> new_map_value;
+    new_map_value.first = peer_object;
+    NewObject* const new_object = &new_map_value.second;
+    new_object->live_object = new_live_object;
+    new_object->object_is_named = false;
 
-  CHECK(new_objects_.insert(new_map_value).second);
+    CHECK(new_objects_.insert(new_map_value).second);
+  } else {
+    AddTransactionEvent(new ObjectCreationPendingEvent(current_peer_object_,
+                                                       peer_object,
+                                                       new_live_object));
+  }
 
   return peer_object;
 }

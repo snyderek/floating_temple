@@ -65,6 +65,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   explicit MockTransactionStore(const MockTransactionStoreCore* core);
   virtual ~MockTransactionStore();
 
+  virtual bool delay_object_binding() const { return true; }
   virtual SequencePoint* GetCurrentSequencePoint() const;
   virtual ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,

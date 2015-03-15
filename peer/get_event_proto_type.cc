@@ -31,6 +31,7 @@ EventProto::Type GetEventProtoType(const EventProto& event_proto) {
   EventProto::Type type = EventProto::UNKNOWN;
 
   CHECK_FIELD(has_object_creation, OBJECT_CREATION);
+  CHECK_FIELD(has_sub_object_creation, SUB_OBJECT_CREATION);
   CHECK_FIELD(has_begin_transaction, BEGIN_TRANSACTION);
   CHECK_FIELD(has_end_transaction, END_TRANSACTION);
   CHECK_FIELD(has_method_call, METHOD_CALL);

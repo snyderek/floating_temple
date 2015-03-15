@@ -70,7 +70,8 @@ class TransactionStore : public ConnectionHandler,
   TransactionStore(CanonicalPeerMap* canonical_peer_map,
                    PeerMessageSender* peer_message_sender,
                    Interpreter* interpreter,
-                   const CanonicalPeer* local_peer);
+                   const CanonicalPeer* local_peer,
+                   bool delay_object_binding);
   virtual ~TransactionStore();
 
   // The caller must not take ownership of the returned Thread instance.
@@ -94,6 +95,7 @@ class TransactionStore : public ConnectionHandler,
   typedef std::tr1::unordered_map<Uuid, linked_ptr<SharedObject>,
                                   UuidHasher, UuidEquals> SharedObjectMap;
 
+  virtual bool delay_object_binding() const { return delay_object_binding_; }
   virtual SequencePoint* GetCurrentSequencePoint() const;
   virtual ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
@@ -206,6 +208,7 @@ class TransactionStore : public ConnectionHandler,
   CanonicalPeerMap* const canonical_peer_map_;
   Interpreter* const interpreter_;
   const CanonicalPeer* const local_peer_;
+  const bool delay_object_binding_;
   const Uuid object_namespace_uuid_;
 
   TransactionIdGenerator transaction_id_generator_;

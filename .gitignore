@@ -2,3 +2,4 @@
 build/
 build-dbg/
 build-rel/
+third_party/Python-3.4.2/**/__pycache__

@@ -17,7 +17,6 @@
 
 #include <paths.h>
 
-#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
@@ -55,7 +54,7 @@ string GetSystemTempDirName() {
 string MakeTempDir(const string& temp_dir_template) {
   unique_ptr<char[]> buffer(CreateCharBuffer(temp_dir_template));
 
-  if (mkdtemp(buffer.get()) == NULL) {
+  if (mkdtemp(buffer.get()) == nullptr) {
     PLOG(FATAL) << "mkdtemp";
   }
 

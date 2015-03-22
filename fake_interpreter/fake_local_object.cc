@@ -56,7 +56,7 @@ void FakeLocalObject::InvokeMethod(Thread* thread,
                                    const string& method_name,
                                    const vector<Value>& parameters,
                                    Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   VLOG(1) << "Applying method \"" << CEscape(method_name) << "\" on object "
           << this;

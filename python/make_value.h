@@ -18,8 +18,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
-
 #include "base/logging.h"
 
 namespace floating_temple {
@@ -47,14 +45,14 @@ template<> PyObject* ExtractValue(const Value& value,
 template<typename T> T GetExceptionReturnCode();
 template<> inline int GetExceptionReturnCode() { return -1; }
 template<> inline long GetExceptionReturnCode() { return -1; }
-template<> inline PyObject* GetExceptionReturnCode() { return NULL; }
+template<> inline PyObject* GetExceptionReturnCode() { return nullptr; }
 
 template<typename T>
 void MakeReturnValue(T in, Value* out) {
   if (in == GetExceptionReturnCode<T>()) {
     // TODO(dss): If the Python function call throws an exception, propagate it
     // to the caller instead of crashing.
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred() != nullptr) {
       PyErr_Print();
       LOG(FATAL) << "Python exception";
     }

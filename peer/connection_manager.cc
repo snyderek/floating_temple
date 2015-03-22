@@ -15,7 +15,6 @@
 
 #include "peer/connection_manager.h"
 
-#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -46,9 +45,9 @@ class ProtocolConnection;
 namespace peer {
 
 ConnectionManager::ConnectionManager()
-    : canonical_peer_map_(NULL),
-      local_peer_(NULL),
-      connection_handler_(NULL),
+    : canonical_peer_map_(nullptr),
+      local_peer_(nullptr),
+      connection_handler_(nullptr),
       state_(NOT_STARTED) {
   state_.AddStateTransition(NOT_STARTED, STARTING);
   state_.AddStateTransition(STARTING, RUNNING);
@@ -61,7 +60,7 @@ ConnectionManager::~ConnectionManager() {
 }
 
 void ConnectionManager::ConnectToRemotePeer(const CanonicalPeer* remote_peer) {
-  CHECK(remote_peer != NULL);
+  CHECK(remote_peer != nullptr);
 
   const string& peer_id = remote_peer->peer_id();
 
@@ -71,7 +70,7 @@ void ConnectionManager::ConnectToRemotePeer(const CanonicalPeer* remote_peer) {
       << "Invalid peer id: " << peer_id;
 
   const intrusive_ptr<PeerConnection> peer_connection(
-      new PeerConnection(this, canonical_peer_map_, NULL, address, true));
+      new PeerConnection(this, canonical_peer_map_, nullptr, address, true));
 
   {
     MutexLock lock(&connections_mu_);
@@ -91,10 +90,10 @@ void ConnectionManager::Start(CanonicalPeerMap* canonical_peer_map,
                               const CanonicalPeer* local_peer,
                               ConnectionHandler* connection_handler,
                               int send_receive_thread_count) {
-  CHECK(canonical_peer_map != NULL);
+  CHECK(canonical_peer_map != nullptr);
   CHECK(!interpreter_type.empty());
-  CHECK(local_peer != NULL);
-  CHECK(connection_handler != NULL);
+  CHECK(local_peer != nullptr);
+  CHECK(connection_handler != nullptr);
 
   ChangeState(STARTING);
 
@@ -128,7 +127,7 @@ void ConnectionManager::Stop() {
 void ConnectionManager::SendMessageToRemotePeer(
     const CanonicalPeer* canonical_peer, const PeerMessage& peer_message,
     SendMode send_mode) {
-  CHECK(canonical_peer != NULL);
+  CHECK(canonical_peer != nullptr);
 
   while (state_.MatchesStateMask(NOT_STARTED | STARTING | RUNNING)) {
     const intrusive_ptr<PeerConnection> peer_connection = GetConnectionToPeer(
@@ -161,7 +160,7 @@ void ConnectionManager::ChangeState(unsigned new_state) {
 
 intrusive_ptr<PeerConnection> ConnectionManager::GetConnectionToPeer(
     const CanonicalPeer* canonical_peer) {
-  CHECK(canonical_peer != NULL);
+  CHECK(canonical_peer != nullptr);
 
   const string& peer_id = canonical_peer->peer_id();
 
@@ -174,7 +173,7 @@ intrusive_ptr<PeerConnection> ConnectionManager::GetConnectionToPeer(
   const intrusive_ptr<PeerConnection> peer_connection =
       GetOrCreateNamedConnection(canonical_peer, address, &connection_is_new);
 
-  CHECK(peer_connection.get() != NULL);
+  CHECK(peer_connection.get() != nullptr);
 
   if (connection_is_new) {
     ProtocolConnection* const connection = protocol_server_.OpenConnection(
@@ -189,7 +188,7 @@ intrusive_ptr<PeerConnection> ConnectionManager::GetConnectionToPeer(
 
 void ConnectionManager::GetAllOpenConnections(
     vector<intrusive_ptr<PeerConnection>>* peer_connections) {
-  CHECK(peer_connections != NULL);
+  CHECK(peer_connections != nullptr);
   peer_connections->clear();
 
   MutexLock lock(&connections_mu_);
@@ -229,15 +228,15 @@ void ConnectionManager::DrainAllConnections() {
 intrusive_ptr<PeerConnection> ConnectionManager::GetOrCreateNamedConnection(
     const CanonicalPeer* canonical_peer, const string& address,
     bool* connection_is_new) {
-  CHECK(canonical_peer != NULL);
-  CHECK(connection_is_new != NULL);
+  CHECK(canonical_peer != nullptr);
+  CHECK(connection_is_new != nullptr);
 
   MutexLock lock(&connections_mu_);
 
   intrusive_ptr<PeerConnection>& peer_connection_ptr =
       named_connections_[canonical_peer];
 
-  if (peer_connection_ptr.get() == NULL) {
+  if (peer_connection_ptr.get() == nullptr) {
     peer_connection_ptr.reset(new PeerConnection(this, canonical_peer_map_,
                                                  canonical_peer, address,
                                                  true));
@@ -251,7 +250,7 @@ intrusive_ptr<PeerConnection> ConnectionManager::GetOrCreateNamedConnection(
 
 const CanonicalPeer* ConnectionManager::GetConnectionInitiator(
     const PeerConnection* peer_connection) const {
-  CHECK(peer_connection != NULL);
+  CHECK(peer_connection != nullptr);
 
   if (peer_connection->locally_initiated()) {
     return local_peer_;
@@ -264,7 +263,7 @@ ProtocolConnectionHandler<PeerMessage>*
 ConnectionManager::NotifyConnectionReceived(ProtocolConnection* connection,
                                             const string& remote_address) {
   const intrusive_ptr<PeerConnection> peer_connection(
-      new PeerConnection(this, canonical_peer_map_, NULL, remote_address,
+      new PeerConnection(this, canonical_peer_map_, nullptr, remote_address,
                          false));
   peer_connection->Init(connection);
 
@@ -283,14 +282,14 @@ ConnectionManager::NotifyConnectionReceived(ProtocolConnection* connection,
 
 void ConnectionManager::NotifyConnectionClosed(
     ProtocolConnectionHandler<PeerMessage>* connection_handler) {
-  CHECK(connection_handler != NULL);
+  CHECK(connection_handler != nullptr);
 
   PeerConnection* const peer_connection = static_cast<PeerConnection*>(
       connection_handler);
 
   const CanonicalPeer* const remote_peer = peer_connection->remote_peer();
 
-  if (remote_peer == NULL) {
+  if (remote_peer == nullptr) {
     VLOG(1) << "The connection to the peer at address "
             << peer_connection->remote_address() << " has been closed. (peer "
             << "connection " << peer_connection << ")";
@@ -305,7 +304,7 @@ void ConnectionManager::NotifyConnectionClosed(
 
     unordered_map<const CanonicalPeer*, intrusive_ptr<PeerConnection>>::iterator
         named_connection_it;
-    if (remote_peer == NULL) {
+    if (remote_peer == nullptr) {
       named_connection_it = named_connections_.end();
     } else {
       named_connection_it = named_connections_.find(remote_peer);
@@ -342,16 +341,16 @@ const string& ConnectionManager::interpreter_type() const {
 }
 
 const CanonicalPeer* ConnectionManager::local_peer() const {
-  CHECK(local_peer_ != NULL);
+  CHECK(local_peer_ != nullptr);
   return local_peer_;
 }
 
 void ConnectionManager::NotifyRemotePeerKnown(
     PeerConnection* peer_connection, const CanonicalPeer* remote_peer) {
-  CHECK(local_peer_ != NULL);
-  CHECK(connection_handler_ != NULL);
-  CHECK(peer_connection != NULL);
-  CHECK(remote_peer != NULL);
+  CHECK(local_peer_ != nullptr);
+  CHECK(connection_handler_ != nullptr);
+  CHECK(peer_connection != nullptr);
+  CHECK(remote_peer != nullptr);
   CHECK_NE(local_peer_, remote_peer);
 
   const string& remote_peer_id = remote_peer->peer_id();
@@ -376,7 +375,7 @@ void ConnectionManager::NotifyRemotePeerKnown(
 
       CHECK(unnamed_connection_it == unnamed_connections_.end());
     } else {
-      if (named_connection.get() == NULL) {
+      if (named_connection.get() == nullptr) {
         // The remote peer id was not known until now. Move the connection from
         // the set of unnamed connections to the map of named connections.
 
@@ -423,7 +422,7 @@ void ConnectionManager::NotifyRemotePeerKnown(
     }
   }
 
-  if (peer_connection_to_drain.get() != NULL) {
+  if (peer_connection_to_drain.get() != nullptr) {
     peer_connection_to_drain->Drain();
   }
 
@@ -434,7 +433,7 @@ void ConnectionManager::NotifyRemotePeerKnown(
 
 void ConnectionManager::HandleMessageFromRemotePeer(
     const CanonicalPeer* remote_peer, const PeerMessage& peer_message) {
-  CHECK(connection_handler_ != NULL);
+  CHECK(connection_handler_ != nullptr);
   connection_handler_->HandleMessageFromRemotePeer(remote_peer, peer_message);
 }
 

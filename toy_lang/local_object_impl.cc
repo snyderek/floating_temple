@@ -79,7 +79,7 @@ size_t LocalObjectImpl::Serialize(void* buffer, size_t buffer_size,
 LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
                                               size_t buffer_size,
                                               DeserializationContext* context) {
-  CHECK(buffer != NULL);
+  CHECK(buffer != nullptr);
 
   ObjectProto object_proto;
   CHECK(object_proto.ParseFromArray(buffer, buffer_size));
@@ -184,7 +184,7 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
       LOG(FATAL) << "Unexpected object type: " << static_cast<int>(object_type);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 NoneObject::NoneObject() {
@@ -224,7 +224,7 @@ void BoolObject::InvokeMethod(Thread* thread,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (method_name == "get_bool") {
     CHECK_EQ(parameters.size(), 0u);
@@ -269,7 +269,7 @@ void IntObject::InvokeMethod(Thread* thread,
                              const string& method_name,
                              const vector<Value>& parameters,
                              Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (method_name == "get_int") {
     CHECK_EQ(parameters.size(), 0u);
@@ -309,7 +309,7 @@ void StringObject::InvokeMethod(Thread* thread,
                                 const string& method_name,
                                 const vector<Value>& parameters,
                                 Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (method_name == "get_string") {
     CHECK_EQ(parameters.size(), 0u);
@@ -361,7 +361,7 @@ void SymbolTableObject::InvokeMethod(Thread* thread,
                                      const string& method_name,
                                      const vector<Value>& parameters,
                                      Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (VLOG_IS_ON(4)) {
     VLOG(4) << GetStringForLogging();
@@ -506,7 +506,7 @@ string SymbolTableObject::Dump() const {
 SymbolTableObject* SymbolTableObject::ParseSymbolTableProto(
     const SymbolTableProto& symbol_table_proto,
     DeserializationContext* context) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   SymbolTableObject* const new_object = new SymbolTableObject();
   ScopeVector* const scope = &new_object->scopes_;
@@ -538,7 +538,7 @@ SymbolTableObject* SymbolTableObject::ParseSymbolTableProto(
 
 void SymbolTableObject::PopulateObjectProto(
     ObjectProto* object_proto, SerializationContext* context) const {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   SymbolTableProto* const symbol_table_proto =
       object_proto->mutable_symbol_table_object();
@@ -593,7 +593,7 @@ string SymbolTableObject::GetStringForLogging() const {
 ExpressionObject::ExpressionObject(
     const const_shared_ptr<Expression>& expression)
     : expression_(expression) {
-  CHECK(expression.get() != NULL);
+  CHECK(expression.get() != nullptr);
 }
 
 LocalObject* ExpressionObject::Clone() const {
@@ -605,7 +605,7 @@ void ExpressionObject::InvokeMethod(Thread* thread,
                                     const string& method_name,
                                     const vector<Value>& parameters,
                                     Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (method_name == "eval") {
     CHECK_EQ(parameters.size(), 1u);
@@ -614,7 +614,7 @@ void ExpressionObject::InvokeMethod(Thread* thread,
 
     PeerObject* const peer_object = expression_->Evaluate(symbol_table_object,
                                                           thread);
-    if (peer_object == NULL) {
+    if (peer_object == nullptr) {
       return;
     }
     return_value->set_peer_object(0, peer_object);
@@ -656,8 +656,8 @@ void ListObject::InvokeMethod(Thread* thread,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {
-  CHECK(thread != NULL);
-  CHECK(return_value != NULL);
+  CHECK(thread != nullptr);
+  CHECK(return_value != nullptr);
 
   if (method_name == "length") {
     CHECK_EQ(parameters.size(), 0u);
@@ -737,7 +737,7 @@ string ListObject::Dump() const {
 // static
 ListObject* ListObject::ParseListProto(const ListProto& list_proto,
                                        DeserializationContext* context) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   vector<PeerObject*> items(list_proto.object_index_size());
 
@@ -776,7 +776,7 @@ void MapObject::InvokeMethod(Thread* thread,
                              const string& method_name,
                              const vector<Value>& parameters,
                              Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (method_name == "is_set") {
     CHECK_EQ(parameters.size(), 1u);
@@ -833,7 +833,7 @@ string MapObject::Dump() const {
 // static
 MapObject* MapObject::ParseMapProto(const MapProto& map_proto,
                                     DeserializationContext* context) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   MapObject* const new_object = new MapObject();
   unordered_map<string, PeerObject*>* const the_map = &new_object->map_;
@@ -853,7 +853,7 @@ MapObject* MapObject::ParseMapProto(const MapProto& map_proto,
 
 void MapObject::PopulateObjectProto(ObjectProto* object_proto,
                                     SerializationContext* context) const {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   MapProto* const map_proto = object_proto->mutable_map_object();
 
@@ -889,7 +889,7 @@ void RangeIteratorObject::InvokeMethod(Thread* thread,
                                        const string& method_name,
                                        const vector<Value>& parameters,
                                        Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (method_name == "has_next") {
     CHECK_EQ(parameters.size(), 0u);
@@ -945,8 +945,8 @@ void Function::InvokeMethod(Thread* thread,
                             const string& method_name,
                             const vector<Value>& parameters,
                             Value* return_value) {
-  CHECK(thread != NULL);
-  CHECK(return_value != NULL);
+  CHECK(thread != nullptr);
+  CHECK(return_value != nullptr);
 
   if (method_name == "call") {
     CHECK_EQ(parameters.size(), 2u);
@@ -978,7 +978,7 @@ void Function::InvokeMethod(Thread* thread,
 
     PeerObject* const return_object = Call(symbol_table_object, thread,
                                            param_objects);
-    if (return_object == NULL) {
+    if (return_object == nullptr) {
       return;
     }
     return_value->set_peer_object(0, return_object);
@@ -1005,7 +1005,7 @@ void ListFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* ListFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                                const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   LocalObjectImpl* const local_object = new ListObject(parameters);
   return thread->CreatePeerObject(local_object);
@@ -1030,20 +1030,20 @@ void SetVariableFunction::PopulateObjectProto(
 PeerObject* SetVariableFunction::Call(
     PeerObject* symbol_table_object, Thread* thread,
     const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   Value variable_name;
   if (!thread->CallMethod(parameters[0], "get_string", vector<Value>(),
                           &variable_name)) {
-    return NULL;
+    return nullptr;
   }
 
   PeerObject* const object = parameters[1];
 
   if (!SetVariable(symbol_table_object, thread, variable_name.string_value(),
                    object)) {
-    return NULL;
+    return nullptr;
   }
 
   return object;
@@ -1067,13 +1067,13 @@ void ForFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                               const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 3u);
 
   Value variable_name;
   if (!thread->CallMethod(parameters[0], "get_string", vector<Value>(),
                           &variable_name)) {
-    return NULL;
+    return nullptr;
   }
 
   PeerObject* const iter = parameters[1];
@@ -1085,7 +1085,7 @@ PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
   for (;;) {
     Value has_next;
     if (!thread->CallMethod(iter, "has_next", vector<Value>(), &has_next)) {
-      return NULL;
+      return nullptr;
     }
 
     if (!has_next.bool_value()) {
@@ -1094,27 +1094,27 @@ PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 
     Value iter_value;
     if (!thread->CallMethod(iter, "get_next", vector<Value>(), &iter_value)) {
-      return NULL;
+      return nullptr;
     }
 
     if (!EnterScope(symbol_table_object, thread)) {
-      return NULL;
+      return nullptr;
     }
 
     if (!SetVariable(
             symbol_table_object, thread, variable_name.string_value(),
             thread->CreatePeerObject(
                 new IntObject(iter_value.int64_value())))) {
-      return NULL;
+      return nullptr;
     }
 
     Value dummy;
     if (!thread->CallMethod(expression, "eval", eval_parameters, &dummy)) {
-      return NULL;
+      return nullptr;
     }
 
     if (!LeaveScope(symbol_table_object, thread)) {
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -1139,12 +1139,12 @@ void RangeFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* RangeFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                                 const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
   Value limit;
   if (!thread->CallMethod(parameters[0], "get_int", vector<Value>(), &limit)) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new RangeIteratorObject(limit.int64_value(),
@@ -1169,7 +1169,7 @@ void PrintFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* PrintFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                                 const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   for (vector<PeerObject*>::const_iterator it = parameters.begin();
        it != parameters.end(); ++it) {
@@ -1179,7 +1179,7 @@ PeerObject* PrintFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 
     Value str;
     if (!thread->CallMethod(*it, "get_string", vector<Value>(), &str)) {
-      return NULL;
+      return nullptr;
     }
 
     printf("%s", str.string_value().c_str());
@@ -1208,14 +1208,14 @@ void AddFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* AddFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                               const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   int64 sum = 0;
 
   for (PeerObject* const peer_object : parameters) {
     Value number;
     if (!thread->CallMethod(peer_object, "get_int", vector<Value>(), &number)) {
-      return NULL;
+      return nullptr;
     }
 
     sum += number.int64_value();
@@ -1243,11 +1243,11 @@ void BeginTranFunction::PopulateObjectProto(
 PeerObject* BeginTranFunction::Call(
     PeerObject* symbol_table_object, Thread* thread,
     const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 0u);
 
   if (!thread->BeginTransaction()) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new NoneObject());
@@ -1272,11 +1272,11 @@ void EndTranFunction::PopulateObjectProto(ObjectProto* object_proto,
 PeerObject* EndTranFunction::Call(PeerObject* symbol_table_object,
                                   Thread* thread,
                                   const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 0u);
 
   if (!thread->EndTransaction()) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new NoneObject());
@@ -1300,17 +1300,17 @@ void IfFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* IfFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                              const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_GE(parameters.size(), 2u);
   CHECK_LE(parameters.size(), 3u);
 
   Value condition;
   if (!thread->CallMethod(parameters[0], "get_bool", vector<Value>(),
                           &condition)) {
-    return NULL;
+    return nullptr;
   }
 
-  PeerObject* expression = NULL;
+  PeerObject* expression = nullptr;
 
   if (condition.bool_value()) {
     expression = parameters[1];
@@ -1327,7 +1327,7 @@ PeerObject* IfFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 
   Value result;
   if (!thread->CallMethod(expression, "eval", eval_parameters, &result)) {
-    return NULL;
+    return nullptr;
   }
 
   return result.peer_object();
@@ -1351,13 +1351,13 @@ void NotFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* NotFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                               const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
   Value condition;
   if (!thread->CallMethod(parameters[0], "get_bool", vector<Value>(),
                           &condition)) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new BoolObject(!condition.bool_value()));
@@ -1381,19 +1381,19 @@ void IsSetFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* IsSetFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                                 const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
   Value variable_name;
   if (!thread->CallMethod(parameters[0], "get_string", vector<Value>(),
                           &variable_name)) {
-    return NULL;
+    return nullptr;
   }
 
   bool is_set = false;
   if (!IsVariableSet(symbol_table_object, thread, variable_name.string_value(),
                      &is_set)) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new BoolObject(is_set));
@@ -1417,7 +1417,7 @@ void WhileFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* WhileFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                                 const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   PeerObject* const condition_expression = parameters[0];
@@ -1430,13 +1430,13 @@ PeerObject* WhileFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     Value condition_object;
     if (!thread->CallMethod(condition_expression, "eval", eval_parameters,
                             &condition_object)) {
-      return NULL;
+      return nullptr;
     }
 
     Value condition;
     if (!thread->CallMethod(condition_object.peer_object(), "get_bool",
                             vector<Value>(), &condition)) {
-      return NULL;
+      return nullptr;
     }
 
     if (!condition.bool_value()) {
@@ -1444,16 +1444,16 @@ PeerObject* WhileFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     }
 
     if (!EnterScope(symbol_table_object, thread)) {
-      return NULL;
+      return nullptr;
     }
 
     Value dummy;
     if (!thread->CallMethod(expression, "eval", eval_parameters, &dummy)) {
-      return NULL;
+      return nullptr;
     }
 
     if (!LeaveScope(symbol_table_object, thread)) {
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -1479,7 +1479,7 @@ void LessThanFunction::PopulateObjectProto(
 PeerObject* LessThanFunction::Call(
     PeerObject* symbol_table_object, Thread* thread,
     const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   int64 operands[2];
@@ -1488,7 +1488,7 @@ PeerObject* LessThanFunction::Call(
     Value number;
     if (!thread->CallMethod(parameters[i], "get_int", vector<Value>(),
                             &number)) {
-      return NULL;
+      return nullptr;
     }
 
     operands[i] = number.int64_value();
@@ -1515,12 +1515,12 @@ void LenFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* LenFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                               const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
   Value length;
   if (!thread->CallMethod(parameters[0], "length", vector<Value>(), &length)) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new IntObject(length.int64_value()));
@@ -1545,7 +1545,7 @@ void AppendFunction::PopulateObjectProto(ObjectProto* object_proto,
 PeerObject* AppendFunction::Call(PeerObject* symbol_table_object,
                                  Thread* thread,
                                  const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   PeerObject* const the_list = parameters[0];
@@ -1556,7 +1556,7 @@ PeerObject* AppendFunction::Call(PeerObject* symbol_table_object,
 
   Value dummy;
   if (!thread->CallMethod(the_list, "append", append_params, &dummy)) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new NoneObject());
@@ -1580,12 +1580,12 @@ void GetAtFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 PeerObject* GetAtFunction::Call(PeerObject* symbol_table_object, Thread* thread,
                                 const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   Value index;
   if (!thread->CallMethod(parameters[1], "get_int", vector<Value>(), &index)) {
-    return NULL;
+    return nullptr;
   }
 
   vector<Value> get_at_params(1);
@@ -1593,7 +1593,7 @@ PeerObject* GetAtFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 
   Value item;
   if (!thread->CallMethod(parameters[0], "get_at", get_at_params, &item)) {
-    return NULL;
+    return nullptr;
   }
 
   return item.peer_object();
@@ -1618,12 +1618,12 @@ void MapIsSetFunction::PopulateObjectProto(
 PeerObject* MapIsSetFunction::Call(
     PeerObject* symbol_table_object, Thread* thread,
     const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   Value key;
   if (!thread->CallMethod(parameters[1], "get_string", vector<Value>(), &key)) {
-    return NULL;
+    return nullptr;
   }
 
   vector<Value> is_set_params(1);
@@ -1631,7 +1631,7 @@ PeerObject* MapIsSetFunction::Call(
 
   Value result;
   if (!thread->CallMethod(parameters[0], "is_set", is_set_params, &result)) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new BoolObject(result.bool_value()));
@@ -1656,12 +1656,12 @@ void MapGetFunction::PopulateObjectProto(ObjectProto* object_proto,
 PeerObject* MapGetFunction::Call(PeerObject* symbol_table_object,
                                  Thread* thread,
                                  const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   Value key;
   if (!thread->CallMethod(parameters[1], "get_string", vector<Value>(), &key)) {
-    return NULL;
+    return nullptr;
   }
 
   vector<Value> get_params(1);
@@ -1669,7 +1669,7 @@ PeerObject* MapGetFunction::Call(PeerObject* symbol_table_object,
 
   Value result;
   if (!thread->CallMethod(parameters[0], "get", get_params, &result)) {
-    return NULL;
+    return nullptr;
   }
 
   return result.peer_object();
@@ -1694,12 +1694,12 @@ void MapSetFunction::PopulateObjectProto(ObjectProto* object_proto,
 PeerObject* MapSetFunction::Call(PeerObject* symbol_table_object,
                                  Thread* thread,
                                  const vector<PeerObject*>& parameters) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 3u);
 
   Value key;
   if (!thread->CallMethod(parameters[1], "get_string", vector<Value>(), &key)) {
-    return NULL;
+    return nullptr;
   }
 
   vector<Value> set_params(2);
@@ -1708,7 +1708,7 @@ PeerObject* MapSetFunction::Call(PeerObject* symbol_table_object,
 
   Value result;
   if (!thread->CallMethod(parameters[0], "set", set_params, &result)) {
-    return NULL;
+    return nullptr;
   }
 
   return thread->CreatePeerObject(new NoneObject());

@@ -31,7 +31,7 @@ FakeInterpreter::FakeInterpreter() {
 
 LocalObject* FakeInterpreter::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  CHECK(buffer != NULL);
+  CHECK(buffer != nullptr);
 
   const string s(static_cast<const char*>(buffer),
                  static_cast<string::size_type>(buffer_size));

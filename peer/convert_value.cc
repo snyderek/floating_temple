@@ -15,8 +15,6 @@
 
 #include "peer/convert_value.h"
 
-#include <cstddef>
-
 #include "base/logging.h"
 #include "include/c++/value.h"
 #include "peer/committed_value.h"
@@ -35,7 +33,7 @@ namespace peer {
 
 void ConvertCommittedValueToValueProto(const CommittedValue& in,
                                        ValueProto* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
   out->Clear();
   out->set_local_type(in.local_type());
@@ -74,7 +72,7 @@ void ConvertCommittedValueToValueProto(const CommittedValue& in,
     break;
 
 void ConvertCommittedValueToValue(const CommittedValue& in, Value* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
   const int local_type = in.local_type();
   const CommittedValue::Type type = in.type();

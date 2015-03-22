@@ -55,9 +55,9 @@ uint64 ParseHexUint64(const string& hex) {
 }
 
 void BinaryToUuid(const unsigned char* buffer, size_t buffer_size, Uuid* uuid) {
-  CHECK(buffer != NULL);
+  CHECK(buffer != nullptr);
   CHECK_EQ(buffer_size, 16u);
-  CHECK(uuid != NULL);
+  CHECK(uuid != nullptr);
 
   const uint64* const words = reinterpret_cast<const uint64*>(buffer);
 
@@ -68,7 +68,7 @@ void BinaryToUuid(const unsigned char* buffer, size_t buffer_size, Uuid* uuid) {
 
 void UuidToBinary(const Uuid& uuid, unsigned char* buffer, size_t buffer_size) {
   uuid.CheckInitialized();
-  CHECK(buffer != NULL);
+  CHECK(buffer != nullptr);
   CHECK_EQ(buffer_size, 16u);
 
   uint64* const words = reinterpret_cast<uint64*>(buffer);
@@ -79,7 +79,7 @@ void UuidToBinary(const Uuid& uuid, unsigned char* buffer, size_t buffer_size) {
 }  // namespace
 
 void GenerateUuid(Uuid* uuid) {
-  uuid_t* uuid_context = NULL;
+  uuid_t* uuid_context = nullptr;
   CHECK_EQ(uuid_create(&uuid_context), UUID_RC_OK);
   CHECK_EQ(uuid_make(uuid_context, UUID_MAKE_V1), UUID_RC_OK);
 
@@ -99,7 +99,7 @@ void GeneratePredictableUuid(const Uuid& ns_uuid, const string& name,
   string ns_uuid_str;
   UuidToHyphenatedString(ns_uuid, &ns_uuid_str);
 
-  uuid_t* uuid_context = NULL;
+  uuid_t* uuid_context = nullptr;
   CHECK_EQ(uuid_create(&uuid_context), UUID_RC_OK);
   CHECK_EQ(uuid_make(uuid_context, UUID_MAKE_V5, ns_uuid_str.c_str(),
                      name.c_str()), UUID_RC_OK);
@@ -149,12 +149,12 @@ Uuid StringToUuid(const string& s) {
 }
 
 void UuidToHyphenatedString(const Uuid& uuid, string* s) {
-  CHECK(s != NULL);
+  CHECK(s != nullptr);
 
   unsigned char buffer[UUID_LEN_BIN];
   UuidToBinary(uuid, buffer, sizeof buffer);
 
-  uuid_t* uuid_context = NULL;
+  uuid_t* uuid_context = nullptr;
   CHECK_EQ(uuid_create(&uuid_context), UUID_RC_OK);
   CHECK_EQ(uuid_import(uuid_context, UUID_FMT_BIN, buffer, sizeof buffer),
            UUID_RC_OK);

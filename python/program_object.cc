@@ -74,9 +74,9 @@ void ProgramObject::InvokeMethod(Thread* thread,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(method_name, "run");
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   // TODO(dss): Only read the source file once.
   rewind(fp_);

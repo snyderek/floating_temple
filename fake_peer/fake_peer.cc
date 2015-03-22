@@ -15,7 +15,6 @@
 
 #include "fake_peer/fake_peer.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -36,7 +35,7 @@ FakePeer::FakePeer() {
 
 void FakePeer::RunProgram(LocalObject* local_object, const string& method_name,
                           Value* return_value) {
-  CHECK(local_object != NULL);
+  CHECK(local_object != nullptr);
 
   FakeThread thread;
   PeerObject* const peer_object = thread.CreatePeerObject(local_object);

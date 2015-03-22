@@ -16,8 +16,6 @@
 #ifndef BASE_LINKED_PTR_H_
 #define BASE_LINKED_PTR_H_
 
-#include <cstddef>
-
 #include "base/logging.h"
 
 namespace floating_temple {
@@ -38,7 +36,7 @@ template<typename T> class linked_ptr {
  public:
   typedef T element_type;
 
-  explicit linked_ptr(T* ptr = NULL);
+  explicit linked_ptr(T* ptr = nullptr);
   linked_ptr(const linked_ptr<T>& other);
   ~linked_ptr();
 
@@ -88,12 +86,12 @@ template<typename T> void linked_ptr<T>::reset(T* ptr) {
 }
 
 template<typename T> inline T& linked_ptr<T>::operator*() const {
-  CHECK(ptr_ != NULL);
+  CHECK(ptr_ != nullptr);
   return *ptr_;
 }
 
 template<typename T> inline T* linked_ptr<T>::operator->() const {
-  CHECK(ptr_ != NULL);
+  CHECK(ptr_ != nullptr);
   return ptr_;
 }
 
@@ -105,7 +103,7 @@ template<typename T> T* linked_ptr<T>::release() {
   CHECK_EQ(next_, this);
 
   T* const ptr = ptr_;
-  ptr_ = NULL;
+  ptr_ = nullptr;
   return ptr;
 }
 

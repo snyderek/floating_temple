@@ -59,7 +59,7 @@ class InterpreterImplTest : public Test {
     memcpy(buffer, file_content.data(), length);
 
     FILE* const fp = fmemopen(buffer, length, "r");
-    PLOG_IF(FATAL, fp == NULL) << "fmemopen";
+    PLOG_IF(FATAL, fp == nullptr) << "fmemopen";
 
     const bool success = interpreter_->RunFile(fp, file_name);
 

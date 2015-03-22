@@ -15,8 +15,6 @@
 
 #include "protocol_server/parse_protocol_message.h"
 
-#include <cstddef>
-
 #include "base/integral_types.h"
 #include "base/logging.h"
 #include "protocol_server/varint.h"
@@ -25,7 +23,7 @@ namespace floating_temple {
 
 int ParseMessageLength(const char* input_buffer, int buffer_size,
                        int* message_length) {
-  CHECK(message_length != NULL);
+  CHECK(message_length != nullptr);
 
   uint64 varint = 0u;
   const int varint_length = ParseVarint(input_buffer, buffer_size, &varint);

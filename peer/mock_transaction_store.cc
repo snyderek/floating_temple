@@ -15,7 +15,6 @@
 
 #include "peer/mock_transaction_store.h"
 
-#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -47,7 +46,7 @@ SequencePoint* MockTransactionStore::GetCurrentSequencePoint() const {
 ConstLiveObjectPtr MockTransactionStore::GetLiveObjectAtSequencePoint(
     PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
     bool wait) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
 
   return core_->GetLiveObjectAtSequencePoint(peer_object, sequence_point, wait);
 }
@@ -68,7 +67,7 @@ PeerObjectImpl* MockTransactionStore::GetOrCreateNamedObject(
   core_->GetOrCreateNamedObject(name);
 
   linked_ptr<PeerObjectImpl>& peer_object = named_objects_[name];
-  if (peer_object.get() == NULL) {
+  if (peer_object.get() == nullptr) {
     peer_object.reset(new PeerObjectImpl());
   }
 

@@ -37,25 +37,25 @@ using std::vector;
 namespace floating_temple {
 namespace c_harness {
 
-__thread floatingtemple_Interpreter* ProxyInterpreter::interpreter_ = NULL;
+__thread floatingtemple_Interpreter* ProxyInterpreter::interpreter_ = nullptr;
 
 ProxyInterpreter::ProxyInterpreter()
     : state_(START),
       callback_type_(NONE),
-      const_local_object_(NULL),
-      buffer_(NULL),
+      const_local_object_(nullptr),
+      buffer_(nullptr),
       buffer_size_(0),
-      serialization_context_(NULL),
-      const_buffer_(NULL),
-      deserialization_context_(NULL),
-      local_object_(NULL),
-      thread_(NULL),
-      peer_object_(NULL),
-      method_name_(NULL),
+      serialization_context_(nullptr),
+      const_buffer_(nullptr),
+      deserialization_context_(nullptr),
+      local_object_(nullptr),
+      thread_(nullptr),
+      peer_object_(nullptr),
+      method_name_(nullptr),
       parameter_count_(0),
-      parameters_(NULL),
-      return_value_(NULL),
-      returned_local_object_(NULL),
+      parameters_(nullptr),
+      return_value_(nullptr),
+      returned_local_object_(nullptr),
       returned_byte_count_(0) {
   state_.AddStateTransition(START, SETTING_PARAMETERS);
   state_.AddStateTransition(SETTING_PARAMETERS, PARAMETERS_SET);
@@ -92,14 +92,14 @@ floatingtemple_Interpreter* ProxyInterpreter::SetInterpreterForCurrentThread(
 
 LocalObject* ProxyInterpreter::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   floatingtemple_DeserializationContext context_struct;
   context_struct.context = context;
 
-  floatingtemple_LocalObject* new_local_object = NULL;
+  floatingtemple_LocalObject* new_local_object = nullptr;
 
-  if (interpreter_ == NULL) {
+  if (interpreter_ == nullptr) {
     EnterMethod(DESERIALIZE_OBJECT);
 
     const_buffer_ = buffer;
@@ -121,7 +121,7 @@ LocalObject* ProxyInterpreter::DeserializeObject(
 
 void ProxyInterpreter::ExecuteCallback(
     floatingtemple_Interpreter* interpreter) {
-  CHECK(interpreter != NULL);
+  CHECK(interpreter != nullptr);
 
   switch (callback_type_) {
     case NONE:
@@ -171,20 +171,20 @@ void ProxyInterpreter::WaitForCallback() {
 
 void ProxyInterpreter::LeaveMethod() {
   callback_type_ = NONE;
-  const_local_object_ = NULL;
-  buffer_ = NULL;
+  const_local_object_ = nullptr;
+  buffer_ = nullptr;
   buffer_size_ = 0;
-  serialization_context_ = NULL;
-  const_buffer_ = NULL;
-  deserialization_context_ = NULL;
-  local_object_ = NULL;
-  thread_ = NULL;
-  peer_object_ = NULL;
-  method_name_ = NULL;
+  serialization_context_ = nullptr;
+  const_buffer_ = nullptr;
+  deserialization_context_ = nullptr;
+  local_object_ = nullptr;
+  thread_ = nullptr;
+  peer_object_ = nullptr;
+  method_name_ = nullptr;
   parameter_count_ = 0;
-  parameters_ = NULL;
-  return_value_ = NULL;
-  returned_local_object_ = NULL;
+  parameters_ = nullptr;
+  return_value_ = nullptr;
+  returned_local_object_ = nullptr;
   returned_byte_count_ = 0;
 
   state_.ChangeState(START);
@@ -192,9 +192,9 @@ void ProxyInterpreter::LeaveMethod() {
 
 LocalObject* ProxyInterpreter::CloneLocalObject(
     const floatingtemple_LocalObject* local_object) {
-  floatingtemple_LocalObject* new_local_object = NULL;
+  floatingtemple_LocalObject* new_local_object = nullptr;
 
-  if (interpreter_ == NULL) {
+  if (interpreter_ == nullptr) {
     EnterMethod(CLONE_LOCAL_OBJECT);
 
     const_local_object_ = local_object;
@@ -216,14 +216,14 @@ size_t ProxyInterpreter::SerializeLocalObject(
     void* buffer,
     size_t buffer_size,
     SerializationContext* context) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   floatingtemple_SerializationContext context_struct;
   context_struct.context = context;
 
   size_t count = 0;
 
-  if (interpreter_ == NULL) {
+  if (interpreter_ == nullptr) {
     EnterMethod(SERIALIZE_LOCAL_OBJECT);
 
     const_local_object_ = local_object;
@@ -251,7 +251,7 @@ void ProxyInterpreter::InvokeMethodOnLocalObject(
     const string& method_name,
     const vector<Value>& parameters,
     Value* return_value) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   floatingtemple_Thread thread_struct;
   thread_struct.proxy_interpreter = this;
@@ -267,7 +267,7 @@ void ProxyInterpreter::InvokeMethodOnLocalObject(
     *reinterpret_cast<Value*>(value_struct) = parameters[i];
   }
 
-  if (interpreter_ == NULL) {
+  if (interpreter_ == nullptr) {
     EnterMethod(INVOKE_METHOD);
 
     local_object_ = local_object;
@@ -296,7 +296,7 @@ void ProxyInterpreter::InvokeMethodOnLocalObject(
 
 void ProxyInterpreter::FreeLocalObject(
     floatingtemple_LocalObject* local_object) {
-  if (interpreter_ == NULL) {
+  if (interpreter_ == nullptr) {
     EnterMethod(FREE_LOCAL_OBJECT);
 
     local_object_ = local_object;
@@ -311,7 +311,7 @@ void ProxyInterpreter::FreeLocalObject(
 // static
 void ProxyInterpreter::WaitForStartAndChangeToSettingParameters(
     StateVariableInternalInterface* state_variable) {
-  CHECK(state_variable != NULL);
+  CHECK(state_variable != nullptr);
 
   state_variable->WaitForState_Locked(START);
   state_variable->ChangeState_Locked(SETTING_PARAMETERS);
@@ -320,7 +320,7 @@ void ProxyInterpreter::WaitForStartAndChangeToSettingParameters(
 // static
 void ProxyInterpreter::ChangeToParametersSetAndWaitForCallbackReturned(
     StateVariableInternalInterface* state_variable) {
-  CHECK(state_variable != NULL);
+  CHECK(state_variable != nullptr);
 
   state_variable->ChangeState_Locked(PARAMETERS_SET);
   state_variable->WaitForState_Locked(CALLBACK_RETURNED);
@@ -330,7 +330,7 @@ void ProxyInterpreter::ChangeToParametersSetAndWaitForCallbackReturned(
 // static
 void ProxyInterpreter::WaitForParametersSetAndChangeToCallbackExecuting(
     StateVariableInternalInterface* state_variable) {
-  CHECK(state_variable != NULL);
+  CHECK(state_variable != nullptr);
 
   if (state_variable->MatchesStateMask_Locked(PARAMETERS_SET)) {
     state_variable->ChangeState_Locked(CALLBACK_EXECUTING);

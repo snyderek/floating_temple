@@ -15,15 +15,13 @@
 
 #include "protocol_server/buffer_util.h"
 
-#include <cstddef>
-
 #include "base/logging.h"
 
 namespace floating_temple {
 
 const char* FindCharInRange(const char* start, const char* end, char c) {
-  CHECK(start != NULL);
-  CHECK(end != NULL);
+  CHECK(start != nullptr);
+  CHECK(end != nullptr);
   CHECK_LE(start, end);
 
   const char* p = start;

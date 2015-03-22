@@ -15,7 +15,6 @@
 
 #include "base/const_shared_ptr.h"
 
-#include <cstddef>
 #include <string>
 
 #include <gflags/gflags.h>
@@ -59,26 +58,26 @@ TEST(SharedPtrTest, Destructor) {
 }
 
 TEST(SharedPtrTest, ResetFromNullToNull) {
-  const_shared_ptr<TestObject> a(NULL);
+  const_shared_ptr<TestObject> a(nullptr);
   const_shared_ptr<TestObject> b(a);
-  a.reset(NULL);
-  EXPECT_TRUE(a.get() == NULL);
-  EXPECT_TRUE(b.get() == NULL);
+  a.reset(nullptr);
+  EXPECT_TRUE(a.get() == nullptr);
+  EXPECT_TRUE(b.get() == nullptr);
 }
 
 TEST(SharedPtrTest, ResetFromNullToNonNull) {
-  const_shared_ptr<TestObject> a(NULL);
+  const_shared_ptr<TestObject> a(nullptr);
   const_shared_ptr<TestObject> b(a);
   a.reset(new TestObject("cobalt", 27));
   EXPECT_EQ("cobalt", a->str());
-  EXPECT_TRUE(b.get() == NULL);
+  EXPECT_TRUE(b.get() == nullptr);
 }
 
 TEST(SharedPtrTest, ResetFromNonNullToNull) {
   const_shared_ptr<TestObject> a(new TestObject("niobium", 41));
   const_shared_ptr<TestObject> b(a);
-  a.reset(NULL);
-  EXPECT_TRUE(a.get() == NULL);
+  a.reset(nullptr);
+  EXPECT_TRUE(a.get() == nullptr);
   EXPECT_EQ("niobium", b->str());
 }
 
@@ -91,15 +90,15 @@ TEST(SharedPtrTest, ResetFromNonNullToNonNull) {
 }
 
 TEST(SharedPtrTest, AssignmentFromNullToNull) {
-  const_shared_ptr<TestObject> a(NULL);
+  const_shared_ptr<TestObject> a(nullptr);
   const_shared_ptr<TestObject> b(a);
-  const_shared_ptr<TestObject> c(NULL);
+  const_shared_ptr<TestObject> c(nullptr);
   b = c;
-  EXPECT_TRUE(b.get() == NULL);
+  EXPECT_TRUE(b.get() == nullptr);
 }
 
 TEST(SharedPtrTest, AssignmentFromNullToNonNull) {
-  const_shared_ptr<TestObject> a(NULL);
+  const_shared_ptr<TestObject> a(nullptr);
   const_shared_ptr<TestObject> b(a);
   const_shared_ptr<TestObject> c(new TestObject("thallium", 81));
   b = c;
@@ -109,9 +108,9 @@ TEST(SharedPtrTest, AssignmentFromNullToNonNull) {
 TEST(SharedPtrTest, AssignmentFromNonNullToNull) {
   const_shared_ptr<TestObject> a(new TestObject("lithium", 3));
   const_shared_ptr<TestObject> b(a);
-  const_shared_ptr<TestObject> c(NULL);
+  const_shared_ptr<TestObject> c(nullptr);
   b = c;
-  EXPECT_TRUE(b.get() == NULL);
+  EXPECT_TRUE(b.get() == nullptr);
 }
 
 TEST(SharedPtrTest, AssignmentFromNonNullToNonNull) {

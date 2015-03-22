@@ -15,8 +15,6 @@
 
 #include "peer/const_live_object_ptr.h"
 
-#include <cstddef>
-
 #include "base/logging.h"
 #include "peer/live_object.h"
 #include "peer/live_object_ptr.h"
@@ -59,12 +57,12 @@ ConstLiveObjectPtr& ConstLiveObjectPtr::operator=(const LiveObjectPtr& other) {
 }
 
 const LiveObject& ConstLiveObjectPtr::operator*() const {
-  CHECK(live_object_ != NULL);
+  CHECK(live_object_ != nullptr);
   return *live_object_;
 }
 
 const LiveObject* ConstLiveObjectPtr::operator->() const {
-  CHECK(live_object_ != NULL);
+  CHECK(live_object_ != nullptr);
   return live_object_;
 }
 
@@ -77,13 +75,13 @@ void ConstLiveObjectPtr::Assign(LiveObject* live_object) {
 }
 
 void ConstLiveObjectPtr::IncrementRefCount() {
-  if (live_object_ != NULL) {
+  if (live_object_ != nullptr) {
     live_object_->IncrementRefCount();
   }
 }
 
 void ConstLiveObjectPtr::DecrementRefCount() {
-  if (live_object_ != NULL) {
+  if (live_object_ != nullptr) {
     if (live_object_->DecrementRefCount()) {
       delete live_object_;
     }

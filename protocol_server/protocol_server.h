@@ -23,7 +23,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <cstddef>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -119,7 +118,7 @@ class ProtocolServer : private ProtocolServerInterfaceForConnection {
 
 template<class Message>
 ProtocolServer<Message>::ProtocolServer()
-    : handler_(NULL),
+    : handler_(nullptr),
       listen_fd_(-1),
       connections_changed_event_fd_(-1),
       ready_connections_(-1),
@@ -143,7 +142,7 @@ void ProtocolServer<Message>::Start(ProtocolServerHandler<Message>* handler,
                                     const std::string& local_address,
                                     int listen_port,
                                     int send_receive_thread_count) {
-  CHECK(handler != NULL);
+  CHECK(handler != nullptr);
   CHECK_GT(send_receive_thread_count, 0);
 
   state_.ChangeState(STARTING);
@@ -156,17 +155,17 @@ void ProtocolServer<Message>::Start(ProtocolServerHandler<Message>* handler,
   CHECK(SetFdToNonBlocking(connections_changed_event_fd_));
 
   CHECK_PTHREAD_ERR(pthread_create(
-      &select_thread_, NULL,
+      &select_thread_, nullptr,
       &ProtocolServer<Message>::SelectThreadMain, this));
 
   send_receive_threads_.resize(send_receive_thread_count);
   for (int i = 0; i < send_receive_thread_count; ++i) {
     CHECK_PTHREAD_ERR(pthread_create(
-        &send_receive_threads_[i], NULL,
+        &send_receive_threads_[i], nullptr,
         &ProtocolServer<Message>::SendReceiveThreadMain, this));
   }
 
-  CHECK(ready_connections_.Push(NULL, false));
+  CHECK(ready_connections_.Push(nullptr, false));
 
   state_.ChangeState(RUNNING);
 }
@@ -180,11 +179,11 @@ void ProtocolServer<Message>::Stop() {
   SignalEventFd(connections_changed_event_fd_);
 
   for (const pthread_t thread : send_receive_threads_) {
-    void* thread_return_value = NULL;
+    void* thread_return_value = nullptr;
     CHECK_PTHREAD_ERR(pthread_join(thread, &thread_return_value));
   }
 
-  void* thread_return_value = NULL;
+  void* thread_return_value = nullptr;
   CHECK_PTHREAD_ERR(pthread_join(select_thread_, &thread_return_value));
 
   CHECK_ERR(close(connections_changed_event_fd_));
@@ -193,12 +192,12 @@ void ProtocolServer<Message>::Stop() {
   std::unordered_set<ProtocolConnectionImpl<Message>*> all_connections;
 
   for (;;) {
-    ProtocolConnectionImpl<Message>* connection = NULL;
+    ProtocolConnectionImpl<Message>* connection = nullptr;
     if (!ready_connections_.Pop(&connection, false)) {
       break;
     }
 
-    if (connection != NULL) {
+    if (connection != nullptr) {
       CHECK(all_connections.insert(connection).second);
     }
   }
@@ -208,7 +207,7 @@ void ProtocolServer<Message>::Stop() {
 
     for (ProtocolConnectionImpl<Message>* const connection :
              blocked_connections_) {
-      if (connection != NULL) {
+      if (connection != nullptr) {
         CHECK(all_connections.insert(connection).second);
       }
     }
@@ -240,7 +239,7 @@ bool ProtocolServer<Message>::AcceptSingleConnection() {
     return false;
   }
 
-  CreateConnection(NULL, connection_fd, remote_address);
+  CreateConnection(nullptr, connection_fd, remote_address);
 
   return true;
 }
@@ -256,7 +255,7 @@ ProtocolConnectionImpl<Message>* ProtocolServer<Message>::CreateConnection(
   ProtocolConnectionImpl<Message>* const connection =
       new ProtocolConnectionImpl<Message>(this, socket_fd);
 
-  if (connection_handler == NULL) {
+  if (connection_handler == nullptr) {
     connection_handler = handler_->NotifyConnectionReceived(connection,
                                                             remote_address);
   }
@@ -294,7 +293,7 @@ void ProtocolServer<Message>::DoSelectLoop() {
 
       bool erase_connection = false;
 
-      if (connection == NULL) {
+      if (connection == nullptr) {
         AddFdToSet(listen_fd_, &read_fd_set, &nfds);
       } else {
         if (connection->close_requested()) {
@@ -335,7 +334,7 @@ void ProtocolServer<Message>::DoSelectLoop() {
     deadline.tv_sec = 0;
     deadline.tv_usec = 0;
 
-    timeval* deadline_ptr = NULL;
+    timeval* deadline_ptr = nullptr;
 
     if (FLAGS_protocol_connection_timeout_sec_for_debugging >= 0) {
       deadline.tv_sec = static_cast<long>(
@@ -345,7 +344,7 @@ void ProtocolServer<Message>::DoSelectLoop() {
 
     // TODO(dss): Use epoll instead of select for better performance.
     VLOG(1) << "Entering select()";
-    const int fd_count = select(nfds, &read_fd_set, &write_fd_set, NULL,
+    const int fd_count = select(nfds, &read_fd_set, &write_fd_set, nullptr,
                                 deadline_ptr);
     VLOG(1) << "Exiting select()";
     CHECK_ERR(fd_count) << " select";
@@ -355,7 +354,7 @@ void ProtocolServer<Message>::DoSelectLoop() {
              blocked_connections_temp) {
       bool ready = false;
 
-      if (connection == NULL) {
+      if (connection == nullptr) {
         if (FD_ISSET(listen_fd_, &read_fd_set)) {
           ready = true;
         }
@@ -383,14 +382,14 @@ void ProtocolServer<Message>::SendAndReceiveData() {
   state_.WaitForNotState(NOT_STARTED | STARTING);
 
   for (;;) {
-    ProtocolConnectionImpl<Message>* connection = NULL;
+    ProtocolConnectionImpl<Message>* connection = nullptr;
     if (!GetNextReadyConnection(&connection)) {
       return;
     }
 
     bool blocked = false;
 
-    if (connection == NULL) {
+    if (connection == nullptr) {
       if (!AcceptSingleConnection()) {
         blocked = true;
       }
@@ -441,27 +440,27 @@ void ProtocolServer<Message>::NotifyConnectionsChanged() {
 // static
 template<class Message>
 void* ProtocolServer<Message>::SelectThreadMain(void* protocol_server_raw) {
-  CHECK(protocol_server_raw != NULL);
+  CHECK(protocol_server_raw != nullptr);
   static_cast<ProtocolServer<Message>*>(protocol_server_raw)->DoSelectLoop();
-  return NULL;
+  return nullptr;
 }
 
 // static
 template<class Message>
 void* ProtocolServer<Message>::SendReceiveThreadMain(
     void* protocol_server_raw) {
-  CHECK(protocol_server_raw != NULL);
+  CHECK(protocol_server_raw != nullptr);
   static_cast<ProtocolServer<Message>*>(protocol_server_raw)->
       SendAndReceiveData();
-  return NULL;
+  return nullptr;
 }
 
 // static
 template<class Message>
 void ProtocolServer<Message>::AddFdToSet(int fd, fd_set* fds, int* nfds) {
   CHECK_GE(fd, 0);
-  CHECK(fds != NULL);
-  CHECK(nfds != NULL);
+  CHECK(fds != nullptr);
+  CHECK(nfds != nullptr);
   CHECK_GE(*nfds, 0);
 
   VLOG(1) << "Adding FD " << fd << " to fd_set " << fds;

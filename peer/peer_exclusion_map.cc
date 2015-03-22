@@ -15,7 +15,6 @@
 
 #include "peer/peer_exclusion_map.h"
 
-#include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
@@ -49,7 +48,7 @@ PeerExclusionMap::~PeerExclusionMap() {
 void PeerExclusionMap::AddExcludedRange(
     const CanonicalPeer* origin_peer, const TransactionId& start_transaction_id,
     const TransactionId& end_transaction_id) {
-  CHECK(origin_peer != NULL);
+  CHECK(origin_peer != nullptr);
 
   map_[origin_peer].AddInterval(start_transaction_id, end_transaction_id);
 }
@@ -57,7 +56,7 @@ void PeerExclusionMap::AddExcludedRange(
 bool PeerExclusionMap::IsTransactionExcluded(
     const CanonicalPeer* origin_peer,
     const TransactionId& transaction_id) const {
-  CHECK(origin_peer != NULL);
+  CHECK(origin_peer != nullptr);
 
   const map<const CanonicalPeer*, IntervalSet<TransactionId>>::const_iterator
       it = map_.find(origin_peer);

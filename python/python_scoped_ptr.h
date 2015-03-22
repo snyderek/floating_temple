@@ -18,8 +18,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
-
 #include "base/logging.h"
 #include "base/macros.h"
 
@@ -28,7 +26,7 @@ namespace python {
 
 class PythonScopedPtr {
  public:
-  explicit PythonScopedPtr(PyObject* object = NULL);
+  explicit PythonScopedPtr(PyObject* object = nullptr);
   ~PythonScopedPtr();
 
   void reset(PyObject* object);
@@ -50,7 +48,7 @@ class PythonScopedPtr {
 };
 
 inline PyObject* PythonScopedPtr::GetObject() const {
-  CHECK(object_ != NULL);
+  CHECK(object_ != nullptr);
   return object_;
 }
 

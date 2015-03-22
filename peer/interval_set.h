@@ -16,7 +16,6 @@
 #ifndef PEER_INTERVAL_SET_H_
 #define PEER_INTERVAL_SET_H_
 
-#include <cstddef>
 #include <map>
 #include <utility>
 #include <vector>
@@ -100,7 +99,7 @@ bool IntervalSet<T>::Contains(const T& t) const {
 
 template<typename T>
 void IntervalSet<T>::GetEndPoints(std::vector<T>* end_points) const {
-  CHECK(end_points != NULL);
+  CHECK(end_points != nullptr);
 
   end_points->reserve(map_.size() * 2);
 

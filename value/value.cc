@@ -16,7 +16,6 @@
 #include "include/c++/value.h"
 
 #include <cinttypes>
-#include <cstddef>
 #include <string>
 
 #include "base/escape.h"
@@ -126,11 +125,11 @@ string Value::Dump() const {
 
     case STRING:
     case BYTES:
-      CHECK(string_or_bytes_value_ != NULL);
+      CHECK(string_or_bytes_value_ != nullptr);
       return StringPrintf("\"%s\"", CEscape(*string_or_bytes_value_).c_str());
 
     case PEER_OBJECT:
-      CHECK(peer_object_ != NULL);
+      CHECK(peer_object_ != nullptr);
       return peer_object_->Dump();
 
     default:

@@ -16,7 +16,6 @@
 #ifndef UTIL_QUOTA_QUEUE_H_
 #define UTIL_QUOTA_QUEUE_H_
 
-#include <cstddef>
 #include <utility>
 #include <vector>
 
@@ -97,7 +96,7 @@ void QuotaQueue<T>::AddService(int service_id, int max_item_count) {
     }
 
     linked_ptr<Service>& service_ptr = services_[service_id];
-    CHECK(service_ptr.get() == NULL);
+    CHECK(service_ptr.get() == nullptr);
     service_ptr.reset(new_service);
   }
 }
@@ -126,8 +125,8 @@ bool QuotaQueue<T>::Push(const T& item, int service_id, bool wait) {
 
 template<typename T>
 bool QuotaQueue<T>::Pop(T* item, int* service_id, bool wait) {
-  CHECK(item != NULL);
-  CHECK(service_id != NULL);
+  CHECK(item != nullptr);
+  CHECK(service_id != nullptr);
 
   std::pair<T, int> item_pair;
 
@@ -160,7 +159,7 @@ void QuotaQueue<T>::Drain() {
     draining_ = true;
 
     for (const linked_ptr<Service>& service : services_) {
-      if (service.get() != NULL) {
+      if (service.get() != nullptr) {
         service->service_not_full_cond.Broadcast();
       }
     }
@@ -176,14 +175,14 @@ typename QuotaQueue<T>::Service* QuotaQueue<T>::GetService_Locked(
   CHECK_LT(service_id, services_.size());
 
   Service* const service = services_[service_id].get();
-  CHECK(service != NULL);
+  CHECK(service != nullptr);
 
   return service;
 }
 
 template<typename T>
 bool QuotaQueue<T>::ServiceFull_Locked(const Service* service) const {
-  CHECK(service != NULL);
+  CHECK(service != nullptr);
 
   const int max_item_count = service->max_item_count;
   return max_item_count > 0 && service->item_count >= max_item_count;

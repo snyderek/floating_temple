@@ -16,7 +16,6 @@
 #include "peer/peer_id.h"
 
 #include <cctype>
-#include <cstddef>
 #include <string>
 
 #include "base/logging.h"
@@ -39,8 +38,8 @@ string MakePeerId(const string& address, int port) {
 }
 
 bool ParsePeerId(const string& peer_id, string* address, int* port) {
-  CHECK(address != NULL);
-  CHECK(port != NULL);
+  CHECK(address != nullptr);
+  CHECK(port != nullptr);
 
   string address_temp;
   int port_temp = 0;

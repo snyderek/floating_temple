@@ -16,8 +16,6 @@
 #ifndef PEER_LIVE_OBJECT_PTR_H_
 #define PEER_LIVE_OBJECT_PTR_H_
 
-#include <cstddef>
-
 namespace floating_temple {
 namespace peer {
 
@@ -26,7 +24,7 @@ class LiveObject;
 
 class LiveObjectPtr {
  public:
-  explicit LiveObjectPtr(LiveObject* live_object = NULL);
+  explicit LiveObjectPtr(LiveObject* live_object = nullptr);
   LiveObjectPtr(const LiveObjectPtr& other);
   ~LiveObjectPtr();
 

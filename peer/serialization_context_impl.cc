@@ -15,7 +15,6 @@
 
 #include "peer/serialization_context_impl.h"
 
-#include <cstddef>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -37,7 +36,7 @@ SerializationContextImpl::SerializationContextImpl(
 }
 
 int SerializationContextImpl::GetIndexForPeerObject(PeerObject* peer_object) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
 
   PeerObjectImpl* const peer_object_impl = static_cast<PeerObjectImpl*>(
       peer_object);

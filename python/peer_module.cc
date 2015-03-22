@@ -17,8 +17,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
-
 #include "python/interpreter_impl.h"
 
 namespace floating_temple {
@@ -46,7 +44,7 @@ PyMethodDef g_module_methods[] = {
     METH_NOARGS,
     "TODO(dss): Write this doc string."
   },
-  { NULL, NULL, 0, NULL }
+  { nullptr, nullptr, 0, nullptr }
 };
 
 PyModuleDef g_module_def = {
@@ -55,10 +53,10 @@ PyModuleDef g_module_def = {
   "TODO(dss): Write this doc string.",  // m_doc
   -1,                                   // m_size
   g_module_methods,                     // m_methods
-  NULL,                                 // m_reload
-  NULL,                                 // m_traverse
-  NULL,                                 // m_clear
-  NULL                                  // m_free
+  nullptr,                              // m_reload
+  nullptr,                              // m_traverse
+  nullptr,                              // m_clear
+  nullptr                               // m_free
 };
 
 }  // namespace

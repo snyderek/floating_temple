@@ -17,7 +17,6 @@
 
 #include <cerrno>
 #include <csignal>
-#include <cstddef>
 
 #include "base/logging.h"
 
@@ -39,7 +38,7 @@ void InstallSignalHandler() {
   CHECK_ERR(sigemptyset(&signal_mask));
   CHECK_ERR(sigaddset(&signal_mask, SIGINT));
   CHECK_ERR(sigaddset(&signal_mask, SIGTERM));
-  CHECK_ERR(sigprocmask(SIG_BLOCK, &signal_mask, NULL));
+  CHECK_ERR(sigprocmask(SIG_BLOCK, &signal_mask, nullptr));
 
   // Install signal handlers for SIGINT and SIGTERM.
   struct sigaction signal_action;
@@ -47,8 +46,8 @@ void InstallSignalHandler() {
   signal_action.sa_mask = signal_mask;
   signal_action.sa_flags = 0;
 
-  CHECK_ERR(sigaction(SIGINT, &signal_action, NULL));
-  CHECK_ERR(sigaction(SIGTERM, &signal_action, NULL));
+  CHECK_ERR(sigaction(SIGINT, &signal_action, nullptr));
+  CHECK_ERR(sigaction(SIGTERM, &signal_action, nullptr));
 }
 
 void WaitForSignal() {

@@ -26,27 +26,27 @@ using std::size_t;
 namespace floating_temple {
 namespace lua {
 
-__thread Thread* InterpreterImpl::thread_object_ = NULL;
-InterpreterImpl* InterpreterImpl::instance_ = NULL;
+__thread Thread* InterpreterImpl::thread_object_ = nullptr;
+InterpreterImpl* InterpreterImpl::instance_ = nullptr;
 
 InterpreterImpl::InterpreterImpl()
-    : lua_state_(NULL) {
-  CHECK(instance_ == NULL);
+    : lua_state_(nullptr) {
+  CHECK(instance_ == nullptr);
   instance_ = this;
 }
 
 InterpreterImpl::~InterpreterImpl() {
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 lua_State* InterpreterImpl::GetLuaState() const {
-  CHECK(lua_state_ != NULL);
+  CHECK(lua_state_ != nullptr);
   return lua_state_;
 }
 
 void InterpreterImpl::SetLuaState(lua_State* lua_state) {
-  CHECK(lua_state_ == NULL);
-  CHECK(lua_state != NULL);
+  CHECK(lua_state_ == nullptr);
+  CHECK(lua_state != nullptr);
 
   lua_state_ = lua_state;
 }
@@ -72,17 +72,17 @@ Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
 LocalObject* InterpreterImpl::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
   // TODO(dss): Implement this.
-  return NULL;
+  return nullptr;
 }
 
 // static
 InterpreterImpl* InterpreterImpl::instance() {
-  CHECK(instance_ != NULL);
+  CHECK(instance_ != nullptr);
   return instance_;
 }
 
 Thread* InterpreterImpl::PrivateGetThreadObject() {
-  CHECK(thread_object_ != NULL);
+  CHECK(thread_object_ != nullptr);
   return thread_object_;
 }
 

@@ -65,8 +65,8 @@ void SStringPrintfV(string* str, const char* format, va_list arg_list) {
 }
 
 void StringAppendFV(string* str, const char* format, va_list arg_list) {
-  CHECK(str != NULL);
-  CHECK(format != NULL);
+  CHECK(str != nullptr);
+  CHECK(format != nullptr);
 
   va_list arg_list_copy;
   va_copy(arg_list_copy, arg_list);

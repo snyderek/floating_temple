@@ -37,8 +37,8 @@ size_t TryToSerialize(const LocalObject* local_object,
                       void* buffer,
                       size_t buffer_size,
                       vector<PeerObjectImpl*>* referenced_peer_objects) {
-  CHECK(local_object != NULL);
-  CHECK(referenced_peer_objects != NULL);
+  CHECK(local_object != nullptr);
+  CHECK(referenced_peer_objects != nullptr);
 
   referenced_peer_objects->clear();
 
@@ -51,7 +51,7 @@ size_t TryToSerialize(const LocalObject* local_object,
 void SerializeLocalObjectToString(
     const LocalObject* local_object, string* data,
     vector<PeerObjectImpl*>* referenced_peer_objects) {
-  CHECK(data != NULL);
+  CHECK(data != nullptr);
 
   char static_buffer[1000];
   const size_t data_size = TryToSerialize(local_object, static_buffer,
@@ -74,7 +74,7 @@ void SerializeLocalObjectToString(
 LocalObject* DeserializeLocalObjectFromString(
     Interpreter* interpreter, const string& data,
     const vector<PeerObjectImpl*>& referenced_peer_objects) {
-  CHECK(interpreter != NULL);
+  CHECK(interpreter != nullptr);
 
   DeserializationContextImpl context(&referenced_peer_objects);
   return interpreter->DeserializeObject(data.data(),

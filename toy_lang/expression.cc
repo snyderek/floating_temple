@@ -16,7 +16,6 @@
 #include "toy_lang/expression.h"
 
 #include <cinttypes>
-#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -44,7 +43,7 @@ namespace {
 PeerObject* EvaluateExpressionList(
     PeerObject* symbol_table_object, Thread* thread,
     const vector<linked_ptr<Expression>>& expressions) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   const vector<linked_ptr<Expression>>::size_type size = expressions.size();
   vector<PeerObject*> peer_objects(size);
@@ -53,8 +52,8 @@ PeerObject* EvaluateExpressionList(
     PeerObject* const peer_object = expressions[i]->Evaluate(
         symbol_table_object, thread);
 
-    if (peer_object == NULL) {
-      return NULL;
+    if (peer_object == nullptr) {
+      return nullptr;
     }
 
     peer_objects[i] = peer_object;
@@ -101,7 +100,7 @@ Expression* Expression::ParseExpressionProto(
                  << static_cast<int>(expression_type);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 IntExpression::IntExpression(int64 n)
@@ -110,13 +109,13 @@ IntExpression::IntExpression(int64 n)
 
 PeerObject* IntExpression::Evaluate(PeerObject* symbol_table_object,
                                     Thread* thread) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   return thread->CreatePeerObject(new IntObject(n_));
 }
 
 void IntExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
-  CHECK(expression_proto != NULL);
+  CHECK(expression_proto != nullptr);
   expression_proto->mutable_int_expression()->set_int_value(n_);
 }
 
@@ -136,13 +135,13 @@ StringExpression::StringExpression(const string& s)
 
 PeerObject* StringExpression::Evaluate(PeerObject* symbol_table_object,
                                        Thread* thread) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   return thread->CreatePeerObject(new StringObject(s_));
 }
 
 void StringExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
-  CHECK(expression_proto != NULL);
+  CHECK(expression_proto != nullptr);
   expression_proto->mutable_string_expression()->set_string_value(s_);
 }
 
@@ -162,13 +161,13 @@ ExpressionExpression::ExpressionExpression(Expression* expression)
 
 PeerObject* ExpressionExpression::Evaluate(PeerObject* symbol_table_object,
                                            Thread* thread) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   return thread->CreatePeerObject(new ExpressionObject(expression_));
 }
 
 void ExpressionExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
-  CHECK(expression_proto != NULL);
+  CHECK(expression_proto != nullptr);
 
   expression_->PopulateExpressionProto(
       expression_proto->mutable_expression_expression()->mutable_expression());
@@ -193,9 +192,9 @@ VariableExpression::VariableExpression(const string& name)
 
 PeerObject* VariableExpression::Evaluate(PeerObject* symbol_table_object,
                                          Thread* thread) const {
-  PeerObject* object = NULL;
+  PeerObject* object = nullptr;
   if (!GetVariable(symbol_table_object, thread, name_, &object)) {
-    return NULL;
+    return nullptr;
   }
 
   return object;
@@ -203,7 +202,7 @@ PeerObject* VariableExpression::Evaluate(PeerObject* symbol_table_object,
 
 void VariableExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
-  CHECK(expression_proto != NULL);
+  CHECK(expression_proto != nullptr);
   expression_proto->mutable_variable_expression()->set_name(name_);
 }
 
@@ -228,20 +227,20 @@ FunctionExpression::FunctionExpression(Expression* function,
 
 PeerObject* FunctionExpression::Evaluate(PeerObject* symbol_table_object,
                                          Thread* thread) const {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   PeerObject* const function_object = function_->Evaluate(symbol_table_object,
                                                           thread);
 
-  if (function_object == NULL) {
-    return NULL;
+  if (function_object == nullptr) {
+    return nullptr;
   }
 
   PeerObject* const parameter_list_object = EvaluateExpressionList(
       symbol_table_object, thread, parameters_);
 
-  if (parameter_list_object == NULL) {
-    return NULL;
+  if (parameter_list_object == nullptr) {
+    return nullptr;
   }
 
   vector<Value> parameter_values(2);
@@ -251,7 +250,7 @@ PeerObject* FunctionExpression::Evaluate(PeerObject* symbol_table_object,
   Value return_value;
   if (!thread->CallMethod(function_object, "call", parameter_values,
                           &return_value)) {
-    return NULL;
+    return nullptr;
   }
 
   CHECK_EQ(return_value.type(), Value::PEER_OBJECT)
@@ -262,7 +261,7 @@ PeerObject* FunctionExpression::Evaluate(PeerObject* symbol_table_object,
 
 void FunctionExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
-  CHECK(expression_proto != NULL);
+  CHECK(expression_proto != nullptr);
 
   FunctionExpressionProto* const function_expression_proto =
       expression_proto->mutable_function_expression();
@@ -318,7 +317,7 @@ PeerObject* ListExpression::Evaluate(PeerObject* symbol_table_object,
 
 void ListExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
-  CHECK(expression_proto != NULL);
+  CHECK(expression_proto != nullptr);
 
   ListExpressionProto* const list_expression_proto =
       expression_proto->mutable_list_expression();

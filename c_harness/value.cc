@@ -36,12 +36,12 @@ using std::string;
 namespace {
 
 const Value* GetValue(const floatingtemple_Value* value) {
-  CHECK(value != NULL);
+  CHECK(value != nullptr);
   return reinterpret_cast<const Value*>(value);
 }
 
 Value* GetValue(floatingtemple_Value* value) {
-  CHECK(value != NULL);
+  CHECK(value != nullptr);
   return reinterpret_cast<Value*>(value);
 }
 
@@ -60,7 +60,7 @@ void floatingtemple_DestroyValue(floatingtemple_Value* value) {
 
 void floatingtemple_InitValueArray(floatingtemple_Value* value_array,
                                    int count) {
-  CHECK(value_array != NULL);
+  CHECK(value_array != nullptr);
   CHECK_GE(count, 0);
 
   for (int i = 0; i < count; ++i) {

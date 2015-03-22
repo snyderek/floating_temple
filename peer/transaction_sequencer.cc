@@ -15,7 +15,6 @@
 
 #include "peer/transaction_sequencer.h"
 
-#include <cstddef>
 #include <map>
 #include <string>
 #include <utility>
@@ -60,7 +59,7 @@ TransactionSequencer::~TransactionSequencer() {
 }
 
 void TransactionSequencer::ReserveTransaction(TransactionId* transaction_id) {
-  CHECK(transaction_id != NULL);
+  CHECK(transaction_id != nullptr);
 
   MutexLock lock(&mu_);
 
@@ -103,7 +102,7 @@ void TransactionSequencer::SendMessageToRemotePeer(
 
 void TransactionSequencer::BroadcastMessage(
     const PeerMessage& peer_message, PeerMessageSender::SendMode send_mode) {
-  QueueOutgoingMessage(OutgoingMessage::BROADCAST, NULL, peer_message,
+  QueueOutgoingMessage(OutgoingMessage::BROADCAST, nullptr, peer_message,
                        send_mode);
 }
 
@@ -123,7 +122,7 @@ void TransactionSequencer::QueueOutgoingMessage(
   const TransactionId* const transaction_id =
       ExtractTransactionIdFromPeerMessage(peer_message);
 
-  if (transaction_id == NULL) {
+  if (transaction_id == nullptr) {
     SendOutgoingMessage(*outgoing_message);
     delete outgoing_message;
   } else {
@@ -169,13 +168,13 @@ void TransactionSequencer::SendOutgoingMessage(
 
   switch (type) {
     case OutgoingMessage::UNICAST:
-      CHECK(remote_peer != NULL);
+      CHECK(remote_peer != nullptr);
       peer_message_sender_->SendMessageToRemotePeer(remote_peer, peer_message,
                                                     send_mode);
       break;
 
     case OutgoingMessage::BROADCAST:
-      CHECK(remote_peer == NULL);
+      CHECK(remote_peer == nullptr);
       peer_message_sender_->BroadcastMessage(peer_message, send_mode);
       break;
 
@@ -206,7 +205,7 @@ const TransactionId* TransactionSequencer::ExtractTransactionIdFromPeerMessage(
     }
 
     default:
-      return NULL;
+      return nullptr;
   }
 }
 

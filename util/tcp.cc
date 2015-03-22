@@ -24,7 +24,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <cstddef>
 #include <cstring>
 #include <string>
 
@@ -49,18 +48,18 @@ addrinfo* GetAddressInfo(const string& address, int port) {
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = 0;
   hints.ai_addrlen = 0;
-  hints.ai_addr = NULL;
-  hints.ai_canonname = NULL;
-  hints.ai_next = NULL;
+  hints.ai_addr = nullptr;
+  hints.ai_canonname = nullptr;
+  hints.ai_next = nullptr;
 
   string port_string;
   StringAppendF(&port_string, "%d", port);
 
-  addrinfo* result = NULL;
+  addrinfo* result = nullptr;
   const int error_code = getaddrinfo(address.c_str(), port_string.c_str(),
                                      &hints, &result);
   CHECK_EQ(error_code, 0) << "getaddrinfo: " << gai_strerror(error_code);
-  CHECK(result != NULL);
+  CHECK(result != nullptr);
 
   return result;
 }
@@ -111,9 +110,9 @@ int ConnectToAddress(const addrinfo* ai) {
 }
 
 int BindToSomeAddress(const addrinfo* ai_list) {
-  CHECK(ai_list != NULL);
+  CHECK(ai_list != nullptr);
 
-  for (const addrinfo* ai = ai_list; ai != NULL; ai = ai->ai_next) {
+  for (const addrinfo* ai = ai_list; ai != nullptr; ai = ai->ai_next) {
     const int socket_fd = BindToAddress(ai);
 
     if (socket_fd != -1) {
@@ -125,9 +124,9 @@ int BindToSomeAddress(const addrinfo* ai_list) {
 }
 
 int ConnectToSomeAddress(const addrinfo* ai_list) {
-  CHECK(ai_list != NULL);
+  CHECK(ai_list != nullptr);
 
-  for (const addrinfo* ai = ai_list; ai != NULL; ai = ai->ai_next) {
+  for (const addrinfo* ai = ai_list; ai != nullptr; ai = ai->ai_next) {
     const int socket_fd = ConnectToAddress(ai);
 
     if (socket_fd != -1) {
@@ -141,14 +140,14 @@ int ConnectToSomeAddress(const addrinfo* ai_list) {
 }  // namespace
 
 string GetLocalAddress() {
-  ifaddrs* ifa_list = NULL;
+  ifaddrs* ifa_list = nullptr;
   CHECK_ERR(getifaddrs(&ifa_list));
-  CHECK(ifa_list != NULL);
+  CHECK(ifa_list != nullptr);
 
   int selected_family = AF_UNSPEC;
   string address_string;
 
-  for (const ifaddrs* ifa = ifa_list; ifa != NULL; ifa = ifa->ifa_next) {
+  for (const ifaddrs* ifa = ifa_list; ifa != nullptr; ifa = ifa->ifa_next) {
     if ((ifa->ifa_flags & IFF_LOOPBACK) == 0) {
       const sockaddr* const address = ifa->ifa_addr;
       const int family = address->sa_family;

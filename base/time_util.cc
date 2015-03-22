@@ -17,8 +17,6 @@
 
 #include <sys/time.h>
 
-#include <cstddef>
-
 #include "base/integral_types.h"
 #include "base/logging.h"
 
@@ -26,7 +24,7 @@ namespace floating_temple {
 
 int64 GetCurrentTimeUsec() {
   timeval tv;
-  CHECK_EQ(gettimeofday(&tv, NULL), 0);
+  CHECK_EQ(gettimeofday(&tv, nullptr), 0);
   return static_cast<int64>(tv.tv_sec) * 1000000 +
          static_cast<int64>(tv.tv_usec);
 }

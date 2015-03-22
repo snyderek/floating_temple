@@ -17,7 +17,6 @@
 
 #include <pthread.h>
 
-#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -60,9 +59,9 @@ namespace floating_temple {
 namespace peer {
 
 PeerThread::PeerThread()
-    : transaction_store_(NULL),
-      shared_object_(NULL),
-      new_peer_objects_(NULL),
+    : transaction_store_(nullptr),
+      shared_object_(nullptr),
+      new_peer_objects_(nullptr),
       conflict_detected_(false),
       state_(NOT_STARTED) {
   state_.AddStateTransition(NOT_STARTED, STARTING);
@@ -86,9 +85,9 @@ void PeerThread::Start(
     SharedObject* shared_object,
     const LiveObjectPtr& live_object,
     unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects) {
-  CHECK(transaction_store != NULL);
-  CHECK(shared_object != NULL);
-  CHECK(new_peer_objects != NULL);
+  CHECK(transaction_store != nullptr);
+  CHECK(shared_object != nullptr);
+  CHECK(new_peer_objects != nullptr);
 
   state_.ChangeState(STARTING);
 
@@ -100,7 +99,7 @@ void PeerThread::Start(
   // TODO(dss): There may be a performance cost associated with creating and
   // destroying threads. Consider recycling the threads that are used by the
   // PeerThread class.
-  CHECK_PTHREAD_ERR(pthread_create(&replay_thread_, NULL,
+  CHECK_PTHREAD_ERR(pthread_create(&replay_thread_, nullptr,
                                    &PeerThread::ReplayThreadMain, this));
 
   state_.ChangeState(RUNNING);
@@ -111,7 +110,7 @@ void PeerThread::Stop() {
   event_queue_.SetEndOfSequence();
   state_.Mutate(&PeerThread::WaitForPausedAndChangeToStopping);
 
-  void* thread_return_value = NULL;
+  void* thread_return_value = nullptr;
   CHECK_PTHREAD_ERR(pthread_join(replay_thread_, &thread_return_value));
 
   state_.ChangeState(STOPPED);
@@ -147,7 +146,7 @@ void PeerThread::ReplayEvents() {
 }
 
 void PeerThread::DoMethodCall() {
-  CHECK(live_object_.get() != NULL);
+  CHECK(live_object_.get() != nullptr);
   CHECK(!conflict_detected_.Get());
 
   if (!CheckNextEventType(CommittedEvent::METHOD_CALL)) {
@@ -157,9 +156,9 @@ void PeerThread::DoMethodCall() {
   string method_name;
   vector<Value> parameters;
   {
-    SharedObject* caller = NULL;
-    const string* method_name_temp = NULL;
-    const vector<CommittedValue>* committed_parameters = NULL;
+    SharedObject* caller = nullptr;
+    const string* method_name_temp = nullptr;
+    const vector<CommittedValue>* committed_parameters = nullptr;
 
     GetNextEvent()->GetMethodCall(&caller, &method_name_temp,
                                   &committed_parameters);
@@ -190,8 +189,8 @@ void PeerThread::DoMethodCall() {
   }
 
   {
-    SharedObject* caller = NULL;
-    const CommittedValue* expected_return_value = NULL;
+    SharedObject* caller = nullptr;
+    const CommittedValue* expected_return_value = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
     event->GetMethodReturn(&caller, &expected_return_value);
@@ -214,17 +213,17 @@ void PeerThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
                                   const string& method_name,
                                   const vector<Value>& parameters,
                                   Value* return_value) {
-  CHECK(live_object_.get() != NULL);
+  CHECK(live_object_.get() != nullptr);
   CHECK(!conflict_detected_.Get());
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (!CheckNextEventType(CommittedEvent::SELF_METHOD_CALL)) {
     return;
   }
 
   {
-    const string* expected_method_name = NULL;
-    const vector<CommittedValue>* expected_parameters = NULL;
+    const string* expected_method_name = nullptr;
+    const vector<CommittedValue>* expected_parameters = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
     event->GetSelfMethodCall(&expected_method_name, &expected_parameters);
@@ -251,7 +250,7 @@ void PeerThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
   }
 
   {
-    const CommittedValue* expected_return_value = NULL;
+    const CommittedValue* expected_return_value = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
     event->GetSelfMethodReturn(&expected_return_value);
@@ -276,9 +275,9 @@ void PeerThread::DoSubMethodCall(PeerObjectImpl* peer_object,
   }
 
   {
-    SharedObject* callee = NULL;
-    const string* expected_method_name = NULL;
-    const vector<CommittedValue>* expected_parameters = NULL;
+    SharedObject* callee = nullptr;
+    const string* expected_method_name = nullptr;
+    const vector<CommittedValue>* expected_parameters = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
     event->GetSubMethodCall(&callee, &expected_method_name,
@@ -312,8 +311,8 @@ void PeerThread::DoSubMethodCall(PeerObjectImpl* peer_object,
   }
 
   {
-    SharedObject* callee = NULL;
-    const CommittedValue* expected_return_value = NULL;
+    SharedObject* callee = nullptr;
+    const CommittedValue* expected_return_value = nullptr;
 
     GetNextEvent()->GetSubMethodReturn(&callee, &expected_return_value);
 
@@ -336,7 +335,7 @@ bool PeerThread::HasNextEvent() {
     const CommittedEvent* const event = event_queue_.PeekNext();
 
     if (event->type() == CommittedEvent::OBJECT_CREATION) {
-      if (live_object_.get() == NULL) {
+      if (live_object_.get() == nullptr) {
         // The live object hasn't been created yet. Create it from the
         // OBJECT_CREATION event.
 
@@ -346,7 +345,7 @@ bool PeerThread::HasNextEvent() {
         live_object_ = new_live_object->Clone();
       }
     } else {
-      if (live_object_.get() != NULL) {
+      if (live_object_.get() != nullptr) {
         return true;
       }
     }
@@ -395,7 +394,7 @@ bool PeerThread::MethodCallMatches(
     const string& method_name,
     const vector<Value>& parameters,
     const unordered_set<SharedObject*>& new_shared_objects) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
 
   if (!ObjectMatches(expected_shared_object, peer_object, new_shared_objects)) {
     VLOG(2) << "Objects don't match.";
@@ -474,8 +473,8 @@ bool PeerThread::ValueMatches(
 bool PeerThread::ObjectMatches(
     SharedObject* shared_object, PeerObjectImpl* peer_object,
     const unordered_set<SharedObject*>& new_shared_objects) {
-  CHECK(shared_object != NULL);
-  CHECK(peer_object != NULL);
+  CHECK(shared_object != nullptr);
+  CHECK(peer_object != nullptr);
 
   const bool shared_object_is_new =
       (new_shared_objects.find(shared_object) != new_shared_objects.end());
@@ -488,7 +487,7 @@ bool PeerThread::ObjectMatches(
   if (shared_object_is_new && peer_object_is_unbound) {
     const pair<unordered_map<SharedObject*, PeerObjectImpl*>::iterator, bool>
         insert_result = new_peer_objects_->insert(
-        pair<SharedObject*, PeerObjectImpl*>(shared_object, NULL));
+        pair<SharedObject*, PeerObjectImpl*>(shared_object, nullptr));
 
     if (!insert_result.second) {
       return false;
@@ -542,7 +541,7 @@ bool PeerThread::EndTransaction() {
 }
 
 PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version) {
-  CHECK(initial_version != NULL);
+  CHECK(initial_version != nullptr);
 
   delete initial_version;
 
@@ -563,7 +562,7 @@ PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version) {
 
 PeerObject* PeerThread::GetOrCreateNamedObject(const string& name,
                                                LocalObject* initial_version) {
-  CHECK(initial_version != NULL);
+  CHECK(initial_version != nullptr);
 
   delete initial_version;
 
@@ -601,15 +600,15 @@ bool PeerThread::ObjectsAreEquivalent(const PeerObject* a,
 
 // static
 void* PeerThread::ReplayThreadMain(void* peer_thread_raw) {
-  CHECK(peer_thread_raw != NULL);
+  CHECK(peer_thread_raw != nullptr);
   static_cast<PeerThread*>(peer_thread_raw)->ReplayEvents();
-  return NULL;
+  return nullptr;
 }
 
 // static
 void PeerThread::ChangeRunningToPaused(
     StateVariableInternalInterface* state_variable) {
-  CHECK(state_variable != NULL);
+  CHECK(state_variable != nullptr);
 
   if (state_variable->MatchesStateMask_Locked(RUNNING)) {
     state_variable->ChangeState_Locked(PAUSED);
@@ -619,7 +618,7 @@ void PeerThread::ChangeRunningToPaused(
 // static
 void PeerThread::ChangePausedToRunning(
     StateVariableInternalInterface* state_variable) {
-  CHECK(state_variable != NULL);
+  CHECK(state_variable != nullptr);
 
   if (state_variable->MatchesStateMask_Locked(PAUSED)) {
     state_variable->ChangeState_Locked(RUNNING);
@@ -629,7 +628,7 @@ void PeerThread::ChangePausedToRunning(
 // static
 void PeerThread::ChangeToPausedAndWaitForRunning(
     StateVariableInternalInterface* state_variable) {
-  CHECK(state_variable != NULL);
+  CHECK(state_variable != nullptr);
 
   if (state_variable->MatchesStateMask_Locked(RUNNING)) {
     state_variable->ChangeState_Locked(PAUSED);
@@ -641,7 +640,7 @@ void PeerThread::ChangeToPausedAndWaitForRunning(
 // static
 void PeerThread::WaitForPausedAndChangeToStopping(
     StateVariableInternalInterface* state_variable) {
-  CHECK(state_variable != NULL);
+  CHECK(state_variable != nullptr);
 
   state_variable->WaitForState_Locked(PAUSED);
   state_variable->ChangeState_Locked(STOPPING);

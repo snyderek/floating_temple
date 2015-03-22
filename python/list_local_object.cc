@@ -17,7 +17,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -46,7 +45,7 @@ ListLocalObject::ListLocalObject(PyObject* py_list_object)
 
 LocalObject* ListLocalObject::Clone() const {
   PyObject* const py_list = py_object();
-  PyObject* new_py_list = NULL;
+  PyObject* new_py_list = nullptr;
 
   {
     PythonGilLock lock;
@@ -95,16 +94,16 @@ string ListLocalObject::Dump() const {
 // static
 ListLocalObject* ListLocalObject::ParseListProto(
     const SequenceProto& list_proto, DeserializationContext* context) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   const int item_count = list_proto.item_size();
 
-  PyObject* py_list = NULL;
+  PyObject* py_list = nullptr;
   {
     PythonGilLock lock;
 
     py_list = PyList_New(static_cast<Py_ssize_t>(item_count));
-    CHECK(py_list != NULL);
+    CHECK(py_list != nullptr);
 
     for (int i = 0; i < item_count; ++i) {
       const int object_index = static_cast<int>(
@@ -121,8 +120,8 @@ ListLocalObject* ListLocalObject::ParseListProto(
 
 void ListLocalObject::PopulateObjectProto(ObjectProto* object_proto,
                                           SerializationContext* context) const {
-  CHECK(object_proto != NULL);
-  CHECK(context != NULL);
+  CHECK(object_proto != nullptr);
+  CHECK(context != nullptr);
 
   PyObject* const py_list = py_object();
   SequenceProto* const list_proto = object_proto->mutable_list_object();

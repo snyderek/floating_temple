@@ -16,7 +16,6 @@
 #ifndef UTIL_PRODUCER_CONSUMER_QUEUE_H_
 #define UTIL_PRODUCER_CONSUMER_QUEUE_H_
 
-#include <cstddef>
 #include <queue>
 
 #include "base/cond_var.h"
@@ -122,7 +121,7 @@ bool ProducerConsumerQueue<T>::Push(const T& item, bool wait) {
 
 template<typename T>
 bool ProducerConsumerQueue<T>::Pop(T* item, bool wait) {
-  CHECK(item != NULL);
+  CHECK(item != nullptr);
 
   MutexLock lock(&mu_);
 

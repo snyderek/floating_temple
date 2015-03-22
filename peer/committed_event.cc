@@ -15,7 +15,6 @@
 
 #include "peer/committed_event.h"
 
-#include <cstddef>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -40,7 +39,7 @@ namespace peer {
 CommittedEvent::CommittedEvent(
     const unordered_set<SharedObject*>& new_shared_objects)
     : new_shared_objects_(new_shared_objects) {
-  CHECK(new_shared_objects.find(NULL) == new_shared_objects.end());
+  CHECK(new_shared_objects.find(nullptr) == new_shared_objects.end());
 }
 
 void CommittedEvent::GetObjectCreation(ConstLiveObjectPtr* live_object) const {
@@ -140,12 +139,12 @@ ObjectCreationCommittedEvent::ObjectCreationCommittedEvent(
     const ConstLiveObjectPtr& live_object)
     : CommittedEvent(unordered_set<SharedObject*>()),
       live_object_(live_object) {
-  CHECK(live_object.get() != NULL);
+  CHECK(live_object.get() != nullptr);
 }
 
 void ObjectCreationCommittedEvent::GetObjectCreation(
     ConstLiveObjectPtr* live_object) const {
-  CHECK(live_object != NULL);
+  CHECK(live_object != nullptr);
   *live_object = live_object_;
 }
 
@@ -225,9 +224,9 @@ MethodCallCommittedEvent::MethodCallCommittedEvent(
 void MethodCallCommittedEvent::GetMethodCall(
     SharedObject** caller, const string** method_name,
     const vector<CommittedValue>** parameters) const {
-  CHECK(caller != NULL);
-  CHECK(method_name != NULL);
-  CHECK(parameters != NULL);
+  CHECK(caller != nullptr);
+  CHECK(method_name != nullptr);
+  CHECK(parameters != nullptr);
 
   *caller = caller_;
   *method_name = &method_name_;
@@ -240,7 +239,7 @@ CommittedEvent* MethodCallCommittedEvent::Clone() const {
 
 string MethodCallCommittedEvent::Dump() const {
   string caller_string;
-  if (caller_== NULL) {
+  if (caller_== nullptr) {
     caller_string = "null";
   } else {
     SStringPrintf(&caller_string, "\"%s\"",
@@ -281,8 +280,8 @@ MethodReturnCommittedEvent::MethodReturnCommittedEvent(
 
 void MethodReturnCommittedEvent::GetMethodReturn(
     SharedObject** caller, const CommittedValue** return_value) const {
-  CHECK(caller != NULL);
-  CHECK(return_value != NULL);
+  CHECK(caller != nullptr);
+  CHECK(return_value != nullptr);
 
   *caller = caller_;
   *return_value = &return_value_;
@@ -295,7 +294,7 @@ CommittedEvent* MethodReturnCommittedEvent::Clone() const {
 
 string MethodReturnCommittedEvent::Dump() const {
   string caller_string;
-  if (caller_== NULL) {
+  if (caller_== nullptr) {
     caller_string = "null";
   } else {
     SStringPrintf(&caller_string, "\"%s\"",
@@ -324,9 +323,9 @@ SubMethodCallCommittedEvent::SubMethodCallCommittedEvent(
 void SubMethodCallCommittedEvent::GetSubMethodCall(
     SharedObject** callee, const string** method_name,
     const vector<CommittedValue>** parameters) const {
-  CHECK(callee != NULL);
-  CHECK(method_name != NULL);
-  CHECK(parameters != NULL);
+  CHECK(callee != nullptr);
+  CHECK(method_name != nullptr);
+  CHECK(parameters != nullptr);
 
   *callee = callee_;
   *method_name = &method_name_;
@@ -372,8 +371,8 @@ SubMethodReturnCommittedEvent::SubMethodReturnCommittedEvent(
 
 void SubMethodReturnCommittedEvent::GetSubMethodReturn(
     SharedObject** callee, const CommittedValue** return_value) const {
-  CHECK(callee != NULL);
-  CHECK(return_value != NULL);
+  CHECK(callee != nullptr);
+  CHECK(return_value != nullptr);
 
   *callee = callee_;
   *return_value = &return_value_;
@@ -404,8 +403,8 @@ SelfMethodCallCommittedEvent::SelfMethodCallCommittedEvent(
 void SelfMethodCallCommittedEvent::GetSelfMethodCall(
     const string** method_name,
     const vector<CommittedValue>** parameters) const {
-  CHECK(method_name != NULL);
-  CHECK(parameters != NULL);
+  CHECK(method_name != nullptr);
+  CHECK(parameters != nullptr);
 
   *method_name = &method_name_;
   *parameters = &parameters_;
@@ -449,7 +448,7 @@ SelfMethodReturnCommittedEvent::SelfMethodReturnCommittedEvent(
 
 void SelfMethodReturnCommittedEvent::GetSelfMethodReturn(
     const CommittedValue** return_value) const {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
   *return_value = &return_value_;
 }
 

@@ -15,7 +15,6 @@
 
 #include "toy_lang/program_object.h"
 
-#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -56,7 +55,7 @@ bool AddSymbol(PeerObject* symbol_table_object,
 
 bool PopulateSymbolTable(PeerObject* symbol_table_object, Thread* thread,
                          PeerObject* shared_map_object) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   if (!thread->BeginTransaction()) {
     return false;
@@ -101,7 +100,7 @@ bool PopulateSymbolTable(PeerObject* symbol_table_object, Thread* thread,
 
 ProgramObject::ProgramObject(const const_shared_ptr<Expression>& expression)
     : expression_(expression) {
-  CHECK(expression.get() != NULL);
+  CHECK(expression.get() != nullptr);
 }
 
 LocalObject* ProgramObject::Clone() const {
@@ -113,9 +112,9 @@ void ProgramObject::InvokeMethod(Thread* thread,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(method_name, "run");
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   PeerObject* const shared_map_object = thread->GetOrCreateNamedObject(
       "shared", new MapObject());
@@ -145,7 +144,7 @@ string ProgramObject::Dump() const {
 
 void ProgramObject::PopulateObjectProto(ObjectProto* object_proto,
                                         SerializationContext* context) const {
-  CHECK(object_proto != NULL);
+  CHECK(object_proto != nullptr);
   expression_->PopulateExpressionProto(
       object_proto->mutable_program_object()->mutable_expression());
 }

@@ -17,7 +17,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -44,7 +43,7 @@ DictLocalObject::DictLocalObject(PyObject* py_dict_object)
 
 LocalObject* DictLocalObject::Clone() const {
   PyObject* const py_dict = py_object();
-  PyObject* new_py_dict = NULL;
+  PyObject* new_py_dict = nullptr;
   {
     PythonGilLock lock;
     new_py_dict = PyDict_Copy(py_dict);
@@ -61,8 +60,8 @@ string DictLocalObject::Dump() const {
 
   {
     Py_ssize_t pos = 0;
-    PyObject* py_key = NULL;
-    PyObject* py_value = NULL;
+    PyObject* py_key = nullptr;
+    PyObject* py_value = nullptr;
 
     PythonGilLock lock;
 
@@ -95,16 +94,16 @@ string DictLocalObject::Dump() const {
 // static
 DictLocalObject* DictLocalObject::ParseDictProto(
     const MappingProto& dict_proto, DeserializationContext* context) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   const int item_count = dict_proto.item_size();
 
-  PyObject* py_dict = NULL;
+  PyObject* py_dict = nullptr;
   {
     PythonGilLock lock;
 
     py_dict = PyDict_New();
-    CHECK(py_dict != NULL);
+    CHECK(py_dict != nullptr);
 
     for (int i = 0; i < item_count; ++i) {
       const MappingItemProto& item_proto = dict_proto.item(i);
@@ -131,16 +130,16 @@ DictLocalObject* DictLocalObject::ParseDictProto(
 
 void DictLocalObject::PopulateObjectProto(ObjectProto* object_proto,
                                           SerializationContext* context) const {
-  CHECK(object_proto != NULL);
-  CHECK(context != NULL);
+  CHECK(object_proto != nullptr);
+  CHECK(context != nullptr);
 
   PyObject* const py_dict = py_object();
   MappingProto* const dict_proto = object_proto->mutable_dict_object();
 
   {
     Py_ssize_t pos = 0;
-    PyObject* py_key = NULL;
-    PyObject* py_value = NULL;
+    PyObject* py_key = nullptr;
+    PyObject* py_value = nullptr;
 
     PythonGilLock lock;
 

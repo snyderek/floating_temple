@@ -18,7 +18,6 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 #include "third_party/Python-3.4.2/Include/dss_hooks.h"
 
-#include <cstddef>
 #include <cstdio>
 #include <string>
 
@@ -49,8 +48,8 @@ namespace {
 
 template<class LocalObjectType>
 PyObject* WrapPythonObject(PyObject* py_object) {
-  if (py_object == NULL) {
-    return NULL;
+  if (py_object == nullptr) {
+    return nullptr;
   }
 
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
@@ -75,7 +74,7 @@ PyObject* WrapPythonLong(PyObject* py_long_object) {
 void RunPythonProgram(Peer* peer, const string& source_file_name) {
   // Run the source file.
   FILE* const fp = fopen(source_file_name.c_str(), "r");
-  PLOG_IF(FATAL, fp == NULL) << "fopen";
+  PLOG_IF(FATAL, fp == nullptr) << "fopen";
 
   RunPythonFile(peer, fp, source_file_name);
 
@@ -83,7 +82,7 @@ void RunPythonProgram(Peer* peer, const string& source_file_name) {
 }
 
 void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
-  CHECK(peer != NULL);
+  CHECK(peer != nullptr);
 
   CHECK_NE(PyImport_AppendInittab("peer", PyInit_peer), -1);
 
@@ -94,7 +93,7 @@ void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
   Py_InstallListCreationHook(WrapPythonList);
   Py_InstallLongCreationHook(WrapPythonLong);
 
-  LocalObject* program_object = NULL;
+  LocalObject* program_object = nullptr;
   {
     PythonGilLock lock;
 
@@ -102,16 +101,16 @@ void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
     // in "third_party/Python-3.4.2/Python/pythonrun.c".
 
     PyObject* const module = PyImport_AddModule("__main__");
-    CHECK(module != NULL);
+    CHECK(module != nullptr);
 
     PyObject* const globals = PyModule_GetDict(module);
-    CHECK(globals != NULL);
+    CHECK(globals != nullptr);
 
-    if (PyDict_GetItemString(globals, "__file__") == NULL) {
+    if (PyDict_GetItemString(globals, "__file__") == nullptr) {
       const PythonScopedPtr py_file_name(
           PyUnicode_DecodeFSDefaultAndSize(source_file_name.data(),
                                            source_file_name.length()));
-      CHECK(py_file_name.get() != NULL);
+      CHECK(py_file_name.get() != nullptr);
 
       CHECK_EQ(PyDict_SetItemString(globals, "__file__", py_file_name.get()),
                0);

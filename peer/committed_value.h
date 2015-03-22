@@ -16,7 +16,6 @@
 #ifndef PEER_COMMITTED_VALUE_H_
 #define PEER_COMMITTED_VALUE_H_
 
-#include <cstddef>
 #include <string>
 
 #include "base/integral_types.h"
@@ -173,7 +172,7 @@ inline void CommittedValue::set_bytes_value(const std::string& value) {
 }
 
 inline void CommittedValue::set_shared_object(SharedObject* shared_object) {
-  CHECK(shared_object != NULL);
+  CHECK(shared_object != nullptr);
 
   ChangeType(SHARED_OBJECT);
   shared_object_ = shared_object;

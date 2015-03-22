@@ -15,7 +15,6 @@
 
 #include "fake_peer/fake_thread.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -61,9 +60,9 @@ bool FakeThread::CallMethod(PeerObject* peer_object,
                             const string& method_name,
                             const vector<Value>& parameters,
                             Value* return_value) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
   CHECK(!method_name.empty());
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   FakePeerObject* const fake_peer_object = static_cast<FakePeerObject*>(
       peer_object);
@@ -77,8 +76,8 @@ bool FakeThread::CallMethod(PeerObject* peer_object,
 
 bool FakeThread::ObjectsAreEquivalent(const PeerObject* a,
                                       const PeerObject* b) const {
-  CHECK(a != NULL);
-  CHECK(b != NULL);
+  CHECK(a != nullptr);
+  CHECK(b != nullptr);
 
   return a == b;
 }

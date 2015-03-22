@@ -15,7 +15,6 @@
 
 #include "toy_lang/run_toy_lang_program.h"
 
-#include <cstddef>
 #include <cstdio>
 #include <string>
 
@@ -39,7 +38,7 @@ namespace toy_lang {
 void RunToyLangProgram(Peer* peer, const string& source_file_name) {
   // Run the source file.
   FILE* const fp = fopen(source_file_name.c_str(), "r");
-  PLOG_IF(FATAL, fp == NULL) << "fopen";
+  PLOG_IF(FATAL, fp == nullptr) << "fopen";
 
   RunToyLangFile(peer, fp);
 
@@ -47,7 +46,7 @@ void RunToyLangProgram(Peer* peer, const string& source_file_name) {
 }
 
 void RunToyLangFile(Peer* peer, FILE* fp) {
-  CHECK(peer != NULL);
+  CHECK(peer != nullptr);
 
   Lexer lexer(fp);
   const const_shared_ptr<Expression> expression(ParseFile(&lexer));

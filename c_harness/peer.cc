@@ -15,7 +15,6 @@
 
 #include "include/c/peer.h"
 
-#include <cstddef>
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -55,8 +54,8 @@ floatingtemple_Peer* floatingtemple_CreateNetworkPeer(
     int known_peer_id_count,
     const char** known_peer_ids,
     int send_receive_thread_count) {
-  CHECK(interpreter_type != NULL);
-  CHECK(known_peer_ids != NULL);
+  CHECK(interpreter_type != nullptr);
+  CHECK(known_peer_ids != nullptr);
 
   vector<string> known_peer_id_vector(
       static_cast<vector<string>::size_type>(known_peer_id_count));
@@ -85,8 +84,8 @@ void floatingtemple_RunProgram(floatingtemple_Interpreter* interpreter,
                                floatingtemple_LocalObject* local_object,
                                const char* method_name,
                                floatingtemple_Value* return_value) {
-  CHECK(peer != NULL);
-  CHECK(method_name != NULL);
+  CHECK(peer != nullptr);
+  CHECK(method_name != nullptr);
 
   ProxyInterpreter* const proxy_interpreter = &peer->proxy_interpreter;
 
@@ -103,7 +102,7 @@ void floatingtemple_RunProgram(floatingtemple_Interpreter* interpreter,
 }
 
 void floatingtemple_StopPeer(floatingtemple_Peer* peer) {
-  CHECK(peer != NULL);
+  CHECK(peer != nullptr);
   peer->peer->Stop();
 }
 
@@ -112,19 +111,19 @@ void floatingtemple_FreePeer(floatingtemple_Peer* peer) {
 }
 
 int floatingtemple_BeginTransaction(floatingtemple_Thread* thread) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   return thread->thread->BeginTransaction() ? 1 : 0;
 }
 
 int floatingtemple_EndTransaction(floatingtemple_Thread* thread) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   return thread->thread->EndTransaction() ? 1 : 0;
 }
 
 floatingtemple_PeerObject* floatingtemple_CreatePeerObject(
     floatingtemple_Thread* thread,
     floatingtemple_LocalObject* initial_version) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   return reinterpret_cast<floatingtemple_PeerObject*>(
       thread->thread->CreatePeerObject(
@@ -134,8 +133,8 @@ floatingtemple_PeerObject* floatingtemple_CreatePeerObject(
 floatingtemple_PeerObject* floatingtemple_GetOrCreateNamedObject(
     floatingtemple_Thread* thread, const char* name,
     floatingtemple_LocalObject* initial_version) {
-  CHECK(thread != NULL);
-  CHECK(name != NULL);
+  CHECK(thread != nullptr);
+  CHECK(name != nullptr);
 
   return reinterpret_cast<floatingtemple_PeerObject*>(
       thread->thread->GetOrCreateNamedObject(
@@ -150,9 +149,9 @@ int floatingtemple_CallMethod(floatingtemple_Interpreter* interpreter,
                               int parameter_count,
                               const floatingtemple_Value* parameters,
                               floatingtemple_Value* return_value) {
-  CHECK(thread != NULL);
-  CHECK(method_name != NULL);
-  CHECK(parameters != NULL);
+  CHECK(thread != nullptr);
+  CHECK(method_name != nullptr);
+  CHECK(parameters != nullptr);
 
   vector<Value> parameter_vector(parameter_count);
 
@@ -178,7 +177,7 @@ int floatingtemple_ObjectsAreEquivalent(
     const floatingtemple_Thread* thread,
     const floatingtemple_PeerObject* a,
     const floatingtemple_PeerObject* b) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   return thread->thread->ObjectsAreEquivalent(
       reinterpret_cast<const PeerObject*>(a),
@@ -188,7 +187,7 @@ int floatingtemple_ObjectsAreEquivalent(
 int floatingtemple_GetSerializationIndexForPeerObject(
     floatingtemple_SerializationContext* context,
     floatingtemple_PeerObject* peer_object) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   return context->context->GetIndexForPeerObject(
       reinterpret_cast<PeerObject*>(peer_object));
@@ -196,7 +195,7 @@ int floatingtemple_GetSerializationIndexForPeerObject(
 
 floatingtemple_PeerObject* floatingtemple_GetPeerObjectBySerializationIndex(
     floatingtemple_DeserializationContext* context, int index) {
-  CHECK(context != NULL);
+  CHECK(context != nullptr);
 
   return reinterpret_cast<floatingtemple_PeerObject*>(
       context->context->GetPeerObjectByIndex(index));
@@ -204,7 +203,7 @@ floatingtemple_PeerObject* floatingtemple_GetPeerObjectBySerializationIndex(
 
 int floatingtemple_PollForCallback(floatingtemple_Peer* peer,
                                    floatingtemple_Interpreter* interpreter) {
-  CHECK(peer != NULL);
+  CHECK(peer != nullptr);
   return peer->proxy_interpreter.PollForCallback(interpreter) ? 1 : 0;
 }
 

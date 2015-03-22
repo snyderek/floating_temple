@@ -16,8 +16,6 @@
 #ifndef BASE_SHARED_PTR_H_
 #define BASE_SHARED_PTR_H_
 
-#include <cstddef>
-
 #include "base/logging.h"
 
 namespace floating_temple {
@@ -30,7 +28,7 @@ template<typename T> class shared_ptr {
  public:
   typedef T element_type;
 
-  explicit shared_ptr(T* ptr = NULL);
+  explicit shared_ptr(T* ptr = nullptr);
   shared_ptr(const shared_ptr<T>& other);
   ~shared_ptr();
 
@@ -60,8 +58,8 @@ template<typename T> class shared_ptr {
 };
 
 template<typename T> shared_ptr<T>::shared_ptr(T* ptr) {
-  if (ptr == NULL) {
-    node_ = NULL;
+  if (ptr == nullptr) {
+    node_ = nullptr;
   } else {
     node_ = new Node();
     node_->ptr = ptr;
@@ -79,13 +77,13 @@ template<typename T> shared_ptr<T>::~shared_ptr() {
 }
 
 template<typename T> void shared_ptr<T>::reset(T* ptr) {
-  if (node_ != NULL && node_->ptr == ptr) {
+  if (node_ != nullptr && node_->ptr == ptr) {
     return;
   }
 
   DecrementRefCount();
 
-  if (ptr != NULL) {
+  if (ptr != nullptr) {
     node_ = new Node();
     node_->ptr = ptr;
     node_->ref_count = 1;
@@ -104,36 +102,36 @@ template<typename T> shared_ptr<T>& shared_ptr<T>::operator=(
 }
 
 template<typename T> inline T& shared_ptr<T>::operator*() const {
-  CHECK(node_ != NULL);
-  CHECK(node_->ptr != NULL);
+  CHECK(node_ != nullptr);
+  CHECK(node_->ptr != nullptr);
 
   return *node_->ptr;
 }
 
 template<typename T> inline T* shared_ptr<T>::operator->() const {
-  CHECK(node_ != NULL);
-  CHECK(node_->ptr != NULL);
+  CHECK(node_ != nullptr);
+  CHECK(node_->ptr != nullptr);
 
   return node_->ptr;
 }
 
 template<typename T> T* shared_ptr<T>::get() const {
-  if (node_ == NULL) {
-    return NULL;
+  if (node_ == nullptr) {
+    return nullptr;
   } else {
     return node_->ptr;
   }
 }
 
 template<typename T> void shared_ptr<T>::IncrementRefCount() {
-  if (node_ != NULL) {
+  if (node_ != nullptr) {
     ++node_->ref_count;
     CHECK_GE(node_->ref_count, 2);
   }
 }
 
 template<typename T> void shared_ptr<T>::DecrementRefCount() {
-  if (node_ != NULL) {
+  if (node_ != nullptr) {
     CHECK_GE(node_->ref_count, 1);
 
     --node_->ref_count;
@@ -143,7 +141,7 @@ template<typename T> void shared_ptr<T>::DecrementRefCount() {
       delete node_;
     }
 
-    node_ = NULL;
+    node_ = nullptr;
   }
 }
 

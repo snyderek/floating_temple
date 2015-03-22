@@ -15,8 +15,6 @@
 
 #include "peer/event_queue.h"
 
-#include <cstddef>
-
 #include "base/logging.h"
 #include "util/producer_consumer_queue.h"
 
@@ -25,7 +23,7 @@ namespace peer {
 
 EventQueue::EventQueue()
     : events_(-1),
-      next_event_(NULL),
+      next_event_(nullptr),
       end_of_sequence_(false) {
 }
 
@@ -33,12 +31,12 @@ EventQueue::~EventQueue() {
 }
 
 void EventQueue::QueueEvent(const CommittedEvent* event) {
-  CHECK(event != NULL);
+  CHECK(event != nullptr);
   CHECK(events_.Push(event, true));
 }
 
 void EventQueue::SetEndOfSequence() {
-  CHECK(events_.Push(NULL, true));
+  CHECK(events_.Push(nullptr, true));
 }
 
 bool EventQueue::HasNext() const {
@@ -53,12 +51,12 @@ const CommittedEvent* EventQueue::PeekNext() const {
 const CommittedEvent* EventQueue::GetNext() {
   CHECK(PrivateHasNext());
   const CommittedEvent* const event = next_event_;
-  next_event_ = NULL;
+  next_event_ = nullptr;
   return event;
 }
 
 void EventQueue::MoveToNextSequence() {
-  CHECK(next_event_ == NULL);
+  CHECK(next_event_ == nullptr);
   CHECK(end_of_sequence_);
 
   end_of_sequence_ = false;
@@ -66,15 +64,15 @@ void EventQueue::MoveToNextSequence() {
 
 bool EventQueue::PrivateHasNext() const {
   FetchNext();
-  return next_event_ != NULL;
+  return next_event_ != nullptr;
 }
 
 void EventQueue::FetchNext() const {
-  if (!end_of_sequence_ && next_event_ == NULL) {
-    const CommittedEvent* event = NULL;
+  if (!end_of_sequence_ && next_event_ == nullptr) {
+    const CommittedEvent* event = nullptr;
     CHECK(events_.Pop(&event, true));
 
-    if (event == NULL) {
+    if (event == nullptr) {
       end_of_sequence_ = true;
     } else {
       next_event_ = event;

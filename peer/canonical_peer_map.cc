@@ -15,7 +15,6 @@
 
 #include "peer/canonical_peer_map.h"
 
-#include <cstddef>
 #include <string>
 #include <unordered_map>
 
@@ -40,7 +39,7 @@ const CanonicalPeer* CanonicalPeerMap::GetCanonicalPeer(const string& peer_id) {
 
   linked_ptr<CanonicalPeer>& canonical_peer = map_[peer_id];
 
-  if (canonical_peer.get() == NULL) {
+  if (canonical_peer.get() == nullptr) {
     canonical_peer.reset(new CanonicalPeer(peer_id));
   }
 

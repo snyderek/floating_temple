@@ -15,7 +15,6 @@
 
 #include "toy_lang/lexer.h"
 
-#include <cstddef>
 #include <cstdio>
 #include <string>
 
@@ -43,7 +42,7 @@ class MemFile {
   explicit MemFile(const string& file_content)
       : buffer_(CreateCharBuffer(file_content)),
         fp_(fmemopen(buffer_, file_content.length(), "r")) {
-    PLOG_IF(FATAL, fp_ == NULL) << "fmemopen";
+    PLOG_IF(FATAL, fp_ == nullptr) << "fmemopen";
   }
 
   ~MemFile() {

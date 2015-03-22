@@ -16,7 +16,6 @@
 #ifndef INCLUDE_CPP_VALUE_H_
 #define INCLUDE_CPP_VALUE_H_
 
-#include <cstddef>
 #include <string>
 
 #include "base/integral_types.h"
@@ -190,7 +189,7 @@ inline void Value::set_bytes_value(int local_type, const std::string& value) {
 }
 
 inline void Value::set_peer_object(int local_type, PeerObject* peer_object) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
 
   ChangeType(local_type, PEER_OBJECT);
   peer_object_ = peer_object;

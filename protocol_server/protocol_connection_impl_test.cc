@@ -19,7 +19,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include <cstddef>
 #include <string>
 
 #include <gflags/gflags.h>
@@ -80,7 +79,7 @@ class MockProtocolConnectionHandler
 };
 
 bool PumpDataOnConnection(ProtocolConnectionImpl<TestMessage>* connection) {
-  CHECK(connection != NULL);
+  CHECK(connection != nullptr);
 
   connection->SendAndReceive();
   CHECK(!connection->close_requested());
@@ -109,7 +108,7 @@ class ProtocolConnectionImplTest : public Test {
   virtual void TearDown() {
     test_done_.Notify();
 
-    void* thread_return_value = NULL;
+    void* thread_return_value = nullptr;
     CHECK_PTHREAD_ERR(pthread_join(data_pump_thread_, &thread_return_value));
 
     protocol_connection1_->CloseSocket();
@@ -121,7 +120,7 @@ class ProtocolConnectionImplTest : public Test {
 
   void StartProtocolServer() {
     CHECK_PTHREAD_ERR(pthread_create(
-        &data_pump_thread_, NULL,
+        &data_pump_thread_, nullptr,
         &ProtocolConnectionImplTest::DataPumpThreadMain, this));
   }
 
@@ -149,10 +148,10 @@ class ProtocolConnectionImplTest : public Test {
 
  private:
   static void* DataPumpThreadMain(void* protocol_connection_test_raw) {
-    CHECK(protocol_connection_test_raw != NULL);
+    CHECK(protocol_connection_test_raw != nullptr);
     static_cast<ProtocolConnectionImplTest*>(protocol_connection_test_raw)->
         PumpData();
-    return NULL;
+    return nullptr;
   }
 };
 
@@ -248,22 +247,22 @@ TEST_F(ProtocolConnectionImplTest, SendTwoMessages) {
 }
 
 void* SendTestMessage(void* protocol_connection_raw) {
-  CHECK(protocol_connection_raw != NULL);
+  CHECK(protocol_connection_raw != nullptr);
 
   ProtocolConnection* const protocol_connection =
       static_cast<ProtocolConnection*>(protocol_connection_raw);
 
   protocol_connection->NotifyMessageReadyToSend();
 
-  return NULL;
+  return nullptr;
 }
 
 void CreateSendTestMessageThread(ProtocolConnection* protocol_connection,
                                  pthread_t* thread) {
-  CHECK(protocol_connection != NULL);
-  CHECK(thread != NULL);
+  CHECK(protocol_connection != nullptr);
+  CHECK(thread != nullptr);
 
-  CHECK_PTHREAD_ERR(pthread_create(thread, NULL, &SendTestMessage,
+  CHECK_PTHREAD_ERR(pthread_create(thread, nullptr, &SendTestMessage,
                                    protocol_connection));
 }
 
@@ -311,7 +310,7 @@ TEST_F(ProtocolConnectionImplTest, SendMessagesFromDifferentThreads) {
   }
 
   for (int i = 0; i < kThreadCount; ++i) {
-    void* thread_return_value = NULL;
+    void* thread_return_value = nullptr;
     CHECK_PTHREAD_ERR(pthread_join(threads[i], &thread_return_value));
   }
 

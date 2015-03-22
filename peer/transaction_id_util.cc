@@ -16,7 +16,6 @@
 #include "peer/transaction_id_util.h"
 
 #include <cinttypes>
-#include <cstddef>
 #include <string>
 
 #include "base/integral_types.h"
@@ -46,7 +45,7 @@ int CompareTransactionIds(const TransactionId& t1, const TransactionId& t2) {
 }
 
 void GetMinTransactionId(TransactionId* transaction_id) {
-  CHECK(transaction_id != NULL);
+  CHECK(transaction_id != nullptr);
 
   transaction_id->Clear();
   transaction_id->set_a(0);
@@ -55,7 +54,7 @@ void GetMinTransactionId(TransactionId* transaction_id) {
 }
 
 void GetMaxTransactionId(TransactionId* transaction_id) {
-  CHECK(transaction_id != NULL);
+  CHECK(transaction_id != nullptr);
 
   transaction_id->Clear();
   transaction_id->set_a(kUint64Max);
@@ -68,7 +67,7 @@ bool IsValidTransactionId(const TransactionId& transaction_id) {
 }
 
 void IncrementTransactionId(TransactionId* transaction_id) {
-  CHECK(transaction_id != NULL);
+  CHECK(transaction_id != nullptr);
 
   uint64 a = transaction_id->a();
   uint64 b = transaction_id->b();

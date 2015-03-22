@@ -41,8 +41,8 @@ LocalObject* MockLocalObject::Clone() const {
 
 size_t MockLocalObject::Serialize(void* buffer, size_t buffer_size,
                                   SerializationContext* context) const {
-  CHECK(buffer != NULL);
-  CHECK(context != NULL);
+  CHECK(buffer != nullptr);
+  CHECK(context != nullptr);
 
   const string data = core_->Serialize(context);
   const size_t data_size = static_cast<size_t>(data.length());

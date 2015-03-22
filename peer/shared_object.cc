@@ -15,7 +15,6 @@
 
 #include "peer/shared_object.h"
 
-#include <cstddef>
 #include <map>
 #include <set>
 #include <string>
@@ -90,21 +89,21 @@ SharedObject::~SharedObject() {
 
 void SharedObject::GetInterestedPeers(
     unordered_set<const CanonicalPeer*>* interested_peers) const {
-  CHECK(interested_peers != NULL);
+  CHECK(interested_peers != nullptr);
 
   MutexLock lock(&interested_peers_mu_);
   *interested_peers = interested_peers_;
 }
 
 void SharedObject::AddInterestedPeer(const CanonicalPeer* interested_peer) {
-  CHECK(interested_peer != NULL);
+  CHECK(interested_peer != nullptr);
 
   MutexLock lock(&interested_peers_mu_);
   interested_peers_.insert(interested_peer);
 }
 
 bool SharedObject::HasPeerObject(const PeerObjectImpl* peer_object) const {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
 
   MutexLock lock(&peer_objects_mu_);
 
@@ -118,7 +117,7 @@ bool SharedObject::HasPeerObject(const PeerObjectImpl* peer_object) const {
 }
 
 void SharedObject::AddPeerObject(PeerObjectImpl* peer_object) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
 
   MutexLock lock(&peer_objects_mu_);
   peer_objects_.push_back(peer_object);
@@ -168,17 +167,17 @@ ConstLiveObjectPtr SharedObject::GetWorkingVersion(
             << sequence_point.version_map().Dump();
     VLOG(1) << "effective_version == " << effective_version.Dump();
 
-    return ConstLiveObjectPtr(NULL);
+    return ConstLiveObjectPtr(nullptr);
   }
 
   if (CanUseCachedLiveObject_Locked(sequence_point)) {
-    CHECK(cached_live_object_.get() != NULL);
+    CHECK(cached_live_object_.get() != nullptr);
     return cached_live_object_;
   }
 
   for (;;) {
     PeerThread peer_thread;
-    peer_thread.Start(transaction_store_, this, LiveObjectPtr(NULL),
+    peer_thread.Start(transaction_store_, this, LiveObjectPtr(nullptr),
                       new_peer_objects);
 
     const bool success = ApplyTransactionsToWorkingVersion_Locked(
@@ -191,14 +190,14 @@ ConstLiveObjectPtr SharedObject::GetWorkingVersion(
     }
   }
 
-  return ConstLiveObjectPtr(NULL);
+  return ConstLiveObjectPtr(nullptr);
 }
 
 void SharedObject::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
     map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
     MaxVersionMap* effective_version) const {
-  CHECK(transactions != NULL);
+  CHECK(transactions != nullptr);
 
   MutexLock lock(&committed_versions_mu_);
 
@@ -236,8 +235,8 @@ void SharedObject::StoreTransactions(
     const CanonicalPeer* origin_peer,
     map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
     const MaxVersionMap& version_map) {
-  CHECK(origin_peer != NULL);
-  CHECK(transactions != NULL);
+  CHECK(origin_peer != nullptr);
+  CHECK(transactions != nullptr);
 
   MutexLock lock(&committed_versions_mu_);
 
@@ -247,18 +246,18 @@ void SharedObject::StoreTransactions(
         transaction_pair.second.get();
 
     CHECK(IsValidTransactionId(transaction_id));
-    CHECK(transaction_info != NULL);
+    CHECK(transaction_info != nullptr);
 
     vector<linked_ptr<CommittedEvent>>* const events =
         &transaction_info->events;
     const CanonicalPeer* const origin_peer = transaction_info->origin_peer;
 
-    CHECK(origin_peer != NULL);
+    CHECK(origin_peer != nullptr);
 
     linked_ptr<SharedObjectTransaction>& transaction =
         committed_versions_[transaction_id];
 
-    if (transaction.get() == NULL) {
+    if (transaction.get() == nullptr) {
       transaction.reset(new SharedObjectTransaction(events, origin_peer));
     }
 
@@ -275,9 +274,9 @@ void SharedObject::StoreTransactions(
 void SharedObject::InsertTransaction(
     const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
     vector<linked_ptr<CommittedEvent>>* events) {
-  CHECK(origin_peer != NULL);
+  CHECK(origin_peer != nullptr);
   CHECK(IsValidTransactionId(transaction_id));
-  CHECK(events != NULL);
+  CHECK(events != nullptr);
 
   const vector<linked_ptr<CommittedEvent>>::size_type event_count =
       events->size();
@@ -294,7 +293,7 @@ void SharedObject::InsertTransaction(
   linked_ptr<SharedObjectTransaction>& transaction =
       committed_versions_[transaction_id];
 
-  if (transaction.get() == NULL) {
+  if (transaction.get() == nullptr) {
     transaction.reset(new SharedObjectTransaction(events, origin_peer));
   }
 
@@ -305,7 +304,7 @@ void SharedObject::InsertTransaction(
 void SharedObject::SetCachedLiveObject(
     const ConstLiveObjectPtr& cached_live_object,
     const SequencePointImpl& cached_sequence_point) {
-  CHECK(cached_live_object.get() != NULL);
+  CHECK(cached_live_object.get() != nullptr);
 
   MutexLock lock(&committed_versions_mu_);
   cached_live_object_ = cached_live_object;
@@ -323,8 +322,8 @@ string SharedObject::Dump() const {
 bool SharedObject::ApplyTransactionsToWorkingVersion_Locked(
     PeerThread* peer_thread, const SequencePointImpl& sequence_point,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
-  CHECK(peer_thread != NULL);
-  CHECK(transactions_to_reject != NULL);
+  CHECK(peer_thread != nullptr);
+  CHECK(transactions_to_reject != nullptr);
 
   for (const auto& transaction_pair : committed_versions_) {
     const TransactionId& transaction_id = transaction_pair.first;
@@ -358,7 +357,7 @@ bool SharedObject::ApplyTransactionsToWorkingVersion_Locked(
 void SharedObject::ComputeEffectiveVersion_Locked(
     const MaxVersionMap& transaction_store_version_map,
     MaxVersionMap* effective_version) const {
-  CHECK(effective_version != NULL);
+  CHECK(effective_version != nullptr);
 
   const unordered_map<const CanonicalPeer*, TransactionId>&
       version_map_peer_transaction_ids = version_map_.peer_transaction_ids();
@@ -384,7 +383,7 @@ void SharedObject::ComputeEffectiveVersion_Locked(
 
 bool SharedObject::CanUseCachedLiveObject_Locked(
     const SequencePointImpl& requested_sequence_point) const {
-  if (cached_live_object_.get() == NULL) {
+  if (cached_live_object_.get() == nullptr) {
     return false;
   }
 

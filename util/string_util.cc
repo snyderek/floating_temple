@@ -15,7 +15,6 @@
 
 #include "util/string_util.h"
 
-#include <cstddef>
 #include <cstring>
 #include <string>
 
@@ -25,7 +24,7 @@ using std::string;
 namespace floating_temple {
 
 bool IsValidString(const char* s) {
-  return s != NULL && s[0] != '\0';
+  return s != nullptr && s[0] != '\0';
 }
 
 char* CreateCharBuffer(const string& s) {

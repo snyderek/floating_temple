@@ -17,7 +17,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -71,7 +70,7 @@ string LongLocalObject::Dump() const {
 LongLocalObject* LongLocalObject::ParseLongProto(const LongProto& long_proto) {
   const PY_LONG_LONG value = static_cast<PY_LONG_LONG>(long_proto.value());
 
-  PyObject* py_long = NULL;
+  PyObject* py_long = nullptr;
   {
     PythonGilLock lock;
     py_long = PyLong_FromLongLong(value);
@@ -82,7 +81,7 @@ LongLocalObject* LongLocalObject::ParseLongProto(const LongProto& long_proto) {
 
 void LongLocalObject::PopulateObjectProto(ObjectProto* object_proto,
                                           SerializationContext* context) const {
-  CHECK(object_proto != NULL);
+  CHECK(object_proto != nullptr);
 
   int overflow = 0;
   const PY_LONG_LONG value = GetLongLongValue(&overflow);
@@ -187,7 +186,7 @@ bool LongLocalObject::InvokeTypeSpecificMethod(PeerObject* peer_object,
 #undef CALL_VARARGS_METHOD
 
 PY_LONG_LONG LongLocalObject::GetLongLongValue(int* overflow) const {
-  CHECK(overflow != NULL);
+  CHECK(overflow != nullptr);
 
   PyObject* const py_long = py_object();
 
@@ -197,7 +196,7 @@ PY_LONG_LONG LongLocalObject::GetLongLongValue(int* overflow) const {
 
     value = PyLong_AsLongLongAndOverflow(py_long, overflow);
 
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred() != nullptr) {
       PyErr_Print();
       LOG(FATAL) << "Unexpected Python exception.";
     }

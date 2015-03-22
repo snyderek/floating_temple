@@ -15,7 +15,6 @@
 
 #include "peer/shared_object.h"
 
-#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -115,10 +114,11 @@ class SharedObjectTest : public Test {
     const unordered_set<SharedObject*> new_shared_objects;
 
     AddEventToVector(
-        new MethodCallCommittedEvent(NULL, "append", parameters),
+        new MethodCallCommittedEvent(nullptr, "append", parameters),
         &events);
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, NULL, return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
+                                       return_value),
         &events);
 
     shared_object_->InsertTransaction(origin_peer, transaction_id, &events);
@@ -141,10 +141,10 @@ class SharedObjectTest : public Test {
       return_value.set_empty();
 
       AddEventToVector(
-          new MethodCallCommittedEvent(NULL, "append", parameters),
+          new MethodCallCommittedEvent(nullptr, "append", parameters),
           &events);
       AddEventToVector(
-          new MethodReturnCommittedEvent(new_shared_objects, NULL,
+          new MethodReturnCommittedEvent(new_shared_objects, nullptr,
                                          return_value),
           &events);
     }
@@ -155,10 +155,11 @@ class SharedObjectTest : public Test {
       return_value.set_string_value(expected_result_string);
 
       AddEventToVector(
-          new MethodCallCommittedEvent(NULL, "get", vector<CommittedValue>()),
+          new MethodCallCommittedEvent(nullptr, "get",
+                                       vector<CommittedValue>()),
           &events);
       AddEventToVector(
-          new MethodReturnCommittedEvent(new_shared_objects, NULL,
+          new MethodReturnCommittedEvent(new_shared_objects, nullptr,
                                          return_value),
           &events);
     }
@@ -168,8 +169,8 @@ class SharedObjectTest : public Test {
 
   void AddEventToVector(CommittedEvent* event,
                         vector<linked_ptr<CommittedEvent>>* events) {
-    CHECK(event != NULL);
-    CHECK(events != NULL);
+    CHECK(event != nullptr);
+    CHECK(events != nullptr);
 
     events->push_back(make_linked_ptr(event));
   }
@@ -215,7 +216,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
 
     EXPECT_TRUE(shared_object_->GetWorkingVersion(
                     MaxVersionMap(), sequence_point, &new_peer_objects,
-                    &transactions_to_reject).get() == NULL);
+                    &transactions_to_reject).get() == nullptr);
 
     EXPECT_EQ(0u, new_peer_objects.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
@@ -471,10 +472,11 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
     const unordered_set<SharedObject*> new_shared_objects;
 
     AddEventToVector(
-        new MethodCallCommittedEvent(NULL, "append", parameters),
+        new MethodCallCommittedEvent(nullptr, "append", parameters),
         &events);
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, NULL, return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
+                                       return_value),
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
@@ -534,7 +536,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
         new ObjectCreationCommittedEvent(initial_live_object),
         &events);
     AddEventToVector(
-        new MethodCallCommittedEvent(NULL, "append", parameters),
+        new MethodCallCommittedEvent(nullptr, "append", parameters),
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
@@ -551,7 +553,8 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     const unordered_set<SharedObject*> new_shared_objects;
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, NULL, return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
+                                       return_value),
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
@@ -612,7 +615,7 @@ TEST_F(SharedObjectTest, BackingUp) {
         new ObjectCreationCommittedEvent(initial_live_object),
         &events);
     AddEventToVector(
-        new MethodCallCommittedEvent(NULL, "append", parameters),
+        new MethodCallCommittedEvent(nullptr, "append", parameters),
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
@@ -633,10 +636,11 @@ TEST_F(SharedObjectTest, BackingUp) {
     parameters[0].set_string_value("Match.");
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, NULL, return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
+                                       return_value),
         &events);
     AddEventToVector(
-        new MethodCallCommittedEvent(NULL, "append", parameters),
+        new MethodCallCommittedEvent(nullptr, "append", parameters),
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
@@ -653,7 +657,8 @@ TEST_F(SharedObjectTest, BackingUp) {
     const unordered_set<SharedObject*> new_shared_objects;
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, NULL, return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
+                                       return_value),
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,

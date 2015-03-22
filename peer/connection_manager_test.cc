@@ -17,7 +17,6 @@
 
 #include <pthread.h>
 
-#include <cstddef>
 #include <string>
 
 #include <gflags/gflags.h>
@@ -125,7 +124,7 @@ struct SendTestMessageInfo {
 };
 
 void* SendTestMessage(void* info_raw) {
-  CHECK(info_raw != NULL);
+  CHECK(info_raw != nullptr);
 
   const SendTestMessageInfo* const info = static_cast<SendTestMessageInfo*>(
       info_raw);
@@ -137,22 +136,22 @@ void* SendTestMessage(void* info_raw) {
       info->remote_peer, peer_message, PeerMessageSender::NON_BLOCKING_MODE);
 
   delete info;
-  return NULL;
+  return nullptr;
 }
 
 void CreateSendTestMessageThread(PeerMessageSender* peer_message_sender,
                                  const CanonicalPeer* remote_peer,
                                  const string& message,
                                  pthread_t* thread) {
-  CHECK(peer_message_sender != NULL);
-  CHECK(thread != NULL);
+  CHECK(peer_message_sender != nullptr);
+  CHECK(thread != nullptr);
 
   SendTestMessageInfo* info = new SendTestMessageInfo();
   info->peer_message_sender = peer_message_sender;
   info->remote_peer = remote_peer;
   info->message = message;
 
-  CHECK_PTHREAD_ERR(pthread_create(thread, NULL, &SendTestMessage, info));
+  CHECK_PTHREAD_ERR(pthread_create(thread, nullptr, &SendTestMessage, info));
 }
 
 TEST(ConnectionManagerTest, SimultaneousConnections) {
@@ -199,7 +198,7 @@ TEST(ConnectionManagerTest, SimultaneousConnections) {
   CreateSendTestMessageThread(&connection_manager2, canonical_peer1, "Guilder",
                               &thread2);
 
-  void* thread_return_value = NULL;
+  void* thread_return_value = nullptr;
   CHECK_PTHREAD_ERR(pthread_join(thread1, &thread_return_value));
   CHECK_PTHREAD_ERR(pthread_join(thread2, &thread_return_value));
 

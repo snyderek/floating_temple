@@ -17,7 +17,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -38,13 +37,13 @@ void CallMethod(PyObject* const py_object,
                 PyObject* args,
                 PyObject* kw,
                 Value* return_value) {
-  CHECK(py_object != NULL);
+  CHECK(py_object != nullptr);
   CHECK(!method_name.empty());
-  CHECK(args != NULL);
+  CHECK(args != nullptr);
 
   const PythonScopedPtr method(PyObject_GetAttrString(py_object,
                                                       method_name.c_str()));
-  CHECK(method.get() != NULL);
+  CHECK(method.get() != nullptr);
   CHECK(PyCallable_Check(method.get()));
 
   MakeReturnValue(PyObject_Call(method.get(), args, kw), return_value);
@@ -60,16 +59,16 @@ void CallNormalMethod(PyObject* const py_object,
 
   const PythonScopedPtr args(
       PyTuple_New(static_cast<Py_ssize_t>(parameter_count)));
-  CHECK(args.get() != NULL);
+  CHECK(args.get() != nullptr);
 
   for (int i = 0; i < parameter_count; ++i) {
-    PyObject* const parameter = ExtractValue<PyObject*>(parameters[i], NULL);
-    CHECK(parameter != NULL);
+    PyObject* const parameter = ExtractValue<PyObject*>(parameters[i], nullptr);
+    CHECK(parameter != nullptr);
     Py_INCREF(parameter);
     PyTuple_SET_ITEM(args.get(), i, parameter);
   }
 
-  CallMethod(py_object, method_name, args.get(), NULL, return_value);
+  CallMethod(py_object, method_name, args.get(), nullptr, return_value);
 }
 
 void CallVarargsMethod(PyObject* const py_object,
@@ -81,11 +80,11 @@ void CallVarargsMethod(PyObject* const py_object,
   CHECK_GE(parameter_count, 1);
   CHECK_LE(parameter_count, 2);
 
-  PyObject* const args = ExtractValue<PyObject*>(parameters[0], NULL);
+  PyObject* const args = ExtractValue<PyObject*>(parameters[0], nullptr);
 
-  PyObject* kw = NULL;
+  PyObject* kw = nullptr;
   if (parameter_count == 2) {
-    kw = ExtractValue<PyObject*>(parameters[1], NULL);
+    kw = ExtractValue<PyObject*>(parameters[1], nullptr);
   }
 
   CallMethod(py_object, method_name, args, kw, return_value);

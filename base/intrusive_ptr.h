@@ -16,8 +16,6 @@
 #ifndef BASE_INTRUSIVE_PTR_H_
 #define BASE_INTRUSIVE_PTR_H_
 
-#include <cstddef>
-
 #include "base/logging.h"
 
 namespace floating_temple {
@@ -39,7 +37,7 @@ template<class T> class intrusive_ptr {
  public:
   typedef T element_type;
 
-  explicit intrusive_ptr(T* ptr = NULL);
+  explicit intrusive_ptr(T* ptr = nullptr);
   intrusive_ptr(const intrusive_ptr<T>& other);
   ~intrusive_ptr();
 
@@ -94,12 +92,12 @@ template<class T> intrusive_ptr<T>& intrusive_ptr<T>::operator=(
 }
 
 template<class T> inline T& intrusive_ptr<T>::operator*() const {
-  CHECK(ptr_ != NULL);
+  CHECK(ptr_ != nullptr);
   return *ptr_;
 }
 
 template<class T> inline T* intrusive_ptr<T>::operator->() const {
-  CHECK(ptr_ != NULL);
+  CHECK(ptr_ != nullptr);
   return ptr_;
 }
 
@@ -108,18 +106,18 @@ template<class T> T* intrusive_ptr<T>::get() const {
 }
 
 template<class T> void intrusive_ptr<T>::IncrementRefCount() {
-  if (ptr_ != NULL) {
+  if (ptr_ != nullptr) {
     ptr_->IncrementRefCount();
   }
 }
 
 template<class T> void intrusive_ptr<T>::DecrementRefCount() {
-  if (ptr_ != NULL) {
+  if (ptr_ != nullptr) {
     if (ptr_->DecrementRefCount()) {
       delete ptr_;
     }
 
-    ptr_ = NULL;
+    ptr_ = nullptr;
   }
 }
 

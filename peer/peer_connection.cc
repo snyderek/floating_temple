@@ -15,7 +15,6 @@
 
 #include "peer/peer_connection.h"
 
-#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -42,8 +41,8 @@ namespace {
 void CreateHelloMessage(
     ConnectionManagerInterfaceForPeerConnection* connection_manager,
     PeerMessage* peer_message) {
-  CHECK(connection_manager != NULL);
-  CHECK(peer_message != NULL);
+  CHECK(connection_manager != nullptr);
+  CHECK(peer_message != nullptr);
 
   peer_message->Clear();
 
@@ -53,7 +52,7 @@ void CreateHelloMessage(
 }
 
 void CreateGoodbyeMessage(PeerMessage* peer_message) {
-  CHECK(peer_message != NULL);
+  CHECK(peer_message != nullptr);
 
   peer_message->Clear();
   peer_message->mutable_goodbye_message();
@@ -95,7 +94,7 @@ PeerConnection::PeerConnection(
 }
 
 PeerConnection::~PeerConnection() {
-  PeerMessage* peer_message = NULL;
+  PeerMessage* peer_message = nullptr;
   int service_id = 0;
 
   while (output_messages_.Pop(&peer_message, &service_id, false)) {
@@ -104,7 +103,7 @@ PeerConnection::~PeerConnection() {
 }
 
 void PeerConnection::Init(ProtocolConnection* connection) {
-  CHECK(connection != NULL);
+  CHECK(connection != nullptr);
 
   {
     MutexLock lock(&protocol_connection_mu_);
@@ -142,7 +141,7 @@ void PeerConnection::Drain() {
   ProtocolConnection* const protocol_connection =
       PrivateGetProtocolConnection();
 
-  if (protocol_connection != NULL) {
+  if (protocol_connection != nullptr) {
     protocol_connection->NotifyMessageReadyToSend();
   }
 }
@@ -166,7 +165,7 @@ bool PeerConnection::DecrementRefCount() {
 }
 
 bool PeerConnection::GetNextOutputMessage(PeerMessage* message) {
-  CHECK(message != NULL);
+  CHECK(message != nullptr);
 
   if (!GetNextOutputMessageHelper(message)) {
     return false;
@@ -206,7 +205,7 @@ void PeerConnection::NotifyMessageReceived(const PeerMessage& message) {
 ProtocolConnection* PeerConnection::PrivateGetProtocolConnection() const {
   MutexLock lock(&protocol_connection_mu_);
 
-  while (protocol_connection_.get() == NULL) {
+  while (protocol_connection_.get() == nullptr) {
     protocol_connection_set_cond_.Wait(&protocol_connection_mu_);
   }
 
@@ -219,7 +218,7 @@ const CanonicalPeer* PeerConnection::PrivateGetRemotePeer() const {
 }
 
 bool PeerConnection::GetNextOutputMessageHelper(PeerMessage* message) {
-  CHECK(message != NULL);
+  CHECK(message != nullptr);
 
   {
     MutexLock lock(&state_mu_);
@@ -238,11 +237,11 @@ bool PeerConnection::GetNextOutputMessageHelper(PeerMessage* message) {
     }
   }
 
-  PeerMessage* regular_message = NULL;
+  PeerMessage* regular_message = nullptr;
   int service_id = 0;
 
   if (output_messages_.Pop(&regular_message, &service_id, false)) {
-    CHECK(regular_message != NULL);
+    CHECK(regular_message != nullptr);
 
     message->Swap(regular_message);
     delete regular_message;
@@ -274,12 +273,12 @@ bool PeerConnection::GetNextOutputMessageHelper(PeerMessage* message) {
 }
 
 void PeerConnection::SetRemotePeer(const CanonicalPeer* new_remote_peer) {
-  CHECK(new_remote_peer != NULL);
+  CHECK(new_remote_peer != nullptr);
 
   {
     MutexLock lock(&remote_peer_mu_);
 
-    if (remote_peer_ == NULL) {
+    if (remote_peer_ == nullptr) {
       remote_peer_ = new_remote_peer;
     } else {
       // TODO(dss): Fail gracefully if the remote peer sends a peer ID different
@@ -353,7 +352,7 @@ void PeerConnection::HandleRegularMessage(const PeerMessage& peer_message) {
 string PeerConnection::GetRemotePeerIdForLogging() const {
   {
     MutexLock lock(&remote_peer_mu_);
-    if (remote_peer_ != NULL) {
+    if (remote_peer_ != nullptr) {
       return remote_peer_->peer_id();
     }
   }

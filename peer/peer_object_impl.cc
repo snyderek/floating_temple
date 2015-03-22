@@ -15,7 +15,6 @@
 
 #include "peer/peer_object_impl.h"
 
-#include <cstddef>
 #include <string>
 
 #include "base/logging.h"
@@ -31,7 +30,7 @@ namespace floating_temple {
 namespace peer {
 
 PeerObjectImpl::PeerObjectImpl()
-    : shared_object_(NULL) {
+    : shared_object_(nullptr) {
 }
 
 PeerObjectImpl::~PeerObjectImpl() {
@@ -39,11 +38,11 @@ PeerObjectImpl::~PeerObjectImpl() {
 
 SharedObject* PeerObjectImpl::SetSharedObjectIfUnset(
     SharedObject* shared_object) {
-  CHECK(shared_object != NULL);
+  CHECK(shared_object != nullptr);
 
   MutexLock lock(&shared_object_mu_);
 
-  if (shared_object_ == NULL) {
+  if (shared_object_ == nullptr) {
     shared_object_ = shared_object;
   }
 
@@ -54,7 +53,7 @@ string PeerObjectImpl::Dump() const {
   MutexLock lock(&shared_object_mu_);
 
   string shared_object_string;
-  if (shared_object_ == NULL) {
+  if (shared_object_ == nullptr) {
     shared_object_string = "null";
   } else {
     SStringPrintf(&shared_object_string, "\"%s\"",

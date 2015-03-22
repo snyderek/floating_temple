@@ -15,7 +15,6 @@
 
 #include "peer/shared_object_transaction.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -36,7 +35,7 @@ SharedObjectTransaction::SharedObjectTransaction(
     vector<linked_ptr<CommittedEvent>>* events,
     const CanonicalPeer* origin_peer)
     : origin_peer_(CHECK_NOTNULL(origin_peer)) {
-  CHECK(events != NULL);
+  CHECK(events != nullptr);
   events_.swap(*events);
 }
 
@@ -65,7 +64,7 @@ string SharedObjectTransaction::Dump() const {
   }
 
   string origin_peer_id_string;
-  if (origin_peer_ == NULL) {
+  if (origin_peer_ == nullptr) {
     origin_peer_id_string = "null";
   } else {
     SStringPrintf(&origin_peer_id_string, "\"%s\"",

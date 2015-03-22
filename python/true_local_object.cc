@@ -17,7 +17,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -45,7 +44,7 @@ string TrueLocalObject::Dump() const {
 
 void TrueLocalObject::PopulateObjectProto(ObjectProto* object_proto,
                                           SerializationContext* context) const {
-  CHECK(object_proto != NULL);
+  CHECK(object_proto != nullptr);
   object_proto->mutable_true_object();
 }
 

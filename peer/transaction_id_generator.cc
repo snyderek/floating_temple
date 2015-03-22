@@ -15,7 +15,6 @@
 
 #include "peer/transaction_id_generator.h"
 
-#include <cstddef>
 #include <ctime>
 
 #include "base/integral_types.h"
@@ -34,7 +33,7 @@ TransactionIdGenerator::TransactionIdGenerator()
 }
 
 void TransactionIdGenerator::Generate(TransactionId* transaction_id) {
-  CHECK(transaction_id != NULL);
+  CHECK(transaction_id != nullptr);
 
   timespec ts;
   CHECK_ERR(clock_gettime(CLOCK_REALTIME, &ts));

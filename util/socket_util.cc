@@ -38,7 +38,7 @@ namespace floating_temple {
 namespace {
 
 void PopulateUnixAddrStruct(const string& socket_file_name, sockaddr_un* addr) {
-  CHECK(addr != NULL);
+  CHECK(addr != nullptr);
 
   const size_t socket_file_name_length = socket_file_name.length();
   CHECK_GT(socket_file_name_length, 0u);
@@ -119,11 +119,11 @@ int AcceptConnection(int listen_fd, string* remote_address) {
 }
 
 void GetAddressString(const sockaddr* address, string* address_string) {
-  CHECK(address_string != NULL);
+  CHECK(address_string != nullptr);
 
   const int address_family = address->sa_family;
 
-  const void* src = NULL;
+  const void* src = nullptr;
   switch (address_family) {
     case AF_INET:
       src = &(reinterpret_cast<const sockaddr_in*>(address)->sin_addr);
@@ -143,7 +143,7 @@ void GetAddressString(const sockaddr* address, string* address_string) {
 
   char buffer[INET6_ADDRSTRLEN];
   PLOG_IF(FATAL, inet_ntop(address_family, src, buffer,
-                           static_cast<socklen_t>(sizeof buffer)) == NULL)
+                           static_cast<socklen_t>(sizeof buffer)) == nullptr)
       << "inet_ntop";
 
   address_string->assign(buffer);

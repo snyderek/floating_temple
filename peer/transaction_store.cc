@@ -137,7 +137,7 @@ void TransactionStore::NotifyNewConnection(const CanonicalPeer* remote_peer) {
 
 void TransactionStore::HandleMessageFromRemotePeer(
     const CanonicalPeer* remote_peer, const PeerMessage& peer_message) {
-  CHECK(remote_peer != NULL);
+  CHECK(remote_peer != nullptr);
 
   const PeerMessage::Type peer_message_type = GetPeerMessageType(peer_message);
 
@@ -182,13 +182,13 @@ SequencePoint* TransactionStore::GetCurrentSequencePoint() const {
 ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
     PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
     bool wait) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
 
   SharedObject* const shared_object = peer_object->shared_object();
   // The peer object must have been created by a committed transaction, because
   // otherwise the pending transaction wouldn't need to request it. Therefore a
   // shared object should exist for the peer object.
-  CHECK(shared_object != NULL);
+  CHECK(shared_object != nullptr);
 
   const SequencePointImpl* const sequence_point_impl =
       static_cast<const SequencePointImpl*>(sequence_point);
@@ -201,7 +201,7 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
       shared_object, *sequence_point_impl, &current_version_number,
       &new_peer_objects, &all_transactions_to_reject);
 
-  if (live_object.get() == NULL) {
+  if (live_object.get() == nullptr) {
     PeerMessage peer_message;
     GetObjectMessage* const get_object_message =
         peer_message.mutable_get_object_message();
@@ -212,7 +212,7 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
                                             PeerMessageSender::BLOCKING_MODE);
 
     if (wait) {
-      while (live_object.get() == NULL) {
+      while (live_object.get() == nullptr) {
         live_object = GetLiveObjectAtSequencePoint_Helper(
             shared_object, *sequence_point_impl, &current_version_number,
             &new_peer_objects, &all_transactions_to_reject);
@@ -268,8 +268,8 @@ void TransactionStore::CreateTransaction(
     TransactionId* transaction_id,
     const unordered_map<PeerObjectImpl*, LiveObjectPtr>& modified_objects,
     const SequencePoint* prev_sequence_point) {
-  CHECK(transaction_id != NULL);
-  CHECK(prev_sequence_point != NULL);
+  CHECK(transaction_id != nullptr);
+  CHECK(prev_sequence_point != nullptr);
 
   TransactionId transaction_id_temp;
   transaction_sequencer_.ReserveTransaction(&transaction_id_temp);
@@ -300,9 +300,9 @@ void TransactionStore::CreateTransaction(
           break;
 
         case PendingEvent::METHOD_CALL: {
-          PeerObjectImpl* next_peer_object = NULL;
-          const string* method_name = NULL;
-          const vector<Value>* parameters = NULL;
+          PeerObjectImpl* next_peer_object = nullptr;
+          const string* method_name = nullptr;
+          const vector<Value>* parameters = nullptr;
 
           event->GetMethodCall(&next_peer_object, &method_name, &parameters);
 
@@ -349,7 +349,7 @@ void TransactionStore::CreateTransaction(
 
     SharedObject* const shared_object = peer_object->shared_object();
 
-    if (shared_object != NULL) {
+    if (shared_object != nullptr) {
       shared_object->SetCachedLiveObject(live_object,
                                          cached_version_sequence_point);
     }
@@ -360,8 +360,8 @@ void TransactionStore::CreateTransaction(
 
 bool TransactionStore::ObjectsAreEquivalent(const PeerObjectImpl* a,
                                             const PeerObjectImpl* b) const {
-  CHECK(a != NULL);
-  CHECK(b != NULL);
+  CHECK(a != nullptr);
+  CHECK(b != nullptr);
 
   if (a == b) {
     return true;
@@ -370,13 +370,13 @@ bool TransactionStore::ObjectsAreEquivalent(const PeerObjectImpl* a,
   const SharedObject* const a_shared_object = a->shared_object();
   const SharedObject* const b_shared_object = b->shared_object();
 
-  return a_shared_object != NULL && a_shared_object == b_shared_object;
+  return a_shared_object != nullptr && a_shared_object == b_shared_object;
 }
 
 void TransactionStore::HandleApplyTransactionMessage(
     const CanonicalPeer* remote_peer,
     const ApplyTransactionMessage& apply_transaction_message) {
-  CHECK(remote_peer != NULL);
+  CHECK(remote_peer != nullptr);
 
   const TransactionId& transaction_id =
       apply_transaction_message.transaction_id();
@@ -392,12 +392,12 @@ void TransactionStore::HandleApplyTransactionMessage(
     SharedObject* const shared_object = GetSharedObject(
         object_transaction.object_id());
 
-    if (shared_object != NULL) {
+    if (shared_object != nullptr) {
       const int event_count = object_transaction.event_size();
 
       linked_ptr<SharedObjectTransactionInfo>& transaction =
           shared_object_transactions[shared_object];
-      if (transaction.get() == NULL) {
+      if (transaction.get() == nullptr) {
         transaction.reset(new SharedObjectTransactionInfo());
         transaction->origin_peer = remote_peer;
       }
@@ -423,7 +423,7 @@ void TransactionStore::HandleGetObjectMessage(
   SharedObject* const requested_shared_object = GetSharedObject(
       requested_object_id);
 
-  if (requested_shared_object == NULL) {
+  if (requested_shared_object == nullptr) {
     PeerMessage reply;
     reply.mutable_store_object_message()->mutable_object_id()->CopyFrom(
         requested_object_id);
@@ -610,7 +610,7 @@ SharedObject* TransactionStore::GetSharedObject(const Uuid& object_id) const {
 
   const SharedObjectMap::const_iterator it = shared_objects_.find(object_id);
   if (it == shared_objects_.end()) {
-    return NULL;
+    return nullptr;
   }
 
   return it->second.get();
@@ -620,7 +620,7 @@ SharedObject* TransactionStore::GetOrCreateSharedObject(const Uuid& object_id) {
   MutexLock lock(&shared_objects_mu_);
 
   linked_ptr<SharedObject>& shared_object = shared_objects_[object_id];
-  if (shared_object.get() == NULL) {
+  if (shared_object.get() == nullptr) {
     shared_object.reset(new SharedObject(this, object_id));
   }
 
@@ -629,12 +629,12 @@ SharedObject* TransactionStore::GetOrCreateSharedObject(const Uuid& object_id) {
 
 bool TransactionStore::GetOrCreateSharedObjectForPeerObject(
     PeerObjectImpl* peer_object, SharedObject** shared_object) {
-  CHECK(peer_object != NULL);
-  CHECK(shared_object != NULL);
+  CHECK(peer_object != nullptr);
+  CHECK(shared_object != nullptr);
 
   SharedObject* shared_object_temp = peer_object->shared_object();
 
-  if (shared_object_temp != NULL) {
+  if (shared_object_temp != nullptr) {
     *shared_object = shared_object_temp;
     return false;
   }
@@ -671,9 +671,9 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint_Helper(
     unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
     vector<pair<const CanonicalPeer*, TransactionId>>*
         all_transactions_to_reject) {
-  CHECK(shared_object != NULL);
-  CHECK(current_version_number != NULL);
-  CHECK(all_transactions_to_reject != NULL);
+  CHECK(shared_object != nullptr);
+  CHECK(current_version_number != nullptr);
+  CHECK(all_transactions_to_reject != nullptr);
 
   MaxVersionMap current_version_map;
   {
@@ -706,7 +706,7 @@ void TransactionStore::ApplyTransactionAndSendMessage(
     const TransactionId& transaction_id,
     unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
         shared_object_transactions) {
-  CHECK(shared_object_transactions != NULL);
+  CHECK(shared_object_transactions != nullptr);
 
   PeerMessage peer_message;
   ApplyTransactionMessage* const apply_transaction_message =
@@ -744,8 +744,8 @@ void TransactionStore::ApplyTransaction(
     const CanonicalPeer* origin_peer,
     unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
         shared_object_transactions) {
-  CHECK(origin_peer != NULL);
-  CHECK(shared_object_transactions != NULL);
+  CHECK(origin_peer != nullptr);
+  CHECK(shared_object_transactions != nullptr);
 
   // TODO(dss): Make sure that the transaction has a later timestamp than the
   // previous transaction received from the same originating peer.
@@ -786,7 +786,7 @@ void TransactionStore::RejectTransactions(
         transactions_to_reject,
     const TransactionId& new_transaction_id,
     RejectTransactionMessage* reject_transaction_message) {
-  CHECK(reject_transaction_message != NULL);
+  CHECK(reject_transaction_message != nullptr);
 
   reject_transaction_message->mutable_new_transaction_id()->CopyFrom(
       new_transaction_id);
@@ -930,11 +930,11 @@ void TransactionStore::CreateNewPeerObjects(
 
 SharedObject* TransactionStore::ConvertPeerObjectToSharedObject(
     PeerObjectImpl* peer_object) {
-  if (peer_object == NULL) {
-    return NULL;
+  if (peer_object == nullptr) {
+    return nullptr;
   }
 
-  SharedObject* shared_object = NULL;
+  SharedObject* shared_object = nullptr;
   GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
 
   return shared_object;
@@ -944,11 +944,11 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
     const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
     unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
         shared_object_transactions) {
-  CHECK(pending_event != NULL);
+  CHECK(pending_event != nullptr);
 
   unordered_set<SharedObject*> new_shared_objects;
   for (PeerObjectImpl* const peer_object : pending_event->new_peer_objects()) {
-    SharedObject* shared_object = NULL;
+    SharedObject* shared_object = nullptr;
     GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
 
     CHECK(new_shared_objects.insert(shared_object).second);
@@ -964,7 +964,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
     PeerObjectImpl* const peer_object = live_object_pair.first;
     const ConstLiveObjectPtr& live_object = live_object_pair.second;
 
-    SharedObject* shared_object = NULL;
+    SharedObject* shared_object = nullptr;
     GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
 
     AddEventToSharedObjectTransactions(
@@ -977,7 +977,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
 
   switch (type) {
     case PendingEvent::OBJECT_CREATION:
-      if (prev_shared_object != NULL) {
+      if (prev_shared_object != nullptr) {
         CHECK_EQ(new_shared_objects.size(), 1u);
         SharedObject* const new_shared_object = *new_shared_objects.begin();
 
@@ -1003,9 +1003,9 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
       break;
 
     case PendingEvent::METHOD_CALL: {
-      PeerObjectImpl* next_peer_object = NULL;
-      const string* method_name = NULL;
-      const vector<Value>* parameters = NULL;
+      PeerObjectImpl* next_peer_object = nullptr;
+      const string* method_name = nullptr;
+      const vector<Value>* parameters = nullptr;
 
       pending_event->GetMethodCall(&next_peer_object, &method_name,
                                    &parameters);
@@ -1028,7 +1028,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
                                              committed_parameters),
             shared_object_transactions);
       } else {
-        if (prev_shared_object != NULL) {
+        if (prev_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               prev_shared_object, origin_peer,
               new SubMethodCallCommittedEvent(new_shared_objects,
@@ -1047,8 +1047,8 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
     }
 
     case PendingEvent::METHOD_RETURN: {
-      PeerObjectImpl* next_peer_object = NULL;
-      const Value* return_value = NULL;
+      PeerObjectImpl* next_peer_object = nullptr;
+      const Value* return_value = nullptr;
 
       pending_event->GetMethodReturn(&next_peer_object, &return_value);
 
@@ -1072,7 +1072,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
                                            committed_return_value),
             shared_object_transactions);
 
-        if (next_shared_object != NULL) {
+        if (next_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               next_shared_object, origin_peer,
               new SubMethodReturnCommittedEvent(prev_shared_object,
@@ -1095,7 +1095,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
 
 void TransactionStore::ConvertValueToCommittedValue(const Value& in,
                                                     CommittedValue* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
   out->set_local_type(in.local_type());
   const Value::Type type = in.type();
@@ -1129,8 +1129,8 @@ void TransactionStore::ConvertValueToCommittedValue(const Value& in,
 
 void TransactionStore::ConvertCommittedEventToEventProto(
     const CommittedEvent* in, EventProto* out) {
-  CHECK(in != NULL);
-  CHECK(out != NULL);
+  CHECK(in != nullptr);
+  CHECK(out != nullptr);
 
   const CommittedEvent::Type type = in->type();
 
@@ -1147,7 +1147,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
                              &referenced_peer_objects);
 
       for (PeerObjectImpl* const peer_object : referenced_peer_objects) {
-        SharedObject* shared_object = NULL;
+        SharedObject* shared_object = nullptr;
         GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
 
         object_creation_event_proto->add_referenced_object_id()->CopyFrom(
@@ -1169,9 +1169,9 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       break;
 
     case CommittedEvent::METHOD_CALL: {
-      SharedObject* caller = NULL;
-      const string* method_name = NULL;
-      const vector<CommittedValue>* parameters = NULL;
+      SharedObject* caller = nullptr;
+      const string* method_name = nullptr;
+      const vector<CommittedValue>* parameters = nullptr;
 
       in->GetMethodCall(&caller, &method_name, &parameters);
 
@@ -1184,7 +1184,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
             parameter, method_call_event_proto->add_parameter());
       }
 
-      if (caller != NULL) {
+      if (caller != nullptr) {
         method_call_event_proto->mutable_caller_object_id()->CopyFrom(
             caller->object_id());
       }
@@ -1193,8 +1193,8 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     }
 
     case CommittedEvent::METHOD_RETURN: {
-      SharedObject* caller = NULL;
-      const CommittedValue* return_value = NULL;
+      SharedObject* caller = nullptr;
+      const CommittedValue* return_value = nullptr;
 
       in->GetMethodReturn(&caller, &return_value);
 
@@ -1203,7 +1203,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       ConvertCommittedValueToValueProto(
           *return_value, method_return_event_proto->mutable_return_value());
 
-      if (caller != NULL) {
+      if (caller != nullptr) {
         method_return_event_proto->mutable_caller_object_id()->CopyFrom(
             caller->object_id());
       }
@@ -1212,9 +1212,9 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     }
 
     case CommittedEvent::SUB_METHOD_CALL: {
-      SharedObject* callee = NULL;
-      const string* method_name = NULL;
-      const vector<CommittedValue>* parameters = NULL;
+      SharedObject* callee = nullptr;
+      const string* method_name = nullptr;
+      const vector<CommittedValue>* parameters = nullptr;
 
       in->GetSubMethodCall(&callee, &method_name, &parameters);
 
@@ -1234,8 +1234,8 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     }
 
     case CommittedEvent::SUB_METHOD_RETURN: {
-      SharedObject* callee = NULL;
-      const CommittedValue* return_value = NULL;
+      SharedObject* callee = nullptr;
+      const CommittedValue* return_value = nullptr;
 
       in->GetSubMethodReturn(&callee, &return_value);
 
@@ -1251,8 +1251,8 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     }
 
     case CommittedEvent::SELF_METHOD_CALL: {
-      const string* method_name = NULL;
-      const vector<CommittedValue>* parameters = NULL;
+      const string* method_name = nullptr;
+      const vector<CommittedValue>* parameters = nullptr;
 
       in->GetSelfMethodCall(&method_name, &parameters);
 
@@ -1269,7 +1269,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     }
 
     case CommittedEvent::SELF_METHOD_RETURN: {
-      const CommittedValue* return_value = NULL;
+      const CommittedValue* return_value = nullptr;
 
       in->GetSelfMethodReturn(&return_value);
 
@@ -1348,7 +1348,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       const MethodCallEventProto& method_call_event_proto =
           event_proto.method_call();
 
-      SharedObject* caller = NULL;
+      SharedObject* caller = nullptr;
       if (method_call_event_proto.has_caller_object_id()) {
         caller = GetOrCreateSharedObject(
             method_call_event_proto.caller_object_id());
@@ -1371,7 +1371,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       const MethodReturnEventProto& method_return_event_proto =
           event_proto.method_return();
 
-      SharedObject* caller = NULL;
+      SharedObject* caller = nullptr;
       if (method_return_event_proto.has_caller_object_id()) {
         caller = GetOrCreateSharedObject(
             method_return_event_proto.caller_object_id());
@@ -1455,7 +1455,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       LOG(FATAL) << "Invalid event type: " << static_cast<int>(type);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 #define CONVERT_VALUE(enum_const, setter_method, getter_method) \
@@ -1465,7 +1465,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
 
 void TransactionStore::ConvertValueProtoToCommittedValue(const ValueProto& in,
                                                          CommittedValue* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
   out->set_local_type(in.local_type());
   const ValueProto::Type type = GetValueProtoType(in);
@@ -1502,14 +1502,14 @@ void TransactionStore::AddEventToSharedObjectTransactions(
     CommittedEvent* event,
     unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
         shared_object_transactions) {
-  CHECK(shared_object != NULL);
-  CHECK(origin_peer != NULL);
-  CHECK(event != NULL);
-  CHECK(shared_object_transactions != NULL);
+  CHECK(shared_object != nullptr);
+  CHECK(origin_peer != nullptr);
+  CHECK(event != nullptr);
+  CHECK(shared_object_transactions != nullptr);
 
   linked_ptr<SharedObjectTransactionInfo>& transaction =
       (*shared_object_transactions)[shared_object];
-  if (transaction.get() == NULL) {
+  if (transaction.get() == nullptr) {
     transaction.reset(new SharedObjectTransactionInfo());
     transaction->origin_peer = origin_peer;
   } else {

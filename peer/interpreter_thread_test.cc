@@ -15,7 +15,6 @@
 
 #include "peer/interpreter_thread.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -76,9 +75,9 @@ MATCHER_P(IsMethodCallPendingEvent, expected_method_name, "") {
     return false;
   }
 
-  PeerObjectImpl* next_peer_object = NULL;
-  const string* method_name = NULL;
-  const vector<Value>* parameters = NULL;
+  PeerObjectImpl* next_peer_object = nullptr;
+  const string* method_name = nullptr;
+  const vector<Value>* parameters = nullptr;
 
   arg->GetMethodCall(&next_peer_object, &method_name, &parameters);
 
@@ -91,7 +90,7 @@ MATCHER(IsMethodReturnPendingEvent, "") {
 
 void CallAppendMethod(Thread* thread, PeerObject* peer_object,
                       const string& string_to_append) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   vector<Value> parameters(1);
   parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
@@ -111,7 +110,7 @@ class ValueSetter {
   }
 
   void SetValue(Value* value) const {
-    CHECK(value != NULL);
+    CHECK(value != nullptr);
     *value = desired_value_;
   }
 
@@ -128,7 +127,7 @@ class TransactionIdSetter {
   }
 
   void CopyTransactionId(TransactionId* transaction_id) const {
-    CHECK(transaction_id != NULL);
+    CHECK(transaction_id != nullptr);
     transaction_id->CopyFrom(transaction_id_);
   }
 
@@ -174,12 +173,12 @@ TEST(InterpreterThreadTest, CallMethodInNestedTransactions) {
 }
 
 void CallBeginTransaction(Thread* thread) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK(thread->BeginTransaction());
 }
 
 void CallEndTransaction(Thread* thread) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK(thread->EndTransaction());
 }
 

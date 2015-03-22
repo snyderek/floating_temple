@@ -16,8 +16,6 @@
 #ifndef UTIL_STL_UTIL_H_
 #define UTIL_STL_UTIL_H_
 
-#include <cstddef>
-
 #include "base/logging.h"
 
 namespace floating_temple {
@@ -37,7 +35,7 @@ Iterator NextIterator(Iterator it) {
 template<class Container>
 typename Container::const_iterator FindInContainer(
     const Container* haystack, const typename Container::value_type& needle) {
-  CHECK(haystack != NULL);
+  CHECK(haystack != nullptr);
 
   const typename Container::const_iterator end_it = haystack->end();
   typename Container::const_iterator it = haystack->begin();
@@ -52,7 +50,7 @@ typename Container::const_iterator FindInContainer(
 template<class Container>
 typename Container::iterator FindInContainer(
     Container* haystack, const typename Container::value_type& needle) {
-  CHECK(haystack != NULL);
+  CHECK(haystack != nullptr);
 
   const typename Container::const_iterator end_it = haystack->end();
   typename Container::iterator it = haystack->begin();

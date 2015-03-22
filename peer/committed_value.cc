@@ -16,7 +16,6 @@
 #include "peer/committed_value.h"
 
 #include <cinttypes>
-#include <cstddef>
 #include <string>
 
 #include "base/escape.h"
@@ -128,11 +127,11 @@ string CommittedValue::Dump() const {
 
     case STRING:
     case BYTES:
-      CHECK(string_or_bytes_value_ != NULL);
+      CHECK(string_or_bytes_value_ != nullptr);
       return StringPrintf("\"%s\"", CEscape(*string_or_bytes_value_).c_str());
 
     case SHARED_OBJECT:
-      CHECK(shared_object_ != NULL);
+      CHECK(shared_object_ != nullptr);
       return StringPrintf("{ \"object_id\": \"%s\" }",
                           UuidToString(shared_object_->object_id()).c_str());
 

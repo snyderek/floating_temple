@@ -15,7 +15,6 @@
 
 #include "peer/peer_impl.h"
 
-#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -60,7 +59,7 @@ void PeerImpl::Start(Interpreter* interpreter,
                      const vector<string>& known_peer_ids,
                      int send_receive_thread_count,
                      bool delay_object_binding) {
-  CHECK(interpreter != NULL);
+  CHECK(interpreter != nullptr);
 
   state_.ChangeState(STARTING);
 
@@ -90,7 +89,7 @@ void PeerImpl::Start(Interpreter* interpreter,
 
 void PeerImpl::RunProgram(LocalObject* local_object, const string& method_name,
                           Value* return_value) {
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (state_.WaitForNotState(NOT_STARTED | STARTING) != RUNNING) {
     return;
@@ -113,7 +112,7 @@ void PeerImpl::Stop() {
   state_.ChangeState(STOPPING);
 
   connection_manager_.Stop();
-  transaction_store_.reset(NULL);
+  transaction_store_.reset(nullptr);
 
   state_.ChangeState(STOPPED);
 }

@@ -18,7 +18,6 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include <algorithm>
-#include <cstddef>
 
 #include "base/logging.h"
 
@@ -41,13 +40,13 @@ void PythonScopedPtr::reset(PyObject* object) {
 }
 
 void PythonScopedPtr::IncRef() const {
-  CHECK(object_ != NULL);
+  CHECK(object_ != nullptr);
   Py_INCREF(object_);
 }
 
 PyObject* PythonScopedPtr::release() {
   PyObject* const object = object_;
-  object_ = NULL;
+  object_ = nullptr;
   return object;
 }
 

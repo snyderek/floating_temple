@@ -17,7 +17,6 @@
 
 #include <pthread.h>
 
-#include <cstddef>
 #include <ctime>
 
 #include <gflags/gflags.h>
@@ -40,7 +39,7 @@ DEFINE_int32(cond_var_timeout_sec_for_debugging, -1,
 namespace floating_temple {
 
 CondVar::CondVar() {
-  CHECK_PTHREAD_ERR(pthread_cond_init(&cnd_, NULL));
+  CHECK_PTHREAD_ERR(pthread_cond_init(&cnd_, nullptr));
 }
 
 CondVar::~CondVar() {
@@ -63,12 +62,12 @@ void CondVar::Wait(Mutex* mu) const {
 }
 
 void CondVar::WaitPatiently(Mutex* mu) const {
-  CHECK(mu != NULL);
+  CHECK(mu != nullptr);
   CHECK_PTHREAD_ERR(pthread_cond_wait(&cnd_, &mu->mtx_));
 }
 
 bool CondVar::TimedWait(Mutex* mu, const timespec* deadline) const {
-  CHECK(mu != NULL);
+  CHECK(mu != nullptr);
 
   const int error_code = pthread_cond_timedwait(&cnd_, &mu->mtx_, deadline);
 

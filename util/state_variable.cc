@@ -15,7 +15,6 @@
 
 #include "util/state_variable.h"
 
-#include <cstddef>
 #include <set>
 #include <utility>
 
@@ -83,7 +82,7 @@ unsigned StateVariable::Mutate(
 
 unsigned StateVariable::SaveOldStateAndMutate(
     void (*mutate_func)(StateVariableInternalInterface*), unsigned* old_state) {
-  CHECK(old_state != NULL);
+  CHECK(old_state != nullptr);
 
   MutexLock lock(&mu_);
   *old_state = current_state_;

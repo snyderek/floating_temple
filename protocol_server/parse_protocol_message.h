@@ -16,7 +16,6 @@
 #ifndef PROTOCOL_SERVER_PARSE_PROTOCOL_MESSAGE_H_
 #define PROTOCOL_SERVER_PARSE_PROTOCOL_MESSAGE_H_
 
-#include <cstddef>
 #include <string>
 
 #include "base/logging.h"
@@ -33,8 +32,8 @@ int ParseMessageLength(const char* input_buffer, int buffer_size,
 template<class Message>
 int ParseProtocolMessage(const char* input_buffer, int buffer_size,
                          Message* message) {
-  CHECK(input_buffer != NULL);
-  CHECK(message != NULL);
+  CHECK(input_buffer != nullptr);
+  CHECK(message != nullptr);
 
   int message_length = 0;
   const int varint_length = ParseMessageLength(input_buffer, buffer_size,

@@ -17,7 +17,6 @@
 
 #include <pthread.h>
 
-#include <cstddef>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -55,7 +54,7 @@ InterpreterThread::InterpreterThread(
     TransactionStoreInternalInterface* transaction_store)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       transaction_level_(0),
-      current_peer_object_(NULL) {
+      current_peer_object_(nullptr) {
   GetMinTransactionId(&current_transaction_id_);
   GetMinTransactionId(&rejected_transaction_id_);
 }
@@ -92,7 +91,7 @@ bool InterpreterThread::BeginTransaction() {
     return false;
   }
 
-  if (current_peer_object_ != NULL) {
+  if (current_peer_object_ != nullptr) {
     modified_objects_[current_peer_object_] = current_live_object_;
     AddTransactionEvent(new BeginTransactionPendingEvent(current_peer_object_));
   }
@@ -109,7 +108,7 @@ bool InterpreterThread::EndTransaction() {
     return false;
   }
 
-  if (current_peer_object_ != NULL) {
+  if (current_peer_object_ != nullptr) {
     modified_objects_[current_peer_object_] = current_live_object_;
     AddTransactionEvent(new EndTransactionPendingEvent(current_peer_object_));
   }
@@ -176,7 +175,7 @@ PeerObject* InterpreterThread::GetOrCreateNamedObject(
                                                          GetSequencePoint(),
                                                          false);
 
-    if (existing_live_object.get() != NULL) {
+    if (existing_live_object.get() != nullptr) {
       // The named object was already known to this peer. Remove the map entry
       // that was just added.
       const unordered_map<PeerObjectImpl*, NewObject>::iterator new_object_it =
@@ -194,9 +193,9 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
                                    const string& method_name,
                                    const vector<Value>& parameters,
                                    Value* return_value) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
   CHECK(!method_name.empty());
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (Rewinding()) {
     return false;
@@ -226,7 +225,7 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
       CheckIfValueIsNew(parameter, &live_objects, &new_peer_objects);
     }
 
-    if (caller_peer_object != NULL) {
+    if (caller_peer_object != nullptr) {
       modified_objects_[caller_peer_object] = current_live_object_;
     }
 
@@ -291,7 +290,7 @@ bool InterpreterThread::CallMethodHelper(
     const vector<Value>& parameters,
     LiveObjectPtr* callee_live_object,
     Value* return_value) {
-  CHECK(callee_live_object != NULL);
+  CHECK(callee_live_object != nullptr);
 
   for (;;) {
     // TODO(dss): If the caller object has been modified by another peer since
@@ -350,14 +349,14 @@ bool InterpreterThread::WaitForBlockingThreads_Locked(
 }
 
 LiveObjectPtr InterpreterThread::GetLiveObject(PeerObjectImpl* peer_object) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
   // If the peer object was in new_objects_, it already should have been moved
   // to modified_objects_ by InterpreterThread::CheckIfPeerObjectIsNew.
   CHECK(new_objects_.find(peer_object) == new_objects_.end());
 
   LiveObjectPtr& live_object = modified_objects_[peer_object];
 
-  if (live_object.get() == NULL) {
+  if (live_object.get() == nullptr) {
     const ConstLiveObjectPtr existing_live_object =
         transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
                                                          GetSequencePoint(),
@@ -369,7 +368,7 @@ LiveObjectPtr InterpreterThread::GetLiveObject(PeerObjectImpl* peer_object) {
 }
 
 const SequencePoint* InterpreterThread::GetSequencePoint() {
-  if (sequence_point_.get() == NULL) {
+  if (sequence_point_.get() == nullptr) {
     sequence_point_.reset(transaction_store_->GetCurrentSequencePoint());
   }
 
@@ -378,14 +377,14 @@ const SequencePoint* InterpreterThread::GetSequencePoint() {
 
 void InterpreterThread::AddTransactionEvent(PendingEvent* event) {
   CHECK_GE(transaction_level_, 0);
-  CHECK(event != NULL);
+  CHECK(event != nullptr);
 
   const bool first_event = events_.empty();
 
   events_.push_back(make_linked_ptr(event));
 
   if (transaction_level_ == 0 &&
-      !(first_event && event->prev_peer_object() == NULL)) {
+      !(first_event && event->prev_peer_object() == nullptr)) {
     CommitTransaction();
   }
 }
@@ -418,10 +417,10 @@ void InterpreterThread::CheckIfPeerObjectIsNew(
     PeerObjectImpl* peer_object,
     unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>* live_objects,
     unordered_set<PeerObjectImpl*>* new_peer_objects) {
-  CHECK(live_objects != NULL);
-  CHECK(new_peer_objects != NULL);
+  CHECK(live_objects != nullptr);
+  CHECK(new_peer_objects != nullptr);
 
-  if (peer_object != NULL) {
+  if (peer_object != nullptr) {
     const unordered_map<PeerObjectImpl*, NewObject>::iterator it =
         new_objects_.find(peer_object);
 

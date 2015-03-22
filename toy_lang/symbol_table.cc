@@ -15,7 +15,6 @@
 
 #include "toy_lang/symbol_table.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -32,7 +31,7 @@ namespace floating_temple {
 namespace toy_lang {
 
 bool EnterScope(PeerObject* symbol_table_object, Thread* thread) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   Value dummy;
   return thread->CallMethod(symbol_table_object, "enter_scope", vector<Value>(),
@@ -40,7 +39,7 @@ bool EnterScope(PeerObject* symbol_table_object, Thread* thread) {
 }
 
 bool LeaveScope(PeerObject* symbol_table_object, Thread* thread) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   Value dummy;
   return thread->CallMethod(symbol_table_object, "leave_scope", vector<Value>(),
@@ -49,8 +48,8 @@ bool LeaveScope(PeerObject* symbol_table_object, Thread* thread) {
 
 bool IsVariableSet(PeerObject* symbol_table_object, Thread* thread,
                    const string& name, bool* is_set) {
-  CHECK(thread != NULL);
-  CHECK(is_set != NULL);
+  CHECK(thread != nullptr);
+  CHECK(is_set != nullptr);
 
   VLOG(1) << "Symbol table: Is set \"" << CEscape(name) << "\"";
 
@@ -69,8 +68,8 @@ bool IsVariableSet(PeerObject* symbol_table_object, Thread* thread,
 
 bool GetVariable(PeerObject* symbol_table_object, Thread* thread,
                  const string& name, PeerObject** object) {
-  CHECK(thread != NULL);
-  CHECK(object != NULL);
+  CHECK(thread != nullptr);
+  CHECK(object != nullptr);
 
   VLOG(1) << "Symbol table: Get \"" << CEscape(name) << "\"";
 
@@ -88,7 +87,7 @@ bool GetVariable(PeerObject* symbol_table_object, Thread* thread,
 
 bool SetVariable(PeerObject* symbol_table_object, Thread* thread,
                  const string& name, PeerObject* object) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
 
   VLOG(1) << "Symbol table: Set \"" << CEscape(name) << "\"";
 

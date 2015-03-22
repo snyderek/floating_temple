@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cstddef>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -64,7 +63,7 @@ class ToyLangIntegrationTest : public Test {
     char* const buffer = CreateCharBuffer(file_content);
 
     FILE* const fp = fmemopen(buffer, file_content.length(), "r");
-    PLOG_IF(FATAL, fp == NULL) << "fmemopen";
+    PLOG_IF(FATAL, fp == nullptr) << "fmemopen";
 
     toy_lang::RunToyLangFile(peer_, fp);
 

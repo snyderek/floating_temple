@@ -21,7 +21,6 @@
 #include <unistd.h>
 
 #include <cerrno>
-#include <cstddef>
 #include <string>
 
 #include "base/logging.h"
@@ -84,7 +83,7 @@ ProtocolConnectionImpl<Message>::ProtocolConnectionImpl(
     ProtocolServerInterfaceForConnection* protocol_server, int socket_fd)
     : protocol_server_(CHECK_NOTNULL(protocol_server)),
       socket_fd_(socket_fd),
-      protocol_connection_handler_(NULL),
+      protocol_connection_handler_(nullptr),
       receive_blocked_(false),
       send_blocked_(false),
       close_requested_(false) {
@@ -98,8 +97,8 @@ ProtocolConnectionImpl<Message>::~ProtocolConnectionImpl() {
 template<class Message>
 void ProtocolConnectionImpl<Message>::Init(
     ProtocolConnectionHandler<Message>* protocol_connection_handler) {
-  CHECK(protocol_connection_handler_ == NULL);
-  CHECK(protocol_connection_handler != NULL);
+  CHECK(protocol_connection_handler_ == nullptr);
+  CHECK(protocol_connection_handler != nullptr);
 
   protocol_connection_handler_ = protocol_connection_handler;
 }
@@ -186,8 +185,8 @@ void ProtocolConnectionImpl<Message>::NotifyMessageReadyToSend() {
 
 template<class Message>
 void ProtocolConnectionImpl<Message>::ParseMessages(std::string* input_string) {
-  CHECK(protocol_connection_handler_ != NULL);
-  CHECK(input_string != NULL);
+  CHECK(protocol_connection_handler_ != nullptr);
+  CHECK(input_string != nullptr);
 
   for (;;) {
     Message message;
@@ -208,7 +207,7 @@ void ProtocolConnectionImpl<Message>::ParseMessages(std::string* input_string) {
 
 template<class Message>
 bool ProtocolConnectionImpl<Message>::PrivateHasOutputData() {
-  CHECK(protocol_connection_handler_ != NULL);
+  CHECK(protocol_connection_handler_ != nullptr);
 
   if (output_data_.empty()) {
     Message message;

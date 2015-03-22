@@ -27,16 +27,16 @@ using std::size_t;
 namespace floating_temple {
 namespace python {
 
-__thread Thread* InterpreterImpl::thread_object_ = NULL;
-InterpreterImpl* InterpreterImpl::instance_ = NULL;
+__thread Thread* InterpreterImpl::thread_object_ = nullptr;
+InterpreterImpl* InterpreterImpl::instance_ = nullptr;
 
 InterpreterImpl::InterpreterImpl() {
-  CHECK(instance_ == NULL);
+  CHECK(instance_ == nullptr);
   instance_ = this;
 }
 
 InterpreterImpl::~InterpreterImpl() {
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 void InterpreterImpl::BeginTransaction() {
@@ -64,12 +64,12 @@ LocalObject* InterpreterImpl::DeserializeObject(
 
 // static
 InterpreterImpl* InterpreterImpl::instance() {
-  CHECK(instance_ != NULL);
+  CHECK(instance_ != nullptr);
   return instance_;
 }
 
 Thread* InterpreterImpl::PrivateGetThreadObject() {
-  CHECK(thread_object_ != NULL);
+  CHECK(thread_object_ != nullptr);
   return thread_object_;
 }
 

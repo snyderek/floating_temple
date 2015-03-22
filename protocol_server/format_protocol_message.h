@@ -16,7 +16,6 @@
 #ifndef PROTOCOL_SERVER_FORMAT_PROTOCOL_MESSAGE_H_
 #define PROTOCOL_SERVER_FORMAT_PROTOCOL_MESSAGE_H_
 
-#include <cstddef>
 #include <string>
 
 #include "base/integral_types.h"
@@ -27,7 +26,7 @@ namespace floating_temple {
 
 template<class Message>
 void FormatProtocolMessage(const Message& message, std::string* output) {
-  CHECK(output != NULL);
+  CHECK(output != nullptr);
 
   output->clear();
 

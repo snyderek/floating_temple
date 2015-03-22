@@ -15,7 +15,6 @@
 
 #include "toy_lang/token.h"
 
-#include <cstddef>
 #include <string>
 
 #include "base/escape.h"
@@ -99,7 +98,7 @@ Token& Token::operator=(const Token& other) {
 
 // static
 void Token::CreateIntLiteral(Token* token, int64 int_literal) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "INT_LITERAL " << int_literal;
   token->FreeMemory();
   token->type_ = INT_LITERAL;
@@ -108,7 +107,7 @@ void Token::CreateIntLiteral(Token* token, int64 int_literal) {
 
 // static
 void Token::CreateStringLiteral(Token* token, const string& string_literal) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "STRING_LITERAL \"" << CEscape(string_literal) << "\"";
   token->FreeMemory();
   token->type_ = STRING_LITERAL;
@@ -117,7 +116,7 @@ void Token::CreateStringLiteral(Token* token, const string& string_literal) {
 
 // static
 void Token::CreateIdentifier(Token* token, const string& identifier) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "IDENTIFIER \"" << CEscape(identifier) << "\"";
   token->FreeMemory();
   token->type_ = IDENTIFIER;
@@ -126,7 +125,7 @@ void Token::CreateIdentifier(Token* token, const string& identifier) {
 
 // static
 void Token::CreateBeginExpression(Token* token) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "BEGIN_EXPRESSION";
   token->FreeMemory();
   token->type_ = BEGIN_EXPRESSION;
@@ -134,7 +133,7 @@ void Token::CreateBeginExpression(Token* token) {
 
 // static
 void Token::CreateEndExpression(Token* token) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "END_EXPRESSION";
   token->FreeMemory();
   token->type_ = END_EXPRESSION;
@@ -142,7 +141,7 @@ void Token::CreateEndExpression(Token* token) {
 
 // static
 void Token::CreateBeginBlock(Token* token) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "BEGIN_BLOCK";
   token->FreeMemory();
   token->type_ = BEGIN_BLOCK;
@@ -150,7 +149,7 @@ void Token::CreateBeginBlock(Token* token) {
 
 // static
 void Token::CreateEndBlock(Token* token) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "END_BLOCK";
   token->FreeMemory();
   token->type_ = END_BLOCK;
@@ -158,7 +157,7 @@ void Token::CreateEndBlock(Token* token) {
 
 // static
 void Token::CreateBeginList(Token* token) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "BEGIN_LIST";
   token->FreeMemory();
   token->type_ = BEGIN_LIST;
@@ -166,7 +165,7 @@ void Token::CreateBeginList(Token* token) {
 
 // static
 void Token::CreateEndList(Token* token) {
-  CHECK(token != NULL);
+  CHECK(token != nullptr);
   VLOG(1) << "END_LIST";
   token->FreeMemory();
   token->type_ = END_LIST;

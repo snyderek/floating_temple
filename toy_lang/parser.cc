@@ -15,7 +15,6 @@
 
 #include "toy_lang/parser.h"
 
-#include <cstddef>
 #include <vector>
 
 #include "base/logging.h"
@@ -33,7 +32,7 @@ void ParseExpressionList(Lexer* lexer, Token::Type end_token_type,
                          vector<Expression*>* expressions);
 
 Expression* ParseExpression(Lexer* lexer) {
-  CHECK(lexer != NULL);
+  CHECK(lexer != nullptr);
 
   Token token;
   lexer->GetNextToken(&token);
@@ -76,13 +75,13 @@ Expression* ParseExpression(Lexer* lexer) {
       LOG(FATAL) << "Unexpected token type: " << static_cast<int>(token_type);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void ParseExpressionList(Lexer* lexer, Token::Type end_token_type,
                          vector<Expression*>* expressions) {
-  CHECK(lexer != NULL);
-  CHECK(expressions != NULL);
+  CHECK(lexer != nullptr);
+  CHECK(expressions != nullptr);
 
   while (lexer->PeekNextTokenType() != end_token_type) {
     expressions->push_back(ParseExpression(lexer));
@@ -94,7 +93,7 @@ void ParseExpressionList(Lexer* lexer, Token::Type end_token_type,
 }  // namespace
 
 Expression* ParseFile(Lexer* lexer) {
-  CHECK(lexer != NULL);
+  CHECK(lexer != nullptr);
 
   Expression* const expression = ParseExpression(lexer);
   CHECK(!lexer->HasNextToken());

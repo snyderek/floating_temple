@@ -15,8 +15,6 @@
 
 #include "protocol_server/varint.h"
 
-#include <cstddef>
-
 #include "base/integral_types.h"
 #include "base/logging.h"
 
@@ -33,18 +31,18 @@ const char* FindVarintLastChar(const char* buffer, int buffer_size) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace
 
 int ParseVarint(const char* buffer, int buffer_size, uint64* n) {
-  CHECK(buffer != NULL);
+  CHECK(buffer != nullptr);
   CHECK_GE(buffer_size, 0);
-  CHECK(n != NULL);
+  CHECK(n != nullptr);
 
   const char* const last_char_ptr = FindVarintLastChar(buffer, buffer_size);
-  if (last_char_ptr == NULL) {
+  if (last_char_ptr == nullptr) {
     return -1;
   }
 
@@ -68,7 +66,7 @@ int ParseVarint(const char* buffer, int buffer_size, uint64* n) {
 }
 
 int FormatVarint(uint64 n, char* buffer, int buffer_size) {
-  CHECK(buffer != NULL);
+  CHECK(buffer != nullptr);
   CHECK_GT(buffer_size, 0);
 
   const int length = GetVarintLength(n);

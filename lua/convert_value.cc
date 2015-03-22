@@ -15,7 +15,6 @@
 
 #include "lua/convert_value.h"
 
-#include <cstddef>
 #include <string>
 
 #include "base/logging.h"
@@ -34,8 +33,8 @@ class PeerObject;
 namespace lua {
 
 void LuaValueToValue(const TValue* lua_value, Value* value) {
-  CHECK(lua_value != NULL);
-  CHECK(value != NULL);
+  CHECK(lua_value != nullptr);
+  CHECK(value != nullptr);
 
   const int lua_type = ttypenv(lua_value);
 
@@ -72,7 +71,7 @@ void LuaValueToValue(const TValue* lua_value, Value* value) {
 }
 
 void ValueToLuaValue(const Value& value, TValue* lua_value) {
-  CHECK(lua_value != NULL);
+  CHECK(lua_value != nullptr);
 
   lua_State* const lua_state = InterpreterImpl::instance()->GetLuaState();
   const int lua_type = value.local_type();

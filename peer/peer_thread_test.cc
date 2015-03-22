@@ -15,7 +15,6 @@
 
 #include "peer/peer_thread.h"
 
-#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -69,9 +68,9 @@ Uuid MakeUuid(int n) {
 
 void TestMethod1(Thread* thread, const vector<Value>& parameters,
                  Value* return_value) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   Value sub_return_value;
   if (!thread->CallMethod(parameters[0].peer_object(), "test_method2",
@@ -116,7 +115,7 @@ TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
   vector<CommittedValue> method_parameters(1);
   method_parameters[0].set_local_type(0);
   method_parameters[0].set_shared_object(&shared_object2);
-  const MethodCallCommittedEvent event1(NULL, "test_method1",
+  const MethodCallCommittedEvent event1(nullptr, "test_method1",
                                         method_parameters);
 
   const SubMethodCallCommittedEvent event2(new_shared_objects, &shared_object2,
@@ -168,14 +167,14 @@ TEST(PeerThreadTest, FlushEvents) {
 
   const unordered_set<SharedObject*> new_shared_objects;
 
-  const MethodCallCommittedEvent event1(NULL, "test_method2",
+  const MethodCallCommittedEvent event1(nullptr, "test_method2",
                                         vector<CommittedValue>());
 
   CommittedValue expected_return_value;
   expected_return_value.set_local_type(0);
   expected_return_value.set_empty();
 
-  const MethodReturnCommittedEvent event2(new_shared_objects, NULL,
+  const MethodReturnCommittedEvent event2(new_shared_objects, nullptr,
                                           expected_return_value);
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
@@ -224,16 +223,16 @@ TEST(PeerThreadTest, MultipleTransactions) {
   event1_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
   event1_parameters[0].set_string_value("crackle.");
 
-  const MethodCallCommittedEvent event1(NULL, "append", event1_parameters);
-  const MethodReturnCommittedEvent event2(new_shared_objects, NULL,
+  const MethodCallCommittedEvent event1(nullptr, "append", event1_parameters);
+  const MethodReturnCommittedEvent event2(new_shared_objects, nullptr,
                                           empty_return_value);
 
   vector<CommittedValue> event3_parameters(1);
   event3_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
   event3_parameters[0].set_string_value("pop.");
 
-  const MethodCallCommittedEvent event3(NULL, "append", event3_parameters);
-  const MethodReturnCommittedEvent event4(new_shared_objects, NULL,
+  const MethodCallCommittedEvent event3(nullptr, "append", event3_parameters);
+  const MethodReturnCommittedEvent event4(new_shared_objects, nullptr,
                                           empty_return_value);
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
@@ -286,25 +285,26 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
   event1_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
   event1_parameters[0].set_string_value("paul.");
 
-  const MethodCallCommittedEvent event1(NULL, "append", event1_parameters);
-  const MethodReturnCommittedEvent event2(new_shared_objects, NULL,
+  const MethodCallCommittedEvent event1(nullptr, "append", event1_parameters);
+  const MethodReturnCommittedEvent event2(new_shared_objects, nullptr,
                                           empty_return_value);
 
   CommittedValue bogus_return_value;
   bogus_return_value.set_local_type(FakeLocalObject::kStringLocalType);
   bogus_return_value.set_string_value("barney.");
 
-  const MethodCallCommittedEvent event3(NULL, "get", vector<CommittedValue>());
+  const MethodCallCommittedEvent event3(nullptr, "get",
+                                        vector<CommittedValue>());
   // This event should cause a conflict.
-  const MethodReturnCommittedEvent event4(new_shared_objects, NULL,
+  const MethodReturnCommittedEvent event4(new_shared_objects, nullptr,
                                           bogus_return_value);
 
   vector<CommittedValue> event5_parameters(1);
   event5_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
   event5_parameters[0].set_string_value("mary.");
 
-  const MethodCallCommittedEvent event5(NULL, "append", event5_parameters);
-  const MethodReturnCommittedEvent event6(new_shared_objects, NULL,
+  const MethodCallCommittedEvent event5(nullptr, "append", event5_parameters);
+  const MethodReturnCommittedEvent event6(new_shared_objects, nullptr,
                                           empty_return_value);
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
@@ -370,11 +370,11 @@ TEST(PeerThreadTest, MethodCallWithoutReturn) {
 
   const unordered_set<SharedObject*> new_shared_objects;
 
-  const MethodCallCommittedEvent event1(NULL, "test_method1",
+  const MethodCallCommittedEvent event1(nullptr, "test_method1",
                                         vector<CommittedValue>());
-  const MethodReturnCommittedEvent event2(new_shared_objects, NULL,
+  const MethodReturnCommittedEvent event2(new_shared_objects, nullptr,
                                           expected_return_value);
-  const MethodCallCommittedEvent event3(NULL, "test_method2",
+  const MethodCallCommittedEvent event3(nullptr, "test_method2",
                                         vector<CommittedValue>());
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
@@ -425,7 +425,7 @@ TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
   vector<CommittedValue> method_parameters(1);
   method_parameters[0].set_local_type(0);
   method_parameters[0].set_shared_object(&shared_object);
-  const MethodCallCommittedEvent event1(NULL, "test_method1",
+  const MethodCallCommittedEvent event1(nullptr, "test_method1",
                                         method_parameters);
 
   const SelfMethodCallCommittedEvent event2(new_shared_objects, "test_method2",
@@ -447,9 +447,9 @@ TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
 
 void TestMethod3(Thread* thread, const vector<Value>& parameters,
                  Value* return_value) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   if (!thread->BeginTransaction()) {
     return;
@@ -507,7 +507,7 @@ TEST(PeerThreadTest, TransactionInsideMethodCall) {
   empty_return_value.set_local_type(0);
   empty_return_value.set_empty();
 
-  const MethodCallCommittedEvent event1(NULL, "test_method3",
+  const MethodCallCommittedEvent event1(nullptr, "test_method3",
                                         method_parameters);
   const BeginTransactionCommittedEvent event2;
   const SubMethodCallCommittedEvent event3(new_shared_objects, &shared_object2,
@@ -516,7 +516,7 @@ TEST(PeerThreadTest, TransactionInsideMethodCall) {
   const SubMethodReturnCommittedEvent event4(&shared_object2,
                                              empty_return_value);
   const EndTransactionCommittedEvent event5;
-  const MethodReturnCommittedEvent event6(new_shared_objects, NULL,
+  const MethodReturnCommittedEvent event6(new_shared_objects, nullptr,
                                           empty_return_value);
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
@@ -545,9 +545,9 @@ TEST(PeerThreadTest, TransactionInsideMethodCall) {
 
 void TestMethod5(Thread* thread, const vector<Value>& parameters,
                  Value* return_value) {
-  CHECK(thread != NULL);
+  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 0u);
-  CHECK(return_value != NULL);
+  CHECK(return_value != nullptr);
 
   PeerObject* const peer_object = thread->CreatePeerObject(
       new FakeLocalObject(""));
@@ -607,7 +607,7 @@ TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
   empty_return_value.set_local_type(0);
   empty_return_value.set_empty();
 
-  const MethodCallCommittedEvent event1(NULL, "test_method5",
+  const MethodCallCommittedEvent event1(nullptr, "test_method5",
                                         method_parameters);
   const SubMethodCallCommittedEvent event2(new_shared_objects, &shared_object2,
                                            "test_method6",
@@ -619,8 +619,8 @@ TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
                                            vector<CommittedValue>());
   const SubMethodReturnCommittedEvent event5(&shared_object2,
                                              empty_return_value);
-  const MethodReturnCommittedEvent event6(unordered_set<SharedObject*>(), NULL,
-                                          empty_return_value);
+  const MethodReturnCommittedEvent event6(unordered_set<SharedObject*>(),
+                                          nullptr, empty_return_value);
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 

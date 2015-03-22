@@ -17,7 +17,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
 #include <cstring>
 #include <string>
 
@@ -42,19 +41,19 @@ COMPILE_ASSERT(sizeof(long) <= sizeof(int64), long_type_is_too_big);
 namespace python {
 
 void MakeValue(int in, Value* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
   out->set_int64_value(LOCAL_TYPE_INT, static_cast<int64>(in));
 }
 
 void MakeValue(long in, Value* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
   out->set_int64_value(LOCAL_TYPE_LONG, static_cast<int64>(in));
 }
 
 void MakeValue(const char* in, Value* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
-  if (in == NULL) {
+  if (in == nullptr) {
     out->set_empty(LOCAL_TYPE_CCHARP);
   } else {
     out->set_bytes_value(LOCAL_TYPE_CCHARP, in);
@@ -62,9 +61,9 @@ void MakeValue(const char* in, Value* out) {
 }
 
 void MakeValue(PyObject* in, Value* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
-  if (in == NULL) {
+  if (in == nullptr) {
     out->set_empty(LOCAL_TYPE_PYOBJECT);
   } else {
     PeerObject* const peer_object = PyProxyObject_GetPeerObject(in);
@@ -93,13 +92,13 @@ long ExtractValue(const Value& value, MethodContext* method_context) {
 template<>
 char* ExtractValue(const Value& value, MethodContext* method_context) {
   CHECK_EQ(value.local_type(), LOCAL_TYPE_CCHARP);
-  CHECK(method_context != NULL);
+  CHECK(method_context != nullptr);
 
   const Value::Type value_type = value.type();
 
   switch (value_type) {
     case Value::EMPTY:
-      return NULL;
+      return nullptr;
 
     case Value::BYTES: {
       const string& immutable_str = value.bytes_value();
@@ -113,7 +112,7 @@ char* ExtractValue(const Value& value, MethodContext* method_context) {
       LOG(FATAL) << "Unexpected value type: " << static_cast<int>(value_type);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 template<>
@@ -124,7 +123,7 @@ PyObject* ExtractValue(const Value& value, MethodContext* method_context) {
 
   switch (value_type) {
     case Value::EMPTY:
-      return NULL;
+      return nullptr;
 
     case Value::PEER_OBJECT:
       // TODO(dss): If a proxy object already exists for the peer object, return
@@ -136,7 +135,7 @@ PyObject* ExtractValue(const Value& value, MethodContext* method_context) {
       LOG(FATAL) << "Unexpected value type: " << static_cast<int>(value_type);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace python

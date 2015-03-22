@@ -72,8 +72,8 @@ void LocalObjectImpl::InvokeMethod(Thread* thread,
                                    const string& method_name,
                                    const vector<Value>& parameters,
                                    Value* return_value) {
-  CHECK(thread != NULL);
-  CHECK(peer_object != NULL);
+  CHECK(thread != nullptr);
+  CHECK(peer_object != nullptr);
 
   VLOG(3) << "Invoke method on local object: " << method_name;
 
@@ -95,7 +95,7 @@ void LocalObjectImpl::InvokeMethod(Thread* thread,
 LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
                                               size_t buffer_size,
                                               DeserializationContext* context) {
-  CHECK(buffer != NULL);
+  CHECK(buffer != nullptr);
 
   ObjectProto object_proto;
   CHECK(object_proto.ParseFromArray(buffer, buffer_size));
@@ -132,13 +132,13 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     case ObjectProto::SET:
     case ObjectProto::FROZEN_SET:
       LOG(FATAL) << "Not yet implemented";
-      return NULL;
+      return nullptr;
 
     default:
       LOG(FATAL) << "Unexpected object type: " << static_cast<int>(object_type);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace python

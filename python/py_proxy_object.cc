@@ -17,7 +17,6 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -88,7 +87,7 @@ T MethodBody(PyObject* self, const string& method_name,
     return GetExceptionReturnCode<T>();
   }
 
-  return ExtractValue<T>(return_value, NULL);
+  return ExtractValue<T>(return_value, nullptr);
 }
 
 void shim_tp_dealloc(PyObject* op) {
@@ -236,7 +235,7 @@ PyNumberMethods proxy_as_number = {
   shim_nb_xor,                                // nb_xor
   shim_nb_or,                                 // nb_or
   shim_nb_int,                                // nb_int
-  NULL,                                       // nb_reserved
+  nullptr,                                    // nb_reserved
   shim_nb_float,                              // nb_float
   shim_nb_inplace_add,                        // nb_inplace_add
   shim_nb_inplace_subtract,                   // nb_inplace_subtract
@@ -260,9 +259,9 @@ PySequenceMethods proxy_as_sequence = {
   shim_sq_concat,                             // sq_concat
   shim_sq_repeat,                             // sq_repeat
   shim_sq_item,                               // sq_item
-  NULL,                                       // sq_slice (deprecated)
+  nullptr,                                    // sq_slice (deprecated)
   shim_sq_ass_item,                           // sq_ass_item
-  NULL,                                       // sq_ass_slice (deprecated)
+  nullptr,                                    // sq_ass_slice (deprecated)
   shim_sq_contains,                           // sq_contains
   shim_sq_inplace_concat,                     // sq_inplace_concat
   shim_sq_inplace_repeat                      // sq_inplace_repeat
@@ -284,10 +283,10 @@ PyTypeObject PyProxyObject_Type = {
   sizeof (PyProxyObject),                     // tp_basicsize
   0,                                          // tp_itemsize
   shim_tp_dealloc,                            // tp_dealloc
-  NULL,                                       // tp_print
+  nullptr,                                    // tp_print
   shim_tp_getattr,                            // tp_getattr
   shim_tp_setattr,                            // tp_setattr
-  NULL,                                       // tp_reserved
+  nullptr,                                    // tp_reserved
   shim_tp_repr,                               // tp_repr
   &proxy_as_number,                           // tp_as_number
   &proxy_as_sequence,                         // tp_as_sequence
@@ -297,21 +296,21 @@ PyTypeObject PyProxyObject_Type = {
   shim_tp_str,                                // tp_str
   shim_tp_getattro,                           // tp_getattro
   shim_tp_setattro,                           // tp_setattro
-  NULL,                                       // tp_as_buffer
+  nullptr,                                    // tp_as_buffer
   // TODO(dss): Include any other flags that might be needed.
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   // tp_flags
   "TODO(dss): Write this docstring",          // tp_doc
-  NULL,                                       // tp_traverse
-  NULL,                                       // tp_clear
+  nullptr,                                    // tp_traverse
+  nullptr,                                    // tp_clear
   shim_tp_richcompare,                        // tp_richcompare
   0,                                          // tp_weaklistoffset
   shim_tp_iter,                               // tp_iter
   shim_tp_iternext,                           // tp_iternext
-  NULL,                                       // tp_methods
-  NULL,                                       // tp_members
-  NULL,                                       // tp_getset
-  NULL,                                       // tp_base
-  NULL,                                       // tp_dict
+  nullptr,                                    // tp_methods
+  nullptr,                                    // tp_members
+  nullptr,                                    // tp_getset
+  nullptr,                                    // tp_base
+  nullptr,                                    // tp_dict
   shim_tp_descr_get,                          // tp_descr_get
   shim_tp_descr_set,                          // tp_descr_set
   0,                                          // tp_dictoffset
@@ -322,11 +321,11 @@ PyTypeObject PyProxyObject_Type = {
 };
 
 PyObject* PyProxyObject_New(PeerObject* peer_object) {
-  CHECK(peer_object != NULL);
+  CHECK(peer_object != nullptr);
 
   PyProxyObject* const py_proxy_object = PyObject_New(PyProxyObject,
                                                       &PyProxyObject_Type);
-  CHECK(py_proxy_object != NULL);
+  CHECK(py_proxy_object != nullptr);
 
   py_proxy_object->magic_number = kMagicNumber;
   py_proxy_object->peer_object = peer_object;
@@ -335,13 +334,13 @@ PyObject* PyProxyObject_New(PeerObject* peer_object) {
 }
 
 PeerObject* PyProxyObject_GetPeerObject(PyObject* py_object) {
-  CHECK(py_object != NULL);
+  CHECK(py_object != nullptr);
 
   PyProxyObject* const py_proxy_object = reinterpret_cast<PyProxyObject*>(
       py_object);
 
   CHECK_EQ(py_proxy_object->magic_number, kMagicNumber);
-  CHECK(py_proxy_object->peer_object != NULL);
+  CHECK(py_proxy_object->peer_object != nullptr);
 
   return py_proxy_object->peer_object;
 }

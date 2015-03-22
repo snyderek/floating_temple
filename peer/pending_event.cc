@@ -15,7 +15,6 @@
 
 #include "peer/pending_event.h"
 
-#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -103,9 +102,9 @@ MethodCallPendingEvent::MethodCallPendingEvent(
 void MethodCallPendingEvent::GetMethodCall(
     PeerObjectImpl** next_peer_object, const string** method_name,
     const vector<Value>** parameters) const {
-  CHECK(next_peer_object != NULL);
-  CHECK(method_name != NULL);
-  CHECK(parameters != NULL);
+  CHECK(next_peer_object != nullptr);
+  CHECK(method_name != nullptr);
+  CHECK(parameters != nullptr);
 
   *next_peer_object = next_peer_object_;
   *method_name = &method_name_;
@@ -126,8 +125,8 @@ MethodReturnPendingEvent::MethodReturnPendingEvent(
 
 void MethodReturnPendingEvent::GetMethodReturn(
     PeerObjectImpl** next_peer_object, const Value** return_value) const {
-  CHECK(next_peer_object != NULL);
-  CHECK(return_value != NULL);
+  CHECK(next_peer_object != nullptr);
+  CHECK(return_value != nullptr);
 
   *next_peer_object = next_peer_object_;
   *return_value = &return_value_;

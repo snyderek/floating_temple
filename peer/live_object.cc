@@ -64,7 +64,7 @@ void LiveObject::InvokeMethod(Thread* thread,
   LiveObjectNode* const new_node = GetNode()->InvokeMethod(
       thread, peer_object, method_name, parameters, return_value);
 
-  LiveObjectNode* old_node = NULL;
+  LiveObjectNode* old_node = nullptr;
   {
     MutexLock lock(&node_mu_);
     if (new_node != node_) {
@@ -73,7 +73,7 @@ void LiveObject::InvokeMethod(Thread* thread,
     }
   }
 
-  if (old_node != NULL) {
+  if (old_node != nullptr) {
     if (old_node->DecrementRefCount()) {
       delete old_node;
     }

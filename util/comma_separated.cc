@@ -15,7 +15,6 @@
 
 #include "util/comma_separated.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -27,7 +26,7 @@ using std::vector;
 namespace floating_temple {
 
 void ParseCommaSeparatedList(const string& in, vector<string>* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
   out->clear();
   string item;

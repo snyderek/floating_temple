@@ -16,7 +16,6 @@
 #ifndef PEER_VERSION_MAP_H_
 #define PEER_VERSION_MAP_H_
 
-#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -91,8 +90,8 @@ void VersionMap<CompareFunction>::Clear() {
 template<class CompareFunction>
 bool VersionMap<CompareFunction>::GetPeerTransactionId(
     const CanonicalPeer* canonical_peer, TransactionId* transaction_id) const {
-  CHECK(canonical_peer != NULL);
-  CHECK(transaction_id != NULL);
+  CHECK(canonical_peer != nullptr);
+  CHECK(transaction_id != nullptr);
 
   const std::unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
       it = peer_transaction_ids_.find(canonical_peer);
@@ -109,7 +108,7 @@ template<class CompareFunction>
 bool VersionMap<CompareFunction>::HasPeerTransactionId(
     const CanonicalPeer* canonical_peer,
     const TransactionId& min_transaction_id) const {
-  CHECK(canonical_peer != NULL);
+  CHECK(canonical_peer != nullptr);
 
   const std::unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
       it = peer_transaction_ids_.find(canonical_peer);
@@ -124,7 +123,7 @@ bool VersionMap<CompareFunction>::HasPeerTransactionId(
 template<class CompareFunction>
 void VersionMap<CompareFunction>::AddPeerTransactionId(
     const CanonicalPeer* canonical_peer, const TransactionId& transaction_id) {
-  CHECK(canonical_peer != NULL);
+  CHECK(canonical_peer != nullptr);
   CHECK(IsValidTransactionId(transaction_id)) << transaction_id.DebugString();
 
   const std::pair<
@@ -147,7 +146,7 @@ void VersionMap<CompareFunction>::AddPeerTransactionId(
 template<class CompareFunction>
 void VersionMap<CompareFunction>::RemovePeerTransactionId(
     const CanonicalPeer* canonical_peer, const TransactionId& transaction_id) {
-  CHECK(canonical_peer != NULL);
+  CHECK(canonical_peer != nullptr);
   CHECK(IsValidTransactionId(transaction_id)) << transaction_id.DebugString();
 
   const std::unordered_map<const CanonicalPeer*, TransactionId>::iterator
@@ -177,7 +176,7 @@ void VersionMap<CompareFunction>::CopyFrom(
 
 template<class CompareFunction>
 void VersionMap<CompareFunction>::Swap(VersionMap<CompareFunction>* other) {
-  CHECK(other != NULL);
+  CHECK(other != nullptr);
   peer_transaction_ids_.swap(other->peer_transaction_ids_);
 }
 
@@ -265,7 +264,7 @@ template<class CompareFunction>
 void GetVersionMapUnion(const VersionMap<CompareFunction>& a,
                         const VersionMap<CompareFunction>& b,
                         VersionMap<CompareFunction>* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
   out->CopyFrom(a);
   for (const auto& b_pair : b.peer_transaction_ids()) {
@@ -277,7 +276,7 @@ template<class CompareFunction>
 void GetVersionMapIntersection(const VersionMap<CompareFunction>& a,
                                const VersionMap<CompareFunction>& b,
                                VersionMap<CompareFunction>* out) {
-  CHECK(out != NULL);
+  CHECK(out != nullptr);
 
   const CompareFunction compare_function;
 
@@ -296,7 +295,7 @@ void GetVersionMapIntersection(const VersionMap<CompareFunction>& a,
       const TransactionId& a_transaction_id = a_pair.second;
       const TransactionId& b_transaction_id = b_it->second;
 
-      const TransactionId* transaction_id = NULL;
+      const TransactionId* transaction_id = nullptr;
       if (compare_function(a_transaction_id, b_transaction_id)) {
         transaction_id = &a_transaction_id;
       } else {

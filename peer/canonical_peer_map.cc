@@ -17,7 +17,7 @@
 
 #include <cstddef>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 #include "base/linked_ptr.h"
 #include "base/mutex.h"

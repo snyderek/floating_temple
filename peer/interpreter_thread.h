@@ -19,7 +19,7 @@
 #include <pthread.h>
 
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -87,13 +87,11 @@ class InterpreterThread : public Thread {
 
   void CheckIfValueIsNew(
       const Value& value,
-      std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>*
-          live_objects,
+      std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>* live_objects,
       std::unordered_set<PeerObjectImpl*>* new_peer_objects);
   void CheckIfPeerObjectIsNew(
       PeerObjectImpl* peer_object,
-      std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>*
-          live_objects,
+      std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>* live_objects,
       std::unordered_set<PeerObjectImpl*>* new_peer_objects);
 
   bool Rewinding() const;
@@ -103,8 +101,8 @@ class InterpreterThread : public Thread {
 
   int transaction_level_;
   std::vector<linked_ptr<PendingEvent> > events_;
-  std::tr1::unordered_map<PeerObjectImpl*, NewObject> new_objects_;
-  std::tr1::unordered_map<PeerObjectImpl*, LiveObjectPtr> modified_objects_;
+  std::unordered_map<PeerObjectImpl*, NewObject> new_objects_;
+  std::unordered_map<PeerObjectImpl*, LiveObjectPtr> modified_objects_;
   scoped_ptr<SequencePoint> sequence_point_;
 
   PeerObjectImpl* current_peer_object_;

@@ -19,7 +19,7 @@
 #include <pthread.h>
 
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -55,11 +55,11 @@ class PeerThread : private Thread {
   // Be sure to call FlushEvents() or Stop() before calling this method.
   bool conflict_detected() const { return conflict_detected_.Get(); }
 
-  void Start(TransactionStoreInternalInterface* transaction_store,
-             SharedObject* shared_object,
-             const LiveObjectPtr& live_object,
-             std::tr1::unordered_map<SharedObject*, PeerObjectImpl*>*
-                 new_peer_objects);
+  void Start(
+      TransactionStoreInternalInterface* transaction_store,
+      SharedObject* shared_object,
+      const LiveObjectPtr& live_object,
+      std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects);
   void Stop();
 
   void QueueEvent(const CommittedEvent* event);
@@ -136,7 +136,7 @@ class PeerThread : private Thread {
   TransactionStoreInternalInterface* transaction_store_;
   SharedObject* shared_object_;
   LiveObjectPtr live_object_;
-  std::tr1::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects_;
+  std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects_;
 
   pthread_t replay_thread_;
   EventQueue event_queue_;

@@ -16,7 +16,7 @@
 #include "peer/serialization_context_impl.h"
 
 #include <cstddef>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -25,7 +25,7 @@
 
 using std::make_pair;
 using std::pair;
-using std::tr1::unordered_map;
+using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {

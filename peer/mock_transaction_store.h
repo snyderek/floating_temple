@@ -17,7 +17,7 @@
 #define PEER_MOCK_TRANSACTION_STORE_H_
 
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <vector>
 
 #include "base/linked_ptr.h"
@@ -50,7 +50,7 @@ class MockTransactionStoreCore {
       CreateTransaction,
       void(const std::vector<linked_ptr<PendingEvent> >& events,
            TransactionId* transaction_id,
-           const std::tr1::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
+           const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
                modified_objects,
            const SequencePoint* prev_sequence_point));
   MOCK_CONST_METHOD2(ObjectsAreEquivalent,
@@ -75,7 +75,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   virtual void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent> >& events,
       TransactionId* transaction_id,
-      const std::tr1::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
+      const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
           modified_objects,
       const SequencePoint* prev_sequence_point);
   virtual bool ObjectsAreEquivalent(const PeerObjectImpl* a,
@@ -85,8 +85,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   const MockTransactionStoreCore* const core_;
 
   std::vector<linked_ptr<PeerObjectImpl> > unnamed_objects_;
-  std::tr1::unordered_map<std::string, linked_ptr<PeerObjectImpl> >
-      named_objects_;
+  std::unordered_map<std::string, linked_ptr<PeerObjectImpl> > named_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);
 };

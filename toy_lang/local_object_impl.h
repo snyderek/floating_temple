@@ -18,7 +18,7 @@
 
 #include <cstddef>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <vector>
 
 #include "base/const_shared_ptr.h"
@@ -176,8 +176,8 @@ class SymbolTableObject : public LocalObjectImpl {
                                    SerializationContext* context) const;
 
  private:
-  typedef std::vector<linked_ptr<std::tr1::unordered_map<std::string,
-                                                         PeerObject*> > >
+  typedef std::vector<linked_ptr<std::unordered_map<std::string,
+                                                    PeerObject*> > >
       ScopeVector;
 
   std::string GetStringForLogging() const;
@@ -260,7 +260,7 @@ class MapObject : public LocalObjectImpl {
                                    SerializationContext* context) const;
 
  private:
-  std::tr1::unordered_map<std::string, PeerObject*> map_;
+  std::unordered_map<std::string, PeerObject*> map_;
 
   DISALLOW_COPY_AND_ASSIGN(MapObject);
 };

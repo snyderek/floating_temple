@@ -17,7 +17,7 @@
 #define PEER_TRANSACTION_STORE_INTERNAL_INTERFACE_H_
 
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <vector>
 
 #include "base/linked_ptr.h"
@@ -51,7 +51,7 @@ class TransactionStoreInternalInterface {
   virtual void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent> >& events,
       TransactionId* transaction_id,
-      const std::tr1::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
+      const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
           modified_objects,
       const SequencePoint* prev_sequence_point) = 0;
 

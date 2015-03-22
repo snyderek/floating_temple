@@ -17,7 +17,7 @@
 #define PEER_PENDING_EVENT_H_
 
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -41,14 +41,13 @@ class PendingEvent {
   };
 
   // new_peer_objects must be a subset of keys(live_objects).
-  PendingEvent(
-      const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
-          live_objects,
-      const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
-      PeerObjectImpl* prev_peer_object);
+  PendingEvent(const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
+                   live_objects,
+               const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
+               PeerObjectImpl* prev_peer_object);
   virtual ~PendingEvent() {}
 
-  const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
+  const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
       live_objects() const { return live_objects_; }
   const std::unordered_set<PeerObjectImpl*>& new_peer_objects() const
       { return new_peer_objects_; }
@@ -63,8 +62,7 @@ class PendingEvent {
                                const Value** return_value) const;
 
  private:
-  const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>
-      live_objects_;
+  const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr> live_objects_;
   const std::unordered_set<PeerObjectImpl*> new_peer_objects_;
   PeerObjectImpl* const prev_peer_object_;
 };
@@ -108,7 +106,7 @@ class MethodCallPendingEvent : public PendingEvent {
  public:
   // prev_peer_object may be NULL.
   MethodCallPendingEvent(
-      const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
+      const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
           live_objects,
       const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
       PeerObjectImpl* prev_peer_object,
@@ -133,7 +131,7 @@ class MethodReturnPendingEvent : public PendingEvent {
  public:
   // prev_peer_object must not be NULL.
   MethodReturnPendingEvent(
-      const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
+      const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
           live_objects,
       const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
       PeerObjectImpl* prev_peer_object,

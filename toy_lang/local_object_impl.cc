@@ -19,7 +19,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -46,7 +46,7 @@ using std::make_pair;
 using std::printf;
 using std::size_t;
 using std::string;
-using std::tr1::unordered_map;
+using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {

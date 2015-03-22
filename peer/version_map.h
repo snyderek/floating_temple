@@ -18,7 +18,7 @@
 
 #include <cstddef>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <utility>
 
 #include "base/escape.h"
@@ -40,7 +40,7 @@ class VersionMap {
   VersionMap(const VersionMap<CompareFunction>& other);
   ~VersionMap();
 
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>&
+  const std::unordered_map<const CanonicalPeer*, TransactionId>&
       peer_transaction_ids() const { return peer_transaction_ids_; }
 
   bool IsEmpty() const { return peer_transaction_ids_.empty(); }
@@ -66,8 +66,7 @@ class VersionMap {
       const VersionMap<CompareFunction>& other);
 
  private:
-  std::tr1::unordered_map<const CanonicalPeer*, TransactionId>
-      peer_transaction_ids_;
+  std::unordered_map<const CanonicalPeer*, TransactionId> peer_transaction_ids_;
 };
 
 template<class CompareFunction>
@@ -95,8 +94,8 @@ bool VersionMap<CompareFunction>::GetPeerTransactionId(
   CHECK(canonical_peer != NULL);
   CHECK(transaction_id != NULL);
 
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-      const_iterator it = peer_transaction_ids_.find(canonical_peer);
+  const std::unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
+      it = peer_transaction_ids_.find(canonical_peer);
 
   if (it == peer_transaction_ids_.end()) {
     return false;
@@ -112,8 +111,8 @@ bool VersionMap<CompareFunction>::HasPeerTransactionId(
     const TransactionId& min_transaction_id) const {
   CHECK(canonical_peer != NULL);
 
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-      const_iterator it = peer_transaction_ids_.find(canonical_peer);
+  const std::unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
+      it = peer_transaction_ids_.find(canonical_peer);
 
   if (it == peer_transaction_ids_.end()) {
     return false;
@@ -129,7 +128,7 @@ void VersionMap<CompareFunction>::AddPeerTransactionId(
   CHECK(IsValidTransactionId(transaction_id)) << transaction_id.DebugString();
 
   const std::pair<
-      std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::iterator,
+      std::unordered_map<const CanonicalPeer*, TransactionId>::iterator,
       bool> insert_result =
       peer_transaction_ids_.insert(std::make_pair(canonical_peer,
                                                   transaction_id));
@@ -151,7 +150,7 @@ void VersionMap<CompareFunction>::RemovePeerTransactionId(
   CHECK(canonical_peer != NULL);
   CHECK(IsValidTransactionId(transaction_id)) << transaction_id.DebugString();
 
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::iterator
+  const std::unordered_map<const CanonicalPeer*, TransactionId>::iterator
       peer_it = peer_transaction_ids_.find(canonical_peer);
 
   if (peer_it == peer_transaction_ids_.end()) {
@@ -191,8 +190,8 @@ std::string VersionMap<CompareFunction>::Dump() const {
   } else {
     peer_transaction_ids_string = "{";
 
-    for (std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-             const_iterator it = peer_transaction_ids_.begin();
+    for (std::unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
+             it = peer_transaction_ids_.begin();
          it != peer_transaction_ids_.end(); ++it) {
       if (it != peer_transaction_ids_.begin()) {
         peer_transaction_ids_string += ",";
@@ -219,9 +218,9 @@ VersionMap<CompareFunction>& VersionMap<CompareFunction>::operator=(
 template<class CompareFunction>
 bool VersionMapsAreEqual(const VersionMap<CompareFunction>& a,
                          const VersionMap<CompareFunction>& b) {
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& a_map =
+  const std::unordered_map<const CanonicalPeer*, TransactionId>& a_map =
       a.peer_transaction_ids();
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
+  const std::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
       b.peer_transaction_ids();
 
   if (a_map.size() != b_map.size()) {
@@ -229,7 +228,7 @@ bool VersionMapsAreEqual(const VersionMap<CompareFunction>& a,
   }
 
   for (const auto& a_pair : a_map) {
-    const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
+    const std::unordered_map<const CanonicalPeer*, TransactionId>::
         const_iterator b_it = b_map.find(a_pair.first);
 
     if (b_it == b_map.end() ||
@@ -244,13 +243,13 @@ bool VersionMapsAreEqual(const VersionMap<CompareFunction>& a,
 template<class CompareFunction>
 bool VersionMapIsLessThanOrEqual(const VersionMap<CompareFunction>& a,
                                  const VersionMap<CompareFunction>& b) {
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& a_map =
+  const std::unordered_map<const CanonicalPeer*, TransactionId>& a_map =
       a.peer_transaction_ids();
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
+  const std::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
       b.peer_transaction_ids();
 
   for (const auto& a_pair : a_map) {
-    const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
+    const std::unordered_map<const CanonicalPeer*, TransactionId>::
         const_iterator b_it = b_map.find(a_pair.first);
 
     if (b_it == b_map.end() ||
@@ -282,15 +281,15 @@ void GetVersionMapIntersection(const VersionMap<CompareFunction>& a,
 
   const CompareFunction compare_function;
 
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& a_map =
+  const std::unordered_map<const CanonicalPeer*, TransactionId>& a_map =
       a.peer_transaction_ids();
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
+  const std::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
       b.peer_transaction_ids();
 
   for (const auto& a_pair : a_map) {
     const CanonicalPeer* const canonical_peer = a_pair.first;
 
-    const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
+    const std::unordered_map<const CanonicalPeer*, TransactionId>::
         const_iterator b_it = b_map.find(canonical_peer);
 
     if (b_it != b_map.end()) {

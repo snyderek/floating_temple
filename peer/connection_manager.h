@@ -17,7 +17,7 @@
 #define PEER_CONNECTION_MANAGER_H_
 
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <vector>
 
 #include "base/cond_var.h"
@@ -107,9 +107,9 @@ class ConnectionManager : public PeerMessageSender,
 
   StateVariable state_;
 
-  std::tr1::unordered_map<const CanonicalPeer*, intrusive_ptr<PeerConnection> >
+  std::unordered_map<const CanonicalPeer*, intrusive_ptr<PeerConnection> >
       named_connections_;
-  std::tr1::unordered_map<PeerConnection*, intrusive_ptr<PeerConnection> >
+  std::unordered_map<PeerConnection*, intrusive_ptr<PeerConnection> >
       unnamed_connections_;
   mutable CondVar connections_empty_cond_;
   mutable Mutex connections_mu_;

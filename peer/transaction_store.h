@@ -18,7 +18,7 @@
 
 #include <cstddef>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -92,8 +92,8 @@ class TransactionStore : public ConnectionHandler,
     bool operator()(const Uuid& a, const Uuid& b) const;
   };
 
-  typedef std::tr1::unordered_map<Uuid, linked_ptr<SharedObject>,
-                                  UuidHasher, UuidEquals> SharedObjectMap;
+  typedef std::unordered_map<Uuid, linked_ptr<SharedObject>,
+                             UuidHasher, UuidEquals> SharedObjectMap;
 
   virtual bool delay_object_binding() const { return delay_object_binding_; }
   virtual SequencePoint* GetCurrentSequencePoint() const;
@@ -105,7 +105,7 @@ class TransactionStore : public ConnectionHandler,
   virtual void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent> >& events,
       TransactionId* transaction_id,
-      const std::tr1::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
+      const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
           modified_objects,
       const SequencePoint* prev_sequence_point);
   virtual bool ObjectsAreEquivalent(const PeerObjectImpl* a,
@@ -138,20 +138,20 @@ class TransactionStore : public ConnectionHandler,
       SharedObject* shared_object,
       const SequencePointImpl& sequence_point_impl,
       uint64* current_version_number,
-      std::tr1::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+      std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
       std::vector<std::pair<const CanonicalPeer*, TransactionId> >*
           all_transactions_to_reject);
 
   void ApplyTransactionAndSendMessage(
       const TransactionId& transaction_id,
-      std::tr1::unordered_map<SharedObject*,
-                              linked_ptr<SharedObjectTransactionInfo> >*
+      std::unordered_map<SharedObject*,
+                         linked_ptr<SharedObjectTransactionInfo> >*
           shared_object_transactions);
   void ApplyTransaction(
       const TransactionId& transaction_id,
       const CanonicalPeer* origin_peer,
-      std::tr1::unordered_map<SharedObject*,
-                              linked_ptr<SharedObjectTransactionInfo> >*
+      std::unordered_map<SharedObject*,
+                         linked_ptr<SharedObjectTransactionInfo> >*
           shared_object_transactions);
 
   void RejectTransactionsAndSendMessages(
@@ -175,7 +175,7 @@ class TransactionStore : public ConnectionHandler,
   void IncrementVersionNumber_Locked();
 
   void CreateNewPeerObjects(
-      const std::tr1::unordered_map<SharedObject*, PeerObjectImpl*>&
+      const std::unordered_map<SharedObject*, PeerObjectImpl*>&
           new_peer_objects);
 
   // TODO(dss): Combine the methods GetOrCreateSharedObjectForPeerObject and
@@ -184,8 +184,8 @@ class TransactionStore : public ConnectionHandler,
 
   void ConvertPendingEventToCommittedEvents(
       const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
-      std::tr1::unordered_map<SharedObject*,
-                              linked_ptr<SharedObjectTransactionInfo> >*
+      std::unordered_map<SharedObject*,
+                         linked_ptr<SharedObjectTransactionInfo> >*
           shared_object_transactions);
   void ConvertValueToCommittedValue(const Value& in, CommittedValue* out);
 
@@ -201,8 +201,8 @@ class TransactionStore : public ConnectionHandler,
       SharedObject* shared_object,
       const CanonicalPeer* origin_peer,
       CommittedEvent* event,
-      std::tr1::unordered_map<SharedObject*,
-                              linked_ptr<SharedObjectTransactionInfo> >*
+      std::unordered_map<SharedObject*,
+                         linked_ptr<SharedObjectTransactionInfo> >*
           shared_object_transactions);
 
   CanonicalPeerMap* const canonical_peer_map_;

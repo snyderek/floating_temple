@@ -18,7 +18,7 @@
 
 #include <map>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -67,7 +67,7 @@ class SharedObject {
   ConstLiveObjectPtr GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
-      std::tr1::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+      std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
       std::vector<std::pair<const CanonicalPeer*, TransactionId> >*
           transactions_to_reject);
 

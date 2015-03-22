@@ -16,7 +16,7 @@
 #ifndef PEER_SERIALIZATION_CONTEXT_IMPL_H_
 #define PEER_SERIALIZATION_CONTEXT_IMPL_H_
 
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -35,7 +35,7 @@ class SerializationContextImpl : public SerializationContext {
 
  private:
   std::vector<PeerObjectImpl*>* const peer_objects_;
-  std::tr1::unordered_map<PeerObjectImpl*, int> indexes_;
+  std::unordered_map<PeerObjectImpl*, int> indexes_;
 
   DISALLOW_COPY_AND_ASSIGN(SerializationContextImpl);
 };

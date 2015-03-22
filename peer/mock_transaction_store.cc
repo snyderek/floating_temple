@@ -17,7 +17,7 @@
 
 #include <cstddef>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <vector>
 
 #include "base/linked_ptr.h"
@@ -26,7 +26,7 @@
 #include "peer/peer_object_impl.h"
 
 using std::string;
-using std::tr1::unordered_map;
+using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {

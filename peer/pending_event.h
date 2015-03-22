@@ -18,7 +18,7 @@
 
 #include <string>
 #include <tr1/unordered_map>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -44,13 +44,13 @@ class PendingEvent {
   PendingEvent(
       const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
           live_objects,
-      const std::tr1::unordered_set<PeerObjectImpl*>& new_peer_objects,
+      const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
       PeerObjectImpl* prev_peer_object);
   virtual ~PendingEvent() {}
 
   const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
       live_objects() const { return live_objects_; }
-  const std::tr1::unordered_set<PeerObjectImpl*>& new_peer_objects() const
+  const std::unordered_set<PeerObjectImpl*>& new_peer_objects() const
       { return new_peer_objects_; }
   PeerObjectImpl* prev_peer_object() const { return prev_peer_object_; }
 
@@ -65,7 +65,7 @@ class PendingEvent {
  private:
   const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>
       live_objects_;
-  const std::tr1::unordered_set<PeerObjectImpl*> new_peer_objects_;
+  const std::unordered_set<PeerObjectImpl*> new_peer_objects_;
   PeerObjectImpl* const prev_peer_object_;
 };
 
@@ -110,7 +110,7 @@ class MethodCallPendingEvent : public PendingEvent {
   MethodCallPendingEvent(
       const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
           live_objects,
-      const std::tr1::unordered_set<PeerObjectImpl*>& new_peer_objects,
+      const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
       PeerObjectImpl* prev_peer_object,
       PeerObjectImpl* next_peer_object,
       const std::string& method_name,
@@ -135,7 +135,7 @@ class MethodReturnPendingEvent : public PendingEvent {
   MethodReturnPendingEvent(
       const std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
           live_objects,
-      const std::tr1::unordered_set<PeerObjectImpl*>& new_peer_objects,
+      const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
       PeerObjectImpl* prev_peer_object,
       PeerObjectImpl* next_peer_object,
       const Value& return_value);

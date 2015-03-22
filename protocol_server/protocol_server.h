@@ -25,7 +25,7 @@
 
 #include <cstddef>
 #include <string>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <vector>
 
 #include <gflags/gflags.h>
@@ -109,8 +109,7 @@ class ProtocolServer : private ProtocolServerInterfaceForConnection {
   ProducerConsumerQueue<ProtocolConnectionImpl<Message>*> ready_connections_;
 
   // A NULL pointer in this set means that the listen socket is blocked.
-  std::tr1::unordered_set<ProtocolConnectionImpl<Message>*>
-      blocked_connections_;
+  std::unordered_set<ProtocolConnectionImpl<Message>*> blocked_connections_;
   mutable Mutex blocked_connections_mu_;
 
   StateVariable state_;
@@ -191,7 +190,7 @@ void ProtocolServer<Message>::Stop() {
   CHECK_ERR(close(connections_changed_event_fd_));
   CHECK_ERR(close(listen_fd_));
 
-  std::tr1::unordered_set<ProtocolConnectionImpl<Message>*> all_connections;
+  std::unordered_set<ProtocolConnectionImpl<Message>*> all_connections;
 
   for (;;) {
     ProtocolConnectionImpl<Message>* connection = NULL;
@@ -275,7 +274,7 @@ void ProtocolServer<Message>::DoSelectLoop() {
   while (state_.MatchesStateMask(RUNNING)) {
     ClearEventFd(connections_changed_event_fd_);
 
-    std::tr1::unordered_set<ProtocolConnectionImpl<Message>*>
+    std::unordered_set<ProtocolConnectionImpl<Message>*>
         blocked_connections_temp;
     {
       MutexLock lock(&blocked_connections_mu_);
@@ -288,8 +287,8 @@ void ProtocolServer<Message>::DoSelectLoop() {
     FD_ZERO(&read_fd_set);
     FD_ZERO(&write_fd_set);
 
-    for (typename std::tr1::unordered_set<ProtocolConnectionImpl<Message>*>::
-             iterator connection_it = blocked_connections_temp.begin();
+    for (typename std::unordered_set<ProtocolConnectionImpl<Message>*>::iterator
+             connection_it = blocked_connections_temp.begin();
          connection_it != blocked_connections_temp.end(); ) {
       ProtocolConnectionImpl<Message>* const connection = *connection_it;
 
@@ -321,7 +320,7 @@ void ProtocolServer<Message>::DoSelectLoop() {
 
       if (erase_connection) {
         const typename
-            std::tr1::unordered_set<ProtocolConnectionImpl<Message>*>::iterator
+            std::unordered_set<ProtocolConnectionImpl<Message>*>::iterator
             erase_it = connection_it;
         ++connection_it;
         blocked_connections_temp.erase(erase_it);

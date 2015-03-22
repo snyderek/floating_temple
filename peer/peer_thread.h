@@ -20,7 +20,7 @@
 
 #include <string>
 #include <tr1/unordered_map>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -100,13 +100,13 @@ class PeerThread : private Thread {
       PeerObjectImpl* peer_object,
       const std::string& method_name,
       const std::vector<Value>& parameters,
-      const std::tr1::unordered_set<SharedObject*>& new_shared_objects);
+      const std::unordered_set<SharedObject*>& new_shared_objects);
   bool ValueMatches(
       const CommittedValue& committed_value, const Value& pending_value,
-      const std::tr1::unordered_set<SharedObject*>& new_shared_objects);
+      const std::unordered_set<SharedObject*>& new_shared_objects);
   bool ObjectMatches(
       SharedObject* shared_object, PeerObjectImpl* peer_object,
-      const std::tr1::unordered_set<SharedObject*>& new_shared_objects);
+      const std::unordered_set<SharedObject*>& new_shared_objects);
 
   void SetConflictDetected(const std::string& description);
 
@@ -140,7 +140,7 @@ class PeerThread : private Thread {
 
   pthread_t replay_thread_;
   EventQueue event_queue_;
-  std::tr1::unordered_set<PeerObjectImpl*> unbound_peer_objects_;
+  std::unordered_set<PeerObjectImpl*> unbound_peer_objects_;
 
   BoolVariable conflict_detected_;
 

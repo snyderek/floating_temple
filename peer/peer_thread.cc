@@ -20,7 +20,7 @@
 #include <cstddef>
 #include <string>
 #include <tr1/unordered_map>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -49,7 +49,7 @@
 using std::pair;
 using std::string;
 using std::tr1::unordered_map;
-using std::tr1::unordered_set;
+using std::unordered_set;
 using std::vector;
 
 DEFINE_bool(treat_conflicts_as_fatal_for_debugging, false,

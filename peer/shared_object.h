@@ -19,7 +19,7 @@
 #include <map>
 #include <string>
 #include <tr1/unordered_map>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -53,7 +53,7 @@ class SharedObject {
   const Uuid& object_id() const { return object_id_; }
 
   void GetInterestedPeers(
-      std::tr1::unordered_set<const CanonicalPeer*>* interested_peers) const;
+      std::unordered_set<const CanonicalPeer*>* interested_peers) const;
   void AddInterestedPeer(const CanonicalPeer* interested_peer);
 
   bool HasPeerObject(const PeerObjectImpl* peer_object) const;
@@ -108,7 +108,7 @@ class SharedObject {
   TransactionStoreInternalInterface* const transaction_store_;
   const Uuid object_id_;
 
-  std::tr1::unordered_set<const CanonicalPeer*> interested_peers_;
+  std::unordered_set<const CanonicalPeer*> interested_peers_;
   mutable Mutex interested_peers_mu_;
 
   std::vector<PeerObjectImpl*> peer_objects_;
@@ -117,7 +117,7 @@ class SharedObject {
   std::map<TransactionId, linked_ptr<SharedObjectTransaction> >
       committed_versions_;
   MaxVersionMap version_map_;
-  std::tr1::unordered_set<const CanonicalPeer*> up_to_date_peers_;
+  std::unordered_set<const CanonicalPeer*> up_to_date_peers_;
   ConstLiveObjectPtr cached_live_object_;
   SequencePointImpl cached_sequence_point_;
   mutable Mutex committed_versions_mu_;

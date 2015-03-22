@@ -17,7 +17,7 @@
 #define PEER_COMMITTED_EVENT_H_
 
 #include <string>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -45,10 +45,10 @@ class CommittedEvent {
   };
 
   explicit CommittedEvent(
-      const std::tr1::unordered_set<SharedObject*>& new_shared_objects);
+      const std::unordered_set<SharedObject*>& new_shared_objects);
   virtual ~CommittedEvent() {}
 
-  const std::tr1::unordered_set<SharedObject*>& new_shared_objects() const
+  const std::unordered_set<SharedObject*>& new_shared_objects() const
       { return new_shared_objects_; }
 
   virtual Type type() const = 0;
@@ -79,7 +79,7 @@ class CommittedEvent {
   std::string DumpNewSharedObjects() const;
 
  private:
-  const std::tr1::unordered_set<SharedObject*> new_shared_objects_;
+  const std::unordered_set<SharedObject*> new_shared_objects_;
 };
 
 class ObjectCreationCommittedEvent : public CommittedEvent {
@@ -158,7 +158,7 @@ class MethodCallCommittedEvent : public CommittedEvent {
 class MethodReturnCommittedEvent : public CommittedEvent {
  public:
   MethodReturnCommittedEvent(
-      const std::tr1::unordered_set<SharedObject*>& new_shared_objects,
+      const std::unordered_set<SharedObject*>& new_shared_objects,
       SharedObject* caller,
       const CommittedValue& return_value);
 
@@ -178,7 +178,7 @@ class MethodReturnCommittedEvent : public CommittedEvent {
 class SubMethodCallCommittedEvent : public CommittedEvent {
  public:
   SubMethodCallCommittedEvent(
-      const std::tr1::unordered_set<SharedObject*>& new_shared_objects,
+      const std::unordered_set<SharedObject*>& new_shared_objects,
       SharedObject* callee,
       const std::string& method_name,
       const std::vector<CommittedValue>& parameters);
@@ -219,7 +219,7 @@ class SubMethodReturnCommittedEvent : public CommittedEvent {
 class SelfMethodCallCommittedEvent : public CommittedEvent {
  public:
   SelfMethodCallCommittedEvent(
-      const std::tr1::unordered_set<SharedObject*>& new_shared_objects,
+      const std::unordered_set<SharedObject*>& new_shared_objects,
       const std::string& method_name,
       const std::vector<CommittedValue>& parameters);
 
@@ -240,7 +240,7 @@ class SelfMethodCallCommittedEvent : public CommittedEvent {
 class SelfMethodReturnCommittedEvent : public CommittedEvent {
  public:
   SelfMethodReturnCommittedEvent(
-      const std::tr1::unordered_set<SharedObject*>& new_shared_objects,
+      const std::unordered_set<SharedObject*>& new_shared_objects,
       const CommittedValue& return_value);
 
   virtual Type type() const { return SELF_METHOD_RETURN; }

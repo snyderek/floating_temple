@@ -20,7 +20,7 @@
 
 #include <string>
 #include <tr1/unordered_map>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <vector>
 
 #include "base/cond_var.h"
@@ -89,12 +89,12 @@ class InterpreterThread : public Thread {
       const Value& value,
       std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>*
           live_objects,
-      std::tr1::unordered_set<PeerObjectImpl*>* new_peer_objects);
+      std::unordered_set<PeerObjectImpl*>* new_peer_objects);
   void CheckIfPeerObjectIsNew(
       PeerObjectImpl* peer_object,
       std::tr1::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>*
           live_objects,
-      std::tr1::unordered_set<PeerObjectImpl*>* new_peer_objects);
+      std::unordered_set<PeerObjectImpl*>* new_peer_objects);
 
   bool Rewinding() const;
   bool Rewinding_Locked() const;
@@ -121,7 +121,7 @@ class InterpreterThread : public Thread {
   // To clear rejected_transaction_id_, set it to the minimum transaction ID by
   // calling GetMinTransactionId.
   TransactionId rejected_transaction_id_;
-  std::tr1::unordered_set<pthread_t> blocking_threads_;
+  std::unordered_set<pthread_t> blocking_threads_;
   mutable CondVar blocking_threads_empty_cond_;
   mutable Mutex rejected_transaction_id_mu_;
 

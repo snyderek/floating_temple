@@ -18,7 +18,7 @@
 #include <cstddef>
 #include <string>
 #include <tr1/unordered_map>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <vector>
 
 #include <gflags/gflags.h>
@@ -44,7 +44,7 @@
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
 using std::tr1::unordered_map;
-using std::tr1::unordered_set;
+using std::unordered_set;
 using std::vector;
 using testing::AnyNumber;
 using testing::InitGoogleMock;

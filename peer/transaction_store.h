@@ -19,7 +19,7 @@
 #include <cstddef>
 #include <string>
 #include <tr1/unordered_map>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -166,7 +166,7 @@ class TransactionStore : public ConnectionHandler,
 
   void SendMessageToAffectedPeers(
       const PeerMessage& peer_message,
-      const std::tr1::unordered_set<SharedObject*>& affected_objects);
+      const std::unordered_set<SharedObject*>& affected_objects);
 
   void UpdateCurrentSequencePoint(const CanonicalPeer* origin_peer,
                                   const TransactionId& transaction_id);
@@ -220,7 +220,7 @@ class TransactionStore : public ConnectionHandler,
   SharedObjectMap shared_objects_;
   mutable Mutex shared_objects_mu_;
 
-  std::tr1::unordered_set<SharedObject*> named_objects_;
+  std::unordered_set<SharedObject*> named_objects_;
   mutable Mutex named_objects_mu_;
 
   std::vector<linked_ptr<PeerObjectImpl> > peer_objects_;

@@ -46,9 +46,8 @@ class ProxyInterpreter : public Interpreter,
   floatingtemple_Interpreter* SetInterpreterForCurrentThread(
       floatingtemple_Interpreter* interpreter);
 
-  virtual LocalObject* DeserializeObject(const void* buffer,
-                                         std::size_t buffer_size,
-                                         DeserializationContext* context);
+  LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,
+                                 DeserializationContext* context) override;
 
  private:
   enum {
@@ -74,21 +73,21 @@ class ProxyInterpreter : public Interpreter,
   void WaitForCallback();
   void LeaveMethod();
 
-  virtual LocalObject* CloneLocalObject(
-      const floatingtemple_LocalObject* local_object);
-  virtual std::size_t SerializeLocalObject(
+  LocalObject* CloneLocalObject(
+      const floatingtemple_LocalObject* local_object) override;
+  std::size_t SerializeLocalObject(
       const floatingtemple_LocalObject* local_object,
       void* buffer,
       std::size_t buffer_size,
-      SerializationContext* context);
-  virtual void InvokeMethodOnLocalObject(
+      SerializationContext* context) override;
+  void InvokeMethodOnLocalObject(
       floatingtemple_LocalObject* local_object,
       Thread* thread,
       PeerObject* peer_object,
       const std::string& method_name,
       const std::vector<Value>& parameters,
-      Value* return_value);
-  virtual void FreeLocalObject(floatingtemple_LocalObject* local_object);
+      Value* return_value) override;
+  void FreeLocalObject(floatingtemple_LocalObject* local_object) override;
 
   static void WaitForStartAndChangeToSettingParameters(
       StateVariableInternalInterface* state_variable);

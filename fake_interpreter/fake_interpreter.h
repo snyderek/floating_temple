@@ -25,9 +25,8 @@ class FakeInterpreter : public Interpreter {
  public:
   FakeInterpreter();
 
-  virtual LocalObject* DeserializeObject(const void* buffer,
-                                         std::size_t buffer_size,
-                                         DeserializationContext* context);
+  LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,
+                                 DeserializationContext* context) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeInterpreter);

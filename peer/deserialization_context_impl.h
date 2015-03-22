@@ -31,7 +31,7 @@ class DeserializationContextImpl : public DeserializationContext {
   explicit DeserializationContextImpl(
       const std::vector<PeerObjectImpl*>* peer_objects);
 
-  virtual PeerObject* GetPeerObjectByIndex(int index);
+  PeerObject* GetPeerObjectByIndex(int index) override;
 
  private:
   const std::vector<PeerObjectImpl*>* const peer_objects_;

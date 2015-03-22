@@ -40,15 +40,15 @@ class ObjectProto;
 class LocalObjectImpl : public LocalObject {
  public:
   explicit LocalObjectImpl(PyObject* py_object);
-  virtual ~LocalObjectImpl();
+  ~LocalObjectImpl() override;
 
-  virtual std::size_t Serialize(void* buffer, std::size_t buffer_size,
-                                SerializationContext* context) const;
-  virtual void InvokeMethod(Thread* thread,
-                            PeerObject* peer_object,
-                            const std::string& method_name,
-                            const std::vector<Value>& parameters,
-                            Value* return_value);
+  std::size_t Serialize(void* buffer, std::size_t buffer_size,
+                        SerializationContext* context) const override;
+  void InvokeMethod(Thread* thread,
+                    PeerObject* peer_object,
+                    const std::string& method_name,
+                    const std::vector<Value>& parameters,
+                    Value* return_value) override;
 
   static LocalObjectImpl* Deserialize(const void* buffer,
                                       std::size_t buffer_size,

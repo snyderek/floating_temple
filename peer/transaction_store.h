@@ -72,15 +72,15 @@ class TransactionStore : public ConnectionHandler,
                    Interpreter* interpreter,
                    const CanonicalPeer* local_peer,
                    bool delay_object_binding);
-  virtual ~TransactionStore();
+  ~TransactionStore() override;
 
   // The caller must not take ownership of the returned Thread instance.
   Thread* CreateThread();
 
-  virtual void NotifyNewConnection(const CanonicalPeer* remote_peer);
+  void NotifyNewConnection(const CanonicalPeer* remote_peer) override;
   // TODO(dss): Move parsing of the peer message to the ConnectionManager class.
-  virtual void HandleMessageFromRemotePeer(const CanonicalPeer* remote_peer,
-                                           const PeerMessage& peer_message);
+  void HandleMessageFromRemotePeer(const CanonicalPeer* remote_peer,
+                                   const PeerMessage& peer_message) override;
 
  private:
   static const char kObjectNamespaceUuidString[];
@@ -95,21 +95,21 @@ class TransactionStore : public ConnectionHandler,
   typedef std::unordered_map<Uuid, linked_ptr<SharedObject>,
                              UuidHasher, UuidEquals> SharedObjectMap;
 
-  virtual bool delay_object_binding() const { return delay_object_binding_; }
-  virtual SequencePoint* GetCurrentSequencePoint() const;
-  virtual ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
+  bool delay_object_binding() const override { return delay_object_binding_; }
+  SequencePoint* GetCurrentSequencePoint() const override;
+  ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
-      bool wait);
-  virtual PeerObjectImpl* CreateUnboundPeerObject();
-  virtual PeerObjectImpl* GetOrCreateNamedObject(const std::string& name);
-  virtual void CreateTransaction(
+      bool wait) override;
+  PeerObjectImpl* CreateUnboundPeerObject() override;
+  PeerObjectImpl* GetOrCreateNamedObject(const std::string& name) override;
+  void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
       const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
           modified_objects,
-      const SequencePoint* prev_sequence_point);
-  virtual bool ObjectsAreEquivalent(const PeerObjectImpl* a,
-                                    const PeerObjectImpl* b) const;
+      const SequencePoint* prev_sequence_point) override;
+  bool ObjectsAreEquivalent(const PeerObjectImpl* a,
+                            const PeerObjectImpl* b) const override;
 
   void HandleApplyTransactionMessage(
       const CanonicalPeer* remote_peer,

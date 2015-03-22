@@ -46,7 +46,7 @@ class ConnectionManager : public PeerMessageSender,
                           private ConnectionManagerInterfaceForPeerConnection {
  public:
   ConnectionManager();
-  virtual ~ConnectionManager();
+  ~ConnectionManager() override;
 
   void ConnectToRemotePeer(const CanonicalPeer* remote_peer);
 
@@ -57,11 +57,11 @@ class ConnectionManager : public PeerMessageSender,
              int send_receive_thread_count);
   void Stop();
 
-  virtual void SendMessageToRemotePeer(const CanonicalPeer* canonical_peer,
-                                       const PeerMessage& peer_message,
-                                       SendMode send_mode);
-  virtual void BroadcastMessage(const PeerMessage& peer_message,
-                                SendMode send_mode);
+  void SendMessageToRemotePeer(const CanonicalPeer* canonical_peer,
+                               const PeerMessage& peer_message,
+                               SendMode send_mode) override;
+  void BroadcastMessage(const PeerMessage& peer_message,
+                        SendMode send_mode) override;
 
  private:
   enum {
@@ -87,17 +87,18 @@ class ConnectionManager : public PeerMessageSender,
   const CanonicalPeer* GetConnectionInitiator(
       const PeerConnection* peer_connection) const;
 
-  virtual ProtocolConnectionHandler<PeerMessage>* NotifyConnectionReceived(
-      ProtocolConnection* connection, const std::string& remote_address);
-  virtual void NotifyConnectionClosed(
-      ProtocolConnectionHandler<PeerMessage>* connection_handler);
+  ProtocolConnectionHandler<PeerMessage>* NotifyConnectionReceived(
+      ProtocolConnection* connection,
+      const std::string& remote_address) override;
+  void NotifyConnectionClosed(
+      ProtocolConnectionHandler<PeerMessage>* connection_handler) override;
 
-  virtual const std::string& interpreter_type() const;
-  virtual const CanonicalPeer* local_peer() const;
-  virtual void NotifyRemotePeerKnown(PeerConnection* peer_connection,
-                                     const CanonicalPeer* remote_peer);
-  virtual void HandleMessageFromRemotePeer(const CanonicalPeer* remote_peer,
-                                           const PeerMessage& peer_message);
+  const std::string& interpreter_type() const override;
+  const CanonicalPeer* local_peer() const override;
+  void NotifyRemotePeerKnown(PeerConnection* peer_connection,
+                             const CanonicalPeer* remote_peer) override;
+  void HandleMessageFromRemotePeer(const CanonicalPeer* remote_peer,
+                                   const PeerMessage& peer_message) override;
 
   CanonicalPeerMap* canonical_peer_map_;
   std::string interpreter_type_;

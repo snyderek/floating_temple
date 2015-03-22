@@ -69,7 +69,7 @@ ConstLiveObjectPtr MakeLocalObject(const string& s) {
 
 class SharedObjectTest : public Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     transaction_store_core_ = new MockTransactionStoreCore();
     transaction_store_ = new MockTransactionStore(transaction_store_core_);
 
@@ -80,7 +80,7 @@ class SharedObjectTest : public Test {
     shared_object_ = new SharedObject(transaction_store_, object_id);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     delete shared_object_;
     delete transaction_store_;
     delete transaction_store_core_;

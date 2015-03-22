@@ -41,14 +41,14 @@ namespace {
 
 class InterpreterImplTest : public Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     const vector<string> known_peer_ids;
 
     interpreter_ = new InterpreterImpl();
     interpreter_->Start(GetUnusedPortForTesting(), known_peer_ids);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     interpreter_->ShutDown();
     delete interpreter_;
   }

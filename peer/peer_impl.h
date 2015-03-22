@@ -36,7 +36,7 @@ namespace peer {
 class PeerImpl : public Peer {
  public:
   PeerImpl();
-  virtual ~PeerImpl();
+  ~PeerImpl() override;
 
   void Start(Interpreter* interpreter,
              const std::string& interpreter_type,
@@ -46,9 +46,9 @@ class PeerImpl : public Peer {
              int send_receive_thread_count,
              bool delay_object_binding);
 
-  virtual void RunProgram(LocalObject* local_object,
-                          const std::string& method_name, Value* return_value);
-  virtual void Stop();
+  void RunProgram(LocalObject* local_object, const std::string& method_name,
+                  Value* return_value) override;
+  void Stop() override;
 
  private:
   enum {

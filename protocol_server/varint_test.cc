@@ -132,17 +132,17 @@ string FormatData(const string& data) {
 
 class DoesntParseMatcher : public MatcherInterface<const string&> {
  public:
-  virtual bool MatchAndExplain(const string& s,
-                               MatchResultListener* listener) const {
+  bool MatchAndExplain(const string& s,
+                       MatchResultListener* listener) const override {
     uint64 value = 0u;
     return ParseVarint(s.data(), static_cast<int>(s.length()), &value) < 0;
   }
 
-  virtual void DescribeTo(ostream* os) const {
+  void DescribeTo(ostream* os) const override {
     *os << "doesn't parse as a varint";
   }
 
-  virtual void DescribeNegationTo(ostream* os) const {
+  void DescribeNegationTo(ostream* os) const override {
     *os << "parses as a varint";
   }
 };
@@ -157,8 +157,8 @@ class ParsesAsMatcher : public MatcherInterface<const string&> {
       : expected_value_(expected_value) {
   }
 
-  virtual bool MatchAndExplain(const string& s,
-                               MatchResultListener* listener) const {
+  bool MatchAndExplain(const string& s,
+                       MatchResultListener* listener) const override {
     uint64 value = 0u;
     if (ParseVarint(s.data(), static_cast<int>(s.length()), &value) < 0) {
       *listener << "parsing failed";
@@ -173,11 +173,11 @@ class ParsesAsMatcher : public MatcherInterface<const string&> {
     return true;
   }
 
-  virtual void DescribeTo(ostream* os) const {
+  void DescribeTo(ostream* os) const override {
     *os << "parses as " << expected_value_;
   }
 
-  virtual void DescribeNegationTo(ostream* os) const {
+  void DescribeNegationTo(ostream* os) const override {
     *os << "doesn't parse as " << expected_value_;
   }
 
@@ -195,8 +195,8 @@ class FormatsAsMatcher : public MatcherInterface<uint64> {
       : expected_encoding_(expected_encoding) {
   }
 
-  virtual bool MatchAndExplain(uint64 value,
-                               MatchResultListener* listener) const {
+  bool MatchAndExplain(uint64 value,
+                       MatchResultListener* listener) const override {
     char buffer[kMaxVarintLength];
     const int buffer_size = static_cast<int>(sizeof buffer);
 
@@ -213,11 +213,11 @@ class FormatsAsMatcher : public MatcherInterface<uint64> {
     return true;
   }
 
-  virtual void DescribeTo(ostream* os) const {
+  void DescribeTo(ostream* os) const override {
     *os << "formats as " << FormatData(expected_encoding_);
   }
 
-  virtual void DescribeNegationTo(ostream* os) const {
+  void DescribeNegationTo(ostream* os) const override {
     *os << "doesn't format as " << FormatData(expected_encoding_);
   }
 

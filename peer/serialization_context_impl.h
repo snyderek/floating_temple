@@ -31,7 +31,7 @@ class SerializationContextImpl : public SerializationContext {
  public:
   explicit SerializationContextImpl(std::vector<PeerObjectImpl*>* peer_objects);
 
-  virtual int GetIndexForPeerObject(PeerObject* peer_object);
+  int GetIndexForPeerObject(PeerObject* peer_object) override;
 
  private:
   std::vector<PeerObjectImpl*>* const peer_objects_;

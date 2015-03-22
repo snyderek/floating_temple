@@ -50,7 +50,7 @@ class PeerConnection : public ProtocolConnectionHandler<PeerMessage> {
       const CanonicalPeer* remote_peer,
       const std::string& remote_address,
       bool locally_initiated);
-  virtual ~PeerConnection();
+  ~PeerConnection() override;
 
   void Init(ProtocolConnection* connection);
 
@@ -67,8 +67,8 @@ class PeerConnection : public ProtocolConnectionHandler<PeerMessage> {
   void IncrementRefCount();
   bool DecrementRefCount();
 
-  virtual bool GetNextOutputMessage(PeerMessage* message);
-  virtual void NotifyMessageReceived(const PeerMessage& message);
+  bool GetNextOutputMessage(PeerMessage* message) override;
+  void NotifyMessageReceived(const PeerMessage& message) override;
 
  private:
   enum ConnectionState {

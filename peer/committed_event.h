@@ -86,10 +86,10 @@ class ObjectCreationCommittedEvent : public CommittedEvent {
  public:
   explicit ObjectCreationCommittedEvent(const ConstLiveObjectPtr& live_object);
 
-  virtual Type type() const { return OBJECT_CREATION; }
-  virtual void GetObjectCreation(ConstLiveObjectPtr* live_object) const;
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+  Type type() const override { return OBJECT_CREATION; }
+  void GetObjectCreation(ConstLiveObjectPtr* live_object) const override;
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   const ConstLiveObjectPtr live_object_;
@@ -101,9 +101,9 @@ class SubObjectCreationCommittedEvent : public CommittedEvent {
  public:
   explicit SubObjectCreationCommittedEvent(SharedObject* new_shared_object);
 
-  virtual Type type() const { return SUB_OBJECT_CREATION; }
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+  Type type() const override { return SUB_OBJECT_CREATION; }
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   SharedObject* GetNewSharedObject() const;
@@ -115,9 +115,9 @@ class BeginTransactionCommittedEvent : public CommittedEvent {
  public:
   BeginTransactionCommittedEvent();
 
-  virtual Type type() const { return BEGIN_TRANSACTION; }
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+  Type type() const override { return BEGIN_TRANSACTION; }
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BeginTransactionCommittedEvent);
@@ -127,9 +127,9 @@ class EndTransactionCommittedEvent : public CommittedEvent {
  public:
   EndTransactionCommittedEvent();
 
-  virtual Type type() const { return END_TRANSACTION; }
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+  Type type() const override { return END_TRANSACTION; }
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EndTransactionCommittedEvent);
@@ -140,12 +140,12 @@ class MethodCallCommittedEvent : public CommittedEvent {
   MethodCallCommittedEvent(SharedObject* caller, const std::string& method_name,
                            const std::vector<CommittedValue>& parameters);
 
-  virtual Type type() const { return METHOD_CALL; }
-  virtual void GetMethodCall(
+  Type type() const override { return METHOD_CALL; }
+  void GetMethodCall(
       SharedObject** caller, const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const;
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+      const std::vector<CommittedValue>** parameters) const override;
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   SharedObject* const caller_;
@@ -162,11 +162,11 @@ class MethodReturnCommittedEvent : public CommittedEvent {
       SharedObject* caller,
       const CommittedValue& return_value);
 
-  virtual Type type() const { return METHOD_RETURN; }
-  virtual void GetMethodReturn(SharedObject** caller,
-                               const CommittedValue** return_value) const;
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+  Type type() const override { return METHOD_RETURN; }
+  void GetMethodReturn(SharedObject** caller,
+                       const CommittedValue** return_value) const override;
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   SharedObject* const caller_;
@@ -183,12 +183,12 @@ class SubMethodCallCommittedEvent : public CommittedEvent {
       const std::string& method_name,
       const std::vector<CommittedValue>& parameters);
 
-  virtual Type type() const { return SUB_METHOD_CALL; }
-  virtual void GetSubMethodCall(
+  Type type() const override { return SUB_METHOD_CALL; }
+  void GetSubMethodCall(
       SharedObject** callee, const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const;
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+      const std::vector<CommittedValue>** parameters) const override;
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   SharedObject* const callee_;
@@ -203,11 +203,11 @@ class SubMethodReturnCommittedEvent : public CommittedEvent {
   SubMethodReturnCommittedEvent(SharedObject* callee,
                                 const CommittedValue& return_value);
 
-  virtual Type type() const { return SUB_METHOD_RETURN; }
-  virtual void GetSubMethodReturn(SharedObject** callee,
-                                  const CommittedValue** return_value) const;
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+  Type type() const override { return SUB_METHOD_RETURN; }
+  void GetSubMethodReturn(SharedObject** callee,
+                          const CommittedValue** return_value) const override;
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   SharedObject* const callee_;
@@ -223,12 +223,12 @@ class SelfMethodCallCommittedEvent : public CommittedEvent {
       const std::string& method_name,
       const std::vector<CommittedValue>& parameters);
 
-  virtual Type type() const { return SELF_METHOD_CALL; }
-  virtual void GetSelfMethodCall(
+  Type type() const override { return SELF_METHOD_CALL; }
+  void GetSelfMethodCall(
       const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const;
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+      const std::vector<CommittedValue>** parameters) const override;
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   const std::string method_name_;
@@ -243,10 +243,10 @@ class SelfMethodReturnCommittedEvent : public CommittedEvent {
       const std::unordered_set<SharedObject*>& new_shared_objects,
       const CommittedValue& return_value);
 
-  virtual Type type() const { return SELF_METHOD_RETURN; }
-  virtual void GetSelfMethodReturn(const CommittedValue** return_value) const;
-  virtual CommittedEvent* Clone() const;
-  virtual std::string Dump() const;
+  Type type() const override { return SELF_METHOD_RETURN; }
+  void GetSelfMethodReturn(const CommittedValue** return_value) const override;
+  CommittedEvent* Clone() const override;
+  std::string Dump() const override;
 
  private:
   const CommittedValue return_value_;

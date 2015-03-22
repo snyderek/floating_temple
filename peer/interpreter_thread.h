@@ -46,22 +46,22 @@ class InterpreterThread : public Thread {
  public:
   explicit InterpreterThread(
       TransactionStoreInternalInterface* transaction_store);
-  virtual ~InterpreterThread();
+  ~InterpreterThread() override;
 
   void Rewind(const TransactionId& rejected_transaction_id);
   void Resume();
 
-  virtual bool BeginTransaction();
-  virtual bool EndTransaction();
-  virtual PeerObject* CreatePeerObject(LocalObject* initial_version);
-  virtual PeerObject* GetOrCreateNamedObject(const std::string& name,
-                                             LocalObject* initial_version);
-  virtual bool CallMethod(PeerObject* peer_object,
-                          const std::string& method_name,
-                          const std::vector<Value>& parameters,
-                          Value* return_value);
-  virtual bool ObjectsAreEquivalent(const PeerObject* a,
-                                    const PeerObject* b) const;
+  bool BeginTransaction() override;
+  bool EndTransaction() override;
+  PeerObject* CreatePeerObject(LocalObject* initial_version) override;
+  PeerObject* GetOrCreateNamedObject(const std::string& name,
+                                     LocalObject* initial_version) override;
+  bool CallMethod(PeerObject* peer_object,
+                  const std::string& method_name,
+                  const std::vector<Value>& parameters,
+                  Value* return_value) override;
+  bool ObjectsAreEquivalent(const PeerObject* a,
+                            const PeerObject* b) const override;
 
  private:
   struct NewObject {

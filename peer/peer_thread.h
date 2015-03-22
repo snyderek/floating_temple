@@ -48,7 +48,7 @@ class TransactionStoreInternalInterface;
 class PeerThread : private Thread {
  public:
   PeerThread();
-  virtual ~PeerThread();
+  ~PeerThread() override;
 
   ConstLiveObjectPtr live_object() const;
 
@@ -110,17 +110,17 @@ class PeerThread : private Thread {
 
   void SetConflictDetected(const std::string& description);
 
-  virtual bool BeginTransaction();
-  virtual bool EndTransaction();
-  virtual PeerObject* CreatePeerObject(LocalObject* initial_version);
-  virtual PeerObject* GetOrCreateNamedObject(const std::string& name,
-                                             LocalObject* initial_version);
-  virtual bool CallMethod(PeerObject* peer_object,
-                          const std::string& method_name,
-                          const std::vector<Value>& parameters,
-                          Value* return_value);
-  virtual bool ObjectsAreEquivalent(const PeerObject* a,
-                                    const PeerObject* b) const;
+  bool BeginTransaction() override;
+  bool EndTransaction() override;
+  PeerObject* CreatePeerObject(LocalObject* initial_version) override;
+  PeerObject* GetOrCreateNamedObject(const std::string& name,
+                                     LocalObject* initial_version) override;
+  bool CallMethod(PeerObject* peer_object,
+                  const std::string& method_name,
+                  const std::vector<Value>& parameters,
+                  Value* return_value) override;
+  bool ObjectsAreEquivalent(const PeerObject* a,
+                            const PeerObject* b) const override;
 
   static void* ReplayThreadMain(void* peer_thread_raw);
 

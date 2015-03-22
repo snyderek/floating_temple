@@ -44,7 +44,7 @@ namespace {
 
 class ToyLangIntegrationTest : public Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     interpreter_ = new toy_lang::InterpreterImpl();
 
     const vector<string> known_peer_ids;
@@ -53,7 +53,7 @@ class ToyLangIntegrationTest : public Test {
                               true);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     peer_->Stop();
     delete interpreter_;
     delete peer_;

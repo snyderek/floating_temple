@@ -32,17 +32,17 @@ class ProgramObject : public LocalObjectImpl {
  public:
   explicit ProgramObject(const const_shared_ptr<Expression>& expression);
 
-  virtual LocalObject* Clone() const;
-  virtual void InvokeMethod(Thread* thread,
-                            PeerObject* peer_object,
-                            const std::string& method_name,
-                            const std::vector<Value>& parameters,
-                            Value* return_value);
-  virtual std::string Dump() const;
+  LocalObject* Clone() const override;
+  void InvokeMethod(Thread* thread,
+                    PeerObject* peer_object,
+                    const std::string& method_name,
+                    const std::vector<Value>& parameters,
+                    Value* return_value) override;
+  std::string Dump() const override;
 
  protected:
-  virtual void PopulateObjectProto(ObjectProto* object_proto,
-                                   SerializationContext* context) const;
+  void PopulateObjectProto(ObjectProto* object_proto,
+                           SerializationContext* context) const override;
 
  private:
   const const_shared_ptr<Expression> expression_;

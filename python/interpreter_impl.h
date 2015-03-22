@@ -28,7 +28,7 @@ namespace python {
 class InterpreterImpl : public Interpreter {
  public:
   InterpreterImpl();
-  virtual ~InterpreterImpl();
+  ~InterpreterImpl() override;
 
   void BeginTransaction();
   void EndTransaction();
@@ -36,9 +36,8 @@ class InterpreterImpl : public Interpreter {
   Thread* GetThreadObject();
   Thread* SetThreadObject(Thread* new_thread);
 
-  virtual LocalObject* DeserializeObject(const void* buffer,
-                                         std::size_t buffer_size,
-                                         DeserializationContext* context);
+  LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,
+                                 DeserializationContext* context) override;
 
   static InterpreterImpl* instance();
 

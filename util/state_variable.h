@@ -29,7 +29,7 @@ namespace floating_temple {
 class StateVariable : private StateVariableInternalInterface {
  public:
   explicit StateVariable(unsigned starting_state);
-  virtual ~StateVariable();
+  ~StateVariable() override;
 
   void AddStateTransition(unsigned old_state, unsigned new_state);
 
@@ -46,12 +46,12 @@ class StateVariable : private StateVariableInternalInterface {
       unsigned* old_state);
 
  private:
-  virtual bool MatchesStateMask_Locked(unsigned state_mask) const;
-  virtual void CheckState_Locked(unsigned expected_state_mask) const;
-  virtual void WaitForState_Locked(unsigned expected_state_mask) const;
-  virtual void WaitForNotState_Locked(
-      unsigned inverse_expected_state_mask) const;
-  virtual void ChangeState_Locked(unsigned new_state);
+  bool MatchesStateMask_Locked(unsigned state_mask) const override;
+  void CheckState_Locked(unsigned expected_state_mask) const override;
+  void WaitForState_Locked(unsigned expected_state_mask) const override;
+  void WaitForNotState_Locked(
+      unsigned inverse_expected_state_mask) const override;
+  void ChangeState_Locked(unsigned new_state) override;
 
   std::set<std::pair<unsigned, unsigned>> state_transitions_;
   unsigned current_state_;

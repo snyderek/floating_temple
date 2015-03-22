@@ -27,9 +27,9 @@ class FakePeer : public Peer {
  public:
   FakePeer();
 
-  virtual void RunProgram(LocalObject* local_object,
-                          const std::string& method_name, Value* return_value);
-  virtual void Stop();
+  void RunProgram(LocalObject* local_object, const std::string& method_name,
+                  Value* return_value) override;
+  void Stop() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePeer);

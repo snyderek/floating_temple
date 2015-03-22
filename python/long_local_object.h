@@ -30,19 +30,19 @@ class LongLocalObject : public LocalObjectImpl {
  public:
   explicit LongLocalObject(PyObject* py_long_object);
 
-  virtual LocalObject* Clone() const;
-  virtual std::string Dump() const;
+  LocalObject* Clone() const override;
+  std::string Dump() const override;
 
   static LongLocalObject* ParseLongProto(const LongProto& long_proto);
 
  protected:
-  virtual void PopulateObjectProto(ObjectProto* object_proto,
-                                   SerializationContext* context) const;
-  virtual bool InvokeTypeSpecificMethod(PeerObject* peer_object,
-                                        const std::string& method_name,
-                                        const std::vector<Value>& parameters,
-                                        MethodContext* method_context,
-                                        Value* return_value);
+  void PopulateObjectProto(ObjectProto* object_proto,
+                           SerializationContext* context) const override;
+  bool InvokeTypeSpecificMethod(PeerObject* peer_object,
+                                const std::string& method_name,
+                                const std::vector<Value>& parameters,
+                                MethodContext* method_context,
+                                Value* return_value) override;
 
  private:
   PY_LONG_LONG GetLongLongValue(int* overflow) const;

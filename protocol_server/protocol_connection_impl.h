@@ -39,7 +39,7 @@ class ProtocolConnectionImpl : public ProtocolConnection {
  public:
   ProtocolConnectionImpl(ProtocolServerInterfaceForConnection* protocol_server,
                          int socket_fd);
-  virtual ~ProtocolConnectionImpl();
+  ~ProtocolConnectionImpl() override;
 
   void Init(ProtocolConnectionHandler<Message>* protocol_connection_handler);
 
@@ -56,8 +56,8 @@ class ProtocolConnectionImpl : public ProtocolConnection {
 
   void CloseSocket();
 
-  virtual void Close();
-  virtual void NotifyMessageReadyToSend();
+  void Close() override;
+  void NotifyMessageReadyToSend() override;
 
  private:
   void ParseMessages(std::string* input_string);

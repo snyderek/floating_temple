@@ -28,8 +28,8 @@ class MockSequencePoint : public SequencePoint {
  public:
   MockSequencePoint();
 
-  virtual SequencePoint* Clone() const;
-  virtual std::string Dump() const;
+  SequencePoint* Clone() const override;
+  std::string Dump() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSequencePoint);

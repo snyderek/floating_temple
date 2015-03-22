@@ -63,23 +63,23 @@ class MockTransactionStoreCore {
 class MockTransactionStore : public TransactionStoreInternalInterface {
  public:
   explicit MockTransactionStore(const MockTransactionStoreCore* core);
-  virtual ~MockTransactionStore();
+  ~MockTransactionStore() override;
 
-  virtual bool delay_object_binding() const { return true; }
-  virtual SequencePoint* GetCurrentSequencePoint() const;
-  virtual ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
+  bool delay_object_binding() const override { return true; }
+  SequencePoint* GetCurrentSequencePoint() const override;
+  ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
-      bool wait);
-  virtual PeerObjectImpl* CreateUnboundPeerObject();
-  virtual PeerObjectImpl* GetOrCreateNamedObject(const std::string& name);
-  virtual void CreateTransaction(
+      bool wait) override;
+  PeerObjectImpl* CreateUnboundPeerObject() override;
+  PeerObjectImpl* GetOrCreateNamedObject(const std::string& name) override;
+  void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
       const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
           modified_objects,
-      const SequencePoint* prev_sequence_point);
-  virtual bool ObjectsAreEquivalent(const PeerObjectImpl* a,
-                                    const PeerObjectImpl* b) const;
+      const SequencePoint* prev_sequence_point) override;
+  bool ObjectsAreEquivalent(const PeerObjectImpl* a,
+                            const PeerObjectImpl* b) const override;
 
  private:
   const MockTransactionStoreCore* const core_;

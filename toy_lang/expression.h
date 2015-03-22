@@ -59,10 +59,11 @@ class IntExpression : public Expression {
  public:
   explicit IntExpression(int64 n);
 
-  virtual PeerObject* Evaluate(PeerObject* symbol_table_object,
-                               Thread* thread) const;
-  virtual void PopulateExpressionProto(ExpressionProto* expression_proto) const;
-  virtual std::string DebugString() const;
+  PeerObject* Evaluate(PeerObject* symbol_table_object,
+                       Thread* thread) const override;
+  void PopulateExpressionProto(
+      ExpressionProto* expression_proto) const override;
+  std::string DebugString() const override;
 
   static IntExpression* ParseIntExpressionProto(
       const IntExpressionProto& int_expression_proto);
@@ -77,10 +78,11 @@ class StringExpression : public Expression {
  public:
   explicit StringExpression(const std::string& s);
 
-  virtual PeerObject* Evaluate(PeerObject* symbol_table_object,
-                               Thread* thread) const;
-  virtual void PopulateExpressionProto(ExpressionProto* expression_proto) const;
-  virtual std::string DebugString() const;
+  PeerObject* Evaluate(PeerObject* symbol_table_object,
+                       Thread* thread) const override;
+  void PopulateExpressionProto(
+      ExpressionProto* expression_proto) const override;
+  std::string DebugString() const override;
 
   static StringExpression* ParseStringExpressionProto(
       const StringExpressionProto& string_expression_proto);
@@ -95,10 +97,11 @@ class ExpressionExpression : public Expression {
  public:
   explicit ExpressionExpression(Expression* expression);
 
-  virtual PeerObject* Evaluate(PeerObject* symbol_table_object,
-                               Thread* thread) const;
-  virtual void PopulateExpressionProto(ExpressionProto* expression_proto) const;
-  virtual std::string DebugString() const;
+  PeerObject* Evaluate(PeerObject* symbol_table_object,
+                       Thread* thread) const override;
+  void PopulateExpressionProto(
+      ExpressionProto* expression_proto) const override;
+  std::string DebugString() const override;
 
   static ExpressionExpression* ParseExpressionExpressionProto(
       const ExpressionExpressionProto& expression_expression_proto);
@@ -113,10 +116,11 @@ class VariableExpression : public Expression {
  public:
   explicit VariableExpression(const std::string& name);
 
-  virtual PeerObject* Evaluate(PeerObject* symbol_table_object,
-                               Thread* thread) const;
-  virtual void PopulateExpressionProto(ExpressionProto* expression_proto) const;
-  virtual std::string DebugString() const;
+  PeerObject* Evaluate(PeerObject* symbol_table_object,
+                       Thread* thread) const override;
+  void PopulateExpressionProto(
+      ExpressionProto* expression_proto) const override;
+  std::string DebugString() const override;
 
   static VariableExpression* ParseVariableExpressionProto(
       const VariableExpressionProto& variable_expression_proto);
@@ -132,10 +136,11 @@ class FunctionExpression : public Expression {
   FunctionExpression(Expression* function,
                      const std::vector<Expression*>& parameters);
 
-  virtual PeerObject* Evaluate(PeerObject* symbol_table_object,
-                               Thread* thread) const;
-  virtual void PopulateExpressionProto(ExpressionProto* expression_proto) const;
-  virtual std::string DebugString() const;
+  PeerObject* Evaluate(PeerObject* symbol_table_object,
+                       Thread* thread) const override;
+  void PopulateExpressionProto(
+      ExpressionProto* expression_proto) const override;
+  std::string DebugString() const override;
 
   static FunctionExpression* ParseFunctionExpressionProto(
       const FunctionExpressionProto& function_expression_proto);
@@ -151,10 +156,11 @@ class ListExpression : public Expression {
  public:
   explicit ListExpression(const std::vector<Expression*>& list_items);
 
-  virtual PeerObject* Evaluate(PeerObject* symbol_table_object,
-                               Thread* thread) const;
-  virtual void PopulateExpressionProto(ExpressionProto* expression_proto) const;
-  virtual std::string DebugString() const;
+  PeerObject* Evaluate(PeerObject* symbol_table_object,
+                       Thread* thread) const override;
+  void PopulateExpressionProto(
+      ExpressionProto* expression_proto) const override;
+  std::string DebugString() const override;
 
   static ListExpression* ParseListExpressionProto(
       const ListExpressionProto& list_expression_proto);

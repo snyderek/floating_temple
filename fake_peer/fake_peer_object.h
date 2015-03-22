@@ -32,7 +32,7 @@ class FakePeerObject : public PeerObject {
 
   LocalObject* local_object() { return local_object_.get(); }
 
-  virtual std::string Dump() const;
+  std::string Dump() const override;
 
  private:
   const std::unique_ptr<LocalObject> local_object_;

@@ -74,7 +74,7 @@ class ObjectCreationPendingEvent : public PendingEvent {
                              PeerObjectImpl* new_peer_object,
                              const ConstLiveObjectPtr& new_live_object);
 
-  virtual Type type() const { return OBJECT_CREATION; }
+  Type type() const override { return OBJECT_CREATION; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObjectCreationPendingEvent);
@@ -85,7 +85,7 @@ class BeginTransactionPendingEvent : public PendingEvent {
   // prev_peer_object must not be NULL.
   explicit BeginTransactionPendingEvent(PeerObjectImpl* prev_peer_object);
 
-  virtual Type type() const { return BEGIN_TRANSACTION; }
+  Type type() const override { return BEGIN_TRANSACTION; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BeginTransactionPendingEvent);
@@ -96,7 +96,7 @@ class EndTransactionPendingEvent : public PendingEvent {
   // prev_peer_object must not be NULL.
   explicit EndTransactionPendingEvent(PeerObjectImpl* prev_peer_object);
 
-  virtual Type type() const { return END_TRANSACTION; }
+  Type type() const override { return END_TRANSACTION; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EndTransactionPendingEvent);
@@ -114,10 +114,10 @@ class MethodCallPendingEvent : public PendingEvent {
       const std::string& method_name,
       const std::vector<Value>& parameters);
 
-  virtual Type type() const { return METHOD_CALL; }
-  virtual void GetMethodCall(PeerObjectImpl** next_peer_object,
-                             const std::string** method_name,
-                             const std::vector<Value>** parameters) const;
+  Type type() const override { return METHOD_CALL; }
+  void GetMethodCall(PeerObjectImpl** next_peer_object,
+                     const std::string** method_name,
+                     const std::vector<Value>** parameters) const override;
 
  private:
   PeerObjectImpl* const next_peer_object_;
@@ -138,9 +138,9 @@ class MethodReturnPendingEvent : public PendingEvent {
       PeerObjectImpl* next_peer_object,
       const Value& return_value);
 
-  virtual Type type() const { return METHOD_RETURN; }
-  virtual void GetMethodReturn(PeerObjectImpl** next_peer_object,
-                               const Value** return_value) const;
+  Type type() const override { return METHOD_RETURN; }
+  void GetMethodReturn(PeerObjectImpl** next_peer_object,
+                       const Value** return_value) const override;
 
  private:
   PeerObjectImpl* const next_peer_object_;

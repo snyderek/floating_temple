@@ -89,7 +89,7 @@ bool PumpDataOnConnection(ProtocolConnectionImpl<TestMessage>* connection) {
 
 class ProtocolConnectionImplTest : public Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     int fds[2];
     CHECK_ERR(socketpair(AF_UNIX, SOCK_STREAM, 0, fds));
 
@@ -105,7 +105,7 @@ class ProtocolConnectionImplTest : public Test {
     protocol_connection2_->Init(&handler2_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     test_done_.Notify();
 
     void* thread_return_value = nullptr;

@@ -46,18 +46,18 @@ TEST(PeerIdTest, MakePeerId) {
 
 class DoesntParseMatcher : public MatcherInterface<const string&> {
  public:
-  virtual bool MatchAndExplain(const string& s,
-                               MatchResultListener* listener) const {
+  bool MatchAndExplain(const string& s,
+                       MatchResultListener* listener) const override {
     string address;
     int port = -1;
     return !ParsePeerId(s, &address, &port);
   }
 
-  virtual void DescribeTo(ostream* os) const {
+  void DescribeTo(ostream* os) const override {
     *os << "doesn't parse as a peer id";
   }
 
-  virtual void DescribeNegationTo(ostream* os) const {
+  void DescribeNegationTo(ostream* os) const override {
     *os << "parses as a peer id";
   }
 };
@@ -73,8 +73,8 @@ class ParsesAsMatcher : public MatcherInterface<const string&> {
         expected_port_(expected_port) {
   }
 
-  virtual bool MatchAndExplain(const string& s,
-                               MatchResultListener* listener) const {
+  bool MatchAndExplain(const string& s,
+                       MatchResultListener* listener) const override {
     string address;
     int port = -1;
     if (!ParsePeerId(s, &address, &port)) {
@@ -91,12 +91,12 @@ class ParsesAsMatcher : public MatcherInterface<const string&> {
     return true;
   }
 
-  virtual void DescribeTo(ostream* os) const {
+  void DescribeTo(ostream* os) const override {
     *os << "parses as a peer id (\"" << CEscape(expected_address_) << "\", "
         << expected_port_ << ")";
   }
 
-  virtual void DescribeNegationTo(ostream* os) const {
+  void DescribeNegationTo(ostream* os) const override {
     *os << "doesn't parse as a peer id (\"" << CEscape(expected_address_)
         << "\", " << expected_port_ << ")";
   }

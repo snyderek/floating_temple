@@ -88,7 +88,7 @@ class ProtocolServer : private ProtocolServerInterfaceForConnection {
   void AddConnectionToReadyConnections(
       ProtocolConnectionImpl<Message>* connection);
 
-  virtual void NotifyConnectionsChanged();
+  void NotifyConnectionsChanged() override;
 
   static void* SelectThreadMain(void* protocol_server_raw);
   static void* SendReceiveThreadMain(void* protocol_server_raw);

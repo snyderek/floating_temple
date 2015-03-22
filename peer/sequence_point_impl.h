@@ -55,8 +55,8 @@ class SequencePointImpl : public SequencePoint {
 
   void CopyFrom(const SequencePointImpl& other);
 
-  virtual SequencePoint* Clone() const;
-  virtual std::string Dump() const;
+  SequencePoint* Clone() const override;
+  std::string Dump() const override;
 
  private:
   SequencePointImpl(

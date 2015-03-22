@@ -30,14 +30,14 @@ class SharedObject;
 class PeerObjectImpl : public PeerObject {
  public:
   PeerObjectImpl();
-  virtual ~PeerObjectImpl();
+  ~PeerObjectImpl() override;
 
   const SharedObject* shared_object() const { return PrivateGetSharedObject(); }
   SharedObject* shared_object() { return PrivateGetSharedObject(); }
 
   SharedObject* SetSharedObjectIfUnset(SharedObject* shared_object);
 
-  virtual std::string Dump() const;
+  std::string Dump() const override;
 
  private:
   SharedObject* PrivateGetSharedObject() const;

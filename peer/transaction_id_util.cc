@@ -15,9 +15,9 @@
 
 #include "peer/transaction_id_util.h"
 
+#include <cinttypes>
 #include <cstddef>
 #include <string>
-#include <tr1/cinttypes>
 
 #include "base/integral_types.h"
 #include "base/logging.h"

@@ -15,9 +15,9 @@
 
 #include "toy_lang/expression.h"
 
+#include <cinttypes>
 #include <cstddef>
 #include <string>
-#include <tr1/cinttypes>
 #include <vector>
 
 #include "base/const_shared_ptr.h"

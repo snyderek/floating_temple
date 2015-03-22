@@ -15,10 +15,10 @@
 
 #include "toy_lang/local_object_impl.h"
 
+#include <cinttypes>
 #include <cstddef>
 #include <cstdio>
 #include <string>
-#include <tr1/cinttypes>
 #include <tr1/unordered_map>
 #include <utility>
 #include <vector>

@@ -15,9 +15,9 @@
 
 #include "include/c++/value.h"
 
+#include <cinttypes>
 #include <cstddef>
 #include <string>
-#include <tr1/cinttypes>
 
 #include "base/escape.h"
 #include "base/integral_types.h"

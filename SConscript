@@ -856,10 +856,9 @@ cxx_tests = [
     util_stl_util_test,
   ]
 
-# TODO(dss): Add python/dist-python_test.sh (and rename it to
-# python/floating_python_test.sh).
 sh_tests = [
     File('peer/toy_lang_integration_test.sh'),
+    File('python/floating_python_test.sh'),
   ]
 
 all_tests = cxx_tests + sh_tests

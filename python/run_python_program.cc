@@ -28,7 +28,6 @@
 #include "python/interpreter_impl.h"
 #include "python/list_local_object.h"
 #include "python/long_local_object.h"
-#include "python/peer_module.h"
 #include "python/program_object.h"
 #include "python/py_proxy_object.h"
 #include "python/python_gil_lock.h"
@@ -84,12 +83,6 @@ void RunPythonProgram(Peer* peer, const string& source_file_name) {
 void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
   CHECK(peer != nullptr);
 
-  CHECK_NE(PyImport_AppendInittab("peer", PyInit_peer), -1);
-
-  // Calling Py_InitializeEx with a parameter of 0 causes signal handler
-  // registration to be skipped.
-  Py_InitializeEx(0);
-
   Py_InstallListCreationHook(WrapPythonList);
   Py_InstallLongCreationHook(WrapPythonLong);
 
@@ -122,8 +115,6 @@ void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
 
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value);
-
-  Py_Finalize();
 }
 
 }  // namespace python

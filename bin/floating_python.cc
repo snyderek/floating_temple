@@ -17,6 +17,8 @@
 // bin/floating_toy_lang.cc. Consider factoring out the common code into a class
 // or function.
 
+#include "third_party/Python-3.4.2/Include/Python.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,6 +29,7 @@
 #include "include/c++/create_peer.h"
 #include "include/c++/peer.h"
 #include "python/interpreter_impl.h"
+#include "python/peer_module.h"
 #include "python/run_python_program.h"
 #include "util/comma_separated.h"
 #include "util/signal_handler.h"
@@ -40,6 +43,7 @@ using floating_temple::ParseCommaSeparatedList;
 using floating_temple::Peer;
 using floating_temple::WaitForSignal;
 using floating_temple::python::InterpreterImpl;
+using floating_temple::python::PyInit_peer;
 using floating_temple::python::RunPythonProgram;
 using google::FlushLogFiles;
 using google::InitGoogleLogging;
@@ -89,6 +93,14 @@ int main(int argc, char* argv[]) {
   // Start the local interpreter.
   InterpreterImpl interpreter;
 
+  CHECK_NE(PyImport_AppendInittab("peer", PyInit_peer), -1);
+  // Calling Py_InitializeEx with a parameter of 0 causes signal handler
+  // registration to be skipped.
+  Py_InitializeEx(0);
+
+  // TODO(dss): Use LOG(WARNING) for important, infrequent log messages. Then it
+  // won't be necessary to call FlushLogFiles below.
+
   // Start the peer.
   LOG(INFO) << "Starting peer...";
   const unique_ptr<Peer> peer(
@@ -111,6 +123,8 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "Stopping peer...";
   peer->Stop();
   LOG(INFO) << "Peer stopped.";
+
+  Py_Finalize();
 
   return 0;
 }

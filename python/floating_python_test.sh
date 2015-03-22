@@ -19,9 +19,6 @@ set -o errexit
 set -o nounset
 set -o xtrace
 
-# TODO(dss): Select an unused port at runtime instead of hard-coding the port
-# number.
-
-./python/dist-python \
-  --peer_port=1109 \
-  @abs_top_srcdir@/python/testdata/fibonacci.py
+./bin/floating_python \
+  --peer_port="$(./bin/get_unused_port_for_testing)" --linger=false \
+  ../python/testdata/fibonacci.py

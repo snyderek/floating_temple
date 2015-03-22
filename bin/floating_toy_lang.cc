@@ -37,7 +37,6 @@ using floating_temple::Peer;
 using floating_temple::WaitForSignal;
 using floating_temple::toy_lang::InterpreterImpl;
 using floating_temple::toy_lang::RunToyLangProgram;
-using google::FlushLogFiles;
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
 using google::SetUsageMessage;
@@ -85,14 +84,12 @@ int main(int argc, char* argv[]) {
   InterpreterImpl interpreter;
 
   // Start the peer.
-  LOG(INFO) << "Starting peer...";
+  LOG(WARNING) << "Starting peer...";
   const unique_ptr<Peer> peer(
       CreateNetworkPeer(&interpreter, "toy_lang", GetLocalAddress(),
                         FLAGS_peer_port, known_peer_ids,
                         FLAGS_send_receive_thread_count, true));
-  LOG(INFO) << "Peer started.";
-
-  FlushLogFiles(INFO);
+  LOG(WARNING) << "Peer started.";
 
   // Run the source file.
   RunToyLangProgram(peer.get(), argv[1]);
@@ -103,9 +100,9 @@ int main(int argc, char* argv[]) {
   }
 
   // Stop the peer.
-  LOG(INFO) << "Stopping peer...";
+  LOG(WARNING) << "Stopping peer...";
   peer->Stop();
-  LOG(INFO) << "Peer stopped.";
+  LOG(WARNING) << "Peer stopped.";
 
   return 0;
 }

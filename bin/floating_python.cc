@@ -45,7 +45,6 @@ using floating_temple::WaitForSignal;
 using floating_temple::python::InterpreterImpl;
 using floating_temple::python::PyInit_peer;
 using floating_temple::python::RunPythonProgram;
-using google::FlushLogFiles;
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
 using google::SetUsageMessage;
@@ -93,23 +92,19 @@ int main(int argc, char* argv[]) {
   // Start the local interpreter.
   InterpreterImpl interpreter;
 
+  // TODO(dss): Move this initialization code to the InterpreterImpl class.
   CHECK_NE(PyImport_AppendInittab("peer", PyInit_peer), -1);
   // Calling Py_InitializeEx with a parameter of 0 causes signal handler
   // registration to be skipped.
   Py_InitializeEx(0);
 
-  // TODO(dss): Use LOG(WARNING) for important, infrequent log messages. Then it
-  // won't be necessary to call FlushLogFiles below.
-
   // Start the peer.
-  LOG(INFO) << "Starting peer...";
+  LOG(WARNING) << "Starting peer...";
   const unique_ptr<Peer> peer(
       CreateNetworkPeer(&interpreter, "python3", GetLocalAddress(),
                         FLAGS_peer_port, known_peer_ids,
                         FLAGS_send_receive_thread_count, true));
-  LOG(INFO) << "Peer started.";
-
-  FlushLogFiles(INFO);
+  LOG(WARNING) << "Peer started.";
 
   // Run the source file.
   RunPythonProgram(peer.get(), argv[1]);
@@ -120,9 +115,9 @@ int main(int argc, char* argv[]) {
   }
 
   // Stop the peer.
-  LOG(INFO) << "Stopping peer...";
+  LOG(WARNING) << "Stopping peer...";
   peer->Stop();
-  LOG(INFO) << "Peer stopped.";
+  LOG(WARNING) << "Peer stopped.";
 
   Py_Finalize();
 

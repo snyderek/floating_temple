@@ -21,7 +21,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "include/c++/value.h"
 #include "include/c/peer.h"
 
@@ -47,8 +46,9 @@ Value* GetValue(floatingtemple_Value* value) {
 
 }  // namespace
 
-COMPILE_ASSERT(sizeof(floatingtemple_Value) >= sizeof(Value),
-               floatingtemple_Value_struct_is_too_small);
+static_assert(sizeof(floatingtemple_Value) >= sizeof(Value),
+              "struct floatingtemple_Value should be large enough to hold an "
+              "instance of class Value.");
 
 void floatingtemple_InitValue(floatingtemple_Value* value) {
   new(GetValue(value)) Value();

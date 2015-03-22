@@ -22,7 +22,6 @@
 
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "include/c++/value.h"
 #include "python/method_context.h"
 #include "python/proto/local_type.pb.h"
@@ -35,8 +34,12 @@ namespace floating_temple {
 
 class PeerObject;
 
-COMPILE_ASSERT(sizeof(int) <= sizeof(int64), int_type_is_too_big);
-COMPILE_ASSERT(sizeof(long) <= sizeof(int64), long_type_is_too_big);
+static_assert(sizeof(int) <= sizeof(int64),
+              "This code assumes that the 'int' type is small enough to fit "
+              "in a 64-bit integer.");
+static_assert(sizeof(long) <= sizeof(int64),
+              "This code assumes that the 'long' type is small enough to fit "
+              "in a 64-bit integer.");
 
 namespace python {
 

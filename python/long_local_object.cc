@@ -22,7 +22,6 @@
 
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/string_printf.h"
 #include "include/c++/value.h"
 #include "python/call_method.h"
@@ -36,8 +35,9 @@ using std::vector;
 
 namespace floating_temple {
 
-COMPILE_ASSERT(sizeof(PY_LONG_LONG) == sizeof(int64),
-               py_long_long_is_not_64_bits);
+static_assert(sizeof(PY_LONG_LONG) == sizeof(int64),
+              "This code assumes that the PY_LONG_LONG type is exactly 64 bits "
+              "wide.");
 
 namespace python {
 

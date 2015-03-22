@@ -20,13 +20,14 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
-#include "base/scoped_array.h"
 #include "util/string_util.h"
 
 using std::string;
+using std::unique_ptr;
 
 namespace floating_temple {
 
@@ -52,7 +53,7 @@ string GetSystemTempDirName() {
 }
 
 string MakeTempDir(const string& temp_dir_template) {
-  scoped_array<char> buffer(CreateCharBuffer(temp_dir_template));
+  unique_ptr<char[]> buffer(CreateCharBuffer(temp_dir_template));
 
   if (mkdtemp(buffer.get()) == NULL) {
     PLOG(FATAL) << "mkdtemp";

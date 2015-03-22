@@ -16,11 +16,11 @@
 #include "c_harness/proxy_interpreter.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/scoped_array.h"
 #include "c_harness/proxy_local_object.h"
 #include "c_harness/types.h"
 #include "include/c++/value.h"
@@ -31,6 +31,7 @@
 
 using std::size_t;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace floating_temple {
@@ -257,7 +258,7 @@ void ProxyInterpreter::InvokeMethodOnLocalObject(
   thread_struct.thread = thread;
 
   const vector<Value>::size_type parameter_count = parameters.size();
-  scoped_array<floatingtemple_Value> parameter_array(
+  unique_ptr<floatingtemple_Value[]> parameter_array(
       new floatingtemple_Value[parameter_count]);
 
   for (vector<Value>::size_type i = 0; i < parameter_count; ++i) {

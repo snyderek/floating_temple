@@ -18,13 +18,14 @@
 #include <cstdarg>
 #include <cstddef>
 #include <cstdio>
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
-#include "base/scoped_array.h"
 
 using std::size_t;
 using std::string;
+using std::unique_ptr;
 using std::va_list;
 using std::vsnprintf;
 
@@ -81,7 +82,7 @@ void StringAppendFV(string* str, const char* format, va_list arg_list) {
 
   // If the fixed-size buffer was too small, dynamically allocate a buffer of
   // the required size and call vsnprintf again.
-  scoped_array<char> dynamic_buffer;
+  unique_ptr<char[]> dynamic_buffer;
 
   if (static_cast<size_t>(count) >= buffer_size) {
     buffer_size = static_cast<size_t>(count + 1);

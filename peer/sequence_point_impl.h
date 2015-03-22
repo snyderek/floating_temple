@@ -39,7 +39,7 @@ class SequencePointImpl : public SequencePoint {
   const MaxVersionMap& version_map() const { return version_map_; }
   const PeerExclusionMap& peer_exclusion_map() const
       { return peer_exclusion_map_; }
-  const std::map<const CanonicalPeer*, std::set<TransactionId> >&
+  const std::map<const CanonicalPeer*, std::set<TransactionId>>&
       rejected_peers() const { return rejected_peers_; }
 
   bool HasPeerTransactionId(const CanonicalPeer* canonical_peer,
@@ -62,12 +62,12 @@ class SequencePointImpl : public SequencePoint {
   SequencePointImpl(
       const MaxVersionMap& version_map,
       const PeerExclusionMap& peer_exclusion_map,
-      const std::map<const CanonicalPeer*, std::set<TransactionId> >&
+      const std::map<const CanonicalPeer*, std::set<TransactionId>>&
           rejected_peers);
 
   MaxVersionMap version_map_;
   PeerExclusionMap peer_exclusion_map_;
-  std::map<const CanonicalPeer*, std::set<TransactionId> > rejected_peers_;
+  std::map<const CanonicalPeer*, std::set<TransactionId>> rejected_peers_;
 
   DISALLOW_COPY_AND_ASSIGN(SequencePointImpl);
 };

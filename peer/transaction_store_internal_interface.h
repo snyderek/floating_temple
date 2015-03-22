@@ -49,7 +49,7 @@ class TransactionStoreInternalInterface {
   virtual PeerObjectImpl* GetOrCreateNamedObject(const std::string& name) = 0;
 
   virtual void CreateTransaction(
-      const std::vector<linked_ptr<PendingEvent> >& events,
+      const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
       const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
           modified_objects,

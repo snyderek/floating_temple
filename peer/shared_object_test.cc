@@ -90,7 +90,7 @@ class SharedObjectTest : public Test {
   void InsertObjectCreationTransaction(const CanonicalPeer* origin_peer,
                                        const TransactionId& transaction_id,
                                        const string& initial_string) {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
 
     AddEventToVector(
         new ObjectCreationCommittedEvent(MakeLocalObject(initial_string)),
@@ -102,7 +102,7 @@ class SharedObjectTest : public Test {
   void InsertAppendTransaction(const CanonicalPeer* origin_peer,
                                const TransactionId& transaction_id,
                                const string& string_to_append) {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
 
     vector<CommittedValue> parameters(1);
     parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
@@ -128,7 +128,7 @@ class SharedObjectTest : public Test {
                                   const TransactionId& transaction_id,
                                   const string& string_to_append,
                                   const string& expected_result_string) {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
     const unordered_set<SharedObject*> new_shared_objects;
 
     {
@@ -167,7 +167,7 @@ class SharedObjectTest : public Test {
   }
 
   void AddEventToVector(CommittedEvent* event,
-                        vector<linked_ptr<CommittedEvent> >* events) {
+                        vector<linked_ptr<CommittedEvent>>* events) {
     CHECK(event != NULL);
     CHECK(events != NULL);
 
@@ -211,7 +211,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
                                         MakeTransactionId(20, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_TRUE(shared_object_->GetWorkingVersion(
                     MaxVersionMap(), sequence_point, &new_peer_objects,
@@ -229,7 +229,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
                                         MakeTransactionId(20, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.banana.",
               static_cast<const FakeLocalObject*>(
@@ -279,7 +279,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
                                         MakeTransactionId(10, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
               static_cast<const FakeLocalObject*>(
@@ -301,7 +301,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
                                         MakeTransactionId(20, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
               static_cast<const FakeLocalObject*>(
@@ -326,7 +326,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
                                         MakeTransactionId(20, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.cherry.",
               static_cast<const FakeLocalObject*>(
@@ -377,7 +377,7 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
                                         MakeTransactionId(10, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
               static_cast<const FakeLocalObject*>(
@@ -399,7 +399,7 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
                                         MakeTransactionId(30, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
               static_cast<const FakeLocalObject*>(
@@ -426,7 +426,7 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
                                         MakeTransactionId(30, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.banana.cherry.",
               static_cast<const FakeLocalObject*>(
@@ -458,7 +458,7 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
   const CanonicalPeer canonical_peer("peer_a");
 
   {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
 
     vector<CommittedValue> parameters(1);
     parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
@@ -490,7 +490,7 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
                                         MakeTransactionId(100, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     const ConstLiveObjectPtr live_object = shared_object_->GetWorkingVersion(
         MaxVersionMap(), sequence_point, &new_peer_objects,
@@ -522,7 +522,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
   const CanonicalPeer canonical_peer("peer_a");
 
   {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
 
     ConstLiveObjectPtr initial_live_object = MakeLocalObject("I don't know. ");
 
@@ -542,7 +542,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
   }
 
   {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
     return_value.set_local_type(FakeLocalObject::kVoidLocalType);
@@ -564,7 +564,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
                                         MakeTransactionId(200, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     const ConstLiveObjectPtr live_object = shared_object_->GetWorkingVersion(
         MaxVersionMap(), sequence_point, &new_peer_objects,
@@ -600,7 +600,7 @@ TEST_F(SharedObjectTest, BackingUp) {
   // second and third transactions do not begin with METHOD_CALL events.
 
   {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
 
     ConstLiveObjectPtr initial_live_object = MakeLocalObject("Game. ");
 
@@ -620,7 +620,7 @@ TEST_F(SharedObjectTest, BackingUp) {
   }
 
   {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
     return_value.set_local_type(FakeLocalObject::kVoidLocalType);
@@ -644,7 +644,7 @@ TEST_F(SharedObjectTest, BackingUp) {
   }
 
   {
-    vector<linked_ptr<CommittedEvent> > events;
+    vector<linked_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
     return_value.set_local_type(FakeLocalObject::kVoidLocalType);
@@ -666,7 +666,7 @@ TEST_F(SharedObjectTest, BackingUp) {
                                         MakeTransactionId(300, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     const ConstLiveObjectPtr live_object = shared_object_->GetWorkingVersion(
         MaxVersionMap(), sequence_point, &new_peer_objects,
@@ -723,7 +723,7 @@ TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
                                         MakeTransactionId(30, 0, 0));
 
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-    vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+    vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("batman.",
               static_cast<const FakeLocalObject*>(

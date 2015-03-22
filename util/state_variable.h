@@ -53,7 +53,7 @@ class StateVariable : private StateVariableInternalInterface {
       unsigned inverse_expected_state_mask) const;
   virtual void ChangeState_Locked(unsigned new_state);
 
-  std::set<std::pair<unsigned, unsigned> > state_transitions_;
+  std::set<std::pair<unsigned, unsigned>> state_transitions_;
   unsigned current_state_;
   mutable CondVar current_state_changed_cond_;
   mutable Mutex mu_;

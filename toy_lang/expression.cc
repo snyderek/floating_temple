@@ -43,13 +43,13 @@ namespace {
 
 PeerObject* EvaluateExpressionList(
     PeerObject* symbol_table_object, Thread* thread,
-    const vector<linked_ptr<Expression> >& expressions) {
+    const vector<linked_ptr<Expression>>& expressions) {
   CHECK(thread != NULL);
 
-  const vector<linked_ptr<Expression> >::size_type size = expressions.size();
+  const vector<linked_ptr<Expression>>::size_type size = expressions.size();
   vector<PeerObject*> peer_objects(size);
 
-  for (vector<linked_ptr<Expression> >::size_type i = 0; i < size; ++i) {
+  for (vector<linked_ptr<Expression>>::size_type i = 0; i < size; ++i) {
     PeerObject* const peer_object = expressions[i]->Evaluate(
         symbol_table_object, thread);
 
@@ -331,7 +331,7 @@ void ListExpression::PopulateExpressionProto(
 string ListExpression::DebugString() const {
   string s = "[";
 
-  for (vector<linked_ptr<Expression> >::const_iterator it = list_items_.begin();
+  for (vector<linked_ptr<Expression>>::const_iterator it = list_items_.begin();
        it != list_items_.end(); ++it) {
     if (it != list_items_.begin()) {
       s += ' ';

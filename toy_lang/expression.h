@@ -142,7 +142,7 @@ class FunctionExpression : public Expression {
 
  private:
   const scoped_ptr<Expression> function_;
-  std::vector<linked_ptr<Expression> > parameters_;
+  std::vector<linked_ptr<Expression>> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(FunctionExpression);
 };
@@ -160,7 +160,7 @@ class ListExpression : public Expression {
       const ListExpressionProto& list_expression_proto);
 
  private:
-  std::vector<linked_ptr<Expression> > list_items_;
+  std::vector<linked_ptr<Expression>> list_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ListExpression);
 };

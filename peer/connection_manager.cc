@@ -147,7 +147,7 @@ void ConnectionManager::SendMessageToRemotePeer(
 
 void ConnectionManager::BroadcastMessage(const PeerMessage& peer_message,
                                          SendMode send_mode) {
-  vector<intrusive_ptr<PeerConnection> > connections;
+  vector<intrusive_ptr<PeerConnection>> connections;
   GetAllOpenConnections(&connections);
 
   for (const intrusive_ptr<PeerConnection>& connection : connections) {
@@ -188,7 +188,7 @@ intrusive_ptr<PeerConnection> ConnectionManager::GetConnectionToPeer(
 }
 
 void ConnectionManager::GetAllOpenConnections(
-    vector<intrusive_ptr<PeerConnection> >* peer_connections) {
+    vector<intrusive_ptr<PeerConnection>>* peer_connections) {
   CHECK(peer_connections != NULL);
   peer_connections->clear();
 
@@ -207,7 +207,7 @@ void ConnectionManager::GetAllOpenConnections(
 
 void ConnectionManager::DrainAllConnections() {
   for (;;) {
-    vector<intrusive_ptr<PeerConnection> > connections;
+    vector<intrusive_ptr<PeerConnection>> connections;
     GetAllOpenConnections(&connections);
 
     for (const intrusive_ptr<PeerConnection>& connection : connections) {
@@ -303,8 +303,8 @@ void ConnectionManager::NotifyConnectionClosed(
   {
     MutexLock lock(&connections_mu_);
 
-    unordered_map<const CanonicalPeer*, intrusive_ptr<PeerConnection> >::
-        iterator named_connection_it;
+    unordered_map<const CanonicalPeer*, intrusive_ptr<PeerConnection>>::iterator
+        named_connection_it;
     if (remote_peer == NULL) {
       named_connection_it = named_connections_.end();
     } else {
@@ -313,7 +313,7 @@ void ConnectionManager::NotifyConnectionClosed(
 
     if (named_connection_it == named_connections_.end() ||
         named_connection_it->second.get() != peer_connection) {
-      const unordered_map<PeerConnection*, intrusive_ptr<PeerConnection> >::
+      const unordered_map<PeerConnection*, intrusive_ptr<PeerConnection>>::
           iterator unnamed_connection_it = unnamed_connections_.find(
           peer_connection);
       CHECK(unnamed_connection_it != unnamed_connections_.end());
@@ -367,7 +367,7 @@ void ConnectionManager::NotifyRemotePeerKnown(
     intrusive_ptr<PeerConnection>& named_connection =
         named_connections_[remote_peer];
 
-    const unordered_map<PeerConnection*, intrusive_ptr<PeerConnection> >::
+    const unordered_map<PeerConnection*, intrusive_ptr<PeerConnection>>::
         iterator unnamed_connection_it = unnamed_connections_.find(
         peer_connection);
 

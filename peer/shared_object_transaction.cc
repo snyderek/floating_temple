@@ -33,7 +33,7 @@ namespace floating_temple {
 namespace peer {
 
 SharedObjectTransaction::SharedObjectTransaction(
-    vector<linked_ptr<CommittedEvent> >* events,
+    vector<linked_ptr<CommittedEvent>>* events,
     const CanonicalPeer* origin_peer)
     : origin_peer_(CHECK_NOTNULL(origin_peer)) {
   CHECK(events != NULL);
@@ -51,7 +51,7 @@ string SharedObjectTransaction::Dump() const {
   } else {
     events_string = "[";
 
-    for (vector<linked_ptr<CommittedEvent> >::const_iterator it =
+    for (vector<linked_ptr<CommittedEvent>>::const_iterator it =
              events_.begin();
          it != events_.end(); ++it) {
       if (it != events_.begin()) {

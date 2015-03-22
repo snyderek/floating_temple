@@ -103,7 +103,7 @@ class TransactionStore : public ConnectionHandler,
   virtual PeerObjectImpl* CreateUnboundPeerObject();
   virtual PeerObjectImpl* GetOrCreateNamedObject(const std::string& name);
   virtual void CreateTransaction(
-      const std::vector<linked_ptr<PendingEvent> >& events,
+      const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
       const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
           modified_objects,
@@ -139,27 +139,27 @@ class TransactionStore : public ConnectionHandler,
       const SequencePointImpl& sequence_point_impl,
       uint64* current_version_number,
       std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
-      std::vector<std::pair<const CanonicalPeer*, TransactionId> >*
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           all_transactions_to_reject);
 
   void ApplyTransactionAndSendMessage(
       const TransactionId& transaction_id,
       std::unordered_map<SharedObject*,
-                         linked_ptr<SharedObjectTransactionInfo> >*
+                         linked_ptr<SharedObjectTransactionInfo>>*
           shared_object_transactions);
   void ApplyTransaction(
       const TransactionId& transaction_id,
       const CanonicalPeer* origin_peer,
       std::unordered_map<SharedObject*,
-                         linked_ptr<SharedObjectTransactionInfo> >*
+                         linked_ptr<SharedObjectTransactionInfo>>*
           shared_object_transactions);
 
   void RejectTransactionsAndSendMessages(
-      const std::vector<std::pair<const CanonicalPeer*, TransactionId> >&
+      const std::vector<std::pair<const CanonicalPeer*, TransactionId>>&
           transactions_to_reject,
       const TransactionId& new_transaction_id);
   void RejectTransactions(
-      const std::vector<std::pair<const CanonicalPeer*, TransactionId> >&
+      const std::vector<std::pair<const CanonicalPeer*, TransactionId>>&
           transactions_to_reject,
       const TransactionId& new_transaction_id,
       RejectTransactionMessage* reject_transaction_message);
@@ -185,7 +185,7 @@ class TransactionStore : public ConnectionHandler,
   void ConvertPendingEventToCommittedEvents(
       const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
       std::unordered_map<SharedObject*,
-                         linked_ptr<SharedObjectTransactionInfo> >*
+                         linked_ptr<SharedObjectTransactionInfo>>*
           shared_object_transactions);
   void ConvertValueToCommittedValue(const Value& in, CommittedValue* out);
 
@@ -202,7 +202,7 @@ class TransactionStore : public ConnectionHandler,
       const CanonicalPeer* origin_peer,
       CommittedEvent* event,
       std::unordered_map<SharedObject*,
-                         linked_ptr<SharedObjectTransactionInfo> >*
+                         linked_ptr<SharedObjectTransactionInfo>>*
           shared_object_transactions);
 
   CanonicalPeerMap* const canonical_peer_map_;
@@ -214,7 +214,7 @@ class TransactionStore : public ConnectionHandler,
   TransactionIdGenerator transaction_id_generator_;
   TransactionSequencer transaction_sequencer_;
 
-  std::vector<linked_ptr<InterpreterThread> > interpreter_threads_;
+  std::vector<linked_ptr<InterpreterThread>> interpreter_threads_;
   mutable Mutex interpreter_threads_mu_;
 
   SharedObjectMap shared_objects_;
@@ -223,7 +223,7 @@ class TransactionStore : public ConnectionHandler,
   std::unordered_set<SharedObject*> named_objects_;
   mutable Mutex named_objects_mu_;
 
-  std::vector<linked_ptr<PeerObjectImpl> > peer_objects_;
+  std::vector<linked_ptr<PeerObjectImpl>> peer_objects_;
   mutable Mutex peer_objects_mu_;
 
   SequencePointImpl current_sequence_point_;

@@ -100,7 +100,7 @@ class InterpreterThread : public Thread {
   TransactionStoreInternalInterface* const transaction_store_;
 
   int transaction_level_;
-  std::vector<linked_ptr<PendingEvent> > events_;
+  std::vector<linked_ptr<PendingEvent>> events_;
   std::unordered_map<PeerObjectImpl*, NewObject> new_objects_;
   std::unordered_map<PeerObjectImpl*, LiveObjectPtr> modified_objects_;
   scoped_ptr<SequencePoint> sequence_point_;

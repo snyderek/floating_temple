@@ -79,7 +79,7 @@ class TransactionSequencer {
   TransactionIdGenerator* const transaction_id_generator_;
   const CanonicalPeer* const local_peer_;
 
-  std::map<TransactionId, linked_ptr<Transaction> > transactions_;
+  std::map<TransactionId, linked_ptr<Transaction>> transactions_;
   mutable Mutex mu_;
 
   DISALLOW_COPY_AND_ASSIGN(TransactionSequencer);

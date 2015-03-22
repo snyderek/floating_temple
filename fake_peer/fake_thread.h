@@ -47,7 +47,7 @@ class FakeThread : public Thread {
  private:
   PeerObject* PrivateCreatePeerObject(LocalObject* initial_version);
 
-  std::vector<linked_ptr<PeerObject> > peer_objects_;
+  std::vector<linked_ptr<PeerObject>> peer_objects_;
   int transaction_depth_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeThread);

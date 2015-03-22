@@ -41,7 +41,7 @@ namespace floating_temple {
 namespace peer {
 
 struct TransactionSequencer::Transaction {
-  vector<linked_ptr<OutgoingMessage> > outgoing_messages;
+  vector<linked_ptr<OutgoingMessage>> outgoing_messages;
   bool done;
 };
 
@@ -83,7 +83,7 @@ void TransactionSequencer::ReleaseTransaction(
     const TransactionId& transaction_id) {
   MutexLock lock(&mu_);
 
-  const map<TransactionId, linked_ptr<Transaction> >::iterator it =
+  const map<TransactionId, linked_ptr<Transaction>>::iterator it =
       transactions_.find(transaction_id);
   CHECK(it != transactions_.end());
 
@@ -129,7 +129,7 @@ void TransactionSequencer::QueueOutgoingMessage(
   } else {
     MutexLock lock(&mu_);
 
-    const map<TransactionId, linked_ptr<Transaction> >::iterator it =
+    const map<TransactionId, linked_ptr<Transaction>>::iterator it =
         transactions_.find(*transaction_id);
     CHECK(it != transactions_.end());
     it->second->outgoing_messages.push_back(make_linked_ptr(outgoing_message));
@@ -140,8 +140,8 @@ void TransactionSequencer::QueueOutgoingMessage(
 
 void TransactionSequencer::FlushMessages_Locked() {
   for (;;) {
-    const map<TransactionId, linked_ptr<Transaction> >::iterator
-        transaction_it = transactions_.begin();
+    const map<TransactionId, linked_ptr<Transaction>>::iterator transaction_it =
+        transactions_.begin();
     if (transaction_it == transactions_.end()) {
       return;
     }

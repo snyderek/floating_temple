@@ -29,7 +29,7 @@ class CommittedEvent;
 // TODO(dss): Rename this struct to better distinguish it from the
 // SharedObjectTransaction class.
 struct SharedObjectTransactionInfo {
-  std::vector<linked_ptr<CommittedEvent> > events;
+  std::vector<linked_ptr<CommittedEvent>> events;
   const CanonicalPeer* origin_peer;
 };
 

@@ -76,7 +76,7 @@ PeerObjectImpl* MockTransactionStore::GetOrCreateNamedObject(
 }
 
 void MockTransactionStore::CreateTransaction(
-    const vector<linked_ptr<PendingEvent> >& events,
+    const vector<linked_ptr<PendingEvent>>& events,
     TransactionId* transaction_id,
     const unordered_map<PeerObjectImpl*, LiveObjectPtr>& modified_objects,
     const SequencePoint* prev_sequence_point) {

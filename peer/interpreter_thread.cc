@@ -202,7 +202,7 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
     return false;
   }
 
-  const vector<linked_ptr<PendingEvent> >::size_type event_count_save =
+  const vector<linked_ptr<PendingEvent>>::size_type event_count_save =
       events_.size();
 
   TransactionId method_call_transaction_id;

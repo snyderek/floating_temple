@@ -59,7 +59,7 @@ bool PeerExclusionMap::IsTransactionExcluded(
     const TransactionId& transaction_id) const {
   CHECK(origin_peer != NULL);
 
-  const map<const CanonicalPeer*, IntervalSet<TransactionId> >::const_iterator
+  const map<const CanonicalPeer*, IntervalSet<TransactionId>>::const_iterator
       it = map_.find(origin_peer);
 
   if (it == map_.end()) {
@@ -85,7 +85,7 @@ string PeerExclusionMap::Dump() const {
   } else {
     exclusion_map_string = "{";
 
-    for (map<const CanonicalPeer*, IntervalSet<TransactionId> >::const_iterator
+    for (map<const CanonicalPeer*, IntervalSet<TransactionId>>::const_iterator
              it1 = map_.begin();
          it1 != map_.end(); ++it1) {
       const CanonicalPeer* const canonical_peer = it1->first;

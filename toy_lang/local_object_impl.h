@@ -176,8 +176,7 @@ class SymbolTableObject : public LocalObjectImpl {
                                    SerializationContext* context) const;
 
  private:
-  typedef std::vector<linked_ptr<std::unordered_map<std::string,
-                                                    PeerObject*> > >
+  typedef std::vector<linked_ptr<std::unordered_map<std::string, PeerObject*>>>
       ScopeVector;
 
   std::string GetStringForLogging() const;

@@ -66,9 +66,9 @@ ObjectCreationPendingEvent::ObjectCreationPendingEvent(
     PeerObjectImpl* prev_peer_object, PeerObjectImpl* new_peer_object,
     const ConstLiveObjectPtr& new_live_object)
     : PendingEvent(
-          MakeSingletonSet<unordered_map<PeerObjectImpl*, ConstLiveObjectPtr> >(
+          MakeSingletonSet<unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>>(
               make_pair(CHECK_NOTNULL(new_peer_object), new_live_object)),
-          MakeSingletonSet<unordered_set<PeerObjectImpl*> >(new_peer_object),
+          MakeSingletonSet<unordered_set<PeerObjectImpl*>>(new_peer_object),
           prev_peer_object) {
 }
 

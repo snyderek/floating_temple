@@ -52,7 +52,7 @@ class PeerExclusionMap {
   std::string Dump() const;
 
  private:
-  std::map<const CanonicalPeer*, IntervalSet<TransactionId> > map_;
+  std::map<const CanonicalPeer*, IntervalSet<TransactionId>> map_;
 
   friend bool PeerExclusionMapsAreEqual(const PeerExclusionMap& a,
                                         const PeerExclusionMap& b);

@@ -38,7 +38,7 @@ class CanonicalPeerMap {
  private:
   // TODO(dss): Delete CanonicalPeer instances when they're no longer being
   // used.
-  std::unordered_map<std::string, linked_ptr<CanonicalPeer> > map_;
+  std::unordered_map<std::string, linked_ptr<CanonicalPeer>> map_;
   mutable Mutex mu_;
 
   DISALLOW_COPY_AND_ASSIGN(CanonicalPeerMap);

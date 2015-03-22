@@ -163,7 +163,7 @@ string ObjectCreationCommittedEvent::Dump() const {
 SubObjectCreationCommittedEvent::SubObjectCreationCommittedEvent(
     SharedObject* new_shared_object)
     : CommittedEvent(
-          MakeSingletonSet<unordered_set<SharedObject*> >(
+          MakeSingletonSet<unordered_set<SharedObject*>>(
                 CHECK_NOTNULL(new_shared_object))) {
 }
 

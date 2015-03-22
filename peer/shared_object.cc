@@ -60,13 +60,13 @@ namespace floating_temple {
 namespace peer {
 namespace {
 
-vector<pair<const CanonicalPeer*, TransactionId> >::const_iterator
+vector<pair<const CanonicalPeer*, TransactionId>>::const_iterator
 FindTransactionIdInVector(
-    const vector<pair<const CanonicalPeer*, TransactionId> >& transaction_pairs,
+    const vector<pair<const CanonicalPeer*, TransactionId>>& transaction_pairs,
     const TransactionId& transaction_id) {
-  const vector<pair<const CanonicalPeer*, TransactionId> >::const_iterator
+  const vector<pair<const CanonicalPeer*, TransactionId>>::const_iterator
       end_it = transaction_pairs.end();
-  vector<pair<const CanonicalPeer*, TransactionId> >::const_iterator it =
+  vector<pair<const CanonicalPeer*, TransactionId>>::const_iterator it =
       transaction_pairs.begin();
 
   while (it != end_it &&
@@ -155,8 +155,7 @@ ConstLiveObjectPtr SharedObject::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
     unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
-    vector<pair<const CanonicalPeer*, TransactionId> >*
-        transactions_to_reject) {
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   MutexLock lock(&committed_versions_mu_);
 
   MaxVersionMap effective_version;
@@ -197,7 +196,7 @@ ConstLiveObjectPtr SharedObject::GetWorkingVersion(
 
 void SharedObject::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
-    map<TransactionId, linked_ptr<SharedObjectTransactionInfo> >* transactions,
+    map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
     MaxVersionMap* effective_version) const {
   CHECK(transactions != NULL);
 
@@ -210,15 +209,14 @@ void SharedObject::GetTransactions(
     SharedObjectTransactionInfo* const transaction_info =
         new SharedObjectTransactionInfo();
 
-    const vector<linked_ptr<CommittedEvent> >& src_events =
-        transaction.events();
-    vector<linked_ptr<CommittedEvent> >* const dest_events =
+    const vector<linked_ptr<CommittedEvent>>& src_events = transaction.events();
+    vector<linked_ptr<CommittedEvent>>* const dest_events =
         &transaction_info->events;
-    const vector<linked_ptr<CommittedEvent> >::size_type event_count =
+    const vector<linked_ptr<CommittedEvent>>::size_type event_count =
         src_events.size();
     dest_events->resize(event_count);
 
-    for (vector<linked_ptr<CommittedEvent> >::size_type i = 0; i < event_count;
+    for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
          ++i) {
       (*dest_events)[i].reset(src_events[i]->Clone());
     }
@@ -236,7 +234,7 @@ void SharedObject::GetTransactions(
 
 void SharedObject::StoreTransactions(
     const CanonicalPeer* origin_peer,
-    map<TransactionId, linked_ptr<SharedObjectTransactionInfo> >* transactions,
+    map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
     const MaxVersionMap& version_map) {
   CHECK(origin_peer != NULL);
   CHECK(transactions != NULL);
@@ -251,7 +249,7 @@ void SharedObject::StoreTransactions(
     CHECK(IsValidTransactionId(transaction_id));
     CHECK(transaction_info != NULL);
 
-    vector<linked_ptr<CommittedEvent> >* const events =
+    vector<linked_ptr<CommittedEvent>>* const events =
         &transaction_info->events;
     const CanonicalPeer* const origin_peer = transaction_info->origin_peer;
 
@@ -276,16 +274,16 @@ void SharedObject::StoreTransactions(
 
 void SharedObject::InsertTransaction(
     const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-    vector<linked_ptr<CommittedEvent> >* events) {
+    vector<linked_ptr<CommittedEvent>>* events) {
   CHECK(origin_peer != NULL);
   CHECK(IsValidTransactionId(transaction_id));
   CHECK(events != NULL);
 
-  const vector<linked_ptr<CommittedEvent> >::size_type event_count =
+  const vector<linked_ptr<CommittedEvent>>::size_type event_count =
       events->size();
 
   if (VLOG_IS_ON(2)) {
-    for (vector<linked_ptr<CommittedEvent> >::size_type i = 0; i < event_count;
+    for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
          ++i) {
       VLOG(2) << "Event " << i << ": " << (*events)[i]->Dump();
     }
@@ -324,15 +322,14 @@ string SharedObject::Dump() const {
 
 bool SharedObject::ApplyTransactionsToWorkingVersion_Locked(
     PeerThread* peer_thread, const SequencePointImpl& sequence_point,
-    vector<pair<const CanonicalPeer*, TransactionId> >*
-        transactions_to_reject) {
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(peer_thread != NULL);
   CHECK(transactions_to_reject != NULL);
 
   for (const auto& transaction_pair : committed_versions_) {
     const TransactionId& transaction_id = transaction_pair.first;
     const SharedObjectTransaction& transaction = *transaction_pair.second;
-    const vector<linked_ptr<CommittedEvent> >& events = transaction.events();
+    const vector<linked_ptr<CommittedEvent>>& events = transaction.events();
 
     if (!events.empty()) {
       const CanonicalPeer* const origin_peer = transaction.origin_peer();
@@ -420,21 +417,21 @@ bool SharedObject::CanUseCachedLiveObject_Locked(
       cached_transaction_id.CopyFrom(cached_peer_it->second);
     }
 
-    const map<TransactionId, linked_ptr<SharedObjectTransaction> >::
+    const map<TransactionId, linked_ptr<SharedObjectTransaction>>::
         const_iterator start_it = committed_versions_.upper_bound(
         cached_transaction_id);
-    const map<TransactionId, linked_ptr<SharedObjectTransaction> >::
+    const map<TransactionId, linked_ptr<SharedObjectTransaction>>::
         const_iterator end_it = committed_versions_.upper_bound(
         requested_transaction_id);
 
-    for (map<TransactionId, linked_ptr<SharedObjectTransaction> >::
-             const_iterator transaction_it = start_it;
+    for (map<TransactionId, linked_ptr<SharedObjectTransaction>>::const_iterator
+             transaction_it = start_it;
          transaction_it != end_it; ++transaction_it) {
       const SharedObjectTransaction& shared_object_transaction =
           *transaction_it->second;
 
       if (shared_object_transaction.origin_peer() == origin_peer) {
-        const vector<linked_ptr<CommittedEvent> >& events =
+        const vector<linked_ptr<CommittedEvent>>& events =
             shared_object_transaction.events();
 
         for (const linked_ptr<CommittedEvent>& event : events) {
@@ -507,8 +504,8 @@ string SharedObject::Dump_Locked() const {
   } else {
     committed_versions_string = "{";
 
-    for (map<TransactionId, linked_ptr<SharedObjectTransaction> >::
-             const_iterator it = committed_versions_.begin();
+    for (map<TransactionId, linked_ptr<SharedObjectTransaction>>::const_iterator
+             it = committed_versions_.begin();
          it != committed_versions_.end(); ++it) {
       if (it != committed_versions_.begin()) {
         committed_versions_string += ",";

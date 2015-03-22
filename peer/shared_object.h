@@ -68,23 +68,23 @@ class SharedObject {
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
       std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
-      std::vector<std::pair<const CanonicalPeer*, TransactionId> >*
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject);
 
   void GetTransactions(
       const MaxVersionMap& transaction_store_version_map,
-      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo> >*
+      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
           transactions,
       MaxVersionMap* effective_version) const;
   void StoreTransactions(
       const CanonicalPeer* origin_peer,
-      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo> >*
+      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
           transactions,
       const MaxVersionMap& version_map);
 
   void InsertTransaction(const CanonicalPeer* origin_peer,
                          const TransactionId& transaction_id,
-                         std::vector<linked_ptr<CommittedEvent> >* events);
+                         std::vector<linked_ptr<CommittedEvent>>* events);
 
   void SetCachedLiveObject(const ConstLiveObjectPtr& cached_live_object,
                            const SequencePointImpl& cached_sequence_point);
@@ -94,7 +94,7 @@ class SharedObject {
  private:
   bool ApplyTransactionsToWorkingVersion_Locked(
       PeerThread* peer_thread, const SequencePointImpl& sequence_point,
-      std::vector<std::pair<const CanonicalPeer*, TransactionId> >*
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject);
 
   void ComputeEffectiveVersion_Locked(
@@ -114,7 +114,7 @@ class SharedObject {
   std::vector<PeerObjectImpl*> peer_objects_;
   mutable Mutex peer_objects_mu_;
 
-  std::map<TransactionId, linked_ptr<SharedObjectTransaction> >
+  std::map<TransactionId, linked_ptr<SharedObjectTransaction>>
       committed_versions_;
   MaxVersionMap version_map_;
   std::unordered_set<const CanonicalPeer*> up_to_date_peers_;

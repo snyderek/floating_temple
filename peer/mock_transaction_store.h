@@ -48,7 +48,7 @@ class MockTransactionStoreCore {
   MOCK_CONST_METHOD1(GetOrCreateNamedObject, void(const std::string& name));
   MOCK_CONST_METHOD4(
       CreateTransaction,
-      void(const std::vector<linked_ptr<PendingEvent> >& events,
+      void(const std::vector<linked_ptr<PendingEvent>>& events,
            TransactionId* transaction_id,
            const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
                modified_objects,
@@ -73,7 +73,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   virtual PeerObjectImpl* CreateUnboundPeerObject();
   virtual PeerObjectImpl* GetOrCreateNamedObject(const std::string& name);
   virtual void CreateTransaction(
-      const std::vector<linked_ptr<PendingEvent> >& events,
+      const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
       const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
           modified_objects,
@@ -84,8 +84,8 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
  private:
   const MockTransactionStoreCore* const core_;
 
-  std::vector<linked_ptr<PeerObjectImpl> > unnamed_objects_;
-  std::unordered_map<std::string, linked_ptr<PeerObjectImpl> > named_objects_;
+  std::vector<linked_ptr<PeerObjectImpl>> unnamed_objects_;
+  std::unordered_map<std::string, linked_ptr<PeerObjectImpl>> named_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);
 };

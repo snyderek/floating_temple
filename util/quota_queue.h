@@ -54,11 +54,11 @@ class QuotaQueue {
   Service* GetService_Locked(int service_id);
   bool ServiceFull_Locked(const Service* service) const;
 
-  std::vector<linked_ptr<Service> > services_;
+  std::vector<linked_ptr<Service>> services_;
   bool draining_;
   mutable Mutex mu_;
 
-  ProducerConsumerQueue<std::pair<T, int> > queue_;
+  ProducerConsumerQueue<std::pair<T, int>> queue_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaQueue);
 };
@@ -88,8 +88,8 @@ void QuotaQueue<T>::AddService(int service_id, int max_item_count) {
   {
     MutexLock lock(&mu_);
 
-    const typename std::vector<linked_ptr<Service> >::size_type new_index =
-        static_cast<typename std::vector<linked_ptr<Service> >::size_type>(
+    const typename std::vector<linked_ptr<Service>>::size_type new_index =
+        static_cast<typename std::vector<linked_ptr<Service>>::size_type>(
             service_id);
 
     if (new_index >= services_.size()) {

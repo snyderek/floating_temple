@@ -195,7 +195,7 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
 
   uint64 current_version_number = 0;
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
-  vector<pair<const CanonicalPeer*, TransactionId> > all_transactions_to_reject;
+  vector<pair<const CanonicalPeer*, TransactionId>> all_transactions_to_reject;
 
   ConstLiveObjectPtr live_object = GetLiveObjectAtSequencePoint_Helper(
       shared_object, *sequence_point_impl, &current_version_number,
@@ -264,7 +264,7 @@ PeerObjectImpl* TransactionStore::GetOrCreateNamedObject(const string& name) {
 }
 
 void TransactionStore::CreateTransaction(
-    const vector<linked_ptr<PendingEvent> >& events,
+    const vector<linked_ptr<PendingEvent>>& events,
     TransactionId* transaction_id,
     const unordered_map<PeerObjectImpl*, LiveObjectPtr>& modified_objects,
     const SequencePoint* prev_sequence_point) {
@@ -274,15 +274,14 @@ void TransactionStore::CreateTransaction(
   TransactionId transaction_id_temp;
   transaction_sequencer_.ReserveTransaction(&transaction_id_temp);
 
-  const vector<linked_ptr<PendingEvent> >::size_type event_count =
-      events.size();
+  const vector<linked_ptr<PendingEvent>>::size_type event_count = events.size();
 
   VLOG(2) << "Creating local transaction "
           << TransactionIdToString(transaction_id_temp) << " with "
           << event_count << " events.";
 
   if (VLOG_IS_ON(3)) {
-    for (vector<linked_ptr<PendingEvent> >::size_type i = 0; i < event_count;
+    for (vector<linked_ptr<PendingEvent>>::size_type i = 0; i < event_count;
          ++i) {
       const PendingEvent* const event = events[i].get();
       const PendingEvent::Type type = event->type();
@@ -324,10 +323,10 @@ void TransactionStore::CreateTransaction(
     }
   }
 
-  unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo> >
+  unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>
       shared_object_transactions;
 
-  for (vector<linked_ptr<PendingEvent> >::size_type i = 0; i < event_count;
+  for (vector<linked_ptr<PendingEvent>>::size_type i = 0; i < event_count;
        ++i) {
     ConvertPendingEventToCommittedEvents(events[i].get(), local_peer_,
                                          &shared_object_transactions);
@@ -382,7 +381,7 @@ void TransactionStore::HandleApplyTransactionMessage(
   const TransactionId& transaction_id =
       apply_transaction_message.transaction_id();
 
-  unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo> >
+  unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>
       shared_object_transactions;
 
   for (int i = 0; i < apply_transaction_message.object_transaction_size();
@@ -403,7 +402,7 @@ void TransactionStore::HandleApplyTransactionMessage(
         transaction->origin_peer = remote_peer;
       }
 
-      vector<linked_ptr<CommittedEvent> >* const events = &transaction->events;
+      vector<linked_ptr<CommittedEvent>>* const events = &transaction->events;
       events->resize(event_count);
 
       for (int j = 0; j < event_count; ++j) {
@@ -448,7 +447,7 @@ void TransactionStore::HandleGetObjectMessage(
       reply.mutable_store_object_message();
   store_object_message->mutable_object_id()->CopyFrom(requested_object_id);
 
-  map<TransactionId, linked_ptr<SharedObjectTransactionInfo> > transactions;
+  map<TransactionId, linked_ptr<SharedObjectTransactionInfo>> transactions;
   MaxVersionMap effective_version;
 
   requested_shared_object->GetTransactions(current_version_temp, &transactions,
@@ -496,7 +495,7 @@ void TransactionStore::HandleStoreObjectMessage(
 
   SharedObject* const shared_object = GetOrCreateSharedObject(object_id);
 
-  map<TransactionId, linked_ptr<SharedObjectTransactionInfo> > transactions;
+  map<TransactionId, linked_ptr<SharedObjectTransactionInfo>> transactions;
 
   for (int i = 0; i < store_object_message.transaction_size(); ++i) {
     const TransactionProto& transaction_proto =
@@ -508,7 +507,7 @@ void TransactionStore::HandleStoreObjectMessage(
 
     const int event_count = transaction_proto.event_size();
 
-    vector<linked_ptr<CommittedEvent> >* const events =
+    vector<linked_ptr<CommittedEvent>>* const events =
         &transaction_info->events;
     events->resize(event_count);
 
@@ -562,7 +561,7 @@ void TransactionStore::HandleRejectTransactionMessage(
   const int rejected_peer_count =
       reject_transaction_message.rejected_peer_size();
 
-  vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+  vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
   transactions_to_reject.reserve(rejected_peer_count);
 
   for (int rejected_peer_index = 0; rejected_peer_index < rejected_peer_count;
@@ -670,7 +669,7 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint_Helper(
     const SequencePointImpl& sequence_point_impl,
     uint64* current_version_number,
     unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
-    vector<pair<const CanonicalPeer*, TransactionId> >*
+    vector<pair<const CanonicalPeer*, TransactionId>>*
         all_transactions_to_reject) {
   CHECK(shared_object != NULL);
   CHECK(current_version_number != NULL);
@@ -691,7 +690,7 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint_Helper(
   VLOG(4) << "Transaction store version: " << current_version_map.Dump();
   VLOG(4) << "Sequence point: " << sequence_point_impl.Dump();
 
-  vector<pair<const CanonicalPeer*, TransactionId> > transactions_to_reject;
+  vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
   const ConstLiveObjectPtr live_object = shared_object->GetWorkingVersion(
       current_version_map, sequence_point_impl, new_peer_objects,
       &transactions_to_reject);
@@ -705,7 +704,7 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint_Helper(
 
 void TransactionStore::ApplyTransactionAndSendMessage(
     const TransactionId& transaction_id,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo> >*
+    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
         shared_object_transactions) {
   CHECK(shared_object_transactions != NULL);
 
@@ -743,7 +742,7 @@ void TransactionStore::ApplyTransactionAndSendMessage(
 void TransactionStore::ApplyTransaction(
     const TransactionId& transaction_id,
     const CanonicalPeer* origin_peer,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo> >*
+    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
         shared_object_transactions) {
   CHECK(origin_peer != NULL);
   CHECK(shared_object_transactions != NULL);
@@ -766,7 +765,7 @@ void TransactionStore::ApplyTransaction(
 }
 
 void TransactionStore::RejectTransactionsAndSendMessages(
-    const vector<pair<const CanonicalPeer*, TransactionId> >&
+    const vector<pair<const CanonicalPeer*, TransactionId>>&
         transactions_to_reject,
     const TransactionId& new_transaction_id) {
   PeerMessage peer_message;
@@ -783,7 +782,7 @@ void TransactionStore::RejectTransactionsAndSendMessages(
 }
 
 void TransactionStore::RejectTransactions(
-    const vector<pair<const CanonicalPeer*, TransactionId> >&
+    const vector<pair<const CanonicalPeer*, TransactionId>>&
         transactions_to_reject,
     const TransactionId& new_transaction_id,
     RejectTransactionMessage* reject_transaction_message) {
@@ -843,11 +842,11 @@ void TransactionStore::RejectTransactions(
     {
       MutexLock lock(&interpreter_threads_mu_);
 
-      const vector<linked_ptr<InterpreterThread> >::size_type thread_count =
+      const vector<linked_ptr<InterpreterThread>>::size_type thread_count =
           interpreter_threads_.size();
       interpreter_threads_temp.resize(thread_count);
 
-      for (vector<linked_ptr<InterpreterThread> >::size_type i = 0;
+      for (vector<linked_ptr<InterpreterThread>>::size_type i = 0;
            i < thread_count; ++i) {
         interpreter_threads_temp[i] = interpreter_threads_[i].get();
       }
@@ -943,7 +942,7 @@ SharedObject* TransactionStore::ConvertPeerObjectToSharedObject(
 
 void TransactionStore::ConvertPendingEventToCommittedEvents(
     const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo> >*
+    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
         shared_object_transactions) {
   CHECK(pending_event != NULL);
 
@@ -1501,7 +1500,7 @@ void TransactionStore::AddEventToSharedObjectTransactions(
     SharedObject* shared_object,
     const CanonicalPeer* origin_peer,
     CommittedEvent* event,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo> >*
+    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
         shared_object_transactions) {
   CHECK(shared_object != NULL);
   CHECK(origin_peer != NULL);

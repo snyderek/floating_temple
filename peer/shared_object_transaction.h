@@ -30,18 +30,18 @@ class CommittedEvent;
 
 class SharedObjectTransaction {
  public:
-  SharedObjectTransaction(std::vector<linked_ptr<CommittedEvent> >* events,
+  SharedObjectTransaction(std::vector<linked_ptr<CommittedEvent>>* events,
                           const CanonicalPeer* origin_peer);
   ~SharedObjectTransaction();
 
-  const std::vector<linked_ptr<CommittedEvent> >& events() const
+  const std::vector<linked_ptr<CommittedEvent>>& events() const
       { return events_; }
   const CanonicalPeer* origin_peer() const { return origin_peer_; }
 
   std::string Dump() const;
 
  private:
-  std::vector<linked_ptr<CommittedEvent> > events_;
+  std::vector<linked_ptr<CommittedEvent>> events_;
   const CanonicalPeer* const origin_peer_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedObjectTransaction);

@@ -77,7 +77,7 @@ class ConnectionManager : public PeerMessageSender,
   intrusive_ptr<PeerConnection> GetConnectionToPeer(
       const CanonicalPeer* canonical_peer);
   void GetAllOpenConnections(
-      std::vector<intrusive_ptr<PeerConnection> >* peer_connections);
+      std::vector<intrusive_ptr<PeerConnection>>* peer_connections);
   void DrainAllConnections();
 
   intrusive_ptr<PeerConnection> GetOrCreateNamedConnection(
@@ -107,9 +107,9 @@ class ConnectionManager : public PeerMessageSender,
 
   StateVariable state_;
 
-  std::unordered_map<const CanonicalPeer*, intrusive_ptr<PeerConnection> >
+  std::unordered_map<const CanonicalPeer*, intrusive_ptr<PeerConnection>>
       named_connections_;
-  std::unordered_map<PeerConnection*, intrusive_ptr<PeerConnection> >
+  std::unordered_map<PeerConnection*, intrusive_ptr<PeerConnection>>
       unnamed_connections_;
   mutable CondVar connections_empty_cond_;
   mutable Mutex connections_mu_;

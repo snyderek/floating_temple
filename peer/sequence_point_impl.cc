@@ -45,7 +45,7 @@ bool SequencePointImpl::HasPeerTransactionId(
     return false;
   }
 
-  const map<const CanonicalPeer*, set<TransactionId> >::const_iterator
+  const map<const CanonicalPeer*, set<TransactionId>>::const_iterator
       rejected_peer_it = rejected_peers_.find(canonical_peer);
 
   if (rejected_peer_it == rejected_peers_.end()) {
@@ -69,7 +69,7 @@ void SequencePointImpl::AddInvalidatedRange(
   peer_exclusion_map_.AddExcludedRange(origin_peer, start_transaction_id,
                                        end_transaction_id);
 
-  const map<const CanonicalPeer*, set<TransactionId> >::iterator
+  const map<const CanonicalPeer*, set<TransactionId>>::iterator
       rejected_peer_it = rejected_peers_.find(origin_peer);
 
   if (rejected_peer_it != rejected_peers_.end()) {
@@ -109,7 +109,7 @@ string SequencePointImpl::Dump() const {
   } else {
     rejected_peers_string = "{";
 
-    for (map<const CanonicalPeer*, set<TransactionId> >::const_iterator it1 =
+    for (map<const CanonicalPeer*, set<TransactionId>>::const_iterator it1 =
              rejected_peers_.begin();
          it1 != rejected_peers_.end(); ++it1) {
       const CanonicalPeer* const canonical_peer = it1->first;
@@ -158,7 +158,7 @@ string SequencePointImpl::Dump() const {
 SequencePointImpl::SequencePointImpl(
     const MaxVersionMap& version_map,
     const PeerExclusionMap& peer_exclusion_map,
-    const map<const CanonicalPeer*, set<TransactionId> >& rejected_peers)
+    const map<const CanonicalPeer*, set<TransactionId>>& rejected_peers)
     : version_map_(version_map),
       rejected_peers_(rejected_peers) {
   peer_exclusion_map_.CopyFrom(peer_exclusion_map);

@@ -16,12 +16,12 @@
 #include "toy_lang/program_object.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/const_shared_ptr.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"

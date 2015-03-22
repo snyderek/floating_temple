@@ -18,12 +18,12 @@
 
 #include <pthread.h>
 
+#include <memory>
 #include <string>
 
 #include "base/cond_var.h"
 #include "base/macros.h"
 #include "base/mutex.h"
-#include "base/scoped_ptr.h"
 #include "peer/peer_message_sender.h"
 #include "protocol_server/protocol_connection_handler.h"
 #include "util/quota_queue.h"
@@ -113,7 +113,7 @@ class PeerConnection : public ProtocolConnectionHandler<PeerMessage> {
   const std::string remote_address_;
   const bool locally_initiated_;
 
-  scoped_ptr<ProtocolConnection> protocol_connection_;
+  std::unique_ptr<ProtocolConnection> protocol_connection_;
   mutable CondVar protocol_connection_set_cond_;
   mutable Mutex protocol_connection_mu_;
 

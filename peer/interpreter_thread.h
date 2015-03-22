@@ -18,6 +18,7 @@
 
 #include <pthread.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,7 +28,6 @@
 #include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
-#include "base/scoped_ptr.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "peer/const_live_object_ptr.h"
@@ -103,7 +103,7 @@ class InterpreterThread : public Thread {
   std::vector<linked_ptr<PendingEvent>> events_;
   std::unordered_map<PeerObjectImpl*, NewObject> new_objects_;
   std::unordered_map<PeerObjectImpl*, LiveObjectPtr> modified_objects_;
-  scoped_ptr<SequencePoint> sequence_point_;
+  std::unique_ptr<SequencePoint> sequence_point_;
 
   PeerObjectImpl* current_peer_object_;
   LiveObjectPtr current_live_object_;

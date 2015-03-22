@@ -15,10 +15,10 @@
 
 #include "fake_peer/fake_peer_object.h"
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "base/string_printf.h"
 #include "include/c++/local_object.h"
 

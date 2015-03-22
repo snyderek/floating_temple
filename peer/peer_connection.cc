@@ -16,13 +16,13 @@
 #include "peer/peer_connection.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 
 #include "base/cond_var.h"
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
-#include "base/scoped_ptr.h"
 #include "base/string_printf.h"
 #include "peer/canonical_peer.h"
 #include "peer/canonical_peer_map.h"

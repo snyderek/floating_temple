@@ -13,24 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
 #include <string>
 
 #include <gflags/gflags.h>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "include/c++/create_peer.h"
 #include "include/c++/peer.h"
 #include "toy_lang/run_toy_lang_program.h"
 
 using floating_temple::CreateStandalonePeer;
 using floating_temple::Peer;
-using floating_temple::scoped_ptr;
 using floating_temple::toy_lang::RunToyLangProgram;
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
 using google::SetUsageMessage;
 using google::SetVersionString;
+using std::unique_ptr;
 
 int main(int argc, char* argv[]) {
   SetUsageMessage("Stand-alone interpreter for the toy language.\n"
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
   CHECK_EQ(argc, 2)
       << "You must specify exactly one source file on the command line.";
 
-  const scoped_ptr<Peer> peer(CreateStandalonePeer());
+  const unique_ptr<Peer> peer(CreateStandalonePeer());
   RunToyLangProgram(peer.get(), argv[1]);
   peer->Stop();
 

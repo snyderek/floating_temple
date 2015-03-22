@@ -16,7 +16,8 @@
 #ifndef C_HARNESS_TYPES_H_
 #define C_HARNESS_TYPES_H_
 
-#include "base/scoped_ptr.h"
+#include <memory>
+
 #include "c_harness/proxy_interpreter.h"
 #include "include/c/peer.h"
 
@@ -39,7 +40,7 @@ struct floatingtemple_DeserializationContext {
 };
 
 struct floatingtemple_Peer {
-  floating_temple::scoped_ptr<floating_temple::Peer> peer;
+  std::unique_ptr<floating_temple::Peer> peer;
   floating_temple::c_harness::ProxyInterpreter proxy_interpreter;
 };
 

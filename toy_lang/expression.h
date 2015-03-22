@@ -16,6 +16,7 @@
 #ifndef TOY_LANG_EXPRESSION_H_
 #define TOY_LANG_EXPRESSION_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,6 @@
 #include "base/integral_types.h"
 #include "base/linked_ptr.h"
 #include "base/macros.h"
-#include "base/scoped_ptr.h"
 
 namespace floating_temple {
 
@@ -141,7 +141,7 @@ class FunctionExpression : public Expression {
       const FunctionExpressionProto& function_expression_proto);
 
  private:
-  const scoped_ptr<Expression> function_;
+  const std::unique_ptr<Expression> function_;
   std::vector<linked_ptr<Expression>> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(FunctionExpression);

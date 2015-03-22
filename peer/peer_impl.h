@@ -16,11 +16,11 @@
 #ifndef PEER_PEER_IMPL_H_
 #define PEER_PEER_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/scoped_ptr.h"
 #include "include/c++/peer.h"
 #include "peer/canonical_peer_map.h"
 #include "peer/connection_manager.h"
@@ -61,7 +61,7 @@ class PeerImpl : public Peer {
 
   CanonicalPeerMap canonical_peer_map_;
   ConnectionManager connection_manager_;
-  scoped_ptr<TransactionStore> transaction_store_;
+  std::unique_ptr<TransactionStore> transaction_store_;
 
   StateVariable state_;
 

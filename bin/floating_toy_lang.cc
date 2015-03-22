@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <gflags/gflags.h>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "include/c++/create_peer.h"
 #include "include/c++/peer.h"
 #include "toy_lang/interpreter_impl.h"
@@ -35,7 +35,6 @@ using floating_temple::InstallSignalHandler;
 using floating_temple::ParseCommaSeparatedList;
 using floating_temple::Peer;
 using floating_temple::WaitForSignal;
-using floating_temple::scoped_ptr;
 using floating_temple::toy_lang::InterpreterImpl;
 using floating_temple::toy_lang::RunToyLangProgram;
 using google::FlushLogFiles;
@@ -44,6 +43,7 @@ using google::ParseCommandLineFlags;
 using google::SetUsageMessage;
 using google::SetVersionString;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 DEFINE_int32(peer_port, -1, "Port number for the peer's TCP server");
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 
   // Start the peer.
   LOG(INFO) << "Starting peer...";
-  const scoped_ptr<Peer> peer(
+  const unique_ptr<Peer> peer(
       CreateNetworkPeer(&interpreter, "toy_lang", GetLocalAddress(),
                         FLAGS_peer_port, known_peer_ids,
                         FLAGS_send_receive_thread_count, true));

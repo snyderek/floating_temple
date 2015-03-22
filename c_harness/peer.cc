@@ -17,11 +17,11 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "c_harness/proxy_interpreter.h"
 #include "c_harness/types.h"
 #include "include/c/value.h"

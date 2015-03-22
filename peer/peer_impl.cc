@@ -16,11 +16,11 @@
 #include "peer/peer_impl.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "peer/canonical_peer_map.h"

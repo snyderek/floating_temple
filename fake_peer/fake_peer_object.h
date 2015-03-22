@@ -16,10 +16,10 @@
 #ifndef FAKE_PEER_FAKE_PEER_OBJECT_H_
 #define FAKE_PEER_FAKE_PEER_OBJECT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/scoped_ptr.h"
 #include "include/c++/peer_object.h"
 
 namespace floating_temple {
@@ -35,7 +35,7 @@ class FakePeerObject : public PeerObject {
   virtual std::string Dump() const;
 
  private:
-  const scoped_ptr<LocalObject> local_object_;
+  const std::unique_ptr<LocalObject> local_object_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePeerObject);
 };

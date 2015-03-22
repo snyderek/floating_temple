@@ -18,6 +18,7 @@
 #include <pthread.h>
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -29,7 +30,6 @@
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
-#include "base/scoped_ptr.h"
 #include "include/c++/value.h"
 #include "peer/const_live_object_ptr.h"
 #include "peer/live_object.h"

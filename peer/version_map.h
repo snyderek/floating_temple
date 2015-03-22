@@ -228,14 +228,12 @@ bool VersionMapsAreEqual(const VersionMap<CompareFunction>& a,
     return false;
   }
 
-  for (std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-           const_iterator a_it = a_map.begin();
-       a_it != a_map.end(); ++a_it) {
+  for (const auto& a_pair : a_map) {
     const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-        const_iterator b_it = b_map.find(a_it->first);
+        const_iterator b_it = b_map.find(a_pair.first);
 
     if (b_it == b_map.end() ||
-        CompareTransactionIds(a_it->second, b_it->second) != 0) {
+        CompareTransactionIds(a_pair.second, b_it->second) != 0) {
       return false;
     }
   }
@@ -251,14 +249,12 @@ bool VersionMapIsLessThanOrEqual(const VersionMap<CompareFunction>& a,
   const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
       b.peer_transaction_ids();
 
-  for (std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-           const_iterator a_it = a_map.begin();
-       a_it != a_map.end(); ++a_it) {
+  for (const auto& a_pair : a_map) {
     const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-        const_iterator b_it = b_map.find(a_it->first);
+        const_iterator b_it = b_map.find(a_pair.first);
 
     if (b_it == b_map.end() ||
-        CompareTransactionIds(a_it->second, b_it->second) > 0) {
+        CompareTransactionIds(a_pair.second, b_it->second) > 0) {
       return false;
     }
   }
@@ -273,14 +269,8 @@ void GetVersionMapUnion(const VersionMap<CompareFunction>& a,
   CHECK(out != NULL);
 
   out->CopyFrom(a);
-
-  const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
-      b.peer_transaction_ids();
-
-  for (std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-           const_iterator it = b_map.begin();
-       it != b_map.end(); ++it) {
-    out->AddPeerTransactionId(it->first, it->second);
+  for (const auto& b_pair : b.peer_transaction_ids()) {
+    out->AddPeerTransactionId(b_pair.first, b_pair.second);
   }
 }
 
@@ -297,16 +287,14 @@ void GetVersionMapIntersection(const VersionMap<CompareFunction>& a,
   const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>& b_map =
       b.peer_transaction_ids();
 
-  for (std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
-           const_iterator a_it = a_map.begin();
-       a_it != a_map.end(); ++a_it) {
-    const CanonicalPeer* const canonical_peer = a_it->first;
+  for (const auto& a_pair : a_map) {
+    const CanonicalPeer* const canonical_peer = a_pair.first;
 
     const std::tr1::unordered_map<const CanonicalPeer*, TransactionId>::
         const_iterator b_it = b_map.find(canonical_peer);
 
     if (b_it != b_map.end()) {
-      const TransactionId& a_transaction_id = a_it->second;
+      const TransactionId& a_transaction_id = a_pair.second;
       const TransactionId& b_transaction_id = b_it->second;
 
       const TransactionId* transaction_id = NULL;

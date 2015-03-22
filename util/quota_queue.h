@@ -159,12 +159,8 @@ void QuotaQueue<T>::Drain() {
 
     draining_ = true;
 
-    for (typename std::vector<linked_ptr<Service> >::iterator it =
-             services_.begin();
-         it != services_.end(); ++it) {
-      Service* const service = it->get();
-
-      if (service != NULL) {
+    for (const linked_ptr<Service>& service : services_) {
+      if (service.get() != NULL) {
         service->service_not_full_cond.Broadcast();
       }
     }

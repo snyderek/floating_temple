@@ -104,10 +104,9 @@ void IntervalSet<T>::GetEndPoints(std::vector<T>* end_points) const {
 
   end_points->reserve(map_.size() * 2);
 
-  for (typename std::map<T, T>::const_iterator it = map_.begin();
-       it != map_.end(); ++it) {
-    end_points->push_back(it->first);
-    end_points->push_back(it->second);
+  for (const auto& map_pair : map_) {
+    end_points->push_back(map_pair.first);
+    end_points->push_back(map_pair.second);
   }
 }
 

@@ -270,9 +270,9 @@ void FunctionExpression::PopulateExpressionProto(
   function_->PopulateExpressionProto(
       function_expression_proto->mutable_function());
 
-  for (vector<linked_ptr<Expression> >::const_iterator it = parameters_.begin();
-       it != parameters_.end(); ++it) {
-    (*it)->PopulateExpressionProto(function_expression_proto->add_parameter());
+  for (const linked_ptr<Expression>& parameter : parameters_) {
+    parameter->PopulateExpressionProto(
+        function_expression_proto->add_parameter());
   }
 }
 
@@ -280,9 +280,8 @@ string FunctionExpression::DebugString() const {
   string s;
   SStringPrintf(&s, "(%s", function_->DebugString().c_str());
 
-  for (vector<linked_ptr<Expression> >::const_iterator it = parameters_.begin();
-       it != parameters_.end(); ++it) {
-    StringAppendF(&s, " %s", (*it)->DebugString().c_str());
+  for (const linked_ptr<Expression>& parameter : parameters_) {
+    StringAppendF(&s, " %s", parameter->DebugString().c_str());
   }
 
   s += ')';
@@ -324,9 +323,8 @@ void ListExpression::PopulateExpressionProto(
   ListExpressionProto* const list_expression_proto =
       expression_proto->mutable_list_expression();
 
-  for (vector<linked_ptr<Expression> >::const_iterator it = list_items_.begin();
-       it != list_items_.end(); ++it) {
-    (*it)->PopulateExpressionProto(list_expression_proto->add_list_item());
+  for (const linked_ptr<Expression>& list_item : list_items_) {
+    list_item->PopulateExpressionProto(list_expression_proto->add_list_item());
   }
 }
 

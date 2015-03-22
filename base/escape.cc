@@ -64,9 +64,8 @@ string CEscapeChar(char c) {
 
 string CEscape(const string& s) {
   string escaped;
-
-  for (string::const_iterator it = s.begin(); it != s.end(); ++it) {
-    escaped += CEscapeChar(*it);
+  for (const char c : s) {
+    escaped += CEscapeChar(c);
   }
 
   return escaped;

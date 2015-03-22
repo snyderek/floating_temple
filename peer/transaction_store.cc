@@ -118,10 +118,7 @@ void TransactionStore::NotifyNewConnection(const CanonicalPeer* remote_peer) {
     named_objects = named_objects_;
   }
 
-  for (unordered_set<SharedObject*>::const_iterator it = named_objects.begin();
-       it != named_objects.end(); ++it) {
-    const SharedObject* const shared_object = *it;
-
+  for (const SharedObject* const shared_object : named_objects) {
     PeerMessage peer_message;
     GetObjectMessage* const get_object_message =
         peer_message.mutable_get_object_message();
@@ -347,11 +344,9 @@ void TransactionStore::CreateTransaction(
   cached_version_sequence_point.AddPeerTransactionId(local_peer_,
                                                      transaction_id_temp);
 
-  for (unordered_map<PeerObjectImpl*, LiveObjectPtr>::const_iterator it =
-           modified_objects.begin();
-       it != modified_objects.end(); ++it) {
-    PeerObjectImpl* const peer_object = it->first;
-    const ConstLiveObjectPtr live_object = it->second;
+  for (const auto& modified_object_pair : modified_objects) {
+    PeerObjectImpl* const peer_object = modified_object_pair.first;
+    const ConstLiveObjectPtr live_object = modified_object_pair.second;
 
     SharedObject* const shared_object = peer_object->shared_object();
 
@@ -459,22 +454,17 @@ void TransactionStore::HandleGetObjectMessage(
   requested_shared_object->GetTransactions(current_version_temp, &transactions,
                                            &effective_version);
 
-  for (map<TransactionId, linked_ptr<SharedObjectTransactionInfo> >::
-           const_iterator transaction_it = transactions.begin();
-       transaction_it != transactions.end(); ++transaction_it) {
-    const TransactionId& transaction_id = transaction_it->first;
+  for (const auto& transaction_pair : transactions) {
+    const TransactionId& transaction_id = transaction_pair.first;
     const SharedObjectTransactionInfo& transaction_info =
-        *transaction_it->second;
+        *transaction_pair.second;
 
     TransactionProto* const transaction_proto =
         store_object_message->add_transaction();
     transaction_proto->mutable_transaction_id()->CopyFrom(transaction_id);
 
-    const vector<linked_ptr<CommittedEvent> >& events = transaction_info.events;
-    for (vector<linked_ptr<CommittedEvent> >::const_iterator event_it =
-             events.begin();
-         event_it != events.end(); ++event_it) {
-      ConvertCommittedEventToEventProto(event_it->get(),
+    for (const linked_ptr<CommittedEvent>& event : transaction_info.events) {
+      ConvertCommittedEventToEventProto(event.get(),
                                         transaction_proto->add_event());
     }
 
@@ -482,24 +472,17 @@ void TransactionStore::HandleGetObjectMessage(
         transaction_info.origin_peer->peer_id());
   }
 
-  const unordered_map<const CanonicalPeer*, TransactionId>&
-      peer_last_transaction_ids = effective_version.peer_transaction_ids();
-
-  for (unordered_map<const CanonicalPeer*, TransactionId>::const_iterator it =
-           peer_last_transaction_ids.begin();
-       it != peer_last_transaction_ids.end(); ++it) {
+  for (const auto& version_pair : effective_version.peer_transaction_ids()) {
     PeerVersion* const peer_version = store_object_message->add_peer_version();
-    peer_version->set_peer_id(it->first->peer_id());
-    peer_version->mutable_last_transaction_id()->CopyFrom(it->second);
+    peer_version->set_peer_id(version_pair.first->peer_id());
+    peer_version->mutable_last_transaction_id()->CopyFrom(version_pair.second);
   }
 
   unordered_set<const CanonicalPeer*> interested_peers;
   requested_shared_object->GetInterestedPeers(&interested_peers);
 
-  for (unordered_set<const CanonicalPeer*>::const_iterator it =
-           interested_peers.begin();
-       it != interested_peers.end(); ++it) {
-    store_object_message->add_interested_peer_id((*it)->peer_id());
+  for (const CanonicalPeer* const canonical_peer : interested_peers) {
+    store_object_message->add_interested_peer_id(canonical_peer->peer_id());
   }
 
   transaction_sequencer_.SendMessageToRemotePeer(
@@ -733,13 +716,9 @@ void TransactionStore::ApplyTransactionAndSendMessage(
 
   unordered_set<SharedObject*> affected_objects;
 
-  for (unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo> >::
-           const_iterator shared_object_it =
-           shared_object_transactions->begin();
-       shared_object_it != shared_object_transactions->end();
-       ++shared_object_it) {
-    SharedObject* const shared_object = shared_object_it->first;
-    const SharedObjectTransactionInfo& transaction = *shared_object_it->second;
+  for (const auto& transaction_pair : *shared_object_transactions) {
+    SharedObject* const shared_object = transaction_pair.first;
+    const SharedObjectTransactionInfo& transaction = *transaction_pair.second;
 
     CHECK_EQ(transaction.origin_peer, local_peer_);
 
@@ -748,12 +727,8 @@ void TransactionStore::ApplyTransactionAndSendMessage(
     object_transaction->mutable_object_id()->CopyFrom(
         shared_object->object_id());
 
-    const vector<linked_ptr<CommittedEvent> >& events = transaction.events;
-
-    for (vector<linked_ptr<CommittedEvent> >::const_iterator event_it =
-             events.begin();
-         event_it != events.end(); ++event_it) {
-      ConvertCommittedEventToEventProto(event_it->get(),
+    for (const linked_ptr<CommittedEvent>& event : transaction.events) {
+      ConvertCommittedEventToEventProto(event.get(),
                                         object_transaction->add_event());
     }
 
@@ -776,12 +751,10 @@ void TransactionStore::ApplyTransaction(
   // TODO(dss): Make sure that the transaction has a later timestamp than the
   // previous transaction received from the same originating peer.
 
-  for (unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo> >::
-           iterator it = shared_object_transactions->begin();
-       it != shared_object_transactions->end(); ++it) {
-    SharedObject* const shared_object = it->first;
+  for (const auto& transaction_pair : *shared_object_transactions) {
+    SharedObject* const shared_object = transaction_pair.first;
     SharedObjectTransactionInfo* const shared_object_transaction =
-        it->second.get();
+        transaction_pair.second.get();
 
     CHECK_EQ(shared_object_transaction->origin_peer, origin_peer);
 
@@ -823,11 +796,11 @@ void TransactionStore::RejectTransactions(
   {
     MutexLock lock(&current_sequence_point_mu_);
 
-    for (vector<pair<const CanonicalPeer*, TransactionId> >::const_iterator it =
-             transactions_to_reject.begin();
-         it != transactions_to_reject.end(); ++it) {
-      const CanonicalPeer* const rejected_peer = it->first;
-      const TransactionId& rejected_transaction_id = it->second;
+    for (const auto& rejected_transaction_pair : transactions_to_reject) {
+      const CanonicalPeer* const rejected_peer =
+          rejected_transaction_pair.first;
+      const TransactionId& rejected_transaction_id =
+          rejected_transaction_pair.second;
 
       if (rejected_peer == local_peer_) {
         current_sequence_point_.AddInvalidatedRange(rejected_peer,
@@ -845,11 +818,10 @@ void TransactionStore::RejectTransactions(
   TransactionId invalidate_start_transaction_id;
   GetMaxTransactionId(&invalidate_start_transaction_id);
 
-  for (vector<pair<const CanonicalPeer*, TransactionId> >::const_iterator it =
-           transactions_to_reject.begin();
-       it != transactions_to_reject.end(); ++it) {
-    const CanonicalPeer* const rejected_peer = it->first;
-    const TransactionId& rejected_transaction_id = it->second;
+  for (const auto& rejected_transaction_pair : transactions_to_reject) {
+    const CanonicalPeer* const rejected_peer = rejected_transaction_pair.first;
+    const TransactionId& rejected_transaction_id =
+        rejected_transaction_pair.second;
 
     if (rejected_peer == local_peer_) {
       if (CompareTransactionIds(rejected_transaction_id,
@@ -890,16 +862,13 @@ void TransactionStore::RejectTransactions(
     // the local peer's transactions until after the interpreter thread has
     // started executing. Nonetheless, it would nice to fix the race condition.
 
-    for (vector<InterpreterThread*>::const_iterator it =
-             interpreter_threads_temp.begin();
-         it != interpreter_threads_temp.end(); ++it) {
-      (*it)->Rewind(invalidate_start_transaction_id);
+    for (InterpreterThread* const interpreter_thread :
+             interpreter_threads_temp) {
+      interpreter_thread->Rewind(invalidate_start_transaction_id);
     }
-
-    for (vector<InterpreterThread*>::const_iterator it =
-             interpreter_threads_temp.begin();
-         it != interpreter_threads_temp.end(); ++it) {
-      (*it)->Resume();
+    for (InterpreterThread* const interpreter_thread :
+             interpreter_threads_temp) {
+      interpreter_thread->Resume();
     }
 
     PeerMessage peer_message;
@@ -921,10 +890,7 @@ void TransactionStore::SendMessageToAffectedPeers(
     const unordered_set<SharedObject*>& affected_objects) {
   unordered_set<const CanonicalPeer*> all_interested_peers;
 
-  for (unordered_set<SharedObject*>::const_iterator it =
-           affected_objects.begin();
-       it != affected_objects.end(); ++it) {
-    const SharedObject* const shared_object = *it;
+  for (const SharedObject* const shared_object : affected_objects) {
     unordered_set<const CanonicalPeer*> interested_peers;
     shared_object->GetInterestedPeers(&interested_peers);
 
@@ -934,11 +900,9 @@ void TransactionStore::SendMessageToAffectedPeers(
 
   all_interested_peers.erase(local_peer_);
 
-  for (unordered_set<const CanonicalPeer*>::const_iterator it =
-           all_interested_peers.begin();
-       it != all_interested_peers.end(); ++it) {
+  for (const CanonicalPeer* const interested_peer : all_interested_peers) {
     transaction_sequencer_.SendMessageToRemotePeer(
-        *it, peer_message, PeerMessageSender::BLOCKING_MODE);
+        interested_peer, peer_message, PeerMessageSender::BLOCKING_MODE);
   }
 }
 
@@ -956,11 +920,9 @@ void TransactionStore::IncrementVersionNumber_Locked() {
 
 void TransactionStore::CreateNewPeerObjects(
     const unordered_map<SharedObject*, PeerObjectImpl*>& new_peer_objects) {
-  for (unordered_map<SharedObject*, PeerObjectImpl*>::const_iterator it =
-           new_peer_objects.begin();
-       it != new_peer_objects.end(); ++it) {
-    SharedObject* const shared_object = it->first;
-    PeerObjectImpl* const peer_object = it->second;
+  for (const auto& new_peer_object_pair : new_peer_objects) {
+    SharedObject* const shared_object = new_peer_object_pair.first;
+    PeerObjectImpl* const peer_object = new_peer_object_pair.second;
 
     shared_object->AddPeerObject(peer_object);
     CHECK_EQ(peer_object->SetSharedObjectIfUnset(shared_object), shared_object);
@@ -985,15 +947,10 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
         shared_object_transactions) {
   CHECK(pending_event != NULL);
 
-  const unordered_set<PeerObjectImpl*>& new_peer_objects =
-      pending_event->new_peer_objects();
   unordered_set<SharedObject*> new_shared_objects;
-
-  for (unordered_set<PeerObjectImpl*>::const_iterator it =
-           new_peer_objects.begin();
-       it != new_peer_objects.end(); ++it) {
+  for (PeerObjectImpl* const peer_object : pending_event->new_peer_objects()) {
     SharedObject* shared_object = NULL;
-    GetOrCreateSharedObjectForPeerObject(*it, &shared_object);
+    GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
 
     CHECK(new_shared_objects.insert(shared_object).second);
   }
@@ -1004,14 +961,9 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
   CHECK(new_shared_objects.find(prev_shared_object) ==
             new_shared_objects.end());
 
-  const unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>& live_objects =
-      pending_event->live_objects();
-
-  for (unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>::const_iterator it =
-           live_objects.begin();
-       it != live_objects.end(); ++it) {
-    PeerObjectImpl* const peer_object = it->first;
-    const ConstLiveObjectPtr& live_object = it->second;
+  for (const auto& live_object_pair : pending_event->live_objects()) {
+    PeerObjectImpl* const peer_object = live_object_pair.first;
+    const ConstLiveObjectPtr& live_object = live_object_pair.second;
 
     SharedObject* shared_object = NULL;
     GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
@@ -1195,10 +1147,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       live_object->Serialize(object_creation_event_proto->mutable_data(),
                              &referenced_peer_objects);
 
-      for (vector<PeerObjectImpl*>::const_iterator it =
-               referenced_peer_objects.begin();
-           it != referenced_peer_objects.end(); ++it) {
-        PeerObjectImpl* const peer_object = *it;
+      for (PeerObjectImpl* const peer_object : referenced_peer_objects) {
         SharedObject* shared_object = NULL;
         GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
 
@@ -1231,10 +1180,9 @@ void TransactionStore::ConvertCommittedEventToEventProto(
           out->mutable_method_call();
       method_call_event_proto->set_method_name(*method_name);
 
-      for (vector<CommittedValue>::const_iterator it = parameters->begin();
-           it != parameters->end(); ++it) {
+      for (const CommittedValue& parameter : *parameters) {
         ConvertCommittedValueToValueProto(
-            *it, method_call_event_proto->add_parameter());
+            parameter, method_call_event_proto->add_parameter());
       }
 
       if (caller != NULL) {
@@ -1275,10 +1223,9 @@ void TransactionStore::ConvertCommittedEventToEventProto(
           out->mutable_sub_method_call();
       sub_method_call_event_proto->set_method_name(*method_name);
 
-      for (vector<CommittedValue>::const_iterator it = parameters->begin();
-           it != parameters->end(); ++it) {
+      for (const CommittedValue& parameter : *parameters) {
         ConvertCommittedValueToValueProto(
-            *it, sub_method_call_event_proto->add_parameter());
+            parameter, sub_method_call_event_proto->add_parameter());
       }
 
       sub_method_call_event_proto->mutable_callee_object_id()->CopyFrom(
@@ -1314,10 +1261,9 @@ void TransactionStore::ConvertCommittedEventToEventProto(
           out->mutable_self_method_call();
       self_method_call_event_proto->set_method_name(*method_name);
 
-      for (vector<CommittedValue>::const_iterator it = parameters->begin();
-           it != parameters->end(); ++it) {
+      for (const CommittedValue& parameter : *parameters) {
         ConvertCommittedValueToValueProto(
-            *it, self_method_call_event_proto->add_parameter());
+            parameter, self_method_call_event_proto->add_parameter());
       }
 
       break;
@@ -1341,13 +1287,8 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       LOG(FATAL) << "Invalid committed event type: " << static_cast<int>(type);
   }
 
-  const unordered_set<SharedObject*>& new_shared_objects =
-      in->new_shared_objects();
-
-  for (unordered_set<SharedObject*>::const_iterator it =
-           new_shared_objects.begin();
-       it != new_shared_objects.end(); ++it) {
-    out->add_new_object_id()->CopyFrom((*it)->object_id());
+  for (const SharedObject* const shared_object : in->new_shared_objects()) {
+    out->add_new_object_id()->CopyFrom(shared_object->object_id());
   }
 }
 

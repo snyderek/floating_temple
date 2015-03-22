@@ -79,10 +79,9 @@ void PeerImpl::Start(Interpreter* interpreter,
                             send_receive_thread_count);
 
   // Connect to remote peers.
-  for (vector<string>::const_iterator it = known_peer_ids.begin();
-       it != known_peer_ids.end(); ++it) {
+  for (const string& peer_id : known_peer_ids) {
     const CanonicalPeer* const known_peer =
-        canonical_peer_map_.GetCanonicalPeer(*it);
+        canonical_peer_map_.GetCanonicalPeer(peer_id);
     connection_manager_.ConnectToRemotePeer(known_peer);
   }
 

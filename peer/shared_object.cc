@@ -108,9 +108,8 @@ bool SharedObject::HasPeerObject(const PeerObjectImpl* peer_object) const {
 
   MutexLock lock(&peer_objects_mu_);
 
-  for (vector<PeerObjectImpl*>::const_iterator it = peer_objects_.begin();
-       it != peer_objects_.end(); ++it) {
-    if (*it == peer_object) {
+  for (const PeerObjectImpl* const matching_peer_object : peer_objects_) {
+    if (matching_peer_object == peer_object) {
       return true;
     }
   }
@@ -204,11 +203,9 @@ void SharedObject::GetTransactions(
 
   MutexLock lock(&committed_versions_mu_);
 
-  for (map<TransactionId, linked_ptr<SharedObjectTransaction> >::const_iterator
-           transaction_it = committed_versions_.begin();
-       transaction_it != committed_versions_.end(); ++transaction_it) {
-    const TransactionId& transaction_id = transaction_it->first;
-    const SharedObjectTransaction& transaction = *transaction_it->second;
+  for (const auto& transaction_pair : committed_versions_) {
+    const TransactionId& transaction_id = transaction_pair.first;
+    const SharedObjectTransaction& transaction = *transaction_pair.second;
 
     SharedObjectTransactionInfo* const transaction_info =
         new SharedObjectTransactionInfo();
@@ -246,11 +243,10 @@ void SharedObject::StoreTransactions(
 
   MutexLock lock(&committed_versions_mu_);
 
-  for (map<TransactionId, linked_ptr<SharedObjectTransactionInfo> >::
-           const_iterator it = transactions->begin();
-       it != transactions->end(); ++it) {
-    const TransactionId& transaction_id = it->first;
-    SharedObjectTransactionInfo* const transaction_info = it->second.get();
+  for (const auto& transaction_pair : *transactions) {
+    const TransactionId& transaction_id = transaction_pair.first;
+    SharedObjectTransactionInfo* const transaction_info =
+        transaction_pair.second.get();
 
     CHECK(IsValidTransactionId(transaction_id));
     CHECK(transaction_info != NULL);
@@ -333,11 +329,9 @@ bool SharedObject::ApplyTransactionsToWorkingVersion_Locked(
   CHECK(peer_thread != NULL);
   CHECK(transactions_to_reject != NULL);
 
-  for (map<TransactionId, linked_ptr<SharedObjectTransaction> >::const_iterator
-           version_it = committed_versions_.begin();
-       version_it != committed_versions_.end(); ++version_it) {
-    const TransactionId& transaction_id = version_it->first;
-    const SharedObjectTransaction& transaction = *version_it->second;
+  for (const auto& transaction_pair : committed_versions_) {
+    const TransactionId& transaction_id = transaction_pair.first;
+    const SharedObjectTransaction& transaction = *transaction_pair.second;
     const vector<linked_ptr<CommittedEvent> >& events = transaction.events();
 
     if (!events.empty()) {
@@ -346,10 +340,8 @@ bool SharedObject::ApplyTransactionsToWorkingVersion_Locked(
       if (sequence_point.HasPeerTransactionId(origin_peer, transaction_id) &&
           FindTransactionIdInVector(*transactions_to_reject, transaction_id) ==
               transactions_to_reject->end()) {
-        for (vector<linked_ptr<CommittedEvent> >::const_iterator event_it =
-                 events.begin();
-             event_it != events.end(); ++event_it) {
-          peer_thread->QueueEvent(event_it->get());
+        for (const linked_ptr<CommittedEvent>& event : events) {
+          peer_thread->QueueEvent(event.get());
         }
 
         peer_thread->FlushEvents();
@@ -374,21 +366,16 @@ void SharedObject::ComputeEffectiveVersion_Locked(
   const unordered_map<const CanonicalPeer*, TransactionId>&
       version_map_peer_transaction_ids = version_map_.peer_transaction_ids();
 
-  for (unordered_map<const CanonicalPeer*, TransactionId>::const_iterator it =
-           version_map_peer_transaction_ids.begin();
-       it != version_map_peer_transaction_ids.end(); ++it) {
-    effective_version->AddPeerTransactionId(it->first, it->second);
+  for (const auto& version_map_pair : version_map_peer_transaction_ids) {
+    effective_version->AddPeerTransactionId(version_map_pair.first,
+                                            version_map_pair.second);
   }
 
   const unordered_map<const CanonicalPeer*, TransactionId>&
       transaction_store_peer_transaction_ids =
       transaction_store_version_map.peer_transaction_ids();
 
-  for (unordered_set<const CanonicalPeer*>::const_iterator it1 =
-           up_to_date_peers_.begin();
-       it1 != up_to_date_peers_.end(); ++it1) {
-    const CanonicalPeer* const origin_peer = *it1;
-
+  for (const CanonicalPeer* const origin_peer : up_to_date_peers_) {
     const unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
         it2 = transaction_store_peer_transaction_ids.find(origin_peer);
 
@@ -419,12 +406,9 @@ bool SharedObject::CanUseCachedLiveObject_Locked(
   const unordered_map<const CanonicalPeer*, TransactionId>&
       cached_peer_transactions_ids = cached_version_map.peer_transaction_ids();
 
-  for (unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
-           requested_peer_it = requested_peer_transactions_ids.begin();
-       requested_peer_it != requested_peer_transactions_ids.end();
-       ++requested_peer_it) {
-    const CanonicalPeer* const origin_peer = requested_peer_it->first;
-    const TransactionId& requested_transaction_id = requested_peer_it->second;
+  for (const auto& requested_peer_pair : requested_peer_transactions_ids) {
+    const CanonicalPeer* const origin_peer = requested_peer_pair.first;
+    const TransactionId& requested_transaction_id = requested_peer_pair.second;
 
     const unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
         cached_peer_it = cached_peer_transactions_ids.find(origin_peer);
@@ -453,10 +437,8 @@ bool SharedObject::CanUseCachedLiveObject_Locked(
         const vector<linked_ptr<CommittedEvent> >& events =
             shared_object_transaction.events();
 
-        for (vector<linked_ptr<CommittedEvent> >::const_iterator event_it =
-                 events.begin();
-             event_it != events.end(); ++event_it) {
-          const CommittedEvent::Type event_type = (*event_it)->type();
+        for (const linked_ptr<CommittedEvent>& event : events) {
+          const CommittedEvent::Type event_type = event->type();
 
           if (event_type != CommittedEvent::METHOD_CALL &&
               event_type != CommittedEvent::SUB_METHOD_RETURN) {

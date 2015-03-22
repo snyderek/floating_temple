@@ -545,21 +545,18 @@ void SymbolTableObject::PopulateObjectProto(
 
   MutexLock lock(&scopes_mu_);
 
-  for (ScopeVector::const_iterator it = scopes_.begin(); it != scopes_.end();
-       ++it) {
-    const unordered_map<string, PeerObject*>& symbol_map = **it;
+  for (const auto& scope : scopes_) {
+    const unordered_map<string, PeerObject*>& symbol_map = *scope;
     SymbolMapProto* const symbol_map_proto = symbol_table_proto->add_map();
 
-    for (unordered_map<string, PeerObject*>::const_iterator it2 =
-             symbol_map.begin();
-         it2 != symbol_map.end(); ++it2) {
+    for (const auto& symbol_pair : symbol_map) {
       SymbolDefinitionProto* const symbol_definition_proto =
           symbol_map_proto->add_definition();
 
-      PeerObject* const peer_object = it2->second;
+      PeerObject* const peer_object = symbol_pair.second;
       const int object_index = context->GetIndexForPeerObject(peer_object);
 
-      symbol_definition_proto->set_name(it2->first);
+      symbol_definition_proto->set_name(symbol_pair.first);
       symbol_definition_proto->set_object_index(object_index);
     }
   }
@@ -758,9 +755,8 @@ void ListObject::PopulateObjectProto(ObjectProto* object_proto,
 
   MutexLock lock(&items_mu_);
 
-  for (vector<PeerObject*>::const_iterator it = items_.begin();
-       it != items_.end(); ++it) {
-    const int object_index = context->GetIndexForPeerObject(*it);
+  for (PeerObject* const peer_object : items_) {
+    const int object_index = context->GetIndexForPeerObject(peer_object);
     list_proto->add_object_index(object_index);
   }
 }
@@ -861,14 +857,13 @@ void MapObject::PopulateObjectProto(ObjectProto* object_proto,
 
   MapProto* const map_proto = object_proto->mutable_map_object();
 
-  for (unordered_map<string, PeerObject*>::const_iterator it = map_.begin();
-       it != map_.end(); ++it) {
+  for (const auto& map_pair : map_) {
     MapEntryProto* const entry_proto = map_proto->add_entry();
 
-    PeerObject* const peer_object = it->second;
+    PeerObject* const peer_object = map_pair.second;
     const int object_index = context->GetIndexForPeerObject(peer_object);
 
-    entry_proto->set_key(it->first);
+    entry_proto->set_key(map_pair.first);
     entry_proto->set_value_object_index(object_index);
   }
 }
@@ -1217,10 +1212,9 @@ PeerObject* AddFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 
   int64 sum = 0;
 
-  for (vector<PeerObject*>::const_iterator it = parameters.begin();
-       it != parameters.end(); ++it) {
+  for (PeerObject* const peer_object : parameters) {
     Value number;
-    if (!thread->CallMethod(*it, "get_int", vector<Value>(), &number)) {
+    if (!thread->CallMethod(peer_object, "get_int", vector<Value>(), &number)) {
       return NULL;
     }
 

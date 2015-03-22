@@ -32,9 +32,7 @@ void ParseCommaSeparatedList(const string& in, vector<string>* out) {
   out->clear();
   string item;
 
-  for (string::const_iterator it = in.begin(); it != in.end(); ++it) {
-    const char c = *it;
-
+  for (const char c : in) {
     if (c == ',') {
       if (!item.empty()) {
         out->push_back(item);

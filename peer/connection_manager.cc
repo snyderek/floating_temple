@@ -150,10 +150,8 @@ void ConnectionManager::BroadcastMessage(const PeerMessage& peer_message,
   vector<intrusive_ptr<PeerConnection> > connections;
   GetAllOpenConnections(&connections);
 
-  for (vector<intrusive_ptr<PeerConnection> >::const_iterator it =
-           connections.begin();
-       it != connections.end(); ++it) {
-    (*it)->SendMessage(peer_message, send_mode);
+  for (const intrusive_ptr<PeerConnection>& connection : connections) {
+    connection->SendMessage(peer_message, send_mode);
   }
 }
 
@@ -199,16 +197,11 @@ void ConnectionManager::GetAllOpenConnections(
   peer_connections->reserve(
       named_connections_.size() + unnamed_connections_.size());
 
-  for (unordered_map<const CanonicalPeer*, intrusive_ptr<PeerConnection> >::
-           const_iterator it = named_connections_.begin();
-       it != named_connections_.end(); ++it) {
-    peer_connections->push_back(it->second);
+  for (const auto& connection_pair : named_connections_) {
+    peer_connections->push_back(connection_pair.second);
   }
-
-  for (unordered_map<PeerConnection*, intrusive_ptr<PeerConnection> >::
-           const_iterator it = unnamed_connections_.begin();
-       it != unnamed_connections_.end(); ++it) {
-    peer_connections->push_back(it->second);
+  for (const auto& connection_pair : unnamed_connections_) {
+    peer_connections->push_back(connection_pair.second);
   }
 }
 
@@ -217,10 +210,8 @@ void ConnectionManager::DrainAllConnections() {
     vector<intrusive_ptr<PeerConnection> > connections;
     GetAllOpenConnections(&connections);
 
-    for (vector<intrusive_ptr<PeerConnection> >::const_iterator it =
-             connections.begin();
-         it != connections.end(); ++it) {
-      (*it)->Drain();
+    for (const intrusive_ptr<PeerConnection>& connection : connections) {
+      connection->Drain();
     }
 
     {

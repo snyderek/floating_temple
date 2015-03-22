@@ -148,12 +148,8 @@ void TransactionSequencer::FlushMessages_Locked() {
 
     const Transaction& transaction = *transaction_it->second;
 
-    const vector<linked_ptr<OutgoingMessage> >& outgoing_messages =
-        transaction.outgoing_messages;
-    for (vector<linked_ptr<OutgoingMessage> >::const_iterator it =
-             outgoing_messages.begin();
-         it != outgoing_messages.end(); ++it) {
-      SendOutgoingMessage(**it);
+    for (const auto& message : transaction.outgoing_messages) {
+      SendOutgoingMessage(*message);
     }
 
     if (!transaction.done) {

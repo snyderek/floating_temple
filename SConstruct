@@ -160,7 +160,7 @@ base_env = Environment(
     PROTOC = 'protoc',
 
     CFLAGS = common_flags,
-    CXXFLAGS = common_flags + ['-fno-exceptions'],
+    CXXFLAGS = common_flags + ['-fno-exceptions', '-std=c++11'],
     LINKFLAGS = common_flags,
 
     # TODO(dss): Use either -I or -iquote as appropriate.

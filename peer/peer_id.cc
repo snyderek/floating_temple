@@ -47,10 +47,7 @@ bool ParsePeerId(const string& peer_id, string* address, int* port) {
 
   ParseState state = PREFIX1;
 
-  const string::const_iterator end_it = peer_id.end();
-  for (string::const_iterator it = peer_id.begin(); it != end_it; ++it) {
-    const char c = *it;
-
+  for (const char c : peer_id) {
     switch (state) {
       case PREFIX1:
         if (c != 'i') {

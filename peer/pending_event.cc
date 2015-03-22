@@ -44,10 +44,8 @@ PendingEvent::PendingEvent(
       new_peer_objects_(new_peer_objects),
       prev_peer_object_(prev_peer_object) {
   // Check that new_peer_objects is a subset of keys(live_objects).
-  for (unordered_set<PeerObjectImpl*>::const_iterator it =
-           new_peer_objects.begin();
-       it != new_peer_objects.end(); ++it) {
-    CHECK(live_objects.find(*it) != live_objects.end());
+  for (PeerObjectImpl* const peer_object : new_peer_objects) {
+    CHECK(live_objects.find(peer_object) != live_objects.end());
   }
 }
 

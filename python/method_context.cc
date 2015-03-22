@@ -19,7 +19,6 @@
 #include <vector>
 
 using std::size_t;
-using std::vector;
 
 namespace floating_temple {
 namespace python {
@@ -28,9 +27,8 @@ MethodContext::MethodContext() {
 }
 
 MethodContext::~MethodContext() {
-  for (vector<char*>::const_iterator it = buffers_.begin();
-       it != buffers_.end(); ++it) {
-    delete[] *it;
+  for (char* const buffer : buffers_) {
+    delete[] buffer;
   }
 }
 

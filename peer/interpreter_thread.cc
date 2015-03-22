@@ -222,9 +222,8 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
     CheckIfPeerObjectIsNew(callee_peer_object, &live_objects,
                            &new_peer_objects);
 
-    for (vector<Value>::const_iterator it = parameters.begin();
-         it != parameters.end(); ++it) {
-      CheckIfValueIsNew(*it, &live_objects, &new_peer_objects);
+    for (const Value& parameter : parameters) {
+      CheckIfValueIsNew(parameter, &live_objects, &new_peer_objects);
     }
 
     if (caller_peer_object != NULL) {

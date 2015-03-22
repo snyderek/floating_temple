@@ -180,11 +180,9 @@ void ProtocolServer<Message>::Stop() {
   // Wake the select thread.
   SignalEventFd(connections_changed_event_fd_);
 
-  for (std::vector<pthread_t>::const_iterator it =
-           send_receive_threads_.begin();
-       it != send_receive_threads_.end(); ++it) {
+  for (const pthread_t thread : send_receive_threads_) {
     void* thread_return_value = NULL;
-    CHECK_PTHREAD_ERR(pthread_join(*it, &thread_return_value));
+    CHECK_PTHREAD_ERR(pthread_join(thread, &thread_return_value));
   }
 
   void* thread_return_value = NULL;
@@ -209,11 +207,8 @@ void ProtocolServer<Message>::Stop() {
   {
     MutexLock lock(&blocked_connections_mu_);
 
-    for (typename std::tr1::unordered_set<ProtocolConnectionImpl<Message>*>::
-             const_iterator it = blocked_connections_.begin();
-         it != blocked_connections_.end(); ++it) {
-      ProtocolConnectionImpl<Message>* const connection = *it;
-
+    for (ProtocolConnectionImpl<Message>* const connection :
+             blocked_connections_) {
       if (connection != NULL) {
         CHECK(all_connections.insert(connection).second);
       }
@@ -222,10 +217,7 @@ void ProtocolServer<Message>::Stop() {
     blocked_connections_.clear();
   }
 
-  for (typename std::tr1::unordered_set<ProtocolConnectionImpl<Message>*>::
-           const_iterator it = all_connections.begin();
-       it != all_connections.end(); ++it) {
-    ProtocolConnectionImpl<Message>* const connection = *it;
+  for (ProtocolConnectionImpl<Message>* const connection : all_connections) {
     connection->CloseSocket();
   }
 
@@ -360,11 +352,8 @@ void ProtocolServer<Message>::DoSelectLoop() {
     CHECK_ERR(fd_count) << " select";
     CHECK_GT(fd_count, 0) << "select() timed out.";
 
-    for (typename std::tr1::unordered_set<ProtocolConnectionImpl<Message>*>::
-             const_iterator connection_it = blocked_connections_temp.begin();
-         connection_it != blocked_connections_temp.end(); ++connection_it) {
-      ProtocolConnectionImpl<Message>* const connection = *connection_it;
-
+    for (ProtocolConnectionImpl<Message>* const connection :
+             blocked_connections_temp) {
       bool ready = false;
 
       if (connection == NULL) {

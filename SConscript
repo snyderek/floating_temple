@@ -464,7 +464,7 @@ ft_env.AggregateLibrary(
 
 # TODO(dss): Put these targets in alphabetical order.
 
-ft_env.Program(
+bin_get_unused_port_for_testing = ft_env.Program(
     target = 'bin/get_unused_port_for_testing',
     source = Split("""
         bin/get_unused_port_for_testing.cc
@@ -512,7 +512,7 @@ ft_env.Program(
       ],
   )
 
-python_env.Program(
+bin_floating_python = python_env.Program(
     target = 'bin/floating_python',
     source = Split("""
         bin/floating_python.cc
@@ -532,7 +532,7 @@ python_env.Program(
       ],
   )
 
-ft_env.Program(
+bin_floating_toy_lang = ft_env.Program(
     target = 'bin/floating_toy_lang',
     source = Split("""
         bin/floating_toy_lang.cc
@@ -864,4 +864,7 @@ sh_tests = [
 all_tests = cxx_tests + sh_tests
 
 check_alias = ft_env.Alias('check', all_tests, run_tests)
+ft_env.Depends(check_alias,
+               [bin_floating_python, bin_floating_toy_lang,
+                bin_get_unused_port_for_testing])
 ft_env.AlwaysBuild(check_alias)

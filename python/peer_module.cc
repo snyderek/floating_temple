@@ -34,12 +34,12 @@ PyObject* peer_EndTransaction(PyObject* self, PyObject* unused) {
 }
 
 PyMethodDef g_module_methods[] = {
-  { "BeginTransaction",
+  { "begin_tran",
     peer_BeginTransaction,
     METH_NOARGS,
     "TODO(dss): Write this doc string."
   },
-  { "EndTransaction",
+  { "end_tran",
     peer_EndTransaction,
     METH_NOARGS,
     "TODO(dss): Write this doc string."

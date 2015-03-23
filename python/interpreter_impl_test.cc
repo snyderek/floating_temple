@@ -15,15 +15,20 @@
 
 #include "python/interpreter_impl.h"
 
+#include "third_party/Python-3.4.2/Include/Python.h"
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <string>
-#include <vector>
 
 #include "base/logging.h"
+#include "fake_peer/fake_peer.h"
+#include "include/c++/interpreter.h"
+#include "include/c++/peer.h"
+#include "python/peer_module.h"
+#include "python/run_python_program.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
-#include "util/tcp.h"
 
 using google::InitGoogleLogging;
 using std::FILE;
@@ -31,7 +36,6 @@ using std::fclose;
 using std::memcpy;
 using std::size_t;
 using std::string;
-using std::vector;
 using testing::InitGoogleTest;
 using testing::Test;
 
@@ -42,18 +46,23 @@ namespace {
 class InterpreterImplTest : public Test {
  protected:
   void SetUp() override {
-    const vector<string> known_peer_ids;
-
     interpreter_ = new InterpreterImpl();
-    interpreter_->Start(GetUnusedPortForTesting(), known_peer_ids);
+
+    CHECK_NE(PyImport_AppendInittab("peer", PyInit_peer), -1);
+    Py_InitializeEx(0);
+
+    peer_ = new FakePeer();
   }
 
   void TearDown() override {
-    interpreter_->ShutDown();
+    peer_->Stop();
+    delete peer_;
     delete interpreter_;
+
+    Py_Finalize();
   }
 
-  bool RunProgram(const string& file_content, const string& file_name) {
+  void RunProgram(const string& file_content, const string& file_name) {
     const size_t length = file_content.length();
     char* const buffer = new char[length];
     memcpy(buffer, file_content.data(), length);
@@ -61,15 +70,14 @@ class InterpreterImplTest : public Test {
     FILE* const fp = fmemopen(buffer, length, "r");
     PLOG_IF(FATAL, fp == nullptr) << "fmemopen";
 
-    const bool success = interpreter_->RunFile(fp, file_name);
+    RunPythonFile(peer_, fp, file_name);
 
     PLOG_IF(FATAL, fclose(fp) != 0) << "fclose";
     delete[] buffer;
-
-    return success;
   }
 
-  InterpreterImpl* interpreter_;
+  Interpreter* interpreter_;
+  Peer* peer_;
 };
 
 TEST_F(InterpreterImplTest, RunFibonacciProgram) {
@@ -86,7 +94,7 @@ TEST_F(InterpreterImplTest, RunFibonacciProgram) {
       "  b += temp\n"
       "\n";
 
-  ASSERT_TRUE(RunProgram(kProgramString, "fibonacci-test"));
+  RunProgram(kProgramString, "fibonacci-test");
 }
 
 TEST_F(InterpreterImplTest, RunListProgram) {
@@ -95,7 +103,7 @@ TEST_F(InterpreterImplTest, RunListProgram) {
       "lst.append('cherry')\n"
       "print(' '.join(lst))\n";
 
-  ASSERT_TRUE(RunProgram(kProgramString, "list-test"));
+  RunProgram(kProgramString, "list-test");
 }
 
 }  // namespace

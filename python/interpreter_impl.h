@@ -16,6 +16,8 @@
 #ifndef PYTHON_INTERPRETER_IMPL_H_
 #define PYTHON_INTERPRETER_IMPL_H_
 
+#include "third_party/Python-3.4.2/Include/Python.h"
+
 #include "base/macros.h"
 #include "include/c++/interpreter.h"
 

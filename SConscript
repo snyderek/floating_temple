@@ -794,7 +794,21 @@ protocol_server_varint_test = ft_env.Program(
       ],
   )
 
-# TODO(dss): Add python/interpreter_impl_test.
+python_interpreter_impl_test = python_env.Program(
+    target = 'python/interpreter_impl_test',
+    source = Split("""
+        python/interpreter_impl_test.cc
+      """) + [
+        python_lib,
+        fake_peer_lib,
+        value_lib,
+        python_proto_lib,
+        util_lib,
+        base_lib,
+        gtest_lib,
+        third_party_python_lib,
+      ],
+  )
 
 toy_lang_lexer_test = ft_env.Program(
     target = 'toy_lang/lexer_test',
@@ -851,6 +865,7 @@ cxx_tests = [
     protocol_server_buffer_util_test,
     protocol_server_protocol_connection_impl_test,
     protocol_server_varint_test,
+    python_interpreter_impl_test,
     toy_lang_lexer_test,
     toy_lang_local_object_impl_test,
     util_stl_util_test,

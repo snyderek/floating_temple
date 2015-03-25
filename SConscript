@@ -421,6 +421,7 @@ util_lib = ft_env.Library(
     source = Split("""
         util/bool_variable.cc
         util/comma_separated.cc
+        util/dump_context_impl.cc
         util/event_fd.cc
         util/file_util.cc
         util/math_util.cc
@@ -838,12 +839,23 @@ toy_lang_local_object_impl_test = ft_env.Program(
       ],
   )
 
+util_dump_context_impl_test = ft_env.Program(
+    target = 'util/dump_context_impl_test',
+    source = Split("""
+        util/dump_context_impl_test.cc
+      """) + [
+        util_lib,
+        base_lib,
+        gtest_lib,
+      ],
+  )
+
 util_stl_util_test = ft_env.Program(
     target = 'util/stl_util_test',
     source = Split("""
         util/stl_util_test.cc
       """) + [
-	util_lib,
+        util_lib,
         base_lib,
         gtest_lib,
       ],
@@ -868,6 +880,7 @@ cxx_tests = [
     python_interpreter_impl_test,
     toy_lang_lexer_test,
     toy_lang_local_object_impl_test,
+    util_dump_context_impl_test,
     util_stl_util_test,
   ]
 

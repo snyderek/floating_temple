@@ -44,6 +44,7 @@ ObjectProto::Type GetSerializedObjectType(const ObjectProto& object_proto) {
   CHECK_FIELD(dict_object, DICT);
   CHECK_FIELD(set_object, SET);
   CHECK_FIELD(frozen_set_object, FROZEN_SET);
+  CHECK_FIELD(unserializable_object, UNSERIALIZABLE);
 
   CHECK_NE(type, ObjectProto::UNKNOWN);
 

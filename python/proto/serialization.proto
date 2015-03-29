@@ -82,6 +82,7 @@ message ObjectProto {
     DICT = 12;
     SET = 13;
     FROZEN_SET = 14;
+    UNSERIALIZABLE = 15;
   }
 
   // Exactly one of the following fields must be set.

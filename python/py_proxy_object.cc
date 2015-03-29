@@ -339,6 +339,7 @@ PeerObject* PyProxyObject_GetPeerObject(PyObject* py_object) {
   PyProxyObject* const py_proxy_object = reinterpret_cast<PyProxyObject*>(
       py_object);
 
+  CHECK(Py_TYPE(py_proxy_object) == &PyProxyObject_Type);
   CHECK_EQ(py_proxy_object->magic_number, kMagicNumber);
   CHECK(py_proxy_object->peer_object != nullptr);
 

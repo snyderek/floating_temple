@@ -31,6 +31,7 @@
 #include "python/interpreter_impl.h"
 #include "python/list_local_object.h"
 #include "python/long_local_object.h"
+#include "python/make_value.h"
 #include "python/method_context.h"
 #include "python/none_local_object.h"
 #include "python/proto/serialization.pb.h"
@@ -67,6 +68,174 @@ size_t LocalObjectImpl::Serialize(void* buffer, size_t buffer_size,
   return byte_size;
 }
 
+#define CALL_TP_METHOD0(method) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->method != nullptr); \
+        CHECK_EQ(parameters.size(), 0u); \
+        MakeReturnValue((*object_type->method)(py_object_), return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_TP_METHOD1(method, param_type1) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->method != nullptr); \
+        CHECK_EQ(parameters.size(), 1u); \
+        MakeReturnValue( \
+            (*object_type->method)( \
+                py_object_, \
+                ExtractValue<param_type1>(parameters[0], &method_context)), \
+            return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_TP_METHOD2(method, param_type1, param_type2) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->method != nullptr); \
+        CHECK_EQ(parameters.size(), 2u); \
+        MakeReturnValue( \
+            (*object_type->method)( \
+                py_object_, \
+                ExtractValue<param_type1>(parameters[0], &method_context), \
+                ExtractValue<param_type2>(parameters[1], &method_context)), \
+            return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_NB_METHOD0(method) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_number != nullptr); \
+        CHECK(object_type->tp_as_number->method != nullptr); \
+        CHECK_EQ(parameters.size(), 0u); \
+        MakeReturnValue((*object_type->tp_as_number->method)(py_object_), \
+                        return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_NB_METHOD1(method, param_type1) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_number != nullptr); \
+        CHECK(object_type->tp_as_number->method != nullptr); \
+        CHECK_EQ(parameters.size(), 1u); \
+        MakeReturnValue( \
+            (*object_type->tp_as_number->method)( \
+                py_object_, \
+                ExtractValue<param_type1>(parameters[0], &method_context)), \
+            return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_NB_METHOD2(method, param_type1, param_type2) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_number != nullptr); \
+        CHECK(object_type->tp_as_number->method != nullptr); \
+        CHECK_EQ(parameters.size(), 2u); \
+        MakeReturnValue( \
+            (*object_type->tp_as_number->method)( \
+                py_object_, \
+                ExtractValue<param_type1>(parameters[0], &method_context), \
+                ExtractValue<param_type2>(parameters[1], &method_context)), \
+            return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_SQ_METHOD0(method) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_sequence != nullptr); \
+        CHECK(object_type->tp_as_sequence->method != nullptr); \
+        CHECK_EQ(parameters.size(), 0u); \
+        MakeReturnValue((*object_type->tp_as_sequence->method)(py_object_), \
+                        return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_SQ_METHOD1(method, param_type1) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_sequence != nullptr); \
+        CHECK(object_type->tp_as_sequence->method != nullptr); \
+        CHECK_EQ(parameters.size(), 1u); \
+        MakeReturnValue( \
+            (*object_type->tp_as_sequence->method)( \
+                py_object_, \
+                ExtractValue<param_type1>(parameters[0], &method_context)), \
+            return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_SQ_METHOD2(method, param_type1, param_type2) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_sequence != nullptr); \
+        CHECK(object_type->tp_as_sequence->method != nullptr); \
+        CHECK_EQ(parameters.size(), 2u); \
+        MakeReturnValue( \
+            (*object_type->tp_as_sequence->method)( \
+                py_object_, \
+                ExtractValue<param_type1>(parameters[0], &method_context), \
+                ExtractValue<param_type2>(parameters[1], &method_context)), \
+            return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_MP_METHOD0(method) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_mapping != nullptr); \
+        CHECK(object_type->tp_as_mapping->method != nullptr); \
+        CHECK_EQ(parameters.size(), 0u); \
+        MakeReturnValue((*object_type->tp_as_mapping->method)(py_object_), \
+                        return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_MP_METHOD1(method, param_type1) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_mapping != nullptr); \
+        CHECK(object_type->tp_as_mapping->method != nullptr); \
+        CHECK_EQ(parameters.size(), 1u); \
+        MakeReturnValue( \
+            (*object_type->tp_as_mapping->method)( \
+                py_object_, \
+                ExtractValue<param_type1>(parameters[0], &method_context)), \
+            return_value); \
+        return; \
+      } \
+    } while (false)
+
+#define CALL_MP_METHOD2(method, param_type1, param_type2) \
+    do { \
+      if (method_name == #method) { \
+        CHECK(object_type->tp_as_mapping != nullptr); \
+        CHECK(object_type->tp_as_mapping->method != nullptr); \
+        CHECK_EQ(parameters.size(), 2u); \
+        MakeReturnValue( \
+            (*object_type->tp_as_mapping->method)( \
+                py_object_, \
+                ExtractValue<param_type1>(parameters[0], &method_context), \
+                ExtractValue<param_type2>(parameters[1], &method_context)), \
+            return_value); \
+        return; \
+      } \
+    } while (false)
+
 void LocalObjectImpl::InvokeMethod(Thread* thread,
                                    PeerObject* peer_object,
                                    const string& method_name,
@@ -82,14 +251,95 @@ void LocalObjectImpl::InvokeMethod(Thread* thread,
 
   PythonGilLock lock;
 
+  const PyTypeObject* const object_type = Py_TYPE(py_object_);
+  CHECK(object_type != nullptr);
+
+  // TODO(dss): Consider using binary search instead of linear search to find
+  // the method given its name.
+
   // TODO(dss): Fail gracefully if the peer passes the wrong number of
   // parameters, or the wrong types of parameters.
+
+  CALL_TP_METHOD1(tp_getattr, char*);
+  CALL_TP_METHOD2(tp_setattr, char*, PyObject*);
+  CALL_TP_METHOD0(tp_repr);
+  CALL_TP_METHOD0(tp_hash);
+  CALL_TP_METHOD2(tp_call, PyObject*, PyObject*);
+  CALL_TP_METHOD0(tp_str);
+  CALL_TP_METHOD1(tp_getattro, PyObject*);
+  CALL_TP_METHOD2(tp_setattro, PyObject*, PyObject*);
+  CALL_TP_METHOD2(tp_richcompare, PyObject*, int);
+  CALL_TP_METHOD0(tp_iter);
+  CALL_TP_METHOD0(tp_iternext);
+  CALL_TP_METHOD2(tp_descr_get, PyObject*, PyObject*);
+  CALL_TP_METHOD2(tp_descr_set, PyObject*, PyObject*);
+  CALL_TP_METHOD2(tp_init, PyObject*, PyObject*);
+
+  CALL_NB_METHOD1(nb_add, PyObject*);
+  CALL_NB_METHOD1(nb_subtract, PyObject*);
+  CALL_NB_METHOD1(nb_multiply, PyObject*);
+  CALL_NB_METHOD1(nb_remainder, PyObject*);
+  CALL_NB_METHOD1(nb_divmod, PyObject*);
+  CALL_NB_METHOD2(nb_power, PyObject*, PyObject*);
+  CALL_NB_METHOD0(nb_negative);
+  CALL_NB_METHOD0(nb_positive);
+  CALL_NB_METHOD0(nb_absolute);
+  CALL_NB_METHOD0(nb_bool);
+  CALL_NB_METHOD0(nb_invert);
+  CALL_NB_METHOD1(nb_lshift, PyObject*);
+  CALL_NB_METHOD1(nb_rshift, PyObject*);
+  CALL_NB_METHOD1(nb_and, PyObject*);
+  CALL_NB_METHOD1(nb_xor, PyObject*);
+  CALL_NB_METHOD1(nb_or, PyObject*);
+  CALL_NB_METHOD0(nb_int);
+  CALL_NB_METHOD0(nb_float);
+  CALL_NB_METHOD1(nb_inplace_add, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_subtract, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_multiply, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_remainder, PyObject*);
+  CALL_NB_METHOD2(nb_inplace_power, PyObject*, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_lshift, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_rshift, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_and, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_xor, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_or, PyObject*);
+  CALL_NB_METHOD1(nb_floor_divide, PyObject*);
+  CALL_NB_METHOD1(nb_true_divide, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_floor_divide, PyObject*);
+  CALL_NB_METHOD1(nb_inplace_true_divide, PyObject*);
+  CALL_NB_METHOD0(nb_index);
+
+  CALL_SQ_METHOD0(sq_length);
+  CALL_SQ_METHOD1(sq_concat, PyObject*);
+  CALL_SQ_METHOD1(sq_repeat, Py_ssize_t);
+  CALL_SQ_METHOD1(sq_item, Py_ssize_t);
+  CALL_SQ_METHOD2(sq_ass_item, Py_ssize_t, PyObject*);
+  CALL_SQ_METHOD1(sq_contains, PyObject*);
+  CALL_SQ_METHOD1(sq_inplace_concat, PyObject*);
+  CALL_SQ_METHOD1(sq_inplace_repeat, Py_ssize_t);
+
+  CALL_MP_METHOD0(mp_length);
+  CALL_MP_METHOD1(mp_subscript, PyObject*);
+  CALL_MP_METHOD2(mp_ass_subscript, PyObject*, PyObject*);
 
   // TODO(dss): Fail gracefully if a remote peer sends an invalid method name.
   CHECK(this->InvokeTypeSpecificMethod(peer_object, method_name, parameters,
                                        &method_context, return_value))
       << "Unexpected method name \"" << CEscape(method_name) << "\"";
 }
+
+#undef CALL_TP_METHOD0
+#undef CALL_TP_METHOD1
+#undef CALL_TP_METHOD2
+#undef CALL_NB_METHOD0
+#undef CALL_NB_METHOD1
+#undef CALL_NB_METHOD2
+#undef CALL_SQ_METHOD0
+#undef CALL_SQ_METHOD1
+#undef CALL_SQ_METHOD2
+#undef CALL_MP_METHOD0
+#undef CALL_MP_METHOD1
+#undef CALL_MP_METHOD2
 
 // static
 LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,

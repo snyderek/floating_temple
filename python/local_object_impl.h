@@ -19,21 +19,16 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include <cstddef>
-#include <string>
-#include <vector>
 
 #include "include/c++/local_object.h"
-#include "include/c++/value.h"
 
 namespace floating_temple {
 
 class DeserializationContext;
-class PeerObject;
 class SerializationContext;
 
 namespace python {
 
-class MethodContext;
 class ObjectProto;
 
 // Abstract class
@@ -59,11 +54,6 @@ class LocalObjectImpl : public LocalObject {
 
   virtual void PopulateObjectProto(ObjectProto* object_proto,
                                    SerializationContext* context) const = 0;
-  virtual bool InvokeTypeSpecificMethod(PeerObject* peer_object,
-                                        const std::string& method_name,
-                                        const std::vector<Value>& parameters,
-                                        MethodContext* method_context,
-                                        Value* return_value) = 0;
 
  private:
   PyObject* const py_object_;

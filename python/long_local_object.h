@@ -38,11 +38,6 @@ class LongLocalObject : public LocalObjectImpl {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  bool InvokeTypeSpecificMethod(PeerObject* peer_object,
-                                const std::string& method_name,
-                                const std::vector<Value>& parameters,
-                                MethodContext* method_context,
-                                Value* return_value) override;
 
  private:
   PY_LONG_LONG GetLongLongValue(int* overflow) const;

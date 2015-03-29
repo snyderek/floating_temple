@@ -323,9 +323,7 @@ void LocalObjectImpl::InvokeMethod(Thread* thread,
   CALL_MP_METHOD2(mp_ass_subscript, PyObject*, PyObject*);
 
   // TODO(dss): Fail gracefully if a remote peer sends an invalid method name.
-  CHECK(this->InvokeTypeSpecificMethod(peer_object, method_name, parameters,
-                                       &method_context, return_value))
-      << "Unexpected method name \"" << CEscape(method_name) << "\"";
+  LOG(FATAL) << "Unexpected method name \"" << CEscape(method_name) << "\"";
 }
 
 #undef CALL_TP_METHOD0

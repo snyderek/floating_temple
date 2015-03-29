@@ -18,14 +18,12 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include <string>
-#include <vector>
 
 #include "base/logging.h"
 #include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
 
 using std::string;
-using std::vector;
 
 namespace floating_temple {
 namespace python {
@@ -46,14 +44,6 @@ void TrueLocalObject::PopulateObjectProto(ObjectProto* object_proto,
                                           SerializationContext* context) const {
   CHECK(object_proto != nullptr);
   object_proto->mutable_true_object();
-}
-
-bool TrueLocalObject::InvokeTypeSpecificMethod(PeerObject* peer_object,
-                                               const string& method_name,
-                                               const vector<Value>& parameters,
-                                               MethodContext* method_context,
-                                               Value* return_value) {
-  return false;
 }
 
 }  // namespace python

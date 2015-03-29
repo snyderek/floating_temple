@@ -18,7 +18,6 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include <string>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/string_printf.h"
@@ -32,7 +31,6 @@
 #include "python/python_gil_lock.h"
 
 using std::string;
-using std::vector;
 
 namespace floating_temple {
 namespace python {
@@ -158,15 +156,6 @@ void DictLocalObject::PopulateObjectProto(ObjectProto* object_proto,
       item->mutable_value()->set_object_index(value_object_index);
     }
   }
-}
-
-bool DictLocalObject::InvokeTypeSpecificMethod(PeerObject* peer_object,
-                                               const string& method_name,
-                                               const vector<Value>& parameters,
-                                               MethodContext* method_context,
-                                               Value* return_value) {
-  // TODO(dss): Implement this.
-  return false;
 }
 
 }  // namespace python

@@ -49,7 +49,7 @@ PyObject* WrapPythonList(PyObject* py_list_object) {
     return nullptr;
   }
 
-  PeerObject* const peer_object = WrapPythonObject<ListLocalObject>(
+  PeerObject* const peer_object = CreatePeerObjectForPyObject<ListLocalObject>(
       py_list_object);
   return InterpreterImpl::instance()->PeerObjectToPyProxyObject(peer_object);
 }
@@ -59,7 +59,7 @@ PyObject* WrapPythonLong(PyObject* py_long_object) {
     return nullptr;
   }
 
-  PeerObject* const peer_object = WrapPythonObject<LongLocalObject>(
+  PeerObject* const peer_object = CreatePeerObjectForPyObject<LongLocalObject>(
       py_long_object);
   return InterpreterImpl::instance()->PeerObjectToPyProxyObject(peer_object);
 }

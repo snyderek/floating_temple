@@ -31,7 +31,7 @@ class PeerObject;
 namespace python {
 
 template<class LocalObjectType>
-PeerObject* WrapPythonObject(PyObject* py_object) {
+PeerObject* CreatePeerObjectForPyObject(PyObject* py_object) {
   CHECK(py_object != nullptr);
   CHECK(Py_TYPE(py_object) == &PyProxyObject_Type);
 

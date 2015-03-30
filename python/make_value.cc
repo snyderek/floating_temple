@@ -76,7 +76,7 @@ void MakeValue(PyObject* in, Value* out) {
     if (Py_TYPE(in) == &PyProxyObject_Type) {
       peer_object = InterpreterImpl::instance()->PyProxyObjectToPeerObject(in);
     } else {
-      peer_object = WrapPythonObject<UnserializableLocalObject>(in);
+      peer_object = CreatePeerObjectForPyObject<UnserializableLocalObject>(in);
     }
 
     out->set_peer_object(LOCAL_TYPE_PYOBJECT, peer_object);

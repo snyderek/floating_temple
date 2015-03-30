@@ -74,7 +74,7 @@ string ListLocalObject::Dump() const {
         }
 
         PyObject* const py_item = PyList_GetItem(py_list, i);
-        PeerObject* const peer_object = interpreter->PyObjectToPeerObject(
+        PeerObject* const peer_object = interpreter->PyProxyObjectToPeerObject(
             py_item);
 
         StringAppendF(&items_string, " %s", peer_object->Dump().c_str());
@@ -108,7 +108,8 @@ ListLocalObject* ListLocalObject::ParseListProto(
           list_proto.item(i).object_index());
       PeerObject* const peer_object = context->GetPeerObjectByIndex(
           object_index);
-      PyObject* const py_item = interpreter->PeerObjectToPyObject(peer_object);
+      PyObject* const py_item = interpreter->PeerObjectToPyProxyObject(
+          peer_object);
       CHECK_EQ(PyList_SetItem(py_list, static_cast<Py_ssize_t>(i), py_item), 0);
     }
   }
@@ -132,7 +133,7 @@ void ListLocalObject::PopulateObjectProto(ObjectProto* object_proto,
 
     for (Py_ssize_t i = 0; i < length; ++i) {
       PyObject* const py_item = PyList_GetItem(py_list, i);
-      PeerObject* const peer_object = interpreter->PyObjectToPeerObject(
+      PeerObject* const peer_object = interpreter->PyProxyObjectToPeerObject(
           py_item);
       const int object_index = context->GetIndexForPeerObject(peer_object);
       list_proto->add_item()->set_object_index(object_index);

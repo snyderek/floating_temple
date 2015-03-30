@@ -71,10 +71,10 @@ string DictLocalObject::Dump() const {
         item_found = true;
       }
 
-      PeerObject* const key_peer_object = interpreter->PyObjectToPeerObject(
-          py_key);
-      PeerObject* const value_peer_object = interpreter->PyObjectToPeerObject(
-          py_value);
+      PeerObject* const key_peer_object =
+          interpreter->PyProxyObjectToPeerObject(py_key);
+      PeerObject* const value_peer_object =
+          interpreter->PyProxyObjectToPeerObject(py_value);
 
       StringAppendF(&items_string, " %s: %s", key_peer_object->Dump().c_str(),
                     value_peer_object->Dump().c_str());
@@ -119,9 +119,9 @@ DictLocalObject* DictLocalObject::ParseDictProto(
       PeerObject* const value_peer_object = context->GetPeerObjectByIndex(
           value_object_index);
 
-      PyObject* const py_key = interpreter->PeerObjectToPyObject(
+      PyObject* const py_key = interpreter->PeerObjectToPyProxyObject(
           key_peer_object);
-      PyObject* const py_value = interpreter->PeerObjectToPyObject(
+      PyObject* const py_value = interpreter->PeerObjectToPyProxyObject(
           value_peer_object);
 
       CHECK_EQ(PyDict_SetItem(py_dict, py_key, py_value), 0);
@@ -148,10 +148,10 @@ void DictLocalObject::PopulateObjectProto(ObjectProto* object_proto,
     PythonGilLock lock;
 
     while (PyDict_Next(py_dict, &pos, &py_key, &py_value) != 0) {
-      PeerObject* const key_peer_object = interpreter->PyObjectToPeerObject(
-          py_key);
-      PeerObject* const value_peer_object = interpreter->PyObjectToPeerObject(
-          py_value);
+      PeerObject* const key_peer_object =
+          interpreter->PyProxyObjectToPeerObject(py_key);
+      PeerObject* const value_peer_object =
+          interpreter->PyProxyObjectToPeerObject(py_value);
 
       const int key_object_index = context->GetIndexForPeerObject(
           key_peer_object);

@@ -69,7 +69,7 @@ LocalObject* InterpreterImpl::DeserializeObject(
   return LocalObjectImpl::Deserialize(buffer, buffer_size, context);
 }
 
-PyObject* InterpreterImpl::PeerObjectToPyObject(PeerObject* peer_object) {
+PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
   CHECK(peer_object != nullptr);
 
   PyObject* py_new_proxy_object = nullptr;
@@ -101,7 +101,7 @@ PyObject* InterpreterImpl::PeerObjectToPyObject(PeerObject* peer_object) {
   return py_existing_proxy_object;
 }
 
-PeerObject* InterpreterImpl::PyObjectToPeerObject(PyObject* py_object) {
+PeerObject* InterpreterImpl::PyProxyObjectToPeerObject(PyObject* py_object) {
   return PyProxyObject_GetPeerObject(py_object);
 }
 

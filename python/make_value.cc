@@ -70,7 +70,7 @@ void MakeValue(PyObject* in, Value* out) {
     out->set_empty(LOCAL_TYPE_PYOBJECT);
   } else {
     PeerObject* const peer_object =
-        InterpreterImpl::instance()->PyObjectToPeerObject(in);
+        InterpreterImpl::instance()->PyProxyObjectToPeerObject(in);
     out->set_peer_object(LOCAL_TYPE_PYOBJECT, peer_object);
   }
 }
@@ -131,7 +131,7 @@ PyObject* ExtractValue(const Value& value, MethodContext* method_context) {
 
     case Value::PEER_OBJECT: {
       InterpreterImpl* const interpreter = InterpreterImpl::instance();
-      return interpreter->PeerObjectToPyObject(value.peer_object());
+      return interpreter->PeerObjectToPyProxyObject(value.peer_object());
     }
 
     default:

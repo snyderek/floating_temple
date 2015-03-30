@@ -32,10 +32,7 @@ namespace python {
 
 template<class LocalObjectType>
 PeerObject* WrapPythonObject(PyObject* py_object) {
-  if (py_object == nullptr) {
-    return nullptr;
-  }
-
+  CHECK(py_object != nullptr);
   CHECK(Py_TYPE(py_object) == &PyProxyObject_Type);
 
   InterpreterImpl* const interpreter = InterpreterImpl::instance();

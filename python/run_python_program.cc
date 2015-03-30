@@ -45,12 +45,20 @@ namespace python {
 namespace {
 
 PyObject* WrapPythonList(PyObject* py_list_object) {
+  if (py_list_object == nullptr) {
+    return nullptr;
+  }
+
   PeerObject* const peer_object = WrapPythonObject<ListLocalObject>(
       py_list_object);
   return InterpreterImpl::instance()->PeerObjectToPyProxyObject(peer_object);
 }
 
 PyObject* WrapPythonLong(PyObject* py_long_object) {
+  if (py_long_object == nullptr) {
+    return nullptr;
+  }
+
   PeerObject* const peer_object = WrapPythonObject<LongLocalObject>(
       py_long_object);
   return InterpreterImpl::instance()->PeerObjectToPyProxyObject(peer_object);

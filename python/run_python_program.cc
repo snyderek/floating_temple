@@ -44,24 +44,23 @@ class PeerObject;
 namespace python {
 namespace {
 
-PyObject* WrapPythonList(PyObject* py_list_object) {
-  if (py_list_object == nullptr) {
+template<class LocalObjectType>
+PyObject* WrapPythonObject(PyObject* py_object) {
+  if (py_object == nullptr) {
     return nullptr;
   }
 
-  PeerObject* const peer_object = CreatePeerObjectForPyObject<ListLocalObject>(
-      py_list_object);
+  PeerObject* const peer_object = CreatePeerObjectForPyObject<LocalObjectType>(
+      py_object);
   return InterpreterImpl::instance()->PeerObjectToPyProxyObject(peer_object);
 }
 
-PyObject* WrapPythonLong(PyObject* py_long_object) {
-  if (py_long_object == nullptr) {
-    return nullptr;
-  }
+PyObject* WrapPythonList(PyObject* py_list_object) {
+  return WrapPythonObject<ListLocalObject>(py_list_object);
+}
 
-  PeerObject* const peer_object = CreatePeerObjectForPyObject<LongLocalObject>(
-      py_long_object);
-  return InterpreterImpl::instance()->PeerObjectToPyProxyObject(peer_object);
+PyObject* WrapPythonLong(PyObject* py_long_object) {
+  return WrapPythonObject<LongLocalObject>(py_long_object);
 }
 
 }  // namespace

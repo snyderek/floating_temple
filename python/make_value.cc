@@ -26,7 +26,6 @@
 #include "python/interpreter_impl.h"
 #include "python/method_context.h"
 #include "python/proto/local_type.pb.h"
-#include "python/py_proxy_object.h"
 
 using std::strcpy;
 using std::string;
@@ -70,7 +69,8 @@ void MakeValue(PyObject* in, Value* out) {
   if (in == nullptr) {
     out->set_empty(LOCAL_TYPE_PYOBJECT);
   } else {
-    PeerObject* const peer_object = PyProxyObject_GetPeerObject(in);
+    PeerObject* const peer_object =
+        InterpreterImpl::instance()->PyObjectToPeerObject(in);
     out->set_peer_object(LOCAL_TYPE_PYOBJECT, peer_object);
   }
 }

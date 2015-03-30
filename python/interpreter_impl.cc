@@ -101,6 +101,10 @@ PyObject* InterpreterImpl::PeerObjectToPyObject(PeerObject* peer_object) {
   return py_existing_proxy_object;
 }
 
+PeerObject* InterpreterImpl::PyObjectToPeerObject(PyObject* py_object) {
+  return PyProxyObject_GetPeerObject(py_object);
+}
+
 // static
 InterpreterImpl* InterpreterImpl::instance() {
   CHECK(instance_ != nullptr);

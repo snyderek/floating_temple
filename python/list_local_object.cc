@@ -27,7 +27,6 @@
 #include "python/interpreter_impl.h"
 #include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
-#include "python/py_proxy_object.h"
 #include "python/python_gil_lock.h"
 
 using std::string;
@@ -54,6 +53,7 @@ LocalObject* ListLocalObject::Clone() const {
 }
 
 string ListLocalObject::Dump() const {
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
   PyObject* const py_list = py_object();
 
   string items_string;
@@ -74,7 +74,8 @@ string ListLocalObject::Dump() const {
         }
 
         PyObject* const py_item = PyList_GetItem(py_list, i);
-        PeerObject* const peer_object = PyProxyObject_GetPeerObject(py_item);
+        PeerObject* const peer_object = interpreter->PyObjectToPeerObject(
+            py_item);
 
         StringAppendF(&items_string, " %s", peer_object->Dump().c_str());
       }
@@ -120,6 +121,7 @@ void ListLocalObject::PopulateObjectProto(ObjectProto* object_proto,
   CHECK(object_proto != nullptr);
   CHECK(context != nullptr);
 
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
   PyObject* const py_list = py_object();
   SequenceProto* const list_proto = object_proto->mutable_list_object();
 
@@ -130,7 +132,8 @@ void ListLocalObject::PopulateObjectProto(ObjectProto* object_proto,
 
     for (Py_ssize_t i = 0; i < length; ++i) {
       PyObject* const py_item = PyList_GetItem(py_list, i);
-      PeerObject* const peer_object = PyProxyObject_GetPeerObject(py_item);
+      PeerObject* const peer_object = interpreter->PyObjectToPeerObject(
+          py_item);
       const int object_index = context->GetIndexForPeerObject(peer_object);
       list_proto->add_item()->set_object_index(object_index);
     }

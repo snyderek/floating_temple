@@ -46,6 +46,7 @@ class InterpreterImpl : public Interpreter {
                                  DeserializationContext* context) override;
 
   PyObject* PeerObjectToPyObject(PeerObject* peer_object);
+  PeerObject* PyObjectToPeerObject(PyObject* py_object);
 
   static InterpreterImpl* instance();
 

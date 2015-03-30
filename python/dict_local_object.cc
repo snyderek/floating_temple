@@ -28,7 +28,6 @@
 #include "python/interpreter_impl.h"
 #include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
-#include "python/py_proxy_object.h"
 #include "python/python_gil_lock.h"
 
 using std::string;
@@ -52,6 +51,7 @@ LocalObject* DictLocalObject::Clone() const {
 }
 
 string DictLocalObject::Dump() const {
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
   PyObject* const py_dict = py_object();
 
   string items_string = "{";
@@ -71,8 +71,9 @@ string DictLocalObject::Dump() const {
         item_found = true;
       }
 
-      PeerObject* const key_peer_object = PyProxyObject_GetPeerObject(py_key);
-      PeerObject* const value_peer_object = PyProxyObject_GetPeerObject(
+      PeerObject* const key_peer_object = interpreter->PyObjectToPeerObject(
+          py_key);
+      PeerObject* const value_peer_object = interpreter->PyObjectToPeerObject(
           py_value);
 
       StringAppendF(&items_string, " %s: %s", key_peer_object->Dump().c_str(),
@@ -135,6 +136,7 @@ void DictLocalObject::PopulateObjectProto(ObjectProto* object_proto,
   CHECK(object_proto != nullptr);
   CHECK(context != nullptr);
 
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
   PyObject* const py_dict = py_object();
   MappingProto* const dict_proto = object_proto->mutable_dict_object();
 
@@ -146,8 +148,9 @@ void DictLocalObject::PopulateObjectProto(ObjectProto* object_proto,
     PythonGilLock lock;
 
     while (PyDict_Next(py_dict, &pos, &py_key, &py_value) != 0) {
-      PeerObject* const key_peer_object = PyProxyObject_GetPeerObject(py_key);
-      PeerObject* const value_peer_object = PyProxyObject_GetPeerObject(
+      PeerObject* const key_peer_object = interpreter->PyObjectToPeerObject(
+          py_key);
+      PeerObject* const value_peer_object = interpreter->PyObjectToPeerObject(
           py_value);
 
       const int key_object_index = context->GetIndexForPeerObject(

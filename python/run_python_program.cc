@@ -24,13 +24,13 @@
 #include "base/logging.h"
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
+#include "python/create_peer_object_for_py_object.h"
 #include "python/interpreter_impl.h"
 #include "python/list_local_object.h"
 #include "python/long_local_object.h"
 #include "python/program_object.h"
 #include "python/python_gil_lock.h"
 #include "python/python_scoped_ptr.h"
-#include "python/wrap_object.h"
 
 using std::FILE;
 using std::fclose;

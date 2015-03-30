@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PYTHON_WRAP_OBJECT_H_
-#define PYTHON_WRAP_OBJECT_H_
+#ifndef PYTHON_CREATE_PEER_OBJECT_FOR_PY_OBJECT_H_
+#define PYTHON_CREATE_PEER_OBJECT_FOR_PY_OBJECT_H_
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
@@ -45,4 +45,4 @@ PeerObject* CreatePeerObjectForPyObject(PyObject* py_object) {
 }  // namespace python
 }  // namespace floating_temple
 
-#endif  // PYTHON_WRAP_OBJECT_H_
+#endif  // PYTHON_CREATE_PEER_OBJECT_FOR_PY_OBJECT_H_

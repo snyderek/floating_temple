@@ -23,12 +23,12 @@
 #include "base/integral_types.h"
 #include "base/logging.h"
 #include "include/c++/value.h"
+#include "python/create_peer_object_for_py_object.h"
 #include "python/interpreter_impl.h"
 #include "python/method_context.h"
 #include "python/proto/local_type.pb.h"
 #include "python/py_proxy_object.h"
 #include "python/unserializable_local_object.h"
-#include "python/wrap_object.h"
 
 using std::strcpy;
 using std::string;

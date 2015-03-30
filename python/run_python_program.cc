@@ -24,6 +24,7 @@
 #include "base/logging.h"
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
+#include "python/interpreter_impl.h"
 #include "python/list_local_object.h"
 #include "python/long_local_object.h"
 #include "python/program_object.h"
@@ -37,15 +38,22 @@ using std::fopen;
 using std::string;
 
 namespace floating_temple {
+
+class PeerObject;
+
 namespace python {
 namespace {
 
 PyObject* WrapPythonList(PyObject* py_list_object) {
-  return WrapPythonObject<ListLocalObject>(py_list_object);
+  PeerObject* const peer_object = WrapPythonObject<ListLocalObject>(
+      py_list_object);
+  return InterpreterImpl::instance()->PeerObjectToPyObject(peer_object);
 }
 
 PyObject* WrapPythonLong(PyObject* py_long_object) {
-  return WrapPythonObject<LongLocalObject>(py_long_object);
+  PeerObject* const peer_object = WrapPythonObject<LongLocalObject>(
+      py_long_object);
+  return InterpreterImpl::instance()->PeerObjectToPyObject(peer_object);
 }
 
 }  // namespace

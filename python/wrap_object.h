@@ -31,7 +31,7 @@ class PeerObject;
 namespace python {
 
 template<class LocalObjectType>
-PyObject* WrapPythonObject(PyObject* py_object) {
+PeerObject* WrapPythonObject(PyObject* py_object) {
   if (py_object == nullptr) {
     return nullptr;
   }
@@ -42,9 +42,7 @@ PyObject* WrapPythonObject(PyObject* py_object) {
   Thread* const thread = interpreter->GetThreadObject();
 
   LocalObject* const local_object = new LocalObjectType(py_object);
-  PeerObject* const peer_object = thread->CreatePeerObject(local_object);
-
-  return interpreter->PeerObjectToPyObject(peer_object);
+  return thread->CreatePeerObject(local_object);
 }
 
 }  // namespace python

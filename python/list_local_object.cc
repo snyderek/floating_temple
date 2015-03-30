@@ -107,7 +107,7 @@ ListLocalObject* ListLocalObject::ParseListProto(
           list_proto.item(i).object_index());
       PeerObject* const peer_object = context->GetPeerObjectByIndex(
           object_index);
-      PyObject* const py_item = interpreter->GetProxyObject(peer_object);
+      PyObject* const py_item = interpreter->PeerObjectToPyObject(peer_object);
       CHECK_EQ(PyList_SetItem(py_list, static_cast<Py_ssize_t>(i), py_item), 0);
     }
   }

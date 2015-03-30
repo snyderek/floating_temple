@@ -118,8 +118,10 @@ DictLocalObject* DictLocalObject::ParseDictProto(
       PeerObject* const value_peer_object = context->GetPeerObjectByIndex(
           value_object_index);
 
-      PyObject* const py_key = interpreter->GetProxyObject(key_peer_object);
-      PyObject* const py_value = interpreter->GetProxyObject(value_peer_object);
+      PyObject* const py_key = interpreter->PeerObjectToPyObject(
+          key_peer_object);
+      PyObject* const py_value = interpreter->PeerObjectToPyObject(
+          value_peer_object);
 
       CHECK_EQ(PyDict_SetItem(py_dict, py_key, py_value), 0);
     }

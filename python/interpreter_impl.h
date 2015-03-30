@@ -45,7 +45,7 @@ class InterpreterImpl : public Interpreter {
   LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,
                                  DeserializationContext* context) override;
 
-  PyObject* GetProxyObject(PeerObject* peer_object);
+  PyObject* PeerObjectToPyObject(PeerObject* peer_object);
 
   static InterpreterImpl* instance();
 

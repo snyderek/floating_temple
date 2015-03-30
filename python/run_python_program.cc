@@ -56,7 +56,7 @@ PyObject* WrapPythonObject(PyObject* py_object) {
   LocalObjectImpl* const local_object = new LocalObjectType(py_object);
   PeerObject* const peer_object = thread->CreatePeerObject(local_object);
 
-  return interpreter->GetProxyObject(peer_object);
+  return interpreter->PeerObjectToPyObject(peer_object);
 }
 
 PyObject* WrapPythonList(PyObject* py_list_object) {

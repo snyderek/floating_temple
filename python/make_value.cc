@@ -129,8 +129,10 @@ PyObject* ExtractValue(const Value& value, MethodContext* method_context) {
     case Value::EMPTY:
       return nullptr;
 
-    case Value::PEER_OBJECT:
-      return InterpreterImpl::instance()->GetProxyObject(value.peer_object());
+    case Value::PEER_OBJECT: {
+      InterpreterImpl* const interpreter = InterpreterImpl::instance();
+      return interpreter->PeerObjectToPyObject(value.peer_object());
+    }
 
     default:
       LOG(FATAL) << "Unexpected value type: " << static_cast<int>(value_type);

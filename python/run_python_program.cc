@@ -23,14 +23,13 @@
 
 #include "base/logging.h"
 #include "include/c++/peer.h"
-#include "include/c++/thread.h"
 #include "include/c++/value.h"
-#include "python/interpreter_impl.h"
 #include "python/list_local_object.h"
 #include "python/long_local_object.h"
 #include "python/program_object.h"
 #include "python/python_gil_lock.h"
 #include "python/python_scoped_ptr.h"
+#include "python/wrap_object.h"
 
 using std::FILE;
 using std::fclose;
@@ -38,26 +37,8 @@ using std::fopen;
 using std::string;
 
 namespace floating_temple {
-
-class PeerObject;
-
 namespace python {
 namespace {
-
-template<class LocalObjectType>
-PyObject* WrapPythonObject(PyObject* py_object) {
-  if (py_object == nullptr) {
-    return nullptr;
-  }
-
-  InterpreterImpl* const interpreter = InterpreterImpl::instance();
-  Thread* const thread = interpreter->GetThreadObject();
-
-  LocalObjectImpl* const local_object = new LocalObjectType(py_object);
-  PeerObject* const peer_object = thread->CreatePeerObject(local_object);
-
-  return interpreter->PeerObjectToPyObject(peer_object);
-}
 
 PyObject* WrapPythonList(PyObject* py_list_object) {
   return WrapPythonObject<ListLocalObject>(py_list_object);

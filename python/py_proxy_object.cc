@@ -335,11 +335,11 @@ PyObject* PyProxyObject_New(PeerObject* peer_object) {
 
 PeerObject* PyProxyObject_GetPeerObject(PyObject* py_object) {
   CHECK(py_object != nullptr);
+  CHECK(Py_TYPE(py_object) == &PyProxyObject_Type);
 
   PyProxyObject* const py_proxy_object = reinterpret_cast<PyProxyObject*>(
       py_object);
 
-  CHECK(Py_TYPE(py_proxy_object) == &PyProxyObject_Type);
   CHECK_EQ(py_proxy_object->magic_number, kMagicNumber);
   CHECK(py_proxy_object->peer_object != nullptr);
 

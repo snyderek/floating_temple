@@ -26,6 +26,9 @@
 #include "python/interpreter_impl.h"
 #include "python/method_context.h"
 #include "python/proto/local_type.pb.h"
+#include "python/py_proxy_object.h"
+#include "python/unserializable_local_object.h"
+#include "python/wrap_object.h"
 
 using std::strcpy;
 using std::string;
@@ -69,8 +72,13 @@ void MakeValue(PyObject* in, Value* out) {
   if (in == nullptr) {
     out->set_empty(LOCAL_TYPE_PYOBJECT);
   } else {
-    PeerObject* const peer_object =
-        InterpreterImpl::instance()->PyProxyObjectToPeerObject(in);
+    PeerObject* peer_object = nullptr;
+    if (Py_TYPE(in) == &PyProxyObject_Type) {
+      peer_object = InterpreterImpl::instance()->PyProxyObjectToPeerObject(in);
+    } else {
+      peer_object = WrapPythonObject<UnserializableLocalObject>(in);
+    }
+
     out->set_peer_object(LOCAL_TYPE_PYOBJECT, peer_object);
   }
 }

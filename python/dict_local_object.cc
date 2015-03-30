@@ -25,6 +25,7 @@
 #include "include/c++/peer_object.h"
 #include "include/c++/serialization_context.h"
 #include "include/c++/value.h"
+#include "python/interpreter_impl.h"
 #include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
 #include "python/py_proxy_object.h"
@@ -94,6 +95,7 @@ DictLocalObject* DictLocalObject::ParseDictProto(
     const MappingProto& dict_proto, DeserializationContext* context) {
   CHECK(context != nullptr);
 
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
   const int item_count = dict_proto.item_size();
 
   PyObject* py_dict = nullptr;
@@ -116,8 +118,8 @@ DictLocalObject* DictLocalObject::ParseDictProto(
       PeerObject* const value_peer_object = context->GetPeerObjectByIndex(
           value_object_index);
 
-      PyObject* const py_key = PyProxyObject_New(key_peer_object);
-      PyObject* const py_value = PyProxyObject_New(value_peer_object);
+      PyObject* const py_key = interpreter->GetProxyObject(key_peer_object);
+      PyObject* const py_value = interpreter->GetProxyObject(value_peer_object);
 
       CHECK_EQ(PyDict_SetItem(py_dict, py_key, py_value), 0);
     }

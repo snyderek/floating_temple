@@ -18,11 +18,15 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
+#include <unordered_map>
+
 #include "base/macros.h"
+#include "base/mutex.h"
 #include "include/c++/interpreter.h"
 
 namespace floating_temple {
 
+class PeerObject;
 class Thread;
 
 namespace python {
@@ -41,10 +45,15 @@ class InterpreterImpl : public Interpreter {
   LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,
                                  DeserializationContext* context) override;
 
+  PyObject* GetProxyObject(PeerObject* peer_object);
+
   static InterpreterImpl* instance();
 
  private:
   Thread* PrivateGetThreadObject();
+
+  std::unordered_map<PeerObject*, PyObject*> proxy_objects_;
+  mutable Mutex proxy_objects_mu_;
 
   static __thread Thread* thread_object_;
   static InterpreterImpl* instance_;

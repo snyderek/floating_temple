@@ -23,6 +23,7 @@
 #include "base/integral_types.h"
 #include "base/logging.h"
 #include "include/c++/value.h"
+#include "python/interpreter_impl.h"
 #include "python/method_context.h"
 #include "python/proto/local_type.pb.h"
 #include "python/py_proxy_object.h"
@@ -129,10 +130,7 @@ PyObject* ExtractValue(const Value& value, MethodContext* method_context) {
       return nullptr;
 
     case Value::PEER_OBJECT:
-      // TODO(dss): If a proxy object already exists for the peer object, return
-      // the existing proxy object instead of creating a new one. (This will
-      // necessitate maintaining a map from peer objects to proxy objects.)
-      return PyProxyObject_New(value.peer_object());
+      return InterpreterImpl::instance()->GetProxyObject(value.peer_object());
 
     default:
       LOG(FATAL) << "Unexpected value type: " << static_cast<int>(value_type);

@@ -29,7 +29,6 @@
 #include "python/list_local_object.h"
 #include "python/long_local_object.h"
 #include "python/program_object.h"
-#include "python/py_proxy_object.h"
 #include "python/python_gil_lock.h"
 #include "python/python_scoped_ptr.h"
 
@@ -57,7 +56,7 @@ PyObject* WrapPythonObject(PyObject* py_object) {
   LocalObjectImpl* const local_object = new LocalObjectType(py_object);
   PeerObject* const peer_object = thread->CreatePeerObject(local_object);
 
-  return PyProxyObject_New(peer_object);
+  return interpreter->GetProxyObject(peer_object);
 }
 
 PyObject* WrapPythonList(PyObject* py_list_object) {

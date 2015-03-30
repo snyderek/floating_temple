@@ -24,6 +24,7 @@
 #include "include/c++/deserialization_context.h"
 #include "include/c++/peer_object.h"
 #include "include/c++/serialization_context.h"
+#include "python/interpreter_impl.h"
 #include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
 #include "python/py_proxy_object.h"
@@ -91,6 +92,7 @@ ListLocalObject* ListLocalObject::ParseListProto(
     const SequenceProto& list_proto, DeserializationContext* context) {
   CHECK(context != nullptr);
 
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
   const int item_count = list_proto.item_size();
 
   PyObject* py_list = nullptr;
@@ -105,7 +107,7 @@ ListLocalObject* ListLocalObject::ParseListProto(
           list_proto.item(i).object_index());
       PeerObject* const peer_object = context->GetPeerObjectByIndex(
           object_index);
-      PyObject* const py_item = PyProxyObject_New(peer_object);
+      PyObject* const py_item = interpreter->GetProxyObject(peer_object);
       CHECK_EQ(PyList_SetItem(py_list, static_cast<Py_ssize_t>(i), py_item), 0);
     }
   }

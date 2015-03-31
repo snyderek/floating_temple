@@ -32,6 +32,16 @@ using std::string;
 using std::unique_ptr;
 
 namespace floating_temple {
+namespace {
+
+constexpr char kIntPrintfFormat[] = "%d";
+constexpr char kLongPrintfFormat[] = "%ld";
+constexpr char kLongLongPrintfFormat[] = "%lld";
+constexpr char kInt64PrintfFormat[] = "%" PRId64;
+constexpr char kUint64PrintfFormat[] = "%" PRIu64;
+constexpr char kDoublePrintfFormat[] = "%f";
+
+}  // namespace
 
 class DumpContextImpl::DumpNode {
  public:
@@ -51,90 +61,6 @@ class DumpContextImpl::BoolDumpNode : public DumpContextImpl::DumpNode {
   const bool b_;
 
   DISALLOW_COPY_AND_ASSIGN(BoolDumpNode);
-};
-
-class DumpContextImpl::IntDumpNode : public DumpContextImpl::DumpNode {
- public:
-  explicit IntDumpNode(int n);
-
-  void AppendJson(std::string* output) const override;
-
- private:
-  const int n_;
-
-  DISALLOW_COPY_AND_ASSIGN(IntDumpNode);
-};
-
-class DumpContextImpl::LongDumpNode : public DumpContextImpl::DumpNode {
- public:
-  explicit LongDumpNode(long n);
-
-  void AppendJson(std::string* output) const override;
-
- private:
-  const long n_;
-
-  DISALLOW_COPY_AND_ASSIGN(LongDumpNode);
-};
-
-class DumpContextImpl::LongLongDumpNode : public DumpContextImpl::DumpNode {
- public:
-  explicit LongLongDumpNode(long long n);
-
-  void AppendJson(std::string* output) const override;
-
- private:
-  const long long n_;
-
-  DISALLOW_COPY_AND_ASSIGN(LongLongDumpNode);
-};
-
-class DumpContextImpl::Int64DumpNode : public DumpContextImpl::DumpNode {
- public:
-  explicit Int64DumpNode(int64 n);
-
-  void AppendJson(std::string* output) const override;
-
- private:
-  const int64 n_;
-
-  DISALLOW_COPY_AND_ASSIGN(Int64DumpNode);
-};
-
-class DumpContextImpl::Uint64DumpNode : public DumpContextImpl::DumpNode {
- public:
-  explicit Uint64DumpNode(uint64 n);
-
-  void AppendJson(std::string* output) const override;
-
- private:
-  const uint64 n_;
-
-  DISALLOW_COPY_AND_ASSIGN(Uint64DumpNode);
-};
-
-class DumpContextImpl::FloatDumpNode : public DumpContextImpl::DumpNode {
- public:
-  explicit FloatDumpNode(float f);
-
-  void AppendJson(std::string* output) const override;
-
- private:
-  const float f_;
-
-  DISALLOW_COPY_AND_ASSIGN(FloatDumpNode);
-};
-
-class DumpContextImpl::DoubleDumpNode : public DumpContextImpl::DumpNode {
- public:
-  explicit DoubleDumpNode(double d);
-
-  void AppendJson(std::string* output) const override;
-
- private:
-  const double d_;
-
-  DISALLOW_COPY_AND_ASSIGN(DoubleDumpNode);
 };
 
 class DumpContextImpl::StringDumpNode : public DumpContextImpl::DumpNode {
@@ -188,6 +114,32 @@ class DumpContextImpl::MapDumpNode : public DumpContextImpl::DumpNode {
   DISALLOW_COPY_AND_ASSIGN(MapDumpNode);
 };
 
+template<typename T, const char* printf_format>
+class DumpContextImpl::PrimitiveTypeDumpNode
+    : public DumpContextImpl::DumpNode {
+ public:
+  explicit PrimitiveTypeDumpNode(T value);
+
+  void AppendJson(std::string* output) const override;
+
+ private:
+  const T value_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrimitiveTypeDumpNode);
+};
+
+template<typename T, const char* printf_format>
+DumpContextImpl::PrimitiveTypeDumpNode<T, printf_format>::PrimitiveTypeDumpNode(
+    T value)
+    : value_(value) {
+}
+
+template<typename T, const char* printf_format>
+void DumpContextImpl::PrimitiveTypeDumpNode<T, printf_format>::AppendJson(
+    string* output) const {
+  StringAppendF(output, printf_format, value_);
+}
+
 DumpContextImpl::DumpContextImpl() {
 }
 
@@ -207,31 +159,32 @@ void DumpContextImpl::AddBool(bool b) {
 }
 
 void DumpContextImpl::AddInt(int n) {
-  AddValue(new IntDumpNode(n));
+  AddValue(new PrimitiveTypeDumpNode<int, kIntPrintfFormat>(n));
 }
 
 void DumpContextImpl::AddLong(long n) {
-  AddValue(new LongDumpNode(n));
+  AddValue(new PrimitiveTypeDumpNode<long, kLongPrintfFormat>(n));
 }
 
 void DumpContextImpl::AddLongLong(long long n) {
-  AddValue(new LongLongDumpNode(n));
+  AddValue(new PrimitiveTypeDumpNode<long long, kLongLongPrintfFormat>(n));
 }
 
 void DumpContextImpl::AddInt64(int64 n) {
-  AddValue(new Int64DumpNode(n));
+  AddValue(new PrimitiveTypeDumpNode<int64, kInt64PrintfFormat>(n));
 }
 
 void DumpContextImpl::AddUint64(uint64 n) {
-  AddValue(new Uint64DumpNode(n));
+  AddValue(new PrimitiveTypeDumpNode<uint64, kUint64PrintfFormat>(n));
 }
 
 void DumpContextImpl::AddFloat(float f) {
-  AddValue(new FloatDumpNode(f));
+  const double d = static_cast<double>(f);
+  AddValue(new PrimitiveTypeDumpNode<double, kDoublePrintfFormat>(d));
 }
 
 void DumpContextImpl::AddDouble(double d) {
-  AddValue(new DoubleDumpNode(d));
+  AddValue(new PrimitiveTypeDumpNode<double, kDoublePrintfFormat>(d));
 }
 
 void DumpContextImpl::AddString(const string& s) {
@@ -279,62 +232,6 @@ DumpContextImpl::BoolDumpNode::BoolDumpNode(bool b)
 
 void DumpContextImpl::BoolDumpNode::AppendJson(string* output) const {
   *output += (b_ ? "true" : "false");
-}
-
-DumpContextImpl::IntDumpNode::IntDumpNode(int n)
-    : n_(n) {
-}
-
-void DumpContextImpl::IntDumpNode::AppendJson(string* output) const {
-  StringAppendF(output, "%d", n_);
-}
-
-DumpContextImpl::LongDumpNode::LongDumpNode(long n)
-    : n_(n) {
-}
-
-void DumpContextImpl::LongDumpNode::AppendJson(string* output) const {
-  StringAppendF(output, "%ld", n_);
-}
-
-DumpContextImpl::LongLongDumpNode::LongLongDumpNode(long long n)
-    : n_(n) {
-}
-
-void DumpContextImpl::LongLongDumpNode::AppendJson(string* output) const {
-  StringAppendF(output, "%lld", n_);
-}
-
-DumpContextImpl::Int64DumpNode::Int64DumpNode(int64 n)
-    : n_(n) {
-}
-
-void DumpContextImpl::Int64DumpNode::AppendJson(string* output) const {
-  StringAppendF(output, "%" PRId64, n_);
-}
-
-DumpContextImpl::Uint64DumpNode::Uint64DumpNode(uint64 n)
-    : n_(n) {
-}
-
-void DumpContextImpl::Uint64DumpNode::AppendJson(string* output) const {
-  StringAppendF(output, "%" PRIu64, n_);
-}
-
-DumpContextImpl::FloatDumpNode::FloatDumpNode(float f)
-    : f_(f) {
-}
-
-void DumpContextImpl::FloatDumpNode::AppendJson(string* output) const {
-  StringAppendF(output, "%f", static_cast<double>(f_));
-}
-
-DumpContextImpl::DoubleDumpNode::DoubleDumpNode(double d)
-    : d_(d) {
-}
-
-void DumpContextImpl::DoubleDumpNode::AppendJson(string* output) const {
-  StringAppendF(output, "%f", d_);
 }
 
 DumpContextImpl::StringDumpNode::StringDumpNode(const string& s)

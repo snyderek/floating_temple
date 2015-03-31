@@ -49,17 +49,11 @@ class DumpContextImpl : public DumpContext {
  private:
   class DumpNode;
   class BoolDumpNode;
-  class IntDumpNode;
-  class LongDumpNode;
-  class LongLongDumpNode;
-  class Int64DumpNode;
-  class Uint64DumpNode;
-  class FloatDumpNode;
-  class DoubleDumpNode;
   class StringDumpNode;
   class PointerDumpNode;
   class ListDumpNode;
   class MapDumpNode;
+  template<typename T, const char* printf_format> class PrimitiveTypeDumpNode;
 
   void AddValue(DumpNode* node);
 

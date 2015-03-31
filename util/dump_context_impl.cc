@@ -15,6 +15,7 @@
 
 #include "util/dump_context_impl.h"
 
+#include <cinttypes>
 #include <memory>
 #include <stack>
 #include <string>
@@ -22,6 +23,7 @@
 #include <vector>
 
 #include "base/escape.h"
+#include "base/integral_types.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/string_printf.h"
@@ -61,6 +63,54 @@ class DumpContextImpl::IntDumpNode : public DumpContextImpl::DumpNode {
   const int n_;
 
   DISALLOW_COPY_AND_ASSIGN(IntDumpNode);
+};
+
+class DumpContextImpl::Int64DumpNode : public DumpContextImpl::DumpNode {
+ public:
+  explicit Int64DumpNode(int64 n);
+
+  void AppendJson(std::string* output) const override;
+
+ private:
+  const int64 n_;
+
+  DISALLOW_COPY_AND_ASSIGN(Int64DumpNode);
+};
+
+class DumpContextImpl::Uint64DumpNode : public DumpContextImpl::DumpNode {
+ public:
+  explicit Uint64DumpNode(uint64 n);
+
+  void AppendJson(std::string* output) const override;
+
+ private:
+  const uint64 n_;
+
+  DISALLOW_COPY_AND_ASSIGN(Uint64DumpNode);
+};
+
+class DumpContextImpl::FloatDumpNode : public DumpContextImpl::DumpNode {
+ public:
+  explicit FloatDumpNode(float f);
+
+  void AppendJson(std::string* output) const override;
+
+ private:
+  const float f_;
+
+  DISALLOW_COPY_AND_ASSIGN(FloatDumpNode);
+};
+
+class DumpContextImpl::DoubleDumpNode : public DumpContextImpl::DumpNode {
+ public:
+  explicit DoubleDumpNode(double d);
+
+  void AppendJson(std::string* output) const override;
+
+ private:
+  const double d_;
+
+  DISALLOW_COPY_AND_ASSIGN(DoubleDumpNode);
 };
 
 class DumpContextImpl::StringDumpNode : public DumpContextImpl::DumpNode {
@@ -136,6 +186,22 @@ void DumpContextImpl::AddInt(int n) {
   AddValue(new IntDumpNode(n));
 }
 
+void DumpContextImpl::AddInt64(int64 n) {
+  AddValue(new Int64DumpNode(n));
+}
+
+void DumpContextImpl::AddUint64(uint64 n) {
+  AddValue(new Uint64DumpNode(n));
+}
+
+void DumpContextImpl::AddFloat(float f) {
+  AddValue(new FloatDumpNode(f));
+}
+
+void DumpContextImpl::AddDouble(double d) {
+  AddValue(new DoubleDumpNode(d));
+}
+
 void DumpContextImpl::AddString(const string& s) {
   AddValue(new StringDumpNode(s));
 }
@@ -189,6 +255,38 @@ DumpContextImpl::IntDumpNode::IntDumpNode(int n)
 
 void DumpContextImpl::IntDumpNode::AppendJson(string* output) const {
   StringAppendF(output, "%d", n_);
+}
+
+DumpContextImpl::Int64DumpNode::Int64DumpNode(int64 n)
+    : n_(n) {
+}
+
+void DumpContextImpl::Int64DumpNode::AppendJson(string* output) const {
+  StringAppendF(output, "%" PRId64, n_);
+}
+
+DumpContextImpl::Uint64DumpNode::Uint64DumpNode(uint64 n)
+    : n_(n) {
+}
+
+void DumpContextImpl::Uint64DumpNode::AppendJson(string* output) const {
+  StringAppendF(output, "%" PRIu64, n_);
+}
+
+DumpContextImpl::FloatDumpNode::FloatDumpNode(float f)
+    : f_(f) {
+}
+
+void DumpContextImpl::FloatDumpNode::AppendJson(string* output) const {
+  StringAppendF(output, "%f", static_cast<double>(f_));
+}
+
+DumpContextImpl::DoubleDumpNode::DoubleDumpNode(double d)
+    : d_(d) {
+}
+
+void DumpContextImpl::DoubleDumpNode::AppendJson(string* output) const {
+  StringAppendF(output, "%f", d_);
 }
 
 DumpContextImpl::StringDumpNode::StringDumpNode(const string& s)

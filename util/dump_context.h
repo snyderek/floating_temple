@@ -18,6 +18,8 @@
 
 #include <string>
 
+#include "base/integral_types.h"
+
 namespace floating_temple {
 
 class DumpContext {
@@ -26,6 +28,10 @@ class DumpContext {
 
   virtual void AddBool(bool b) = 0;
   virtual void AddInt(int n) = 0;
+  virtual void AddInt64(int64 n) = 0;
+  virtual void AddUint64(uint64 n) = 0;
+  virtual void AddFloat(float f) = 0;
+  virtual void AddDouble(double d) = 0;
   virtual void AddString(const std::string& s) = 0;
   virtual void AddPointer(const void* p) = 0;
 

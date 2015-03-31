@@ -34,9 +34,12 @@ class DumpContextImpl : public DumpContext {
 
   void AddBool(bool b) override;
   void AddInt(int n) override;
+  void AddInt64(int64 n) override;
+  void AddUint64(uint64 n) override;
+  void AddFloat(float f) override;
+  void AddDouble(double d) override;
   void AddString(const std::string& s) override;
   void AddPointer(const void* p) override;
-
   void BeginList() override;
   void BeginMap() override;
   void End() override;
@@ -45,6 +48,10 @@ class DumpContextImpl : public DumpContext {
   class DumpNode;
   class BoolDumpNode;
   class IntDumpNode;
+  class Int64DumpNode;
+  class Uint64DumpNode;
+  class FloatDumpNode;
+  class DoubleDumpNode;
   class StringDumpNode;
   class PointerDumpNode;
   class ListDumpNode;

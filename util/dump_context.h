@@ -26,6 +26,7 @@ class DumpContext {
  public:
   virtual ~DumpContext() {}
 
+  virtual void AddNull() = 0;
   virtual void AddBool(bool b) = 0;
   virtual void AddInt(int n) = 0;
   virtual void AddLong(long n) = 0;

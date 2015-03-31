@@ -51,6 +51,16 @@ class DumpContextImpl::DumpNode {
   virtual void AppendJson(std::string* output) const = 0;
 };
 
+class DumpContextImpl::NullDumpNode : public DumpContextImpl::DumpNode {
+ public:
+  NullDumpNode();
+
+  void AppendJson(std::string* output) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NullDumpNode);
+};
+
 class DumpContextImpl::BoolDumpNode : public DumpContextImpl::DumpNode {
  public:
   explicit BoolDumpNode(bool b);
@@ -154,6 +164,10 @@ void DumpContextImpl::FormatJson(string* output) const {
   root_node_->AppendJson(output);
 }
 
+void DumpContextImpl::AddNull() {
+  AddValue(new NullDumpNode());
+}
+
 void DumpContextImpl::AddBool(bool b) {
   AddValue(new BoolDumpNode(b));
 }
@@ -224,6 +238,13 @@ void DumpContextImpl::AddValue(DumpNode* node) {
 
 void DumpContextImpl::DumpNode::AddValue(DumpNode* node) {
   LOG(FATAL) << "This node type does not support adding values.";
+}
+
+DumpContextImpl::NullDumpNode::NullDumpNode() {
+}
+
+void DumpContextImpl::NullDumpNode::AppendJson(string* output) const {
+  *output += "null";
 }
 
 DumpContextImpl::BoolDumpNode::BoolDumpNode(bool b)

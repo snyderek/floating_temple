@@ -32,6 +32,7 @@ class DumpContextImpl : public DumpContext {
 
   void FormatJson(std::string* output) const;
 
+  void AddNull() override;
   void AddBool(bool b) override;
   void AddInt(int n) override;
   void AddLong(long n) override;
@@ -48,6 +49,7 @@ class DumpContextImpl : public DumpContext {
 
  private:
   class DumpNode;
+  class NullDumpNode;
   class BoolDumpNode;
   class StringDumpNode;
   class PointerDumpNode;

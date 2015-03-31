@@ -34,6 +34,8 @@ class DumpContextImpl : public DumpContext {
 
   void AddBool(bool b) override;
   void AddInt(int n) override;
+  void AddLong(long n) override;
+  void AddLongLong(long long n) override;
   void AddInt64(int64 n) override;
   void AddUint64(uint64 n) override;
   void AddFloat(float f) override;
@@ -48,6 +50,8 @@ class DumpContextImpl : public DumpContext {
   class DumpNode;
   class BoolDumpNode;
   class IntDumpNode;
+  class LongDumpNode;
+  class LongLongDumpNode;
   class Int64DumpNode;
   class Uint64DumpNode;
   class FloatDumpNode;

@@ -65,6 +65,30 @@ class DumpContextImpl::IntDumpNode : public DumpContextImpl::DumpNode {
   DISALLOW_COPY_AND_ASSIGN(IntDumpNode);
 };
 
+class DumpContextImpl::LongDumpNode : public DumpContextImpl::DumpNode {
+ public:
+  explicit LongDumpNode(long n);
+
+  void AppendJson(std::string* output) const override;
+
+ private:
+  const long n_;
+
+  DISALLOW_COPY_AND_ASSIGN(LongDumpNode);
+};
+
+class DumpContextImpl::LongLongDumpNode : public DumpContextImpl::DumpNode {
+ public:
+  explicit LongLongDumpNode(long long n);
+
+  void AppendJson(std::string* output) const override;
+
+ private:
+  const long long n_;
+
+  DISALLOW_COPY_AND_ASSIGN(LongLongDumpNode);
+};
+
 class DumpContextImpl::Int64DumpNode : public DumpContextImpl::DumpNode {
  public:
   explicit Int64DumpNode(int64 n);
@@ -186,6 +210,14 @@ void DumpContextImpl::AddInt(int n) {
   AddValue(new IntDumpNode(n));
 }
 
+void DumpContextImpl::AddLong(long n) {
+  AddValue(new LongDumpNode(n));
+}
+
+void DumpContextImpl::AddLongLong(long long n) {
+  AddValue(new LongLongDumpNode(n));
+}
+
 void DumpContextImpl::AddInt64(int64 n) {
   AddValue(new Int64DumpNode(n));
 }
@@ -255,6 +287,22 @@ DumpContextImpl::IntDumpNode::IntDumpNode(int n)
 
 void DumpContextImpl::IntDumpNode::AppendJson(string* output) const {
   StringAppendF(output, "%d", n_);
+}
+
+DumpContextImpl::LongDumpNode::LongDumpNode(long n)
+    : n_(n) {
+}
+
+void DumpContextImpl::LongDumpNode::AppendJson(string* output) const {
+  StringAppendF(output, "%ld", n_);
+}
+
+DumpContextImpl::LongLongDumpNode::LongLongDumpNode(long long n)
+    : n_(n) {
+}
+
+void DumpContextImpl::LongLongDumpNode::AppendJson(string* output) const {
+  StringAppendF(output, "%lld", n_);
 }
 
 DumpContextImpl::Int64DumpNode::Int64DumpNode(int64 n)

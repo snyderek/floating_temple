@@ -15,21 +15,28 @@
 
 #include "python/interpreter_impl.h"
 
+#include "third_party/Python-3.4.2/Include/Python.h"
+
 #include <cstddef>
+#include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "base/integral_types.h"
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
 #include "include/c++/thread.h"
+#include "include/c++/value.h"
 #include "python/local_object_impl.h"
 #include "python/py_proxy_object.h"
 #include "python/python_gil_lock.h"
 
 using std::make_pair;
 using std::size_t;
+using std::string;
+using std::vector;
 
 namespace floating_temple {
 namespace python {
@@ -52,6 +59,14 @@ void InterpreterImpl::BeginTransaction() {
 
 void InterpreterImpl::EndTransaction() {
   PrivateGetThreadObject()->EndTransaction();
+}
+
+bool InterpreterImpl::CallMethod(PeerObject* peer_object,
+                                 const string& method_name,
+                                 const vector<Value>& parameters,
+                                 Value* return_value) {
+  return PrivateGetThreadObject()->CallMethod(peer_object, method_name,
+                                              parameters, return_value);
 }
 
 Thread* InterpreterImpl::GetThreadObject() {

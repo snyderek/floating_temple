@@ -22,7 +22,6 @@
 
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "python/interpreter_impl.h"
 #include "python/make_value.h"
@@ -70,16 +69,14 @@ T MethodBody(PyObject* self, const string& method_name,
   VLOG(3) << "Shim method: " << method_name;
 
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
-  Thread* const thread = interpreter->GetThreadObject();
-
   PeerObject* const peer_object = PyProxyObject_GetPeerObject(self);
 
   Value return_value;
   bool success = false;
   {
     Py_BEGIN_ALLOW_THREADS
-    success = thread->CallMethod(peer_object, method_name, params,
-                                 &return_value);
+    success = interpreter->CallMethod(peer_object, method_name, params,
+                                      &return_value);
     Py_END_ALLOW_THREADS
   }
 

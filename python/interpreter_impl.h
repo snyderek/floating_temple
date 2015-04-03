@@ -18,13 +18,16 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "include/c++/interpreter.h"
 #include "include/c++/thread.h"
+#include "include/c++/value.h"
 #include "python/py_proxy_object.h"
 
 namespace floating_temple {
@@ -42,6 +45,10 @@ class InterpreterImpl : public Interpreter {
 
   void BeginTransaction();
   void EndTransaction();
+  bool CallMethod(PeerObject* peer_object,
+                  const std::string& method_name,
+                  const std::vector<Value>& parameters,
+                  Value* return_value);
 
   template<class LocalObjectType> PeerObject* CreateUnnamedPeerObject(
       PyObject* py_object);

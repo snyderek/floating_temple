@@ -8,7 +8,7 @@ extern "C" {
 typedef PyObject *(*object_creation_hook_func)(PyObject *);
 
 extern object_creation_hook_func list_creation_hook;
-extern object_creation_hook_func long_creation_hook;
+extern object_creation_hook_func long_creation_hook;  /* Currently unused */
 
 PyAPI_FUNC(object_creation_hook_func)
 Py_InstallListCreationHook(object_creation_hook_func new_hook);

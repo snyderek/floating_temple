@@ -12,6 +12,7 @@
 #include "Python.h"
 
 #include "code.h"
+#include "floating_temple_hooks.h"
 #include "frameobject.h"
 #include "opcode.h"
 #include "structmember.h"
@@ -2342,7 +2343,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
         }
 
         TARGET(BUILD_LIST) {
-            PyObject *list =  PyList_New(oparg);
+            PyObject *list = (*list_creation_hook)(PyList_New(oparg));
             if (list == NULL)
                 goto error;
             while (--oparg >= 0) {

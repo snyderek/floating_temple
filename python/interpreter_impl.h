@@ -52,6 +52,8 @@ class InterpreterImpl : public Interpreter {
 
   template<class LocalObjectType> PeerObject* CreateUnnamedPeerObject(
       PyObject* py_object);
+  template<class LocalObjectType> PeerObject* CreateNamedPeerObject(
+      const std::string& name, PyObject* py_object);
 
   Thread* SetThreadObject(Thread* new_thread);
 
@@ -82,6 +84,16 @@ PeerObject* InterpreterImpl::CreateUnnamedPeerObject(PyObject* py_object) {
 
   LocalObject* const local_object = new LocalObjectType(py_object);
   return GetThreadObject()->CreatePeerObject(local_object);
+}
+
+template<class LocalObjectType>
+PeerObject* InterpreterImpl::CreateNamedPeerObject(const std::string& name,
+                                                   PyObject* py_object) {
+  CHECK(py_object != nullptr);
+  CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
+
+  LocalObject* const local_object = new LocalObjectType(py_object);
+  return GetThreadObject()->GetOrCreateNamedObject(name, local_object);
 }
 
 }  // namespace python

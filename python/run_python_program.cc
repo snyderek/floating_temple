@@ -24,7 +24,6 @@
 #include "base/logging.h"
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
-#include "python/create_peer_object_for_py_object.h"
 #include "python/interpreter_impl.h"
 #include "python/list_local_object.h"
 #include "python/long_local_object.h"
@@ -50,9 +49,10 @@ PyObject* WrapPythonObject(PyObject* py_object) {
     return nullptr;
   }
 
-  PeerObject* const peer_object = CreatePeerObjectForPyObject<LocalObjectType>(
-      py_object);
-  return InterpreterImpl::instance()->PeerObjectToPyProxyObject(peer_object);
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
+  PeerObject* const peer_object =
+      interpreter->CreateUnnamedPeerObject<LocalObjectType>(py_object);
+  return interpreter->PeerObjectToPyProxyObject(peer_object);
 }
 
 PyObject* WrapPythonList(PyObject* py_list_object) {

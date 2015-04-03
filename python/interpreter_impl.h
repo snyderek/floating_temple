@@ -20,12 +20,16 @@
 
 #include <unordered_map>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "include/c++/interpreter.h"
+#include "include/c++/thread.h"
+#include "python/py_proxy_object.h"
 
 namespace floating_temple {
 
+class LocalObject;
 class PeerObject;
 class Thread;
 
@@ -38,6 +42,9 @@ class InterpreterImpl : public Interpreter {
 
   void BeginTransaction();
   void EndTransaction();
+
+  template<class LocalObjectType> PeerObject* CreateUnnamedPeerObject(
+      PyObject* py_object);
 
   Thread* GetThreadObject();
   Thread* SetThreadObject(Thread* new_thread);
@@ -61,6 +68,15 @@ class InterpreterImpl : public Interpreter {
 
   DISALLOW_COPY_AND_ASSIGN(InterpreterImpl);
 };
+
+template<class LocalObjectType>
+PeerObject* InterpreterImpl::CreateUnnamedPeerObject(PyObject* py_object) {
+  CHECK(py_object != nullptr);
+  CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
+
+  LocalObject* const local_object = new LocalObjectType(py_object);
+  return PrivateGetThreadObject()->CreatePeerObject(local_object);
+}
 
 }  // namespace python
 }  // namespace floating_temple

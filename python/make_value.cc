@@ -23,7 +23,6 @@
 #include "base/integral_types.h"
 #include "base/logging.h"
 #include "include/c++/value.h"
-#include "python/create_peer_object_for_py_object.h"
 #include "python/interpreter_impl.h"
 #include "python/method_context.h"
 #include "python/proto/local_type.pb.h"
@@ -72,11 +71,14 @@ void MakeValue(PyObject* in, Value* out) {
   if (in == nullptr) {
     out->set_empty(LOCAL_TYPE_PYOBJECT);
   } else {
+    InterpreterImpl* const interpreter = InterpreterImpl::instance();
+
     PeerObject* peer_object = nullptr;
     if (Py_TYPE(in) == &PyProxyObject_Type) {
-      peer_object = InterpreterImpl::instance()->PyProxyObjectToPeerObject(in);
+      peer_object = interpreter->PyProxyObjectToPeerObject(in);
     } else {
-      peer_object = CreatePeerObjectForPyObject<UnserializableLocalObject>(in);
+      peer_object =
+          interpreter->CreateUnnamedPeerObject<UnserializableLocalObject>(in);
     }
 
     out->set_peer_object(LOCAL_TYPE_PYOBJECT, peer_object);

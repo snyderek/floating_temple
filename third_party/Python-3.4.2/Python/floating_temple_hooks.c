@@ -1,7 +1,7 @@
-/* Hook functions for the distributed interpreter */
+/* Hook functions for the Floating Temple distributed interpreter */
 
 #include "Python.h"
-#include "dss_hooks.h"
+#include "floating_temple_hooks.h"
 
 static PyObject *
 DefaultObjectCreationHook(PyObject *obj)

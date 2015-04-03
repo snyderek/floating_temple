@@ -1,5 +1,5 @@
-#ifndef Py_DSS_HOOKS_H
-#define Py_DSS_HOOKS_H
+#ifndef Py_FLOATING_TEMPLE_HOOKS_H
+#define Py_FLOATING_TEMPLE_HOOKS_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,4 +20,4 @@ Py_InstallListCreationHook(object_creation_hook_func new_hook);
 #ifdef __cplusplus
 }
 #endif
-#endif /* Py_DSS_HOOKS_H */
+#endif /* Py_FLOATING_TEMPLE_HOOKS_H */

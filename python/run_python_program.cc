@@ -16,7 +16,7 @@
 #include "python/run_python_program.h"
 
 #include "third_party/Python-3.4.2/Include/Python.h"
-#include "third_party/Python-3.4.2/Include/dss_hooks.h"
+#include "third_party/Python-3.4.2/Include/floating_temple_hooks.h"
 
 #include <cstdio>
 #include <string>

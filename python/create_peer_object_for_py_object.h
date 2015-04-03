@@ -33,7 +33,7 @@ namespace python {
 template<class LocalObjectType>
 PeerObject* CreatePeerObjectForPyObject(PyObject* py_object) {
   CHECK(py_object != nullptr);
-  CHECK(Py_TYPE(py_object) == &PyProxyObject_Type);
+  CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
 
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
   Thread* const thread = interpreter->GetThreadObject();

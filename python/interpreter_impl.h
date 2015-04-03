@@ -64,7 +64,7 @@ class InterpreterImpl : public Interpreter {
   static InterpreterImpl* instance();
 
  private:
-  Thread* PrivateGetThreadObject();
+  Thread* GetThreadObject();
 
   std::unordered_map<PeerObject*, PyObject*> proxy_objects_;
   mutable Mutex proxy_objects_mu_;
@@ -81,7 +81,7 @@ PeerObject* InterpreterImpl::CreateUnnamedPeerObject(PyObject* py_object) {
   CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
 
   LocalObject* const local_object = new LocalObjectType(py_object);
-  return PrivateGetThreadObject()->CreatePeerObject(local_object);
+  return GetThreadObject()->CreatePeerObject(local_object);
 }
 
 }  // namespace python

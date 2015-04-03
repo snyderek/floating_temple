@@ -54,19 +54,19 @@ InterpreterImpl::~InterpreterImpl() {
 }
 
 void InterpreterImpl::BeginTransaction() {
-  PrivateGetThreadObject()->BeginTransaction();
+  GetThreadObject()->BeginTransaction();
 }
 
 void InterpreterImpl::EndTransaction() {
-  PrivateGetThreadObject()->EndTransaction();
+  GetThreadObject()->EndTransaction();
 }
 
 bool InterpreterImpl::CallMethod(PeerObject* peer_object,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
-  return PrivateGetThreadObject()->CallMethod(peer_object, method_name,
-                                              parameters, return_value);
+  return GetThreadObject()->CallMethod(peer_object, method_name, parameters,
+                                       return_value);
 }
 
 Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
@@ -122,7 +122,7 @@ InterpreterImpl* InterpreterImpl::instance() {
   return instance_;
 }
 
-Thread* InterpreterImpl::PrivateGetThreadObject() {
+Thread* InterpreterImpl::GetThreadObject() {
   CHECK(thread_object_ != nullptr);
   return thread_object_;
 }

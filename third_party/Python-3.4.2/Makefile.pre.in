@@ -360,9 +360,9 @@ PYTHON_OBJS=	\
 		Python/ceval.o \
 		Python/compile.o \
 		Python/codecs.o \
-		Python/dss_hooks.o \
 		Python/dynamic_annotations.o \
 		Python/errors.o \
+		Python/floating_temple_hooks.o \
 		Python/frozenmain.o \
 		Python/future.o \
 		Python/getargs.o \
@@ -860,7 +860,6 @@ PYTHON_HEADERS= \
 		$(srcdir)/Include/complexobject.h \
 		$(srcdir)/Include/descrobject.h \
 		$(srcdir)/Include/dictobject.h \
-		$(srcdir)/Include/dss_hooks.h \
 		$(srcdir)/Include/dtoa.h \
 		$(srcdir)/Include/dynamic_annotations.h \
 		$(srcdir)/Include/enumobject.h \
@@ -868,6 +867,7 @@ PYTHON_HEADERS= \
 		$(srcdir)/Include/eval.h \
 		$(srcdir)/Include/fileobject.h \
 		$(srcdir)/Include/fileutils.h \
+		$(srcdir)/Include/floating_temple_hooks.h \
 		$(srcdir)/Include/floatobject.h \
 		$(srcdir)/Include/frameobject.h \
 		$(srcdir)/Include/funcobject.h \

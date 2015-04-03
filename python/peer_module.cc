@@ -17,9 +17,16 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
+#include <string>
+
+#include "base/logging.h"
+#include "python/dict_local_object.h"
 #include "python/interpreter_impl.h"
 
 namespace floating_temple {
+
+class PeerObject;
+
 namespace python {
 namespace {
 
@@ -62,7 +69,20 @@ PyModuleDef g_module_def = {
 }  // namespace
 
 PyMODINIT_FUNC PyInit_peer() {
-  return PyModule_Create(&g_module_def);
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
+
+  PyObject* const py_module = PyModule_Create(&g_module_def);
+  CHECK(py_module != nullptr);
+
+  PyObject* const py_dict = PyDict_New();
+  CHECK(py_dict != nullptr);
+  PeerObject* const dict_peer_object =
+      interpreter->CreateNamedPeerObject<DictLocalObject>("shared", py_dict);
+  PyObject* const py_dict_proxy_object = interpreter->PeerObjectToPyProxyObject(
+      dict_peer_object);
+  CHECK_EQ(PyModule_AddObject(py_module, "shared", py_dict_proxy_object), 0);
+
+  return py_module;
 }
 
 }  // namespace python

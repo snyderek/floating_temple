@@ -69,10 +69,6 @@ bool InterpreterImpl::CallMethod(PeerObject* peer_object,
                                               parameters, return_value);
 }
 
-Thread* InterpreterImpl::GetThreadObject() {
-  return PrivateGetThreadObject();
-}
-
 Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
   Thread* const old_thread = thread_object_;
   thread_object_ = new_thread;

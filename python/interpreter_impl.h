@@ -53,7 +53,6 @@ class InterpreterImpl : public Interpreter {
   template<class LocalObjectType> PeerObject* CreateUnnamedPeerObject(
       PyObject* py_object);
 
-  Thread* GetThreadObject();
   Thread* SetThreadObject(Thread* new_thread);
 
   LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,

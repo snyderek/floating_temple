@@ -16,6 +16,8 @@
 #ifndef PYTHON_RUN_PYTHON_PROGRAM_H_
 #define PYTHON_RUN_PYTHON_PROGRAM_H_
 
+#include "third_party/Python-3.4.2/Include/Python.h"
+
 #include <cstdio>
 #include <string>
 

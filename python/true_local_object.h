@@ -16,6 +16,8 @@
 #ifndef PYTHON_TRUE_LOCAL_OBJECT_H_
 #define PYTHON_TRUE_LOCAL_OBJECT_H_
 
+#include "third_party/Python-3.4.2/Include/Python.h"
+
 #include "base/macros.h"
 #include "python/local_object_impl.h"
 

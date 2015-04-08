@@ -16,7 +16,6 @@
 #include "python/run_python_program.h"
 
 #include "third_party/Python-3.4.2/Include/Python.h"
-#include "third_party/Python-3.4.2/Include/floating_temple_hooks.h"
 
 #include <cstdio>
 #include <string>
@@ -25,8 +24,6 @@
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
 #include "python/interpreter_impl.h"
-#include "python/list_local_object.h"
-#include "python/long_local_object.h"
 #include "python/program_object.h"
 #include "python/python_gil_lock.h"
 #include "python/python_scoped_ptr.h"
@@ -38,32 +35,9 @@ using std::string;
 
 namespace floating_temple {
 
-class PeerObject;
+class LocalObject;
 
 namespace python {
-namespace {
-
-template<class LocalObjectType>
-PyObject* WrapPythonObject(PyObject* py_object) {
-  if (py_object == nullptr) {
-    return nullptr;
-  }
-
-  InterpreterImpl* const interpreter = InterpreterImpl::instance();
-  PeerObject* const peer_object =
-      interpreter->CreateUnnamedPeerObject<LocalObjectType>(py_object);
-  return interpreter->PeerObjectToPyProxyObject(peer_object);
-}
-
-PyObject* WrapPythonList(PyObject* py_list_object) {
-  return WrapPythonObject<ListLocalObject>(py_list_object);
-}
-
-PyObject* WrapPythonLong(PyObject* py_long_object) {
-  return WrapPythonObject<LongLocalObject>(py_long_object);
-}
-
-}  // namespace
 
 void RunPythonProgram(Peer* peer, const string& source_file_name) {
   // Run the source file.

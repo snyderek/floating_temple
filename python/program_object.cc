@@ -28,6 +28,8 @@
 #include "python/dict_local_object.h"
 #include "python/false_local_object.h"
 #include "python/interpreter_impl.h"
+#include "python/list_local_object.h"
+#include "python/long_local_object.h"
 #include "python/none_local_object.h"
 #include "python/proto/local_type.pb.h"
 #include "python/proto/serialization.pb.h"
@@ -43,7 +45,33 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
+
+class PeerObject;
+
 namespace python {
+namespace {
+
+template<class LocalObjectType>
+PyObject* WrapPythonObject(PyObject* py_object) {
+  if (py_object == nullptr) {
+    return nullptr;
+  }
+
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
+  PeerObject* const peer_object =
+      interpreter->CreateUnnamedPeerObject<LocalObjectType>(py_object);
+  return interpreter->PeerObjectToPyProxyObject(peer_object);
+}
+
+PyObject* WrapPythonList(PyObject* py_list_object) {
+  return WrapPythonObject<ListLocalObject>(py_list_object);
+}
+
+PyObject* WrapPythonLong(PyObject* py_long_object) {
+  return WrapPythonObject<LongLocalObject>(py_long_object);
+}
+
+}  // namespace
 
 ProgramObject::ProgramObject(FILE* fp, const string& source_file_name,
                              PyObject* globals)

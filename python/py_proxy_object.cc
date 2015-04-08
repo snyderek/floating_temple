@@ -295,7 +295,7 @@ PyTypeObject PyProxyObject_Type = {
   shim_tp_setattro,                           // tp_setattro
   nullptr,                                    // tp_as_buffer
   // TODO(dss): Include any other flags that might be needed.
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   // tp_flags
+  Py_TPFLAGS_DEFAULT,                         // tp_flags
   "TODO(dss): Write this docstring",          // tp_doc
   nullptr,                                    // tp_traverse
   nullptr,                                    // tp_clear

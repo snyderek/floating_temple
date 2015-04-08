@@ -34,6 +34,7 @@ class ObjectProto;
 // Abstract class
 class LocalObjectImpl : public LocalObject {
  public:
+  // Steals a reference to 'py_object'.
   explicit LocalObjectImpl(PyObject* py_object);
   ~LocalObjectImpl() override;
 

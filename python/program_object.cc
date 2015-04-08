@@ -64,16 +64,16 @@ PyObject* WrapPythonObject(PyObject* py_object) {
   return interpreter->PeerObjectToPyProxyObject(peer_object);
 }
 
+PyObject* WrapPythonDict(PyObject* py_dict_object) {
+  return WrapPythonObject<DictLocalObject>(py_dict_object);
+}
+
 PyObject* WrapPythonList(PyObject* py_list_object) {
   return WrapPythonObject<ListLocalObject>(py_list_object);
 }
 
 PyObject* WrapPythonLong(PyObject* py_long_object) {
   return WrapPythonObject<LongLocalObject>(py_long_object);
-}
-
-PyObject* WrapPythonDict(PyObject* py_dict_object) {
-  return WrapPythonObject<DictLocalObject>(py_dict_object);
 }
 
 }  // namespace
@@ -133,8 +133,8 @@ void ProgramObject::InvokeMethod(Thread* thread,
         PyRun_File(fp_, source_file_name_.c_str(), Py_file_input, globals_,
                    globals_));
 
-    Py_InstallDictCreationHook(old_dict_hook);
     Py_InstallListCreationHook(old_list_hook);
+    Py_InstallDictCreationHook(old_dict_hook);
   }
 
   return_value->set_empty(LOCAL_TYPE_PYOBJECT);

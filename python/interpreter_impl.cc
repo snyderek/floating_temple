@@ -123,7 +123,7 @@ PeerObject* InterpreterImpl::PyProxyObjectToPeerObject(PyObject* py_object) {
   }
 
   PeerObject* const new_peer_object =
-      this->CreateUnnamedPeerObject<UnserializableLocalObject>(py_object);
+      CreateUnnamedPeerObject<UnserializableLocalObject>(py_object);
   PeerObject* existing_peer_object = nullptr;
 
   {

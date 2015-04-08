@@ -26,8 +26,6 @@
 #include "python/interpreter_impl.h"
 #include "python/method_context.h"
 #include "python/proto/local_type.pb.h"
-#include "python/py_proxy_object.h"
-#include "python/unserializable_local_object.h"
 
 using std::strcpy;
 using std::string;

@@ -52,8 +52,6 @@ void RunPythonProgram(Peer* peer, const string& source_file_name) {
 void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
   CHECK(peer != nullptr);
 
-  // TODO(dss): Install the object creation hook functions.
-
   LocalObject* program_object = nullptr;
   {
     PythonGilLock lock;

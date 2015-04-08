@@ -64,6 +64,10 @@ PyObject* WrapPythonObject(PyObject* py_object) {
   return interpreter->PeerObjectToPyProxyObject(peer_object);
 }
 
+PyObject* WrapPythonDict(PyObject* py_dict_object) {
+  return WrapPythonObject<DictLocalObject>(py_dict_object);
+}
+
 PyObject* WrapPythonList(PyObject* py_list_object) {
   return WrapPythonObject<ListLocalObject>(py_list_object);
 }
@@ -120,6 +124,8 @@ void ProgramObject::InvokeMethod(Thread* thread,
     thread->GetOrCreateNamedObject("False", new FalseLocalObject());
     thread->GetOrCreateNamedObject("True", new TrueLocalObject());
 
+    const object_creation_hook_func old_dict_hook = Py_InstallDictCreationHook(
+        &WrapPythonDict);
     const object_creation_hook_func old_list_hook = Py_InstallListCreationHook(
         &WrapPythonList);
 
@@ -128,6 +134,7 @@ void ProgramObject::InvokeMethod(Thread* thread,
                    globals_));
 
     Py_InstallListCreationHook(old_list_hook);
+    Py_InstallDictCreationHook(old_dict_hook);
   }
 
   return_value->set_empty(LOCAL_TYPE_PYOBJECT);

@@ -2377,7 +2377,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
             PyObject *map = _PyDict_NewPresized((Py_ssize_t)oparg);
             if (map == NULL)
                 goto error;
-            PUSH(map);
+            PUSH((*dict_creation_hook)(map));
             DISPATCH();
         }
 

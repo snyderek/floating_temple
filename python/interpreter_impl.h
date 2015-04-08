@@ -69,7 +69,8 @@ class InterpreterImpl : public Interpreter {
   Thread* GetThreadObject();
 
   std::unordered_map<PeerObject*, PyObject*> proxy_objects_;
-  mutable Mutex proxy_objects_mu_;
+  std::unordered_map<PyObject*, PeerObject*> unserializable_objects_;
+  mutable Mutex objects_mu_;
 
   static __thread Thread* thread_object_;
   static InterpreterImpl* instance_;

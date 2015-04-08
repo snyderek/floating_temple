@@ -16,6 +16,7 @@
 #include "python/program_object.h"
 
 #include "third_party/Python-3.4.2/Include/Python.h"
+#include "third_party/Python-3.4.2/Include/floating_temple_hooks.h"
 
 #include <cstddef>
 #include <cstdio>
@@ -119,9 +120,14 @@ void ProgramObject::InvokeMethod(Thread* thread,
     thread->GetOrCreateNamedObject("False", new FalseLocalObject());
     thread->GetOrCreateNamedObject("True", new TrueLocalObject());
 
+    const object_creation_hook_func old_list_hook = Py_InstallListCreationHook(
+        &WrapPythonList);
+
     const PythonScopedPtr return_object(
         PyRun_File(fp_, source_file_name_.c_str(), Py_file_input, globals_,
                    globals_));
+
+    Py_InstallListCreationHook(old_list_hook);
   }
 
   return_value->set_empty(LOCAL_TYPE_PYOBJECT);

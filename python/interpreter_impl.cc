@@ -89,8 +89,9 @@ PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
   {
     PythonGilLock lock;
     py_new_proxy_object = PyProxyObject_New(peer_object);
+    CHECK(py_new_proxy_object != nullptr);
+    Py_INCREF(py_new_proxy_object);
   }
-  CHECK(py_new_proxy_object != nullptr);
 
   {
     MutexLock lock(&proxy_objects_mu_);
@@ -106,6 +107,7 @@ PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
 
   {
     PythonGilLock lock;
+    Py_DECREF(py_new_proxy_object);
     Py_DECREF(py_new_proxy_object);
   }
 

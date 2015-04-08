@@ -30,6 +30,10 @@ FakePeerObject::FakePeerObject(LocalObject* local_object)
     : local_object_(CHECK_NOTNULL(local_object)) {
 }
 
+FakePeerObject::~FakePeerObject() {
+  VLOG(1) << "Deleting fake peer object " << StringPrintf("%p", this);
+}
+
 string FakePeerObject::Dump() const {
   return StringPrintf("{ \"local_object\": \"%p\" }", local_object_.get());
 }

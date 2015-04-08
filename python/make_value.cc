@@ -72,15 +72,7 @@ void MakeValue(PyObject* in, Value* out) {
     out->set_empty(LOCAL_TYPE_PYOBJECT);
   } else {
     InterpreterImpl* const interpreter = InterpreterImpl::instance();
-
-    PeerObject* peer_object = nullptr;
-    if (Py_TYPE(in) == &PyProxyObject_Type) {
-      peer_object = interpreter->PyProxyObjectToPeerObject(in);
-    } else {
-      peer_object =
-          interpreter->CreateUnnamedPeerObject<UnserializableLocalObject>(in);
-    }
-
+    PeerObject* const peer_object = interpreter->PyProxyObjectToPeerObject(in);
     out->set_peer_object(LOCAL_TYPE_PYOBJECT, peer_object);
   }
 }

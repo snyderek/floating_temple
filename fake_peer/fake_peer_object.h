@@ -29,6 +29,7 @@ class LocalObject;
 class FakePeerObject : public PeerObject {
  public:
   explicit FakePeerObject(LocalObject* local_object);
+  ~FakePeerObject() override;
 
   LocalObject* local_object() { return local_object_.get(); }
 

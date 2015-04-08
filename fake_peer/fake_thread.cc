@@ -20,6 +20,7 @@
 
 #include "base/linked_ptr.h"
 #include "base/logging.h"
+#include "base/string_printf.h"
 #include "fake_peer/fake_peer_object.h"
 #include "include/c++/local_object.h"
 
@@ -33,6 +34,10 @@ FakeThread::FakeThread()
 }
 
 FakeThread::~FakeThread() {
+  for (linked_ptr<PeerObject>& peer_object : peer_objects_) {
+    VLOG(1) << "Deleting peer object " << StringPrintf("%p", peer_object.get());
+    peer_object.reset(nullptr);
+  }
 }
 
 bool FakeThread::BeginTransaction() {
@@ -64,9 +69,15 @@ bool FakeThread::CallMethod(PeerObject* peer_object,
   CHECK(!method_name.empty());
   CHECK(return_value != nullptr);
 
+  VLOG(1) << "Calling method on peer object: "
+          << StringPrintf("%p", peer_object);
+  VLOG(1) << "peer_object: " << peer_object->Dump();
+
   FakePeerObject* const fake_peer_object = static_cast<FakePeerObject*>(
       peer_object);
   LocalObject* const local_object = fake_peer_object->local_object();
+
+  VLOG(1) << "local_object: " << local_object->Dump();
 
   local_object->InvokeMethod(this, peer_object, method_name, parameters,
                              return_value);
@@ -85,6 +96,8 @@ bool FakeThread::ObjectsAreEquivalent(const PeerObject* a,
 PeerObject* FakeThread::PrivateCreatePeerObject(LocalObject* initial_version) {
   // TODO(dss): Implement garbage collection.
   PeerObject* const peer_object = new FakePeerObject(initial_version);
+  VLOG(1) << "New peer object: " << StringPrintf("%p", peer_object);
+  VLOG(1) << "peer_object: " << peer_object->Dump();
   peer_objects_.push_back(make_linked_ptr(peer_object));
   return peer_object;
 }

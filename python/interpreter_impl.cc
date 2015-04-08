@@ -32,6 +32,7 @@
 #include "python/local_object_impl.h"
 #include "python/py_proxy_object.h"
 #include "python/python_gil_lock.h"
+#include "python/unserializable_local_object.h"
 
 using std::make_pair;
 using std::size_t;
@@ -89,11 +90,12 @@ PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
   {
     PythonGilLock lock;
     py_new_proxy_object = PyProxyObject_New(peer_object);
+    CHECK(py_new_proxy_object != nullptr);
+    Py_INCREF(py_new_proxy_object);
   }
-  CHECK(py_new_proxy_object != nullptr);
 
   {
-    MutexLock lock(&proxy_objects_mu_);
+    MutexLock lock(&objects_mu_);
 
     const auto insert_result = proxy_objects_.insert(
         make_pair(peer_object, py_new_proxy_object));
@@ -107,13 +109,40 @@ PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
   {
     PythonGilLock lock;
     Py_DECREF(py_new_proxy_object);
+    Py_DECREF(py_new_proxy_object);
   }
 
   return py_existing_proxy_object;
 }
 
 PeerObject* InterpreterImpl::PyProxyObjectToPeerObject(PyObject* py_object) {
-  return PyProxyObject_GetPeerObject(py_object);
+  CHECK(py_object != nullptr);
+
+  if (Py_TYPE(py_object) == &PyProxyObject_Type) {
+    return PyProxyObject_GetPeerObject(py_object);
+  }
+
+  PeerObject* const new_peer_object =
+      this->CreateUnnamedPeerObject<UnserializableLocalObject>(py_object);
+  PeerObject* existing_peer_object = nullptr;
+
+  {
+    MutexLock lock(&objects_mu_);
+
+    const auto insert_result = unserializable_objects_.insert(
+        make_pair(py_object, new_peer_object));
+
+    if (insert_result.second) {
+      CHECK(proxy_objects_.insert(make_pair(new_peer_object,
+                                            py_object)).second);
+      return new_peer_object;
+    }
+    existing_peer_object = insert_result.first->second;
+  }
+
+  // TODO(dss): Delete new_peer_object.
+
+  return existing_peer_object;
 }
 
 // static

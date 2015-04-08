@@ -29,6 +29,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "python/py_proxy_object.h"
+#include "python/python_gil_lock.h"
 
 namespace floating_temple {
 
@@ -69,7 +70,8 @@ class InterpreterImpl : public Interpreter {
   Thread* GetThreadObject();
 
   std::unordered_map<PeerObject*, PyObject*> proxy_objects_;
-  mutable Mutex proxy_objects_mu_;
+  std::unordered_map<PyObject*, PeerObject*> unserializable_objects_;
+  mutable Mutex objects_mu_;
 
   static __thread Thread* thread_object_;
   static InterpreterImpl* instance_;
@@ -82,6 +84,11 @@ PeerObject* InterpreterImpl::CreateUnnamedPeerObject(PyObject* py_object) {
   CHECK(py_object != nullptr);
   CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
 
+  {
+    PythonGilLock lock;
+    Py_INCREF(py_object);
+  }
+
   LocalObject* const local_object = new LocalObjectType(py_object);
   return GetThreadObject()->CreatePeerObject(local_object);
 }
@@ -91,6 +98,11 @@ PeerObject* InterpreterImpl::CreateNamedPeerObject(const std::string& name,
                                                    PyObject* py_object) {
   CHECK(py_object != nullptr);
   CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
+
+  {
+    PythonGilLock lock;
+    Py_INCREF(py_object);
+  }
 
   LocalObject* const local_object = new LocalObjectType(py_object);
   return GetThreadObject()->GetOrCreateNamedObject(name, local_object);

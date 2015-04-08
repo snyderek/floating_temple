@@ -16,6 +16,7 @@
 #include "python/program_object.h"
 
 #include "third_party/Python-3.4.2/Include/Python.h"
+#include "third_party/Python-3.4.2/Include/floating_temple_hooks.h"
 
 #include <cstddef>
 #include <cstdio>
@@ -28,6 +29,8 @@
 #include "python/dict_local_object.h"
 #include "python/false_local_object.h"
 #include "python/interpreter_impl.h"
+#include "python/list_local_object.h"
+#include "python/long_local_object.h"
 #include "python/none_local_object.h"
 #include "python/proto/local_type.pb.h"
 #include "python/proto/serialization.pb.h"
@@ -43,7 +46,37 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
+
+class PeerObject;
+
 namespace python {
+namespace {
+
+template<class LocalObjectType>
+PyObject* WrapPythonObject(PyObject* py_object) {
+  if (py_object == nullptr) {
+    return nullptr;
+  }
+
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
+  PeerObject* const peer_object =
+      interpreter->CreateUnnamedPeerObject<LocalObjectType>(py_object);
+  return interpreter->PeerObjectToPyProxyObject(peer_object);
+}
+
+PyObject* WrapPythonList(PyObject* py_list_object) {
+  return WrapPythonObject<ListLocalObject>(py_list_object);
+}
+
+PyObject* WrapPythonLong(PyObject* py_long_object) {
+  return WrapPythonObject<LongLocalObject>(py_long_object);
+}
+
+PyObject* WrapPythonDict(PyObject* py_dict_object) {
+  return WrapPythonObject<DictLocalObject>(py_dict_object);
+}
+
+}  // namespace
 
 ProgramObject::ProgramObject(FILE* fp, const string& source_file_name,
                              PyObject* globals)
@@ -91,9 +124,17 @@ void ProgramObject::InvokeMethod(Thread* thread,
     thread->GetOrCreateNamedObject("False", new FalseLocalObject());
     thread->GetOrCreateNamedObject("True", new TrueLocalObject());
 
+    const object_creation_hook_func old_dict_hook = Py_InstallDictCreationHook(
+        &WrapPythonDict);
+    const object_creation_hook_func old_list_hook = Py_InstallListCreationHook(
+        &WrapPythonList);
+
     const PythonScopedPtr return_object(
         PyRun_File(fp_, source_file_name_.c_str(), Py_file_input, globals_,
                    globals_));
+
+    Py_InstallDictCreationHook(old_dict_hook);
+    Py_InstallListCreationHook(old_list_hook);
   }
 
   return_value->set_empty(LOCAL_TYPE_PYOBJECT);

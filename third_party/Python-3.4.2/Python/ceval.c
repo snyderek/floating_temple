@@ -2343,14 +2343,14 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
         }
 
         TARGET(BUILD_LIST) {
-            PyObject *list = (*list_creation_hook)(PyList_New(oparg));
+            PyObject *list =  PyList_New(oparg);
             if (list == NULL)
                 goto error;
             while (--oparg >= 0) {
                 PyObject *item = POP();
                 PyList_SET_ITEM(list, oparg, item);
             }
-            PUSH(list);
+            PUSH((*list_creation_hook)(list));
             DISPATCH();
         }
 
@@ -2377,7 +2377,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
             PyObject *map = _PyDict_NewPresized((Py_ssize_t)oparg);
             if (map == NULL)
                 goto error;
-            PUSH(map);
+            PUSH((*dict_creation_hook)(map));
             DISPATCH();
         }
 

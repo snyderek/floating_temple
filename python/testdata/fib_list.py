@@ -7,7 +7,7 @@ end_tran()
 while True:
   begin_tran()
   next_num = lst[-2] + lst[-1]
-  s.append(next_num)
+  lst.append(next_num)
   end_tran()
 
   print(lst[-10:])

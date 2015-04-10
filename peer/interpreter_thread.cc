@@ -54,6 +54,7 @@ InterpreterThread::InterpreterThread(
     TransactionStoreInternalInterface* transaction_store)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       transaction_level_(0),
+      committing_transaction_(false),
       current_peer_object_(nullptr) {
   GetMinTransactionId(&current_transaction_id_);
   GetMinTransactionId(&rejected_transaction_id_);
@@ -392,15 +393,32 @@ void InterpreterThread::AddTransactionEvent(PendingEvent* event) {
 void InterpreterThread::CommitTransaction() {
   CHECK(!events_.empty());
 
-  transaction_store_->CreateTransaction(events_, &current_transaction_id_,
-                                        modified_objects_, GetSequencePoint());
+  // Prevent infinite recursion.
+  if (committing_transaction_) {
+    return;
+  }
 
-  events_.clear();
-  modified_objects_.clear();
-  // TODO(dss): [Optimization] Set sequence_point_ to NULL here and only call
-  // transaction_store_->GetCurrentSequencePoint when the sequence point is
-  // actually needed.
-  sequence_point_.reset(transaction_store_->GetCurrentSequencePoint());
+  committing_transaction_ = true;
+
+  while (!events_.empty()) {
+    vector<linked_ptr<PendingEvent>> events_to_commit;
+    unordered_map<PeerObjectImpl*, LiveObjectPtr> modified_objects_to_commit;
+    events_to_commit.swap(events_);
+    modified_objects_to_commit.swap(modified_objects_);
+
+    transaction_store_->CreateTransaction(events_to_commit,
+                                          &current_transaction_id_,
+                                          modified_objects_to_commit,
+                                          GetSequencePoint());
+
+    // TODO(dss): [Optimization] Set sequence_point_ to NULL here and only call
+    // transaction_store_->GetCurrentSequencePoint when the sequence point is
+    // actually needed.
+    sequence_point_.reset(transaction_store_->GetCurrentSequencePoint());
+  }
+
+  CHECK(committing_transaction_);
+  committing_transaction_ = false;
 }
 
 void InterpreterThread::CheckIfValueIsNew(

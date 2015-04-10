@@ -104,6 +104,7 @@ class InterpreterThread : public Thread {
   std::unordered_map<PeerObjectImpl*, NewObject> new_objects_;
   std::unordered_map<PeerObjectImpl*, LiveObjectPtr> modified_objects_;
   std::unique_ptr<SequencePoint> sequence_point_;
+  bool committing_transaction_;
 
   PeerObjectImpl* current_peer_object_;
   LiveObjectPtr current_live_object_;

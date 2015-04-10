@@ -887,6 +887,7 @@ cxx_tests = [
 
 sh_tests = [
     File('peer/toy_lang_integration_test.sh'),
+    File('python/fib_list_test.sh'),
     File('python/floating_python_test.sh'),
   ]
 

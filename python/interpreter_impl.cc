@@ -30,6 +30,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "python/local_object_impl.h"
+#include "python/long_local_object.h"
 #include "python/py_proxy_object.h"
 #include "python/python_gil_lock.h"
 #include "python/unserializable_local_object.h"
@@ -118,12 +119,19 @@ PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
 PeerObject* InterpreterImpl::PyProxyObjectToPeerObject(PyObject* py_object) {
   CHECK(py_object != nullptr);
 
-  if (Py_TYPE(py_object) == &PyProxyObject_Type) {
+  const PyTypeObject* const py_type = Py_TYPE(py_object);
+  if (py_type == &PyProxyObject_Type) {
     return PyProxyObject_GetPeerObject(py_object);
   }
 
-  PeerObject* const new_peer_object =
-      CreateUnnamedPeerObject<UnserializableLocalObject>(py_object);
+  PeerObject* new_peer_object = nullptr;
+  if (py_type == &PyLong_Type) {
+    new_peer_object = CreateUnnamedPeerObject<LongLocalObject>(py_object);
+  } else {
+    new_peer_object = CreateUnnamedPeerObject<UnserializableLocalObject>(
+        py_object);
+  }
+
   PeerObject* existing_peer_object = nullptr;
 
   {

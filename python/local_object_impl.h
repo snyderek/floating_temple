@@ -32,6 +32,8 @@ namespace python {
 class ObjectProto;
 
 // Abstract class
+// TODO(dss): Rename this class. The "Impl" suffix doesn't make sense for an
+// abstract class.
 class LocalObjectImpl : public LocalObject {
  public:
   // Steals a reference to 'py_object'.

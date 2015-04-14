@@ -30,7 +30,6 @@
 #include "python/false_local_object.h"
 #include "python/interpreter_impl.h"
 #include "python/list_local_object.h"
-#include "python/long_local_object.h"
 #include "python/none_local_object.h"
 #include "python/proto/local_type.pb.h"
 #include "python/proto/serialization.pb.h"
@@ -70,10 +69,6 @@ PyObject* WrapPythonDict(PyObject* py_dict_object) {
 
 PyObject* WrapPythonList(PyObject* py_list_object) {
   return WrapPythonObject<ListLocalObject>(py_list_object);
-}
-
-PyObject* WrapPythonLong(PyObject* py_long_object) {
-  return WrapPythonObject<LongLocalObject>(py_long_object);
 }
 
 }  // namespace

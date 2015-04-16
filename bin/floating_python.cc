@@ -111,10 +111,12 @@ int main(int argc, char* argv[]) {
   RunPythonProgram(peer.get(), argv[1]);
   LOG(WARNING) << "The program has completed successfully";
 
+  Py_BEGIN_ALLOW_THREADS
   if (FLAGS_linger) {
     // Wait until this process receives a request to exit.
     WaitForSignal();
   }
+  Py_END_ALLOW_THREADS
 
   // Stop the peer.
   LOG(WARNING) << "Stopping peer...";

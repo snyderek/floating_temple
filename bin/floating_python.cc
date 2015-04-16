@@ -108,6 +108,7 @@ int main(int argc, char* argv[]) {
 
   // Run the source file.
   RunPythonProgram(peer.get(), argv[1]);
+  LOG(WARNING) << "The program has completed successfully";
 
   if (FLAGS_linger) {
     // Wait until this process receives a request to exit.

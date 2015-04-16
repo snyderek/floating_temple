@@ -97,6 +97,7 @@ int main(int argc, char* argv[]) {
   // Calling Py_InitializeEx with a parameter of 0 causes signal handler
   // registration to be skipped.
   Py_InitializeEx(0);
+  PyEval_InitThreads();
 
   // Start the peer.
   LOG(WARNING) << "Starting peer...";

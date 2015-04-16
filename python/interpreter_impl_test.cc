@@ -50,6 +50,7 @@ class InterpreterImplTest : public Test {
 
     CHECK_NE(PyImport_AppendInittab("peer", PyInit_peer), -1);
     Py_InitializeEx(0);
+    PyEval_InitThreads();
 
     peer_ = new FakePeer();
   }

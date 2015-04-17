@@ -24,7 +24,6 @@
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
 #include "python/program_object.h"
-#include "python/python_gil_lock.h"
 #include "python/python_scoped_ptr.h"
 
 using std::FILE;
@@ -51,32 +50,27 @@ void RunPythonProgram(Peer* peer, const string& source_file_name) {
 void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
   CHECK(peer != nullptr);
 
-  LocalObject* program_object = nullptr;
-  {
-    PythonGilLock lock;
+  // The following code is adapted from the PyRun_SimpleFileExFlags function in
+  // "third_party/Python-3.4.2/Python/pythonrun.c".
 
-    // The following code is adapted from the PyRun_SimpleFileExFlags function
-    // in "third_party/Python-3.4.2/Python/pythonrun.c".
+  PyObject* const module = PyImport_AddModule("__main__");
+  CHECK(module != nullptr);
 
-    PyObject* const module = PyImport_AddModule("__main__");
-    CHECK(module != nullptr);
+  PyObject* const globals = PyModule_GetDict(module);
+  CHECK(globals != nullptr);
 
-    PyObject* const globals = PyModule_GetDict(module);
-    CHECK(globals != nullptr);
+  if (PyDict_GetItemString(globals, "__file__") == nullptr) {
+    const PythonScopedPtr py_file_name(
+        PyUnicode_DecodeFSDefaultAndSize(source_file_name.data(),
+                                         source_file_name.length()));
+    CHECK(py_file_name.get() != nullptr);
 
-    if (PyDict_GetItemString(globals, "__file__") == nullptr) {
-      const PythonScopedPtr py_file_name(
-          PyUnicode_DecodeFSDefaultAndSize(source_file_name.data(),
-                                           source_file_name.length()));
-      CHECK(py_file_name.get() != nullptr);
-
-      CHECK_EQ(PyDict_SetItemString(globals, "__file__", py_file_name.get()),
-               0);
-      CHECK_EQ(PyDict_SetItemString(globals, "__cached__", Py_None), 0);
-    }
-
-    program_object = new ProgramObject(fp, source_file_name, globals);
+    CHECK_EQ(PyDict_SetItemString(globals, "__file__", py_file_name.get()), 0);
+    CHECK_EQ(PyDict_SetItemString(globals, "__cached__", Py_None), 0);
   }
+
+  LocalObject* const program_object = new ProgramObject(fp, source_file_name,
+                                                        globals);
 
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value);

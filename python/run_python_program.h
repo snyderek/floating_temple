@@ -27,6 +27,8 @@ class Peer;
 
 namespace python {
 
+// A thread must acquire the Python GIL before calling either of these
+// functions.
 void RunPythonProgram(Peer* peer, const std::string& source_file_name);
 void RunPythonFile(Peer* peer, std::FILE* fp,
                    const std::string& source_file_name);

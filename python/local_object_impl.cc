@@ -379,8 +379,12 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     case ObjectProto::TUPLE:
     case ObjectProto::SET:
     case ObjectProto::FROZEN_SET:
+      LOG(FATAL) << "Not yet implemented (object_type == "
+                 << static_cast<int>(object_type) << ")";
+      return nullptr;
+
     case ObjectProto::UNSERIALIZABLE:
-      LOG(FATAL) << "Not yet implemented";
+      LOG(FATAL) << "The object is unserializable.";
       return nullptr;
 
     default:

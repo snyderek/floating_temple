@@ -36,16 +36,21 @@ const int FakeLocalObject::kVoidLocalType = 0;
 const int FakeLocalObject::kStringLocalType = 1;
 const int FakeLocalObject::kObjectLocalType = 2;
 
+const char FakeLocalObject::kSerializationPrefix[] = "FakeLocalObject:";
+
 LocalObject* FakeLocalObject::Clone() const {
   return new FakeLocalObject(s_);
 }
 
 size_t FakeLocalObject::Serialize(void* buffer, size_t buffer_size,
                                   SerializationContext* context) const {
-  const string::size_type length = s_.length();
+  string serialized_form = kSerializationPrefix;
+  serialized_form += s_;
+
+  const string::size_type length = serialized_form.length();
 
   if (static_cast<string::size_type>(buffer_size) >= length) {
-    memcpy(buffer, s_.data(), length);
+    memcpy(buffer, serialized_form.data(), length);
   }
 
   return static_cast<size_t>(length);

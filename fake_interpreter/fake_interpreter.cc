@@ -33,8 +33,14 @@ LocalObject* FakeInterpreter::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
   CHECK(buffer != nullptr);
 
-  const string s(static_cast<const char*>(buffer),
-                 static_cast<string::size_type>(buffer_size));
+  const string prefix = FakeLocalObject::kSerializationPrefix;
+  const size_t prefix_length = prefix.length();
+
+  CHECK_GE(buffer_size, prefix_length);
+  CHECK_EQ(string(static_cast<const char*>(buffer), prefix_length), prefix);
+
+  const string s(static_cast<const char*>(buffer) + prefix_length,
+                 buffer_size - prefix_length);
 
   return new FakeLocalObject(s);
 }

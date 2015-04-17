@@ -30,6 +30,8 @@ class FakeLocalObject : public LocalObject {
   static const int kStringLocalType;
   static const int kObjectLocalType;
 
+  static const char kSerializationPrefix[];
+
   explicit FakeLocalObject(const std::string& s) : s_(s) {}
 
   const std::string& s() const { return s_; }

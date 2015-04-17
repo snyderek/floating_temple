@@ -17,24 +17,28 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
+#include <cstddef>
+#include <memory>
 #include <string>
 
-#include "base/integral_types.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
 
+using std::size_t;
 using std::string;
+using std::unique_ptr;
 
 namespace floating_temple {
-
-static_assert(sizeof(PY_LONG_LONG) == sizeof(int64),
-              "This code assumes that the PY_LONG_LONG type is exactly 64 bits "
-              "wide.");
-
 namespace python {
+namespace {
+
+const bool kSerializedFormIsLittleEndian = false;
+const bool kSerializedFormIsSigned = true;
+
+}  // namespace
 
 LongLocalObject::LongLocalObject(PyObject* py_long_object)
     : LocalObjectImpl(CHECK_NOTNULL(py_long_object)) {
@@ -63,28 +67,14 @@ string LongLocalObject::Dump() const {
 
 // static
 LongLocalObject* LongLocalObject::ParseLongProto(const LongProto& long_proto) {
-  const PY_LONG_LONG value = static_cast<PY_LONG_LONG>(long_proto.value());
-
-  PyObject* py_long = nullptr;
-  {
-    PythonGilLock lock;
-    py_long = PyLong_FromLongLong(value);
-  }
-
-  return new LongLocalObject(py_long);
+  return new LongLocalObject(DeserializeLongObject(long_proto.value_bytes()));
 }
 
 void LongLocalObject::PopulateObjectProto(ObjectProto* object_proto,
                                           SerializationContext* context) const {
   CHECK(object_proto != nullptr);
-
-  int overflow = 0;
-  const PY_LONG_LONG value = GetLongLongValue(&overflow);
-
-  // TODO(dss): Support values that are too big to fit in a 64-bit integer.
-  CHECK_EQ(overflow, 0) << "Overflow";
-
-  object_proto->mutable_long_object()->set_value(static_cast<int64>(value));
+  SerializeLongObject(
+      py_object(), object_proto->mutable_long_object()->mutable_value_bytes());
 }
 
 PY_LONG_LONG LongLocalObject::GetLongLongValue(int* overflow) const {
@@ -105,6 +95,41 @@ PY_LONG_LONG LongLocalObject::GetLongLongValue(int* overflow) const {
   }
 
   return value;
+}
+
+void SerializeLongObject(PyObject* in, string* out) {
+  CHECK(in != nullptr);
+  CHECK_NE(PyLong_CheckExact(in), 0);
+  CHECK(out != nullptr);
+
+  PythonGilLock lock;
+
+  const size_t num_bits = _PyLong_NumBits(in);
+  if (num_bits == 0) {
+    out->clear();
+    return;
+  }
+
+  // size == ceil((num_bits + 1) / 8) == floor(num_bits / 8) + 1
+  const size_t size = num_bits / 8u + 1u;
+
+  const unique_ptr<unsigned char[]> buffer(new unsigned char[size]);
+  if (_PyLong_AsByteArray(reinterpret_cast<PyLongObject*>(in), buffer.get(),
+                          size, kSerializedFormIsLittleEndian ? 1 : 0,
+                          kSerializedFormIsSigned ? 1 : 0) != 0) {
+    CHECK(PyErr_Occurred() != nullptr);
+    PyErr_Print();
+    LOG(FATAL) << "Unexpected Python exception.";
+  }
+
+  out->assign(reinterpret_cast<const char*>(buffer.get()), size);
+}
+
+PyObject* DeserializeLongObject(const string& in) {
+  PythonGilLock lock;
+  return _PyLong_FromByteArray(
+      reinterpret_cast<const unsigned char*>(in.data()), in.length(),
+      kSerializedFormIsLittleEndian ? 1 : 0, kSerializedFormIsSigned ? 1 : 0);
 }
 
 }  // namespace python

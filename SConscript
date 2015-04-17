@@ -812,6 +812,21 @@ python_interpreter_impl_test = python_env.Program(
       ],
   )
 
+python_long_local_object_test = python_env.Program(
+    target = 'python/long_local_object_test',
+    source = Split("""
+        python/long_local_object_test.cc
+      """) + [
+        python_lib,
+        value_lib,
+        python_proto_lib,
+        util_lib,
+        base_lib,
+        gtest_lib,
+        third_party_python_lib,
+      ],
+  )
+
 toy_lang_lexer_test = ft_env.Program(
     target = 'toy_lang/lexer_test',
     source = Split("""
@@ -879,6 +894,7 @@ cxx_tests = [
     protocol_server_protocol_connection_impl_test,
     protocol_server_varint_test,
     python_interpreter_impl_test,
+    python_long_local_object_test,
     toy_lang_lexer_test,
     toy_lang_local_object_impl_test,
     util_dump_context_impl_test,

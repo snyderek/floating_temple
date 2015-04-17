@@ -18,6 +18,8 @@
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
+#include <string>
+
 #include "base/macros.h"
 #include "python/local_object_impl.h"
 
@@ -44,6 +46,9 @@ class LongLocalObject : public LocalObjectImpl {
 
   DISALLOW_COPY_AND_ASSIGN(LongLocalObject);
 };
+
+void SerializeLongObject(PyObject* in, std::string* out);
+PyObject* DeserializeLongObject(const std::string& in);
 
 }  // namespace python
 }  // namespace floating_temple

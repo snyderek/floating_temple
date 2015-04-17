@@ -35,6 +35,9 @@
 #include "peer/proto/transaction_id.pb.h"
 
 namespace floating_temple {
+
+class LocalObject;
+
 namespace peer {
 
 class PeerObjectImpl;
@@ -47,6 +50,9 @@ class InterpreterThread : public Thread {
   explicit InterpreterThread(
       TransactionStoreInternalInterface* transaction_store);
   ~InterpreterThread() override;
+
+  void RunProgram(LocalObject* local_object, const std::string& method_name,
+                  Value* return_value);
 
   void Rewind(const TransactionId& rejected_transaction_id);
   void Resume();

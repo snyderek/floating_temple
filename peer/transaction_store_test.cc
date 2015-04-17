@@ -15,14 +15,20 @@
 
 #include "peer/transaction_store.h"
 
+#include <cstddef>
+#include <cstring>
 #include <string>
+#include <vector>
 
 #include <gflags/gflags.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "fake_interpreter/fake_interpreter.h"
 #include "fake_interpreter/fake_local_object.h"
+#include "include/c++/local_object.h"
 #include "include/c++/thread.h"
+#include "include/c++/value.h"
 #include "peer/canonical_peer_map.h"
 #include "peer/get_peer_message_type.h"
 #include "peer/interpreter_thread.h"
@@ -33,7 +39,10 @@
 
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
+using std::memcpy;
+using std::size_t;
 using std::string;
+using std::vector;
 using testing::AnyNumber;
 using testing::InitGoogleMock;
 using testing::_;
@@ -47,6 +56,69 @@ namespace {
 
 MATCHER_P(IsPeerMessageType, type, "") {
   return GetPeerMessageType(arg) == type;
+}
+
+class TestProgramObject : public LocalObject {
+ public:
+  TestProgramObject() {}
+
+  LocalObject* Clone() const override;
+  size_t Serialize(void* buffer, size_t buffer_size,
+                   SerializationContext* context) const override;
+  void InvokeMethod(Thread* thread,
+                    PeerObject* peer_object,
+                    const string& method_name,
+                    const vector<Value>& parameters,
+                    Value* return_value) override;
+  string Dump() const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestProgramObject);
+};
+
+LocalObject* TestProgramObject::Clone() const {
+  return new TestProgramObject();
+}
+
+size_t TestProgramObject::Serialize(void* buffer, size_t buffer_size,
+                                    SerializationContext* context) const {
+  const string kSerializedForm = "TestProgramObject:";
+  const size_t length = kSerializedForm.length();
+
+  if (length <= buffer_size) {
+    memcpy(buffer, kSerializedForm.data(), length);
+  }
+
+  return length;
+}
+
+void TestProgramObject::InvokeMethod(Thread* thread,
+                                     PeerObject* peer_object,
+                                     const string& method_name,
+                                     const vector<Value>& parameters,
+                                     Value* return_value) {
+  CHECK(thread != nullptr);
+  CHECK_EQ(method_name, "run");
+  CHECK_EQ(parameters.size(), 0);
+  CHECK(return_value != nullptr);
+
+  if (!thread->BeginTransaction()) {
+    return;
+  }
+
+  thread->GetOrCreateNamedObject("athos", new FakeLocalObject(""));
+  thread->GetOrCreateNamedObject("porthos", new FakeLocalObject(""));
+  thread->GetOrCreateNamedObject("aramis", new FakeLocalObject(""));
+
+  if (!thread->EndTransaction()) {
+    return;
+  }
+
+  return_value->set_empty(0);
+}
+
+string TestProgramObject::Dump() const {
+  return "{ \"type\": \"TestProgramObject\" }";
 }
 
 TEST(TransactionStoreTest,
@@ -75,13 +147,12 @@ TEST(TransactionStoreTest,
                   remote_peer, IsPeerMessageType(PeerMessage::GET_OBJECT), _))
       .Times(3);
 
-  Thread* const thread = transaction_store.CreateInterpreterThread();
+  InterpreterThread* const interpreter_thread =
+      transaction_store.CreateInterpreterThread();
 
-  ASSERT_TRUE(thread->BeginTransaction());
-  thread->GetOrCreateNamedObject("athos", new FakeLocalObject(""));
-  thread->GetOrCreateNamedObject("porthos", new FakeLocalObject(""));
-  thread->GetOrCreateNamedObject("aramis", new FakeLocalObject(""));
-  ASSERT_TRUE(thread->EndTransaction());
+  Value return_value;
+  interpreter_thread->RunProgram(new TestProgramObject(), "run", &return_value);
+  EXPECT_EQ(Value::EMPTY, return_value.type());
 
   transaction_store.NotifyNewConnection(remote_peer);
 }

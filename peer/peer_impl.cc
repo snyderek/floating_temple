@@ -20,8 +20,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
-#include "include/c++/value.h"
 #include "peer/canonical_peer_map.h"
 #include "peer/connection_manager.h"
 #include "peer/interpreter_thread.h"
@@ -90,23 +88,13 @@ void PeerImpl::Start(Interpreter* interpreter,
 
 void PeerImpl::RunProgram(LocalObject* local_object, const string& method_name,
                           Value* return_value) {
-  CHECK(return_value != nullptr);
-
   if (state_.WaitForNotState(NOT_STARTED | STARTING) != RUNNING) {
     return;
   }
 
-  Thread* const thread = transaction_store_->CreateInterpreterThread();
-  PeerObject* const peer_object = thread->CreatePeerObject(local_object);
-
-  for (;;) {
-    Value return_value_temp;
-    if (thread->CallMethod(peer_object, method_name, vector<Value>(),
-                           &return_value_temp)) {
-      *return_value = return_value_temp;
-      return;
-    }
-  }
+  InterpreterThread* const interpreter_thread =
+      transaction_store_->CreateInterpreterThread();
+  interpreter_thread->RunProgram(local_object, method_name, return_value);
 }
 
 void PeerImpl::Stop() {

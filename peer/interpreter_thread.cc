@@ -48,6 +48,9 @@ using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
+
+class PeerObject;
+
 namespace peer {
 
 InterpreterThread::InterpreterThread(
@@ -61,6 +64,23 @@ InterpreterThread::InterpreterThread(
 }
 
 InterpreterThread::~InterpreterThread() {
+}
+
+void InterpreterThread::RunProgram(LocalObject* local_object,
+                                   const string& method_name,
+                                   Value* return_value) {
+  CHECK(return_value != nullptr);
+
+  PeerObject* const peer_object = CreatePeerObject(local_object);
+
+  for (;;) {
+    Value return_value_temp;
+    if (CallMethod(peer_object, method_name, vector<Value>(),
+                   &return_value_temp)) {
+      *return_value = return_value_temp;
+      return;
+    }
+  }
 }
 
 void InterpreterThread::Rewind(const TransactionId& rejected_transaction_id) {

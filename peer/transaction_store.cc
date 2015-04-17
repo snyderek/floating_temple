@@ -418,12 +418,18 @@ void TransactionStore::HandleApplyTransactionMessage(
 void TransactionStore::HandleGetObjectMessage(
     const CanonicalPeer* remote_peer,
     const GetObjectMessage& get_object_message) {
+  CHECK(remote_peer != nullptr);
+
   const Uuid& requested_object_id = get_object_message.object_id();
 
   SharedObject* const requested_shared_object = GetSharedObject(
       requested_object_id);
 
   if (requested_shared_object == nullptr) {
+    VLOG(1) << "The remote peer " << remote_peer->peer_id() << " requested the "
+            << "object " << UuidToString(requested_object_id) << " but it does "
+            << "not exist on this peer.";
+
     PeerMessage reply;
     reply.mutable_store_object_message()->mutable_object_id()->CopyFrom(
         requested_object_id);

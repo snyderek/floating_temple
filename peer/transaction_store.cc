@@ -100,7 +100,7 @@ TransactionStore::TransactionStore(CanonicalPeerMap* canonical_peer_map,
 TransactionStore::~TransactionStore() {
 }
 
-Thread* TransactionStore::CreateThread() {
+InterpreterThread* TransactionStore::CreateInterpreterThread() {
   InterpreterThread* const thread = new InterpreterThread(this);
 
   {

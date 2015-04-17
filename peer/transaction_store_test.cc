@@ -25,6 +25,7 @@
 #include "include/c++/thread.h"
 #include "peer/canonical_peer_map.h"
 #include "peer/get_peer_message_type.h"
+#include "peer/interpreter_thread.h"
 #include "peer/mock_peer_message_sender.h"
 #include "peer/proto/peer.pb.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
@@ -74,7 +75,7 @@ TEST(TransactionStoreTest,
                   remote_peer, IsPeerMessageType(PeerMessage::GET_OBJECT), _))
       .Times(3);
 
-  Thread* const thread = transaction_store.CreateThread();
+  Thread* const thread = transaction_store.CreateInterpreterThread();
 
   ASSERT_TRUE(thread->BeginTransaction());
   thread->GetOrCreateNamedObject("athos", new FakeLocalObject(""));

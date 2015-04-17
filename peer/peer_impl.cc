@@ -24,6 +24,7 @@
 #include "include/c++/value.h"
 #include "peer/canonical_peer_map.h"
 #include "peer/connection_manager.h"
+#include "peer/interpreter_thread.h"
 #include "peer/peer_id.h"
 #include "peer/transaction_store.h"
 #include "util/state_variable.h"
@@ -95,7 +96,7 @@ void PeerImpl::RunProgram(LocalObject* local_object, const string& method_name,
     return;
   }
 
-  Thread* const thread = transaction_store_->CreateThread();
+  Thread* const thread = transaction_store_->CreateInterpreterThread();
   PeerObject* const peer_object = thread->CreatePeerObject(local_object);
 
   for (;;) {

@@ -40,7 +40,6 @@
 namespace floating_temple {
 
 class Interpreter;
-class Thread;
 class Value;
 
 namespace peer {
@@ -74,8 +73,9 @@ class TransactionStore : public ConnectionHandler,
                    bool delay_object_binding);
   ~TransactionStore() override;
 
-  // The caller must not take ownership of the returned Thread instance.
-  Thread* CreateThread();
+  // The caller must not take ownership of the returned InterpreterThread
+  // instance.
+  InterpreterThread* CreateInterpreterThread();
 
   void NotifyNewConnection(const CanonicalPeer* remote_peer) override;
   // TODO(dss): Move parsing of the peer message to the ConnectionManager class.

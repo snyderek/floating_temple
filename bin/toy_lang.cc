@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
       << "You must specify exactly one source file on the command line.";
 
   const unique_ptr<Peer> peer(CreateStandalonePeer());
-  RunToyLangProgram(peer.get(), argv[1]);
+  RunToyLangProgram(peer.get(), argv[1], false);
   peer->Stop();
 
   return 0;

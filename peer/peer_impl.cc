@@ -86,8 +86,10 @@ void PeerImpl::Start(Interpreter* interpreter,
   state_.ChangeState(RUNNING);
 }
 
-void PeerImpl::RunProgram(LocalObject* local_object, const string& method_name,
-                          Value* return_value) {
+void PeerImpl::RunProgram(LocalObject* local_object,
+                          const string& method_name,
+                          Value* return_value,
+                          bool linger) {
   if (state_.WaitForNotState(NOT_STARTED | STARTING) != RUNNING) {
     return;
   }
@@ -95,7 +97,7 @@ void PeerImpl::RunProgram(LocalObject* local_object, const string& method_name,
   InterpreterThread* const interpreter_thread =
       transaction_store_->CreateInterpreterThread();
   interpreter_thread->RunProgram(local_object, method_name, return_value,
-                                 false);
+                                 linger);
 }
 
 void PeerImpl::Stop() {

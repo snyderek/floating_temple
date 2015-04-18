@@ -25,8 +25,9 @@ class Peer;
 
 namespace toy_lang {
 
-void RunToyLangProgram(Peer* peer, const std::string& source_file_name);
-void RunToyLangFile(Peer* peer, std::FILE* fp);
+void RunToyLangProgram(Peer* peer, const std::string& source_file_name,
+                       bool linger);
+void RunToyLangFile(Peer* peer, std::FILE* fp, bool linger);
 
 
 }  // namespace toy_lang

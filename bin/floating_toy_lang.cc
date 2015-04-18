@@ -34,7 +34,6 @@ using floating_temple::INFO;
 using floating_temple::InstallSignalHandler;
 using floating_temple::ParseCommaSeparatedList;
 using floating_temple::Peer;
-using floating_temple::WaitForSignal;
 using floating_temple::toy_lang::InterpreterImpl;
 using floating_temple::toy_lang::RunToyLangProgram;
 using google::InitGoogleLogging;
@@ -92,13 +91,8 @@ int main(int argc, char* argv[]) {
   LOG(WARNING) << "Peer started.";
 
   // Run the source file.
-  RunToyLangProgram(peer.get(), argv[1]);
+  RunToyLangProgram(peer.get(), argv[1], FLAGS_linger);
   LOG(WARNING) << "The program has completed successfully";
-
-  if (FLAGS_linger) {
-    // Wait until this process receives a request to exit.
-    WaitForSignal();
-  }
 
   // Stop the peer.
   LOG(WARNING) << "Stopping peer...";

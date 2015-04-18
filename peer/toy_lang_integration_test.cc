@@ -65,7 +65,7 @@ class ToyLangIntegrationTest : public Test {
     FILE* const fp = fmemopen(buffer, file_content.length(), "r");
     PLOG_IF(FATAL, fp == nullptr) << "fmemopen";
 
-    toy_lang::RunToyLangFile(peer_, fp);
+    toy_lang::RunToyLangFile(peer_, fp, false);
 
     PLOG_IF(FATAL, fclose(fp) != 0) << "fclose";
     delete[] buffer;

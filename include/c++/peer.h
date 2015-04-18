@@ -35,7 +35,8 @@ class Peer {
   // The peer takes ownership of *local_object.
   virtual void RunProgram(LocalObject* local_object,
                           const std::string& method_name,
-                          Value* return_value) = 0;
+                          Value* return_value,
+                          bool linger) = 0;
 
   virtual void Stop() = 0;
 };

@@ -71,7 +71,7 @@ class InterpreterImplTest : public Test {
     FILE* const fp = fmemopen(buffer, length, "r");
     PLOG_IF(FATAL, fp == nullptr) << "fmemopen";
 
-    RunPythonFile(peer_, fp, file_name);
+    RunPythonFile(peer_, fp, file_name, false);
 
     PLOG_IF(FATAL, fclose(fp) != 0) << "fclose";
     delete[] buffer;

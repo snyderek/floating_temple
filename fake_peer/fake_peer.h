@@ -27,8 +27,10 @@ class FakePeer : public Peer {
  public:
   FakePeer();
 
-  void RunProgram(LocalObject* local_object, const std::string& method_name,
-                  Value* return_value) override;
+  void RunProgram(LocalObject* local_object,
+                  const std::string& method_name,
+                  Value* return_value,
+                  bool linger) override;
   void Stop() override;
 
  private:

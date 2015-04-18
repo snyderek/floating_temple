@@ -96,7 +96,7 @@ void floatingtemple_RunProgram(floatingtemple_Interpreter* interpreter,
       proxy_interpreter->SetInterpreterForCurrentThread(interpreter);
 
   peer->peer->RunProgram(proxy_local_object, method_name,
-                         reinterpret_cast<Value*>(return_value));
+                         reinterpret_cast<Value*>(return_value), false);
 
   proxy_interpreter->SetInterpreterForCurrentThread(old_interpreter);
 }

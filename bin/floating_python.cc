@@ -41,7 +41,6 @@ using floating_temple::INFO;
 using floating_temple::InstallSignalHandler;
 using floating_temple::ParseCommaSeparatedList;
 using floating_temple::Peer;
-using floating_temple::WaitForSignal;
 using floating_temple::python::InterpreterImpl;
 using floating_temple::python::PyInit_peer;
 using floating_temple::python::RunPythonProgram;
@@ -108,15 +107,8 @@ int main(int argc, char* argv[]) {
   LOG(WARNING) << "Peer started.";
 
   // Run the source file.
-  RunPythonProgram(peer.get(), argv[1]);
+  RunPythonProgram(peer.get(), argv[1], FLAGS_linger);
   LOG(WARNING) << "The program has completed successfully";
-
-  Py_BEGIN_ALLOW_THREADS
-  if (FLAGS_linger) {
-    // Wait until this process receives a request to exit.
-    WaitForSignal();
-  }
-  Py_END_ALLOW_THREADS
 
   // Stop the peer.
   LOG(WARNING) << "Stopping peer...";

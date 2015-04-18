@@ -37,17 +37,20 @@ class LocalObject;
 
 namespace python {
 
-void RunPythonProgram(Peer* peer, const string& source_file_name) {
+void RunPythonProgram(Peer* peer, const string& source_file_name, bool linger) {
   // Run the source file.
   FILE* const fp = fopen(source_file_name.c_str(), "r");
   PLOG_IF(FATAL, fp == nullptr) << "fopen";
 
-  RunPythonFile(peer, fp, source_file_name);
+  RunPythonFile(peer, fp, source_file_name, linger);
 
   PLOG_IF(FATAL, fclose(fp) != 0) << "fclose";
 }
 
-void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
+void RunPythonFile(Peer* peer,
+                   FILE* fp,
+                   const string& source_file_name,
+                   bool linger) {
   CHECK(peer != nullptr);
 
   // The following code is adapted from the PyRun_SimpleFileExFlags function in
@@ -72,8 +75,10 @@ void RunPythonFile(Peer* peer, FILE* fp, const string& source_file_name) {
   LocalObject* const program_object = new ProgramObject(fp, source_file_name,
                                                         globals);
 
+  Py_BEGIN_ALLOW_THREADS
   Value return_value;
-  peer->RunProgram(program_object, "run", &return_value);
+  peer->RunProgram(program_object, "run", &return_value, linger);
+  Py_END_ALLOW_THREADS
 }
 
 }  // namespace python

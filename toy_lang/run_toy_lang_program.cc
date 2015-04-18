@@ -35,24 +35,25 @@ using std::string;
 namespace floating_temple {
 namespace toy_lang {
 
-void RunToyLangProgram(Peer* peer, const string& source_file_name) {
+void RunToyLangProgram(Peer* peer, const string& source_file_name,
+                       bool linger) {
   // Run the source file.
   FILE* const fp = fopen(source_file_name.c_str(), "r");
   PLOG_IF(FATAL, fp == nullptr) << "fopen";
 
-  RunToyLangFile(peer, fp);
+  RunToyLangFile(peer, fp, linger);
 
   PLOG_IF(FATAL, fclose(fp) != 0) << "fclose";
 }
 
-void RunToyLangFile(Peer* peer, FILE* fp) {
+void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   CHECK(peer != nullptr);
 
   Lexer lexer(fp);
   const const_shared_ptr<Expression> expression(ParseFile(&lexer));
 
   Value return_value;
-  peer->RunProgram(new ProgramObject(expression), "run", &return_value);
+  peer->RunProgram(new ProgramObject(expression), "run", &return_value, linger);
 }
 
 }  // namespace toy_lang

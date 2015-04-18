@@ -87,7 +87,7 @@ LocalObject* ProgramObject::Clone() const {
 size_t ProgramObject::Serialize(void* buffer, size_t buffer_size,
                                 SerializationContext* context) const {
   ObjectProto object_proto;
-  object_proto.mutable_unserializable_object();
+  object_proto.mutable_unserializable_object()->set_type_name("ProgramObject");
 
   const size_t byte_size = static_cast<size_t>(object_proto.ByteSize());
   if (byte_size <= buffer_size) {

@@ -43,7 +43,13 @@ string UnserializableLocalObject::Dump() const {
 void UnserializableLocalObject::PopulateObjectProto(
     ObjectProto* object_proto, SerializationContext* context) const {
   CHECK(object_proto != nullptr);
-  object_proto->mutable_unserializable_object();
+
+  const PyTypeObject* const py_type = Py_TYPE(py_object());
+  CHECK(py_type != nullptr);
+  const char* const type_name = py_type->tp_name;
+  CHECK(type_name != nullptr);
+
+  object_proto->mutable_unserializable_object()->set_type_name(type_name);
 }
 
 }  // namespace python

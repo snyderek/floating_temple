@@ -384,7 +384,9 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
       return nullptr;
 
     case ObjectProto::UNSERIALIZABLE:
-      LOG(FATAL) << "The object is unserializable.";
+      LOG(FATAL) << "The object is unserializable (type == \""
+                 << CEscape(object_proto.unserializable_object().type_name())
+                 << "\")";
       return nullptr;
 
     default:

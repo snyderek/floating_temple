@@ -63,6 +63,7 @@ message MappingProto {
 }
 
 message UnserializableProto {
+  required string type_name = 1;
 }
 
 message ObjectProto {

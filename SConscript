@@ -256,6 +256,7 @@ python_lib = python_env.Library(
         python/run_python_program.cc
         python/thread_substitution.cc
         python/true_local_object.cc
+        python/unicode_local_object.cc
         python/unserializable_local_object.cc
       """),
   )

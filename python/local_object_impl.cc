@@ -38,6 +38,7 @@
 #include "python/python_gil_lock.h"
 #include "python/thread_substitution.h"
 #include "python/true_local_object.h"
+#include "python/unicode_local_object.h"
 
 using std::size_t;
 using std::string;
@@ -363,6 +364,10 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     case ObjectProto::TRUE:
       return new TrueLocalObject();
 
+    case ObjectProto::UNICODE:
+      return UnicodeLocalObject::ParseUnicodeProto(
+          object_proto.unicode_object());
+
     case ObjectProto::LIST:
       return ListLocalObject::ParseListProto(object_proto.list_object(),
                                              context);
@@ -375,7 +380,6 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     case ObjectProto::COMPLEX:
     case ObjectProto::BYTES:
     case ObjectProto::BYTE_ARRAY:
-    case ObjectProto::UNICODE:
     case ObjectProto::TUPLE:
     case ObjectProto::SET:
     case ObjectProto::FROZEN_SET:

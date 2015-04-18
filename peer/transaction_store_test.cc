@@ -151,7 +151,8 @@ TEST(TransactionStoreTest,
       transaction_store.CreateInterpreterThread();
 
   Value return_value;
-  interpreter_thread->RunProgram(new TestProgramObject(), "run", &return_value);
+  interpreter_thread->RunProgram(new TestProgramObject(), "run", &return_value,
+                                 false);
   EXPECT_EQ(Value::EMPTY, return_value.type());
 
   transaction_store.NotifyNewConnection(remote_peer);

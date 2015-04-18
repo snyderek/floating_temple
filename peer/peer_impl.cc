@@ -94,7 +94,8 @@ void PeerImpl::RunProgram(LocalObject* local_object, const string& method_name,
 
   InterpreterThread* const interpreter_thread =
       transaction_store_->CreateInterpreterThread();
-  interpreter_thread->RunProgram(local_object, method_name, return_value);
+  interpreter_thread->RunProgram(local_object, method_name, return_value,
+                                 false);
 }
 
 void PeerImpl::Stop() {

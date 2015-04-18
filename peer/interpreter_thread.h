@@ -45,14 +45,17 @@ class PendingEvent;
 class SequencePoint;
 class TransactionStoreInternalInterface;
 
+// TODO(dss): Make this class inherit privately from class Thread.
 class InterpreterThread : public Thread {
  public:
   explicit InterpreterThread(
       TransactionStoreInternalInterface* transaction_store);
   ~InterpreterThread() override;
 
-  void RunProgram(LocalObject* local_object, const std::string& method_name,
-                  Value* return_value);
+  void RunProgram(LocalObject* local_object,
+                  const std::string& method_name,
+                  Value* return_value,
+                  bool linger);
 
   void Rewind(const TransactionId& rejected_transaction_id);
   void Resume();
@@ -127,6 +130,7 @@ class InterpreterThread : public Thread {
   // calling GetMinTransactionId.
   TransactionId rejected_transaction_id_;
   std::unordered_set<pthread_t> blocking_threads_;
+  mutable CondVar rewinding_cond_;
   mutable CondVar blocking_threads_empty_cond_;
   mutable Mutex rejected_transaction_id_mu_;
 

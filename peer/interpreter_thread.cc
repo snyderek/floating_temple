@@ -68,7 +68,8 @@ InterpreterThread::~InterpreterThread() {
 
 void InterpreterThread::RunProgram(LocalObject* local_object,
                                    const string& method_name,
-                                   Value* return_value) {
+                                   Value* return_value,
+                                   bool linger) {
   CHECK(return_value != nullptr);
 
   PeerObject* const peer_object = CreatePeerObject(local_object);
@@ -77,8 +78,33 @@ void InterpreterThread::RunProgram(LocalObject* local_object,
     Value return_value_temp;
     if (CallMethod(peer_object, method_name, vector<Value>(),
                    &return_value_temp)) {
-      *return_value = return_value_temp;
-      return;
+      if (!linger) {
+        *return_value = return_value_temp;
+        return;
+      }
+
+      // TODO(dss): The following code is similar to code in
+      // InterpreterThread::CallMethodHelper. Consider merging the duplicate
+      // functionality.
+
+      MutexLock lock(&rejected_transaction_id_mu_);
+
+      // The program completed successfully. Enter linger mode. This allows
+      // execution of the current thread to be rewound if another peer rejects a
+      // transaction from this peer.
+      while (!Rewinding_Locked()) {
+        // TODO(dss): Exit if the process receives SIGTERM.
+        rewinding_cond_.WaitPatiently(&rejected_transaction_id_mu_);
+      }
+
+      // A rewind operation was requested. Wait for each blocking thread to call
+      // InterpreterThread::Resume before continuing.
+      while (!blocking_threads_.empty()) {
+        blocking_threads_empty_cond_.Wait(&rejected_transaction_id_mu_);
+      }
+
+      // Clear the rewind state.
+      GetMinTransactionId(&rejected_transaction_id_);
     }
   }
 }
@@ -90,6 +116,7 @@ void InterpreterThread::Rewind(const TransactionId& rejected_transaction_id) {
       CompareTransactionIds(rejected_transaction_id,
                             rejected_transaction_id_) < 0) {
     rejected_transaction_id_.CopyFrom(rejected_transaction_id);
+    rewinding_cond_.Broadcast();
   }
 
   CHECK(blocking_threads_.insert(pthread_self()).second);
@@ -353,6 +380,9 @@ bool InterpreterThread::CallMethodHelper(
   return false;
 }
 
+// Waits for blocking_threads_ to be empty, which indicates it's safe to resume
+// execution. Returns true if blocking_threads_ is empty. Returns false if
+// another thread initiates a rewind operation during the wait.
 bool InterpreterThread::WaitForBlockingThreads_Locked(
     const TransactionId& method_call_transaction_id) const {
   for (;;) {

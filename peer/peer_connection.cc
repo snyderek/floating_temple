@@ -187,6 +187,7 @@ void PeerConnection::NotifyMessageReceived(const PeerMessage& message) {
   VLOG(1) << "Received a " << PeerMessage::Type_Name(type) << " message from "
           << "peer " << GetRemotePeerIdForLogging() << " (peer connection "
           << this << ")";
+  VLOG(4) << "Incoming message:\n" << message.DebugString();
 
   switch (type) {
     case PeerMessage::HELLO:

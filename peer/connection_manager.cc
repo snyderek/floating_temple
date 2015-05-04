@@ -17,7 +17,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "base/cond_var.h"
@@ -33,7 +32,6 @@
 #include "protocol_server/protocol_server.h"
 #include "util/state_variable.h"
 
-using std::make_pair;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -74,8 +72,8 @@ void ConnectionManager::ConnectToRemotePeer(const CanonicalPeer* remote_peer) {
 
   {
     MutexLock lock(&connections_mu_);
-    CHECK(unnamed_connections_.insert(make_pair(peer_connection.get(),
-                                                peer_connection)).second);
+    CHECK(unnamed_connections_.emplace(peer_connection.get(),
+                                       peer_connection).second);
   }
 
   ProtocolConnection* const connection = protocol_server_.OpenConnection(
@@ -273,8 +271,7 @@ ConnectionManager::NotifyConnectionReceived(ProtocolConnection* connection,
 
   {
     MutexLock lock(&connections_mu_);
-    unnamed_connections_.insert(make_pair(peer_connection.get(),
-                                          peer_connection));
+    unnamed_connections_.emplace(peer_connection.get(), peer_connection);
   }
 
   return peer_connection.get();
@@ -405,9 +402,8 @@ void ConnectionManager::NotifyRemotePeerKnown(
 
           peer_connection_to_drain = named_connection;
 
-          CHECK(unnamed_connections_.insert(
-                    make_pair(peer_connection_to_drain.get(),
-                              peer_connection_to_drain)).second);
+          CHECK(unnamed_connections_.emplace(peer_connection_to_drain.get(),
+                                             peer_connection_to_drain).second);
 
           named_connection = unnamed_connection_it->second;
           unnamed_connections_.erase(unnamed_connection_it);

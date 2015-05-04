@@ -20,7 +20,6 @@
 #include <cstddef>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "base/integral_types.h"
@@ -36,7 +35,6 @@
 #include "python/unicode_local_object.h"
 #include "python/unserializable_local_object.h"
 
-using std::make_pair;
 using std::size_t;
 using std::string;
 using std::vector;
@@ -99,8 +97,8 @@ PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
   {
     MutexLock lock(&objects_mu_);
 
-    const auto insert_result = proxy_objects_.insert(
-        make_pair(peer_object, py_new_proxy_object));
+    const auto insert_result = proxy_objects_.emplace(peer_object,
+                                                      py_new_proxy_object);
 
     if (insert_result.second) {
       return py_new_proxy_object;
@@ -140,12 +138,11 @@ PeerObject* InterpreterImpl::PyProxyObjectToPeerObject(PyObject* py_object) {
   {
     MutexLock lock(&objects_mu_);
 
-    const auto insert_result = unserializable_objects_.insert(
-        make_pair(py_object, new_peer_object));
+    const auto insert_result = unserializable_objects_.emplace(py_object,
+                                                               new_peer_object);
 
     if (insert_result.second) {
-      CHECK(proxy_objects_.insert(make_pair(new_peer_object,
-                                            py_object)).second);
+      CHECK(proxy_objects_.emplace(new_peer_object, py_object).second);
       return new_peer_object;
     }
     existing_peer_object = insert_result.first->second;

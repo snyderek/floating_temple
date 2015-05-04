@@ -98,7 +98,7 @@ PeerObject* FakeThread::PrivateCreatePeerObject(LocalObject* initial_version) {
   PeerObject* const peer_object = new FakePeerObject(initial_version);
   VLOG(1) << "New peer object: " << StringPrintf("%p", peer_object);
   VLOG(1) << "peer_object: " << peer_object->Dump();
-  peer_objects_.push_back(make_linked_ptr(peer_object));
+  peer_objects_.emplace_back(peer_object);
   return peer_object;
 }
 

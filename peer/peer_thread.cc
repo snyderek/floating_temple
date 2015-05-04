@@ -486,8 +486,7 @@ bool PeerThread::ObjectMatches(
 
   if (shared_object_is_new && peer_object_is_unbound) {
     const pair<unordered_map<SharedObject*, PeerObjectImpl*>::iterator, bool>
-        insert_result = new_peer_objects_->insert(
-        pair<SharedObject*, PeerObjectImpl*>(shared_object, nullptr));
+        insert_result = new_peer_objects_->emplace(shared_object, nullptr);
 
     if (!insert_result.second) {
       return false;

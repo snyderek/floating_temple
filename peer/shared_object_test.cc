@@ -172,7 +172,7 @@ class SharedObjectTest : public Test {
     CHECK(event != nullptr);
     CHECK(events != nullptr);
 
-    events->push_back(make_linked_ptr(event));
+    events->emplace_back(event);
   }
 
   MockTransactionStoreCore* transaction_store_core_;

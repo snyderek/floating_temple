@@ -35,6 +35,10 @@ class Thread;
 // multiple LocalObject objects to refer to the same local interpreter object.
 //
 // Subclasses of this class are thread-safe.
+//
+// TODO(dss): Create a separate interface class for local objects that are
+// unversioned. The unversioned interface won't need the Clone and Serialize
+// methods.
 class LocalObject {
  public:
   virtual ~LocalObject() {}

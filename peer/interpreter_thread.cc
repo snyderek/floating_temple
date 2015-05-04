@@ -40,7 +40,6 @@
 #include "peer/transaction_id_util.h"
 #include "peer/transaction_store_internal_interface.h"
 
-using std::make_pair;
 using std::pair;
 using std::string;
 using std::unordered_map;
@@ -178,13 +177,11 @@ PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version) {
       transaction_store_->CreateUnboundPeerObject();
 
   if (transaction_store_->delay_object_binding()) {
-    pair<PeerObjectImpl*, NewObject> new_map_value;
-    new_map_value.first = peer_object;
-    NewObject* const new_object = &new_map_value.second;
-    new_object->live_object = new_live_object;
-    new_object->object_is_named = false;
+    NewObject new_object;
+    new_object.live_object = new_live_object;
+    new_object.object_is_named = false;
 
-    CHECK(new_objects_.insert(new_map_value).second);
+    CHECK(new_objects_.emplace(peer_object, new_object).second);
   } else {
     AddTransactionEvent(new ObjectCreationPendingEvent(current_peer_object_,
                                                        peer_object,
@@ -203,14 +200,12 @@ PeerObject* InterpreterThread::GetOrCreateNamedObject(
   PeerObjectImpl* const peer_object =
       transaction_store_->GetOrCreateNamedObject(name);
 
-  pair<PeerObjectImpl*, NewObject> new_object_map_value;
-  new_object_map_value.first = peer_object;
-  NewObject* const new_object = &new_object_map_value.second;
-  new_object->live_object = new_live_object;
-  new_object->object_is_named = true;
+  NewObject new_object;
+  new_object.live_object = new_live_object;
+  new_object.object_is_named = true;
 
   const pair<unordered_map<PeerObjectImpl*, NewObject>::iterator, bool>
-      insert_result = new_objects_.insert(new_object_map_value);
+      insert_result = new_objects_.emplace(peer_object, new_object);
 
   if (insert_result.second) {
     // The named object has not yet been created in this thread.
@@ -432,7 +427,7 @@ void InterpreterThread::AddTransactionEvent(PendingEvent* event) {
 
   const bool first_event = events_.empty();
 
-  events_.push_back(make_linked_ptr(event));
+  events_.emplace_back(event);
 
   if (transaction_level_ == 0 &&
       !(first_event && event->prev_peer_object() == nullptr)) {
@@ -496,7 +491,7 @@ void InterpreterThread::CheckIfPeerObjectIsNew(
       const NewObject& new_object = it->second;
       const ConstLiveObjectPtr& live_object = new_object.live_object;
 
-      live_objects->insert(make_pair(peer_object, live_object));
+      live_objects->emplace(peer_object, live_object);
 
       if (!new_object.object_is_named) {
         new_peer_objects->insert(peer_object);
@@ -505,8 +500,8 @@ void InterpreterThread::CheckIfPeerObjectIsNew(
       // Make the object available to other methods in the same transaction.
       // Subsequent transactions will be able to fetch the object from the
       // transaction store.
-      CHECK(modified_objects_.insert(make_pair(peer_object,
-                                               live_object->Clone())).second);
+      CHECK(modified_objects_.emplace(peer_object,
+                                      live_object->Clone()).second);
 
       new_objects_.erase(it);
     }

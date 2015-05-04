@@ -55,7 +55,7 @@ PeerObjectImpl* MockTransactionStore::CreateUnboundPeerObject() {
   core_->CreateUnboundPeerObject();
 
   PeerObjectImpl* const peer_object = new PeerObjectImpl();
-  unnamed_objects_.push_back(make_linked_ptr(peer_object));
+  unnamed_objects_.emplace_back(peer_object);
 
   return peer_object;
 }

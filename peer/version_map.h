@@ -129,8 +129,7 @@ void VersionMap<CompareFunction>::AddPeerTransactionId(
   const std::pair<
       std::unordered_map<const CanonicalPeer*, TransactionId>::iterator,
       bool> insert_result =
-      peer_transaction_ids_.insert(std::make_pair(canonical_peer,
-                                                  transaction_id));
+      peer_transaction_ids_.emplace(canonical_peer, transaction_id);
 
   if (!insert_result.second) {
     TransactionId* const existing_transaction_id = &insert_result.first->second;

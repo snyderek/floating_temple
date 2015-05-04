@@ -67,7 +67,7 @@ void IntervalSet<T>::AddInterval(const T& start, const T& end) {
 
   if (start_it == map_.begin() || PrevIterator(start_it)->second < start) {
     const std::pair<typename std::map<T, T>::iterator, bool> insert_result =
-        map_.insert(std::make_pair(start, end));
+        map_.emplace(start, end);
     CHECK(insert_result.second);
     start_it = insert_result.first;
   } else {

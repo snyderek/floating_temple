@@ -22,7 +22,6 @@
 #include "base/logging.h"
 #include "peer/peer_object_impl.h"
 
-using std::make_pair;
 using std::pair;
 using std::unordered_map;
 using std::vector;
@@ -42,7 +41,7 @@ int SerializationContextImpl::GetIndexForPeerObject(PeerObject* peer_object) {
       peer_object);
 
   const pair<unordered_map<PeerObjectImpl*, int>::iterator, bool>
-      insert_result = indexes_.insert(make_pair(peer_object_impl, -1));
+      insert_result = indexes_.emplace(peer_object_impl, -1);
 
   if (insert_result.second) {
     const int new_index = static_cast<int>(peer_objects_->size());

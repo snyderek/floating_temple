@@ -17,7 +17,6 @@
 
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/linked_ptr.h"
@@ -32,7 +31,6 @@
 #include "peer/transaction_id_generator.h"
 #include "peer/transaction_id_util.h"
 
-using std::make_pair;
 using std::map;
 using std::vector;
 
@@ -72,10 +70,10 @@ void TransactionSequencer::ReserveTransaction(TransactionId* transaction_id) {
 
   Transaction* const transaction = new Transaction();
   transaction->done = false;
-  // TODO(dss): Provide a hint to map<...>::insert that the new map entry is
+  // TODO(dss): Provide a hint to map<...>::emplace that the new map entry is
   // being inserted at the end.
-  CHECK(transactions_.insert(make_pair(*transaction_id,
-                                       make_linked_ptr(transaction))).second);
+  CHECK(transactions_.emplace(*transaction_id,
+                              make_linked_ptr(transaction)).second);
 }
 
 void TransactionSequencer::ReleaseTransaction(
@@ -131,7 +129,7 @@ void TransactionSequencer::QueueOutgoingMessage(
     const map<TransactionId, linked_ptr<Transaction>>::iterator it =
         transactions_.find(*transaction_id);
     CHECK(it != transactions_.end());
-    it->second->outgoing_messages.push_back(make_linked_ptr(outgoing_message));
+    it->second->outgoing_messages.emplace_back(outgoing_message);
 
     FlushMessages_Locked();
   }

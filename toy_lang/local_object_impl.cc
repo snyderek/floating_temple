@@ -20,7 +20,6 @@
 #include <cstdio>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "base/const_shared_ptr.h"
@@ -42,7 +41,6 @@
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
 
-using std::make_pair;
 using std::printf;
 using std::size_t;
 using std::string;
@@ -373,7 +371,7 @@ void SymbolTableObject::InvokeMethod(Thread* thread,
         new unordered_map<string, PeerObject*>();
     {
       MutexLock lock(&scopes_mu_);
-      scopes_.push_back(make_linked_ptr(symbol_map));
+      scopes_.emplace_back(symbol_map);
     }
     return_value->set_empty(0);
   } else if (method_name == "leave_scope") {
@@ -529,7 +527,7 @@ SymbolTableObject* SymbolTableObject::ParseSymbolTableProto(
       PeerObject* const peer_object = context->GetPeerObjectByIndex(
           object_index);
 
-      CHECK(symbol_map->insert(make_pair(name, peer_object)).second);
+      CHECK(symbol_map->emplace(name, peer_object).second);
     }
   }
 
@@ -845,7 +843,7 @@ MapObject* MapObject::ParseMapProto(const MapProto& map_proto,
     const int64 object_index = entry_proto.value_object_index();
     PeerObject* const peer_object = context->GetPeerObjectByIndex(object_index);
 
-    CHECK(the_map->insert(make_pair(key, peer_object)).second);
+    CHECK(the_map->emplace(key, peer_object).second);
   }
 
   return new_object;

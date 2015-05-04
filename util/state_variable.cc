@@ -42,7 +42,7 @@ void StateVariable::AddStateTransition(unsigned old_state, unsigned new_state) {
   CHECK_NE(old_state, new_state);
 
   MutexLock lock(&mu_);
-  state_transitions_.insert(make_pair(old_state, new_state));
+  state_transitions_.emplace(old_state, new_state);
 }
 
 bool StateVariable::MatchesStateMask(unsigned state_mask) const {

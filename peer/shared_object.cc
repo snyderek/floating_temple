@@ -47,7 +47,6 @@
 #include "peer/transaction_store_internal_interface.h"
 #include "peer/uuid_util.h"
 
-using std::make_pair;
 using std::map;
 using std::pair;
 using std::string;
@@ -222,9 +221,8 @@ void SharedObject::GetTransactions(
 
     transaction_info->origin_peer = transaction.origin_peer();
 
-    CHECK(transactions->insert(
-              make_pair(transaction_id,
-                        make_linked_ptr(transaction_info))).second);
+    CHECK(transactions->emplace(transaction_id,
+                                make_linked_ptr(transaction_info)).second);
   }
 
   ComputeEffectiveVersion_Locked(transaction_store_version_map,
@@ -343,8 +341,7 @@ bool SharedObject::ApplyTransactionsToWorkingVersion_Locked(
         peer_thread->FlushEvents();
 
         if (peer_thread->conflict_detected()) {
-          transactions_to_reject->push_back(make_pair(origin_peer,
-                                                      transaction_id));
+          transactions_to_reject->emplace_back(origin_peer, transaction_id);
           return false;
         }
       }

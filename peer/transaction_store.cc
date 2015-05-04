@@ -62,7 +62,6 @@
 #include "peer/uuid_util.h"
 #include "peer/value_proto_util.h"
 
-using std::make_pair;
 using std::map;
 using std::pair;
 using std::size_t;
@@ -105,7 +104,7 @@ InterpreterThread* TransactionStore::CreateInterpreterThread() {
 
   {
     MutexLock lock(&interpreter_threads_mu_);
-    interpreter_threads_.push_back(make_linked_ptr(thread));
+    interpreter_threads_.emplace_back(thread);
   }
 
   return thread;
@@ -241,7 +240,7 @@ PeerObjectImpl* TransactionStore::CreateUnboundPeerObject() {
     MutexLock lock(&peer_objects_mu_);
     // TODO(dss): Garbage-collect PeerObjectImpl instances when they're no
     // longer being used.
-    peer_objects_.push_back(make_linked_ptr(peer_object));
+    peer_objects_.emplace_back(peer_object);
   }
 
   return peer_object;
@@ -525,9 +524,8 @@ void TransactionStore::HandleStoreObjectMessage(
     transaction_info->origin_peer = canonical_peer_map_->GetCanonicalPeer(
         transaction_proto.origin_peer_id());
 
-    CHECK(transactions.insert(
-              make_pair(transaction_id,
-                        make_linked_ptr(transaction_info))).second);
+    CHECK(transactions.emplace(transaction_id,
+                               make_linked_ptr(transaction_info)).second);
   }
 
   MaxVersionMap version_map;
@@ -582,8 +580,7 @@ void TransactionStore::HandleRejectTransactionMessage(
     const CanonicalPeer* const rejected_peer =
         canonical_peer_map_->GetCanonicalPeer(rejected_peer_id);
 
-    transactions_to_reject.push_back(make_pair(rejected_peer,
-                                               rejected_transaction_id));
+    transactions_to_reject.emplace_back(rejected_peer, rejected_transaction_id);
   }
 
   RejectTransactionMessage dummy;
@@ -662,8 +659,8 @@ bool TransactionStore::GetOrCreateSharedObjectForPeerObject(
 
   {
     MutexLock lock(&shared_objects_mu_);
-    CHECK(shared_objects_.insert(
-              make_pair(object_id, make_linked_ptr(new_shared_object))).second);
+    CHECK(shared_objects_.emplace(object_id,
+                                  make_linked_ptr(new_shared_object)).second);
   }
 
   *shared_object = new_shared_object;
@@ -1522,7 +1519,7 @@ void TransactionStore::AddEventToSharedObjectTransactions(
     CHECK_EQ(transaction->origin_peer, origin_peer);
   }
 
-  transaction->events.push_back(make_linked_ptr(event));
+  transaction->events.emplace_back(event);
 }
 
 }  // namespace peer

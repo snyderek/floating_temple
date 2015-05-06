@@ -234,32 +234,30 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
   return live_object;
 }
 
-PeerObjectImpl* TransactionStore::CreateUnboundPeerObject() {
-  PeerObjectImpl* const peer_object = new PeerObjectImpl();
-  {
-    MutexLock lock(&peer_objects_mu_);
-    // TODO(dss): Garbage-collect PeerObjectImpl instances when they're no
-    // longer being used.
-    peer_objects_.emplace_back(peer_object);
+PeerObjectImpl* TransactionStore::CreatePeerObject(const std::string& name) {
+  if (name.empty()) {
+    PeerObjectImpl* const peer_object = new PeerObjectImpl();
+    {
+      MutexLock lock(&peer_objects_mu_);
+      // TODO(dss): Garbage-collect PeerObjectImpl instances when they're no
+      // longer being used.
+      peer_objects_.emplace_back(peer_object);
+    }
+
+    return peer_object;
+  } else {
+    Uuid object_id;
+    GeneratePredictableUuid(object_namespace_uuid_, name, &object_id);
+
+    SharedObject* const shared_object = GetOrCreateSharedObject(object_id);
+
+    {
+      MutexLock lock(&named_objects_mu_);
+      named_objects_.insert(shared_object);
+    }
+
+    return shared_object->GetOrCreatePeerObject();
   }
-
-  return peer_object;
-}
-
-PeerObjectImpl* TransactionStore::GetOrCreateNamedObject(const string& name) {
-  CHECK(!name.empty());
-
-  Uuid object_id;
-  GeneratePredictableUuid(object_namespace_uuid_, name, &object_id);
-
-  SharedObject* const shared_object = GetOrCreateSharedObject(object_id);
-
-  {
-    MutexLock lock(&named_objects_mu_);
-    named_objects_.insert(shared_object);
-  }
-
-  return shared_object->GetOrCreatePeerObject();
 }
 
 void TransactionStore::CreateTransaction(

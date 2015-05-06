@@ -41,7 +41,7 @@ void FakePeer::RunProgram(LocalObject* local_object,
   CHECK(!linger) << "Linger mode isn't supported for the fake peer.";
 
   FakeThread thread;
-  PeerObject* const peer_object = thread.CreatePeerObject(local_object);
+  PeerObject* const peer_object = thread.CreatePeerObject(local_object, "");
 
   local_object->InvokeMethod(&thread, peer_object, method_name, vector<Value>(),
                              return_value);

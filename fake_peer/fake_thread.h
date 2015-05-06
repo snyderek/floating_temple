@@ -34,9 +34,8 @@ class FakeThread : public Thread {
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  PeerObject* CreatePeerObject(LocalObject* initial_version) override;
-  PeerObject* GetOrCreateNamedObject(const std::string& name,
-                                     LocalObject* initial_version) override;
+  PeerObject* CreatePeerObject(LocalObject* initial_version,
+                               const std::string& name) override;
   bool CallMethod(PeerObject* peer_object,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,
@@ -45,8 +44,6 @@ class FakeThread : public Thread {
                             const PeerObject* b) const override;
 
  private:
-  PeerObject* PrivateCreatePeerObject(LocalObject* initial_version);
-
   std::vector<linked_ptr<PeerObject>> peer_objects_;
   int transaction_depth_;
 

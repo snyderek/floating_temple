@@ -96,10 +96,8 @@ TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, GetOrCreateNamedObject(_))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
@@ -148,10 +146,8 @@ TEST(PeerThreadTest, FlushEvents) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, GetOrCreateNamedObject(_))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
@@ -204,10 +200,8 @@ TEST(PeerThreadTest, MultipleTransactions) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, GetOrCreateNamedObject(_))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
@@ -266,10 +260,8 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, GetOrCreateNamedObject(_))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
@@ -343,10 +335,8 @@ TEST(PeerThreadTest, MethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, GetOrCreateNamedObject(_))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
@@ -402,10 +392,8 @@ TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, GetOrCreateNamedObject(_))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
@@ -483,10 +471,8 @@ TEST(PeerThreadTest, TransactionInsideMethodCall) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, GetOrCreateNamedObject(_))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
@@ -550,7 +536,7 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
   CHECK(return_value != nullptr);
 
   PeerObject* const peer_object = thread->CreatePeerObject(
-      new FakeLocalObject(""));
+      new FakeLocalObject(""), "");
 
   {
     Value sub_return_value;
@@ -584,10 +570,8 @@ TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, GetOrCreateNamedObject(_))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))

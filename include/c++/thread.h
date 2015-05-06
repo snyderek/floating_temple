@@ -67,23 +67,16 @@ class Thread {
   // The peer takes ownership of *initial_version. The caller must not take
   // ownership of the returned PeerObject instance.
   //
+  // If 'name' is not the empty string, it will be used as the name for the new
+  // object. Object names are global: if a remote peer creates an object with
+  // the same name as an object on the local peer, the two objects will be
+  // treated as a single object by the distributed interpreter.
+  //
   // TODO(dss): The local interpreter should take ownership of the PeerObject
   // instance. Otherwise, the peer has no way of knowing when the local
   // interpreter is done using it.
-  virtual PeerObject* CreatePeerObject(LocalObject* initial_version) = 0;
-
-  // Returns a pointer to the named object with the given name. If the named
-  // object does not exist, it will be created using the initial_version
-  // parameter, in a manner similar to CreatePeerObject.
-  //
-  // The peer takes ownership of *initial_version. If the named object already
-  // exists, then *initial_version will simply be deleted, as a convenience to
-  // the caller. The caller must not take ownership of the returned PeerObject
-  // instance.
-  //
-  // TODO(dss): Think of a less verbose way to say "get or create".
-  virtual PeerObject* GetOrCreateNamedObject(const std::string& name,
-                                             LocalObject* initial_version) = 0;
+  virtual PeerObject* CreatePeerObject(LocalObject* initial_version,
+                                       const std::string& name) = 0;
 
   // Calls the specified method on the specified object, and copies the return
   // value to *return_value. Depending on how the interpreted code is being

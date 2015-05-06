@@ -71,7 +71,7 @@ void InterpreterThread::RunProgram(LocalObject* local_object,
                                    bool linger) {
   CHECK(return_value != nullptr);
 
-  PeerObject* const peer_object = CreatePeerObject(local_object);
+  PeerObject* const peer_object = CreatePeerObject(local_object, "");
 
   for (;;) {
     Value return_value_temp;
@@ -169,63 +169,54 @@ bool InterpreterThread::EndTransaction() {
   return true;
 }
 
-PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version) {
+PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version,
+                                                const string& name) {
   // Take ownership of *initial_version.
   ConstLiveObjectPtr new_live_object(new LiveObject(initial_version));
 
-  PeerObjectImpl* const peer_object =
-      transaction_store_->CreateUnboundPeerObject();
+  PeerObjectImpl* const peer_object = transaction_store_->CreatePeerObject(
+      name);
 
-  if (transaction_store_->delay_object_binding()) {
+  if (name.empty()) {
+    if (transaction_store_->delay_object_binding()) {
+      NewObject new_object;
+      new_object.live_object = new_live_object;
+      new_object.object_is_named = false;
+
+      CHECK(new_objects_.emplace(peer_object, new_object).second);
+    } else {
+      AddTransactionEvent(new ObjectCreationPendingEvent(current_peer_object_,
+                                                         peer_object,
+                                                         new_live_object));
+    }
+  } else {
     NewObject new_object;
     new_object.live_object = new_live_object;
-    new_object.object_is_named = false;
+    new_object.object_is_named = true;
 
-    CHECK(new_objects_.emplace(peer_object, new_object).second);
-  } else {
-    AddTransactionEvent(new ObjectCreationPendingEvent(current_peer_object_,
-                                                       peer_object,
-                                                       new_live_object));
-  }
+    const pair<unordered_map<PeerObjectImpl*, NewObject>::iterator, bool>
+        insert_result = new_objects_.emplace(peer_object, new_object);
 
-  return peer_object;
-}
+    if (insert_result.second) {
+      // The named object has not yet been created in this thread.
 
-PeerObject* InterpreterThread::GetOrCreateNamedObject(
-    const string& name, LocalObject* initial_version) {
-  // Take ownership of *initial_version.
-  ConstLiveObjectPtr new_live_object(new LiveObject(initial_version));
+      // Check if the named object is already known to this peer. As a side
+      // effect, send a GET_OBJECT message to remote peers so that the content
+      // of the named object can eventually be synchronized with other peers.
+      const ConstLiveObjectPtr existing_live_object =
+          transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
+                                                           GetSequencePoint(),
+                                                           false);
 
-  // The peer object pointer is strictly a function of the object name.
-  PeerObjectImpl* const peer_object =
-      transaction_store_->GetOrCreateNamedObject(name);
+      if (existing_live_object.get() != nullptr) {
+        // The named object was already known to this peer. Remove the map entry
+        // that was just added.
+        const unordered_map<PeerObjectImpl*, NewObject>::iterator
+            new_object_it = insert_result.first;
+        CHECK(new_object_it != new_objects_.end());
 
-  NewObject new_object;
-  new_object.live_object = new_live_object;
-  new_object.object_is_named = true;
-
-  const pair<unordered_map<PeerObjectImpl*, NewObject>::iterator, bool>
-      insert_result = new_objects_.emplace(peer_object, new_object);
-
-  if (insert_result.second) {
-    // The named object has not yet been created in this thread.
-
-    // Check if the named object is already known to this peer. As a side
-    // effect, send a GET_OBJECT message to remote peers so that the content of
-    // the named object can eventually be synchronized with other peers.
-    const ConstLiveObjectPtr existing_live_object =
-        transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
-                                                         GetSequencePoint(),
-                                                         false);
-
-    if (existing_live_object.get() != nullptr) {
-      // The named object was already known to this peer. Remove the map entry
-      // that was just added.
-      const unordered_map<PeerObjectImpl*, NewObject>::iterator new_object_it =
-          insert_result.first;
-      CHECK(new_object_it != new_objects_.end());
-
-      new_objects_.erase(new_object_it);
+        new_objects_.erase(new_object_it);
+      }
     }
   }
 

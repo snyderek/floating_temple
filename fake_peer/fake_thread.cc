@@ -52,13 +52,18 @@ bool FakeThread::EndTransaction() {
   return true;
 }
 
-PeerObject* FakeThread::CreatePeerObject(LocalObject* initial_version) {
-  return PrivateCreatePeerObject(initial_version);
-}
+PeerObject* FakeThread::CreatePeerObject(LocalObject* initial_version,
+                                         const string& name) {
+  // TODO(dss): If an object with the given name was already created, return a
+  // pointer to the existing PeerObject instance.
 
-PeerObject* FakeThread::GetOrCreateNamedObject(const string& name,
-                                               LocalObject* initial_version) {
-  return PrivateCreatePeerObject(initial_version);
+  // TODO(dss): Implement garbage collection.
+
+  PeerObject* const peer_object = new FakePeerObject(initial_version);
+  VLOG(1) << "New peer object: " << StringPrintf("%p", peer_object);
+  VLOG(1) << "peer_object: " << peer_object->Dump();
+  peer_objects_.emplace_back(peer_object);
+  return peer_object;
 }
 
 bool FakeThread::CallMethod(PeerObject* peer_object,
@@ -91,15 +96,6 @@ bool FakeThread::ObjectsAreEquivalent(const PeerObject* a,
   CHECK(b != nullptr);
 
   return a == b;
-}
-
-PeerObject* FakeThread::PrivateCreatePeerObject(LocalObject* initial_version) {
-  // TODO(dss): Implement garbage collection.
-  PeerObject* const peer_object = new FakePeerObject(initial_version);
-  VLOG(1) << "New peer object: " << StringPrintf("%p", peer_object);
-  VLOG(1) << "peer_object: " << peer_object->Dump();
-  peer_objects_.emplace_back(peer_object);
-  return peer_object;
 }
 
 }  // namespace floating_temple

@@ -127,7 +127,8 @@ floatingtemple_PeerObject* floatingtemple_CreatePeerObject(
 
   return reinterpret_cast<floatingtemple_PeerObject*>(
       thread->thread->CreatePeerObject(
-          thread->proxy_interpreter->CreateProxyLocalObject(initial_version)));
+          thread->proxy_interpreter->CreateProxyLocalObject(initial_version),
+          ""));
 }
 
 floatingtemple_PeerObject* floatingtemple_GetOrCreateNamedObject(
@@ -137,9 +138,9 @@ floatingtemple_PeerObject* floatingtemple_GetOrCreateNamedObject(
   CHECK(name != nullptr);
 
   return reinterpret_cast<floatingtemple_PeerObject*>(
-      thread->thread->GetOrCreateNamedObject(
-          name,
-          thread->proxy_interpreter->CreateProxyLocalObject(initial_version)));
+      thread->thread->CreatePeerObject(
+          thread->proxy_interpreter->CreateProxyLocalObject(initial_version),
+          name));
 }
 
 int floatingtemple_CallMethod(floatingtemple_Interpreter* interpreter,

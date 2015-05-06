@@ -44,8 +44,7 @@ class MockTransactionStoreCore {
                      ConstLiveObjectPtr(PeerObjectImpl* peer_object,
                                         const SequencePoint* sequence_point,
                                         bool wait));
-  MOCK_CONST_METHOD0(CreateUnboundPeerObject, void());
-  MOCK_CONST_METHOD1(GetOrCreateNamedObject, void(const std::string& name));
+  MOCK_CONST_METHOD1(CreatePeerObject, void(const std::string& name));
   MOCK_CONST_METHOD4(
       CreateTransaction,
       void(const std::vector<linked_ptr<PendingEvent>>& events,
@@ -70,8 +69,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
       bool wait) override;
-  PeerObjectImpl* CreateUnboundPeerObject() override;
-  PeerObjectImpl* GetOrCreateNamedObject(const std::string& name) override;
+  PeerObjectImpl* CreatePeerObject(const std::string& name) override;
   void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,

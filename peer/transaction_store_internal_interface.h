@@ -45,8 +45,7 @@ class TransactionStoreInternalInterface {
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
       bool wait) = 0;
 
-  virtual PeerObjectImpl* CreateUnboundPeerObject() = 0;
-  virtual PeerObjectImpl* GetOrCreateNamedObject(const std::string& name) = 0;
+  virtual PeerObjectImpl* CreatePeerObject(const std::string& name) = 0;
 
   virtual void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,

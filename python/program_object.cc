@@ -114,7 +114,6 @@ void ProgramObject::InvokeMethod(Thread* thread,
     PythonGilLock lock;
 
     // TODO(dss): Add these objects to globals_.
-    thread->CreatePeerObject(new DictLocalObject(PyDict_New()), "shared");
     thread->CreatePeerObject(new NoneLocalObject(), "None");
     thread->CreatePeerObject(new FalseLocalObject(), "False");
     thread->CreatePeerObject(new TrueLocalObject(), "True");

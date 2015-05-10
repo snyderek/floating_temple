@@ -45,6 +45,7 @@ class PeerObjectImpl;
 class SharedObject;
 class TransactionStoreInternalInterface;
 
+// TODO(dss): Rename this class to PlaybackThread.
 class PeerThread : private Thread {
  public:
   PeerThread();

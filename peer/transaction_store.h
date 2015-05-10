@@ -129,10 +129,6 @@ class TransactionStore : public ConnectionHandler,
   SharedObject* GetSharedObject(const Uuid& object_id) const;
   SharedObject* GetOrCreateSharedObject(const Uuid& object_id);
 
-  // Returns true if the shared object had to be created.
-  bool GetOrCreateSharedObjectForPeerObject(PeerObjectImpl* peer_object,
-                                            SharedObject** shared_object);
-
   ConstLiveObjectPtr GetLiveObjectAtSequencePoint_Helper(
       SharedObject* shared_object,
       const SequencePointImpl& sequence_point_impl,
@@ -177,9 +173,7 @@ class TransactionStore : public ConnectionHandler,
       const std::unordered_map<SharedObject*, PeerObjectImpl*>&
           new_peer_objects);
 
-  // TODO(dss): Combine the methods GetOrCreateSharedObjectForPeerObject and
-  // ConvertPeerObjectToSharedObject.
-  SharedObject* ConvertPeerObjectToSharedObject(PeerObjectImpl* peer_object);
+  SharedObject* GetSharedObjectForPeerObject(PeerObjectImpl* peer_object);
 
   void ConvertPendingEventToCommittedEvents(
       const PendingEvent* pending_event, const CanonicalPeer* origin_peer,

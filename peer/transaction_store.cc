@@ -628,43 +628,6 @@ SharedObject* TransactionStore::GetOrCreateSharedObject(const Uuid& object_id) {
   return shared_object.get();
 }
 
-bool TransactionStore::GetOrCreateSharedObjectForPeerObject(
-    PeerObjectImpl* peer_object, SharedObject** shared_object) {
-  CHECK(peer_object != nullptr);
-  CHECK(shared_object != nullptr);
-
-  SharedObject* shared_object_temp = peer_object->shared_object();
-
-  if (shared_object_temp != nullptr) {
-    *shared_object = shared_object_temp;
-    return false;
-  }
-
-  Uuid object_id;
-  GenerateUuid(&object_id);
-
-  SharedObject* const new_shared_object = new SharedObject(this, object_id);
-  new_shared_object->AddPeerObject(peer_object);
-
-  shared_object_temp = peer_object->SetSharedObjectIfUnset(new_shared_object);
-
-  if (shared_object_temp != new_shared_object) {
-    delete new_shared_object;
-
-    *shared_object = shared_object_temp;
-    return false;
-  }
-
-  {
-    MutexLock lock(&shared_objects_mu_);
-    CHECK(shared_objects_.emplace(object_id,
-                                  make_linked_ptr(new_shared_object)).second);
-  }
-
-  *shared_object = new_shared_object;
-  return true;
-}
-
 ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint_Helper(
     SharedObject* shared_object,
     const SequencePointImpl& sequence_point_impl,
@@ -929,14 +892,36 @@ void TransactionStore::CreateNewPeerObjects(
   }
 }
 
-SharedObject* TransactionStore::ConvertPeerObjectToSharedObject(
+SharedObject* TransactionStore::GetSharedObjectForPeerObject(
     PeerObjectImpl* peer_object) {
   if (peer_object == nullptr) {
     return nullptr;
   }
 
-  SharedObject* shared_object = nullptr;
-  GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
+  SharedObject* shared_object = peer_object->shared_object();
+
+  if (shared_object != nullptr) {
+    return shared_object;
+  }
+
+  Uuid object_id;
+  GenerateUuid(&object_id);
+
+  SharedObject* const new_shared_object = new SharedObject(this, object_id);
+  new_shared_object->AddPeerObject(peer_object);
+
+  shared_object = peer_object->SetSharedObjectIfUnset(new_shared_object);
+
+  if (shared_object != new_shared_object) {
+    delete new_shared_object;
+    return shared_object;
+  }
+
+  {
+    MutexLock lock(&shared_objects_mu_);
+    CHECK(shared_objects_.emplace(object_id,
+                                  make_linked_ptr(shared_object)).second);
+  }
 
   return shared_object;
 }
@@ -949,13 +934,12 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
 
   unordered_set<SharedObject*> new_shared_objects;
   for (PeerObjectImpl* const peer_object : pending_event->new_peer_objects()) {
-    SharedObject* shared_object = nullptr;
-    GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
-
+    SharedObject* const shared_object = GetSharedObjectForPeerObject(
+        peer_object);
     CHECK(new_shared_objects.insert(shared_object).second);
   }
 
-  SharedObject* const prev_shared_object = ConvertPeerObjectToSharedObject(
+  SharedObject* const prev_shared_object = GetSharedObjectForPeerObject(
       pending_event->prev_peer_object());
 
   CHECK(new_shared_objects.find(prev_shared_object) ==
@@ -965,8 +949,8 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
     PeerObjectImpl* const peer_object = live_object_pair.first;
     const ConstLiveObjectPtr& live_object = live_object_pair.second;
 
-    SharedObject* shared_object = nullptr;
-    GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
+    SharedObject* const shared_object = GetSharedObjectForPeerObject(
+        peer_object);
 
     AddEventToSharedObjectTransactions(
         shared_object, origin_peer,
@@ -1011,7 +995,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
       pending_event->GetMethodCall(&next_peer_object, &method_name,
                                    &parameters);
 
-      SharedObject* const next_shared_object = ConvertPeerObjectToSharedObject(
+      SharedObject* const next_shared_object = GetSharedObjectForPeerObject(
           next_peer_object);
 
       const vector<Value>::size_type parameter_count = parameters->size();
@@ -1053,7 +1037,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
 
       pending_event->GetMethodReturn(&next_peer_object, &return_value);
 
-      SharedObject* const next_shared_object = ConvertPeerObjectToSharedObject(
+      SharedObject* const next_shared_object = GetSharedObjectForPeerObject(
           next_peer_object);
 
       CommittedValue committed_return_value;
@@ -1117,7 +1101,7 @@ void TransactionStore::ConvertValueToCommittedValue(const Value& in,
     case Value::PEER_OBJECT: {
       PeerObjectImpl* const peer_object = static_cast<PeerObjectImpl*>(
           in.peer_object());
-      out->set_shared_object(ConvertPeerObjectToSharedObject(peer_object));
+      out->set_shared_object(GetSharedObjectForPeerObject(peer_object));
       break;
     }
 
@@ -1148,9 +1132,8 @@ void TransactionStore::ConvertCommittedEventToEventProto(
                              &referenced_peer_objects);
 
       for (PeerObjectImpl* const peer_object : referenced_peer_objects) {
-        SharedObject* shared_object = nullptr;
-        GetOrCreateSharedObjectForPeerObject(peer_object, &shared_object);
-
+        SharedObject* const shared_object = GetSharedObjectForPeerObject(
+            peer_object);
         object_creation_event_proto->add_referenced_object_id()->CopyFrom(
             shared_object->object_id());
       }

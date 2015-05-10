@@ -45,6 +45,7 @@ class PendingEvent;
 class SequencePoint;
 class TransactionStoreInternalInterface;
 
+// TODO(dss): Rename this class to RecordingThread.
 // TODO(dss): Make this class inherit privately from class Thread.
 class InterpreterThread : public Thread {
  public:

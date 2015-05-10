@@ -150,7 +150,9 @@ TEST(InterpreterThreadTest, CallMethodInNestedTransactions) {
   EXPECT_CALL(transaction_store_core,
               GetLiveObjectAtSequencePoint(&peer_object, _, _))
       .WillRepeatedly(Return(initial_live_object));
-  // TODO(dss): Add an expectation for transaction_store_core.CreatePeerObject.
+  // TODO(dss): Add expectations for
+  // transaction_store_core.CreateUnboundPeerObject and
+  // transaction_store_core.CreateBoundPeerObject.
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
       .Times(0);
 
@@ -194,8 +196,10 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
   EXPECT_CALL(transaction_store_core,
               GetLiveObjectAtSequencePoint(&peer_object, _, _))
       .WillRepeatedly(Return(live_object));
-  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
       .Times(AnyNumber());
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+      .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
       .Times(0);
 
@@ -252,8 +256,10 @@ TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
   EXPECT_CALL(transaction_store_core,
               GetLiveObjectAtSequencePoint(&peer_object, _, _))
       .WillRepeatedly(Return(live_object));
-  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
       .Times(AnyNumber());
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+      .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
       .Times(0);
 
@@ -329,8 +335,10 @@ TEST(InterpreterThreadTest, CreatePeerObjectInDifferentTransaction) {
   // copy, in fact, since the object hasn't been committed).
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreatePeerObject(""))
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
       .Times(AtLeast(1));
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+      .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
       .Times(0);
 

@@ -550,7 +550,7 @@ PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
         conflict_detected_.Get() ||
         !CheckNextEventType(CommittedEvent::SUB_OBJECT_CREATION)) {
       PeerObjectImpl* const peer_object =
-          transaction_store_->CreatePeerObject("");
+          transaction_store_->CreateUnboundPeerObject();
       CHECK(unbound_peer_objects_.insert(peer_object).second);
       return peer_object;
     } else {
@@ -561,7 +561,7 @@ PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
       return shared_object->GetOrCreatePeerObject();
     }
   } else {
-    return transaction_store_->CreatePeerObject(name);
+    return transaction_store_->CreateBoundPeerObject(name);
   }
 }
 

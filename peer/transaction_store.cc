@@ -234,16 +234,25 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
   return live_object;
 }
 
-PeerObjectImpl* TransactionStore::CreatePeerObject(const std::string& name) {
-  if (name.empty()) {
-    PeerObjectImpl* const peer_object = new PeerObjectImpl();
-    {
-      MutexLock lock(&peer_objects_mu_);
-      // TODO(dss): Garbage-collect PeerObjectImpl instances when they're no
-      // longer being used.
-      peer_objects_.emplace_back(peer_object);
-    }
+PeerObjectImpl* TransactionStore::CreateUnboundPeerObject() {
+  PeerObjectImpl* const peer_object = new PeerObjectImpl();
+  CHECK(peer_object != nullptr);
 
+  {
+    MutexLock lock(&peer_objects_mu_);
+    // TODO(dss): Garbage-collect PeerObjectImpl instances when they're no
+    // longer being used.
+    peer_objects_.emplace_back(peer_object);
+  }
+
+  return peer_object;
+}
+
+PeerObjectImpl* TransactionStore::CreateBoundPeerObject(
+    const std::string& name) {
+  if (name.empty()) {
+    PeerObjectImpl* const peer_object = CreateUnboundPeerObject();
+    GetSharedObjectForPeerObject(peer_object);
     return peer_object;
   } else {
     Uuid object_id;

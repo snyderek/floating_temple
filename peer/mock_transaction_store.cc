@@ -51,8 +51,17 @@ ConstLiveObjectPtr MockTransactionStore::GetLiveObjectAtSequencePoint(
   return core_->GetLiveObjectAtSequencePoint(peer_object, sequence_point, wait);
 }
 
-PeerObjectImpl* MockTransactionStore::CreatePeerObject(const string& name) {
-  core_->CreatePeerObject(name);
+PeerObjectImpl* MockTransactionStore::CreateUnboundPeerObject() {
+  core_->CreateUnboundPeerObject();
+
+  PeerObjectImpl* const peer_object = new PeerObjectImpl();
+  unnamed_objects_.emplace_back(peer_object);
+  return peer_object;
+}
+
+PeerObjectImpl* MockTransactionStore::CreateBoundPeerObject(
+    const string& name) {
+  core_->CreateBoundPeerObject(name);
 
   linked_ptr<PeerObjectImpl>* peer_object = nullptr;
 

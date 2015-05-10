@@ -174,22 +174,27 @@ PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version,
   // Take ownership of *initial_version.
   ConstLiveObjectPtr new_live_object(new LiveObject(initial_version));
 
-  PeerObjectImpl* const peer_object = transaction_store_->CreatePeerObject(
-      name);
+  PeerObjectImpl* peer_object = nullptr;
 
   if (name.empty()) {
     if (transaction_store_->delay_object_binding()) {
+      peer_object = transaction_store_->CreateUnboundPeerObject();
+
       NewObject new_object;
       new_object.live_object = new_live_object;
       new_object.object_is_named = false;
 
       CHECK(new_objects_.emplace(peer_object, new_object).second);
     } else {
+      peer_object = transaction_store_->CreateBoundPeerObject("");
+
       AddTransactionEvent(new ObjectCreationPendingEvent(current_peer_object_,
                                                          peer_object,
                                                          new_live_object));
     }
   } else {
+    peer_object = transaction_store_->CreateBoundPeerObject(name);
+
     NewObject new_object;
     new_object.live_object = new_live_object;
     new_object.object_is_named = true;
@@ -220,6 +225,7 @@ PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version,
     }
   }
 
+  CHECK(peer_object != nullptr);
   return peer_object;
 }
 

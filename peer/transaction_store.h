@@ -100,7 +100,8 @@ class TransactionStore : public ConnectionHandler,
   ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
       bool wait) override;
-  PeerObjectImpl* CreatePeerObject(const std::string& name) override;
+  PeerObjectImpl* CreateUnboundPeerObject() override;
+  PeerObjectImpl* CreateBoundPeerObject(const std::string& name) override;
   void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,

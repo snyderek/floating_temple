@@ -132,7 +132,7 @@ PeerObjectImpl* SharedObject::GetOrCreatePeerObject() {
   }
 
   PeerObjectImpl* const new_peer_object =
-      transaction_store_->CreatePeerObject("");
+      transaction_store_->CreateUnboundPeerObject();
   CHECK_EQ(new_peer_object->SetSharedObjectIfUnset(this), this);
 
   {

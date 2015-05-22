@@ -92,7 +92,7 @@ void ConvertCommittedValueToValue(const CommittedValue& in, Value* out) {
 
     case CommittedValue::SHARED_OBJECT:
       out->set_peer_object(local_type,
-                           in.shared_object()->GetOrCreatePeerObject());
+                           in.shared_object()->GetOrCreatePeerObject(true));
       break;
 
     default:

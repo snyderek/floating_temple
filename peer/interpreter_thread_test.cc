@@ -138,7 +138,7 @@ class TransactionIdSetter {
 };
 
 TEST(InterpreterThreadTest, CallMethodInNestedTransactions) {
-  PeerObjectImpl peer_object;
+  PeerObjectImpl peer_object(true);
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   InterpreterThread thread(&transaction_store);
@@ -184,7 +184,7 @@ void CallEndTransaction(Thread* thread) {
 TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  PeerObjectImpl peer_object, new_peer_object;
+  PeerObjectImpl peer_object(true), new_peer_object(true);
   const MockLocalObjectCore local_object_core;
   ConstLiveObjectPtr live_object(
       new LiveObject(new MockLocalObject(&local_object_core)));
@@ -196,9 +196,9 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
   EXPECT_CALL(transaction_store_core,
               GetLiveObjectAtSequencePoint(&peer_object, _, _))
       .WillRepeatedly(Return(live_object));
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
       .Times(0);
@@ -244,7 +244,7 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
 TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  PeerObjectImpl peer_object;
+  PeerObjectImpl peer_object(true);
   const MockLocalObjectCore local_object_core;
   ConstLiveObjectPtr live_object(
       new LiveObject(new MockLocalObject(&local_object_core)));
@@ -256,9 +256,9 @@ TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
   EXPECT_CALL(transaction_store_core,
               GetLiveObjectAtSequencePoint(&peer_object, _, _))
       .WillRepeatedly(Return(live_object));
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
       .Times(0);
@@ -335,9 +335,9 @@ TEST(InterpreterThreadTest, CreatePeerObjectInDifferentTransaction) {
   // copy, in fact, since the object hasn't been committed).
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AtLeast(1));
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
       .Times(0);
@@ -361,9 +361,9 @@ TEST(InterpreterThreadTest, CreatePeerObjectInDifferentTransaction) {
 
   ASSERT_TRUE(thread.BeginTransaction());
   PeerObject* const peer_object1 = thread.CreatePeerObject(
-      new FakeLocalObject("lucy."), "");
+      new FakeLocalObject("lucy."), "", true);
   PeerObject* const peer_object2 = thread.CreatePeerObject(
-      new FakeLocalObject("ethel."), "");
+      new FakeLocalObject("ethel."), "", true);
   // This method call is here only to force a transaction to be created.
   CallAppendMethod(&thread, peer_object1, "ricky.");
   ASSERT_TRUE(thread.EndTransaction());

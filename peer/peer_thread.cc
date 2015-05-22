@@ -177,7 +177,8 @@ void PeerThread::DoMethodCall() {
     return;
   }
 
-  PeerObjectImpl* const peer_object = shared_object_->GetOrCreatePeerObject();
+  PeerObjectImpl* const peer_object = shared_object_->GetOrCreatePeerObject(
+      true);
 
   Value return_value;
   live_object_->InvokeMethod(this, peer_object, method_name, parameters,
@@ -540,7 +541,7 @@ bool PeerThread::EndTransaction() {
 }
 
 PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
-                                         const string& name) {
+                                         const string& name, bool versioned) {
   CHECK(initial_version != nullptr);
 
   delete initial_version;
@@ -550,7 +551,7 @@ PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
         conflict_detected_.Get() ||
         !CheckNextEventType(CommittedEvent::SUB_OBJECT_CREATION)) {
       PeerObjectImpl* const peer_object =
-          transaction_store_->CreateUnboundPeerObject();
+          transaction_store_->CreateUnboundPeerObject(versioned);
       CHECK(unbound_peer_objects_.insert(peer_object).second);
       return peer_object;
     } else {
@@ -558,10 +559,10 @@ PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
           GetNextEvent()->new_shared_objects();
       CHECK_EQ(new_shared_objects.size(), 1u);
       SharedObject* const shared_object = *new_shared_objects.begin();
-      return shared_object->GetOrCreatePeerObject();
+      return shared_object->GetOrCreatePeerObject(versioned);
     }
   } else {
-    return transaction_store_->CreateBoundPeerObject(name);
+    return transaction_store_->CreateBoundPeerObject(name, versioned);
   }
 }
 

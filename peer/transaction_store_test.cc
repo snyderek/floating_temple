@@ -106,9 +106,9 @@ void TestProgramObject::InvokeMethod(Thread* thread,
     return;
   }
 
-  thread->CreatePeerObject(new FakeLocalObject(""), "athos");
-  thread->CreatePeerObject(new FakeLocalObject(""), "porthos");
-  thread->CreatePeerObject(new FakeLocalObject(""), "aramis");
+  thread->CreatePeerObject(new FakeLocalObject(""), "athos", true);
+  thread->CreatePeerObject(new FakeLocalObject(""), "porthos", true);
+  thread->CreatePeerObject(new FakeLocalObject(""), "aramis", true);
 
   if (!thread->EndTransaction()) {
     return;

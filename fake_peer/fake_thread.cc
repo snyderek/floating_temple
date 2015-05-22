@@ -53,7 +53,7 @@ bool FakeThread::EndTransaction() {
 }
 
 PeerObject* FakeThread::CreatePeerObject(LocalObject* initial_version,
-                                         const string& name) {
+                                         const string& name, bool versioned) {
   // TODO(dss): If an object with the given name was already created, return a
   // pointer to the existing PeerObject instance.
 

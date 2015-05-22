@@ -59,7 +59,7 @@ PyObject* WrapPythonObject(PyObject* py_object) {
 
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
   PeerObject* const peer_object =
-      interpreter->CreatePeerObject<LocalObjectType>(py_object, "");
+      interpreter->CreatePeerObject<LocalObjectType>(py_object, "", true);
   return interpreter->PeerObjectToPyProxyObject(peer_object);
 }
 
@@ -114,9 +114,9 @@ void ProgramObject::InvokeMethod(Thread* thread,
     PythonGilLock lock;
 
     // TODO(dss): Add these objects to globals_.
-    thread->CreatePeerObject(new NoneLocalObject(), "None");
-    thread->CreatePeerObject(new FalseLocalObject(), "False");
-    thread->CreatePeerObject(new TrueLocalObject(), "True");
+    thread->CreatePeerObject(new NoneLocalObject(), "None", false);
+    thread->CreatePeerObject(new FalseLocalObject(), "False", false);
+    thread->CreatePeerObject(new TrueLocalObject(), "True", false);
 
     const object_creation_hook_func old_dict_hook = Py_InstallDictCreationHook(
         &WrapPythonDict);

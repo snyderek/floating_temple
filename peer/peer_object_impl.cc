@@ -29,8 +29,9 @@ using std::string;
 namespace floating_temple {
 namespace peer {
 
-PeerObjectImpl::PeerObjectImpl()
-    : shared_object_(nullptr) {
+PeerObjectImpl::PeerObjectImpl(bool versioned)
+    : versioned_(versioned),
+      shared_object_(nullptr) {
 }
 
 PeerObjectImpl::~PeerObjectImpl() {

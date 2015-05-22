@@ -52,13 +52,15 @@ class SharedObject {
 
   const Uuid& object_id() const { return object_id_; }
 
+  bool IsVersioned() const;
+
   void GetInterestedPeers(
       std::unordered_set<const CanonicalPeer*>* interested_peers) const;
   void AddInterestedPeer(const CanonicalPeer* interested_peer);
 
   bool HasPeerObject(const PeerObjectImpl* peer_object) const;
-  void AddPeerObject(PeerObjectImpl* peer_object);
-  PeerObjectImpl* GetOrCreatePeerObject();
+  void AddPeerObject(PeerObjectImpl* new_peer_object);
+  PeerObjectImpl* GetOrCreatePeerObject(bool versioned);
 
   // TODO(dss): In the public methods below, 'new_peer_objects' is both an input
   // parameter and an output parameter. This is confusing. Try to come up with a

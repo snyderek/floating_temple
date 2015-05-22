@@ -51,17 +51,17 @@ ConstLiveObjectPtr MockTransactionStore::GetLiveObjectAtSequencePoint(
   return core_->GetLiveObjectAtSequencePoint(peer_object, sequence_point, wait);
 }
 
-PeerObjectImpl* MockTransactionStore::CreateUnboundPeerObject() {
-  core_->CreateUnboundPeerObject();
+PeerObjectImpl* MockTransactionStore::CreateUnboundPeerObject(bool versioned) {
+  core_->CreateUnboundPeerObject(versioned);
 
-  PeerObjectImpl* const peer_object = new PeerObjectImpl();
+  PeerObjectImpl* const peer_object = new PeerObjectImpl(versioned);
   unnamed_objects_.emplace_back(peer_object);
   return peer_object;
 }
 
-PeerObjectImpl* MockTransactionStore::CreateBoundPeerObject(
-    const string& name) {
-  core_->CreateBoundPeerObject(name);
+PeerObjectImpl* MockTransactionStore::CreateBoundPeerObject(const string& name,
+                                                            bool versioned) {
+  core_->CreateBoundPeerObject(name, versioned);
 
   linked_ptr<PeerObjectImpl>* peer_object = nullptr;
 
@@ -73,7 +73,7 @@ PeerObjectImpl* MockTransactionStore::CreateBoundPeerObject(
   }
 
   if (peer_object->get() == nullptr) {
-    peer_object->reset(new PeerObjectImpl());
+    peer_object->reset(new PeerObjectImpl(versioned));
   }
 
   return peer_object->get();

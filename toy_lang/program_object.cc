@@ -43,7 +43,7 @@ bool AddSymbol(PeerObject* symbol_table_object,
                const string& name,
                LocalObjectImpl* local_object) {
   return SetVariable(symbol_table_object, thread, name,
-                     thread->CreatePeerObject(local_object, ""));
+                     thread->CreatePeerObject(local_object, "", true));
 }
 
 #define ADD_SYMBOL(name, local_object) \
@@ -117,11 +117,11 @@ void ProgramObject::InvokeMethod(Thread* thread,
   CHECK(return_value != nullptr);
 
   PeerObject* const shared_map_object = thread->CreatePeerObject(
-      new MapObject(), "shared");
+      new MapObject(), "shared", true);
   PeerObject* const expression_object = thread->CreatePeerObject(
-      new ExpressionObject(expression_), "");
+      new ExpressionObject(expression_), "", true);
   PeerObject* const symbol_table_object = thread->CreatePeerObject(
-      new SymbolTableObject(), "");
+      new SymbolTableObject(), "", true);
 
   if (!PopulateSymbolTable(symbol_table_object, thread, shared_map_object)) {
     return;

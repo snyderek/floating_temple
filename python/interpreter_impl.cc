@@ -125,12 +125,13 @@ PeerObject* InterpreterImpl::PyProxyObjectToPeerObject(PyObject* py_object) {
 
   PeerObject* new_peer_object = nullptr;
   if (py_type == &PyLong_Type) {
-    new_peer_object = CreatePeerObject<LongLocalObject>(py_object, "");
+    new_peer_object = CreatePeerObject<LongLocalObject>(py_object, "", false);
   } else if (py_type == &PyUnicode_Type) {
-    new_peer_object = CreatePeerObject<UnicodeLocalObject>(py_object, "");
+    new_peer_object = CreatePeerObject<UnicodeLocalObject>(py_object, "",
+                                                           false);
   } else {
     new_peer_object = CreatePeerObject<UnserializableLocalObject>(py_object,
-                                                                  "");
+                                                                  "", false);
   }
 
   PeerObject* existing_peer_object = nullptr;

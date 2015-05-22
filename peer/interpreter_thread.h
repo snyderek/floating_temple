@@ -64,7 +64,8 @@ class InterpreterThread : public Thread {
   bool BeginTransaction() override;
   bool EndTransaction() override;
   PeerObject* CreatePeerObject(LocalObject* initial_version,
-                               const std::string& name) override;
+                               const std::string& name,
+                               bool versioned) override;
   bool CallMethod(PeerObject* peer_object,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,

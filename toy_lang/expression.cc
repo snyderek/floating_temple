@@ -59,7 +59,7 @@ PeerObject* EvaluateExpressionList(
     peer_objects[i] = peer_object;
   }
 
-  return thread->CreatePeerObject(new ListObject(peer_objects), "");
+  return thread->CreatePeerObject(new ListObject(peer_objects), "", true);
 }
 
 }  // namespace
@@ -110,7 +110,7 @@ IntExpression::IntExpression(int64 n)
 PeerObject* IntExpression::Evaluate(PeerObject* symbol_table_object,
                                     Thread* thread) const {
   CHECK(thread != nullptr);
-  return thread->CreatePeerObject(new IntObject(n_), "");
+  return thread->CreatePeerObject(new IntObject(n_), "", true);
 }
 
 void IntExpression::PopulateExpressionProto(
@@ -136,7 +136,7 @@ StringExpression::StringExpression(const string& s)
 PeerObject* StringExpression::Evaluate(PeerObject* symbol_table_object,
                                        Thread* thread) const {
   CHECK(thread != nullptr);
-  return thread->CreatePeerObject(new StringObject(s_), "");
+  return thread->CreatePeerObject(new StringObject(s_), "", true);
 }
 
 void StringExpression::PopulateExpressionProto(
@@ -162,7 +162,7 @@ ExpressionExpression::ExpressionExpression(Expression* expression)
 PeerObject* ExpressionExpression::Evaluate(PeerObject* symbol_table_object,
                                            Thread* thread) const {
   CHECK(thread != nullptr);
-  return thread->CreatePeerObject(new ExpressionObject(expression_), "");
+  return thread->CreatePeerObject(new ExpressionObject(expression_), "", true);
 }
 
 void ExpressionExpression::PopulateExpressionProto(

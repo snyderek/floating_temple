@@ -71,7 +71,7 @@ void InterpreterThread::RunProgram(LocalObject* local_object,
                                    bool linger) {
   CHECK(return_value != nullptr);
 
-  PeerObject* const peer_object = CreatePeerObject(local_object, "");
+  PeerObject* const peer_object = CreatePeerObject(local_object, "", false);
 
   for (;;) {
     Value return_value_temp;
@@ -170,7 +170,8 @@ bool InterpreterThread::EndTransaction() {
 }
 
 PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version,
-                                                const string& name) {
+                                                const string& name,
+                                                bool versioned) {
   // Take ownership of *initial_version.
   ConstLiveObjectPtr new_live_object(new LiveObject(initial_version));
 
@@ -178,7 +179,7 @@ PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version,
 
   if (name.empty()) {
     if (transaction_store_->delay_object_binding()) {
-      peer_object = transaction_store_->CreateUnboundPeerObject();
+      peer_object = transaction_store_->CreateUnboundPeerObject(versioned);
 
       NewObject new_object;
       new_object.live_object = new_live_object;
@@ -186,14 +187,14 @@ PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version,
 
       CHECK(new_objects_.emplace(peer_object, new_object).second);
     } else {
-      peer_object = transaction_store_->CreateBoundPeerObject("");
+      peer_object = transaction_store_->CreateBoundPeerObject("", versioned);
 
       AddTransactionEvent(new ObjectCreationPendingEvent(current_peer_object_,
                                                          peer_object,
                                                          new_live_object));
     }
   } else {
-    peer_object = transaction_store_->CreateBoundPeerObject(name);
+    peer_object = transaction_store_->CreateBoundPeerObject(name, versioned);
 
     NewObject new_object;
     new_object.live_object = new_live_object;

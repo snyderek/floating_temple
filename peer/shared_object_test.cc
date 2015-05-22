@@ -185,9 +185,9 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject())
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -250,9 +250,9 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject())
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -350,9 +350,9 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject())
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -447,9 +447,9 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject())
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -512,9 +512,9 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject())
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -587,9 +587,9 @@ TEST_F(SharedObjectTest, BackingUp) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject())
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -691,9 +691,9 @@ TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject())
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);

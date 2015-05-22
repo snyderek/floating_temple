@@ -96,9 +96,9 @@ TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -148,9 +148,9 @@ TEST(PeerThreadTest, FlushEvents) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -204,9 +204,9 @@ TEST(PeerThreadTest, MultipleTransactions) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -266,9 +266,9 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -343,9 +343,9 @@ TEST(PeerThreadTest, MethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -402,9 +402,9 @@ TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -483,9 +483,9 @@ TEST(PeerThreadTest, TransactionInsideMethodCall) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -550,7 +550,7 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
   CHECK(return_value != nullptr);
 
   PeerObject* const peer_object = thread->CreatePeerObject(
-      new FakeLocalObject(""), "");
+      new FakeLocalObject(""), "", true);
 
   {
     Value sub_return_value;
@@ -584,9 +584,9 @@ TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject())
+  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);

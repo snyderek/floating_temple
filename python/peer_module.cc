@@ -77,7 +77,7 @@ PyMODINIT_FUNC PyInit_peer() {
   PyObject* const py_dict = PyDict_New();
   CHECK(py_dict != nullptr);
   PeerObject* const dict_peer_object =
-      interpreter->CreatePeerObject<DictLocalObject>(py_dict, "shared");
+      interpreter->CreatePeerObject<DictLocalObject>(py_dict, "shared", true);
   PyObject* const py_dict_proxy_object = interpreter->PeerObjectToPyProxyObject(
       dict_peer_object);
   CHECK_EQ(PyModule_AddObject(py_module, "shared", py_dict_proxy_object), 0);

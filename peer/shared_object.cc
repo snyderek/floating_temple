@@ -86,6 +86,14 @@ SharedObject::SharedObject(TransactionStoreInternalInterface* transaction_store,
 SharedObject::~SharedObject() {
 }
 
+bool SharedObject::IsVersioned() const {
+  MutexLock lock(&peer_objects_mu_);
+  if (peer_objects_.empty()) {
+    return false;
+  }
+  return peer_objects_.front()->versioned();
+}
+
 void SharedObject::GetInterestedPeers(
     unordered_set<const CanonicalPeer*>* interested_peers) const {
   CHECK(interested_peers != nullptr);
@@ -115,14 +123,21 @@ bool SharedObject::HasPeerObject(const PeerObjectImpl* peer_object) const {
   return false;
 }
 
-void SharedObject::AddPeerObject(PeerObjectImpl* peer_object) {
-  CHECK(peer_object != nullptr);
+void SharedObject::AddPeerObject(PeerObjectImpl* new_peer_object) {
+  CHECK(new_peer_object != nullptr);
+
+  const bool versioned = new_peer_object->versioned();
 
   MutexLock lock(&peer_objects_mu_);
-  peer_objects_.push_back(peer_object);
+
+  for (const PeerObjectImpl* const peer_object : peer_objects_) {
+    CHECK_EQ(peer_object->versioned(), versioned);
+  }
+
+  peer_objects_.push_back(new_peer_object);
 }
 
-PeerObjectImpl* SharedObject::GetOrCreatePeerObject() {
+PeerObjectImpl* SharedObject::GetOrCreatePeerObject(bool versioned) {
   {
     MutexLock lock(&peer_objects_mu_);
 
@@ -132,7 +147,7 @@ PeerObjectImpl* SharedObject::GetOrCreatePeerObject() {
   }
 
   PeerObjectImpl* const new_peer_object =
-      transaction_store_->CreateUnboundPeerObject();
+      transaction_store_->CreateUnboundPeerObject(versioned);
   CHECK_EQ(new_peer_object->SetSharedObjectIfUnset(this), this);
 
   {

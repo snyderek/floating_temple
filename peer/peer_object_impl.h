@@ -29,8 +29,10 @@ class SharedObject;
 
 class PeerObjectImpl : public PeerObject {
  public:
-  PeerObjectImpl();
+  explicit PeerObjectImpl(bool versioned);
   ~PeerObjectImpl() override;
+
+  bool versioned() const { return versioned_; }
 
   const SharedObject* shared_object() const { return PrivateGetSharedObject(); }
   SharedObject* shared_object() { return PrivateGetSharedObject(); }
@@ -41,6 +43,8 @@ class PeerObjectImpl : public PeerObject {
 
  private:
   SharedObject* PrivateGetSharedObject() const;
+
+  const bool versioned_;
 
   SharedObject* shared_object_;
   mutable Mutex shared_object_mu_;

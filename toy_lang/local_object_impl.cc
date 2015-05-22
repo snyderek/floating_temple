@@ -1006,7 +1006,7 @@ PeerObject* ListFunction::Call(PeerObject* symbol_table_object, Thread* thread,
   CHECK(thread != nullptr);
 
   LocalObjectImpl* const local_object = new ListObject(parameters);
-  return thread->CreatePeerObject(local_object, "");
+  return thread->CreatePeerObject(local_object, "", true);
 }
 
 SetVariableFunction::SetVariableFunction() {
@@ -1102,7 +1102,7 @@ PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     if (!SetVariable(
             symbol_table_object, thread, variable_name.string_value(),
             thread->CreatePeerObject(
-                new IntObject(iter_value.int64_value()), ""))) {
+                new IntObject(iter_value.int64_value()), "", true))) {
       return nullptr;
     }
 
@@ -1116,7 +1116,7 @@ PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     }
   }
 
-  return thread->CreatePeerObject(new NoneObject(), "");
+  return thread->CreatePeerObject(new NoneObject(), "", true);
 }
 
 RangeFunction::RangeFunction() {
@@ -1146,7 +1146,7 @@ PeerObject* RangeFunction::Call(PeerObject* symbol_table_object, Thread* thread,
   }
 
   return thread->CreatePeerObject(
-      new RangeIteratorObject(limit.int64_value(), 0), "");
+      new RangeIteratorObject(limit.int64_value(), 0), "", true);
 }
 
 PrintFunction::PrintFunction() {
@@ -1185,7 +1185,7 @@ PeerObject* PrintFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 
   printf("\n");
 
-  return thread->CreatePeerObject(new NoneObject(), "");
+  return thread->CreatePeerObject(new NoneObject(), "", true);
 }
 
 AddFunction::AddFunction() {
@@ -1219,7 +1219,7 @@ PeerObject* AddFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     sum += number.int64_value();
   }
 
-  return thread->CreatePeerObject(new IntObject(sum), "");
+  return thread->CreatePeerObject(new IntObject(sum), "", true);
 }
 
 BeginTranFunction::BeginTranFunction() {
@@ -1248,7 +1248,7 @@ PeerObject* BeginTranFunction::Call(
     return nullptr;
   }
 
-  return thread->CreatePeerObject(new NoneObject(), "");
+  return thread->CreatePeerObject(new NoneObject(), "", true);
 }
 
 EndTranFunction::EndTranFunction() {
@@ -1277,7 +1277,7 @@ PeerObject* EndTranFunction::Call(PeerObject* symbol_table_object,
     return nullptr;
   }
 
-  return thread->CreatePeerObject(new NoneObject(), "");
+  return thread->CreatePeerObject(new NoneObject(), "", true);
 }
 
 IfFunction::IfFunction() {
@@ -1314,7 +1314,7 @@ PeerObject* IfFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     expression = parameters[1];
   } else {
     if (parameters.size() < 3u) {
-      return thread->CreatePeerObject(new NoneObject(), "");
+      return thread->CreatePeerObject(new NoneObject(), "", true);
     }
 
     expression = parameters[2];
@@ -1358,7 +1358,8 @@ PeerObject* NotFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  return thread->CreatePeerObject(new BoolObject(!condition.bool_value()), "");
+  return thread->CreatePeerObject(new BoolObject(!condition.bool_value()), "",
+                                  true);
 }
 
 IsSetFunction::IsSetFunction() {
@@ -1394,7 +1395,7 @@ PeerObject* IsSetFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  return thread->CreatePeerObject(new BoolObject(is_set), "");
+  return thread->CreatePeerObject(new BoolObject(is_set), "", true);
 }
 
 WhileFunction::WhileFunction() {
@@ -1455,7 +1456,7 @@ PeerObject* WhileFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     }
   }
 
-  return thread->CreatePeerObject(new NoneObject(), "");
+  return thread->CreatePeerObject(new NoneObject(), "", true);
 }
 
 LessThanFunction::LessThanFunction() {
@@ -1492,8 +1493,8 @@ PeerObject* LessThanFunction::Call(
     operands[i] = number.int64_value();
   }
 
-  return thread->CreatePeerObject(new BoolObject(operands[0] < operands[1]),
-                                  "");
+  return thread->CreatePeerObject(new BoolObject(operands[0] < operands[1]), "",
+                                  true);
 }
 
 LenFunction::LenFunction() {
@@ -1522,7 +1523,8 @@ PeerObject* LenFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  return thread->CreatePeerObject(new IntObject(length.int64_value()), "");
+  return thread->CreatePeerObject(new IntObject(length.int64_value()), "",
+                                  true);
 }
 
 AppendFunction::AppendFunction() {
@@ -1558,7 +1560,7 @@ PeerObject* AppendFunction::Call(PeerObject* symbol_table_object,
     return nullptr;
   }
 
-  return thread->CreatePeerObject(new NoneObject(), "");
+  return thread->CreatePeerObject(new NoneObject(), "", true);
 }
 
 GetAtFunction::GetAtFunction() {
@@ -1633,7 +1635,8 @@ PeerObject* MapIsSetFunction::Call(
     return nullptr;
   }
 
-  return thread->CreatePeerObject(new BoolObject(result.bool_value()), "");
+  return thread->CreatePeerObject(new BoolObject(result.bool_value()), "",
+                                  true);
 }
 
 MapGetFunction::MapGetFunction() {
@@ -1710,7 +1713,7 @@ PeerObject* MapSetFunction::Call(PeerObject* symbol_table_object,
     return nullptr;
   }
 
-  return thread->CreatePeerObject(new NoneObject(), "");
+  return thread->CreatePeerObject(new NoneObject(), "", true);
 }
 
 }  // namespace toy_lang

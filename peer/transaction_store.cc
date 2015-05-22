@@ -234,8 +234,8 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
   return live_object;
 }
 
-PeerObjectImpl* TransactionStore::CreateUnboundPeerObject() {
-  PeerObjectImpl* const peer_object = new PeerObjectImpl();
+PeerObjectImpl* TransactionStore::CreateUnboundPeerObject(bool versioned) {
+  PeerObjectImpl* const peer_object = new PeerObjectImpl(versioned);
   CHECK(peer_object != nullptr);
 
   {
@@ -249,9 +249,9 @@ PeerObjectImpl* TransactionStore::CreateUnboundPeerObject() {
 }
 
 PeerObjectImpl* TransactionStore::CreateBoundPeerObject(
-    const std::string& name) {
+    const std::string& name, bool versioned) {
   if (name.empty()) {
-    PeerObjectImpl* const peer_object = CreateUnboundPeerObject();
+    PeerObjectImpl* const peer_object = CreateUnboundPeerObject(versioned);
     GetSharedObjectForPeerObject(peer_object);
     return peer_object;
   } else {
@@ -265,7 +265,7 @@ PeerObjectImpl* TransactionStore::CreateBoundPeerObject(
       named_objects_.insert(shared_object);
     }
 
-    return shared_object->GetOrCreatePeerObject();
+    return shared_object->GetOrCreatePeerObject(versioned);
   }
 }
 
@@ -1311,7 +1311,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
         SharedObject* const referenced_shared_object = GetOrCreateSharedObject(
             object_id);
         referenced_peer_objects[i] =
-            referenced_shared_object->GetOrCreatePeerObject();
+            referenced_shared_object->GetOrCreatePeerObject(true);
       }
 
       const ConstLiveObjectPtr live_object(

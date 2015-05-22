@@ -48,8 +48,9 @@ class MockThread : public Thread {
 
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(EndTransaction, bool());
-  MOCK_METHOD2(CreatePeerObject,
-               PeerObject*(LocalObject* initial_version, const string& name));
+  MOCK_METHOD3(CreatePeerObject,
+               PeerObject*(LocalObject* initial_version, const string& name,
+                           bool versioned));
   MOCK_METHOD4(CallMethod,
                bool(PeerObject* peer_object, const string& method_name,
                     const vector<Value>& parameters, Value* return_value));
@@ -78,7 +79,7 @@ TEST(LocalObjectImplTest, InvokeMethodOnExpressionObject) {
       .Times(0);
   EXPECT_CALL(thread, EndTransaction())
       .Times(0);
-  EXPECT_CALL(thread, CreatePeerObject(_, _))
+  EXPECT_CALL(thread, CreatePeerObject(_, _, _))
       .Times(0);
   EXPECT_CALL(thread, ObjectsAreEquivalent(_, _))
       .Times(0);

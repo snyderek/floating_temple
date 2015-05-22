@@ -76,7 +76,8 @@ class Thread {
   // instance. Otherwise, the peer has no way of knowing when the local
   // interpreter is done using it.
   virtual PeerObject* CreatePeerObject(LocalObject* initial_version,
-                                       const std::string& name) = 0;
+                                       const std::string& name,
+                                       bool versioned) = 0;
 
   // Calls the specified method on the specified object, and copies the return
   // value to *return_value. Depending on how the interpreted code is being

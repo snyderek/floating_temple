@@ -128,7 +128,7 @@ floatingtemple_PeerObject* floatingtemple_CreatePeerObject(
   return reinterpret_cast<floatingtemple_PeerObject*>(
       thread->thread->CreatePeerObject(
           thread->proxy_interpreter->CreateProxyLocalObject(initial_version),
-          ""));
+          "", true));
 }
 
 floatingtemple_PeerObject* floatingtemple_GetOrCreateNamedObject(
@@ -140,7 +140,7 @@ floatingtemple_PeerObject* floatingtemple_GetOrCreateNamedObject(
   return reinterpret_cast<floatingtemple_PeerObject*>(
       thread->thread->CreatePeerObject(
           thread->proxy_interpreter->CreateProxyLocalObject(initial_version),
-          name));
+          name, true));
 }
 
 int floatingtemple_CallMethod(floatingtemple_Interpreter* interpreter,

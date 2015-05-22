@@ -130,8 +130,8 @@ void SharedObject::AddPeerObject(PeerObjectImpl* new_peer_object) {
 
   MutexLock lock(&peer_objects_mu_);
 
-  for (const PeerObjectImpl* const peer_object : peer_objects_) {
-    CHECK_EQ(peer_object->versioned(), versioned);
+  if (!peer_objects_.empty()) {
+    CHECK_EQ(versioned, peer_objects_.front()->versioned());
   }
 
   peer_objects_.push_back(new_peer_object);

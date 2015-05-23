@@ -33,7 +33,7 @@ class ListLocalObject : public LocalObjectImpl {
  public:
   explicit ListLocalObject(PyObject* py_list_object);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
   static ListLocalObject* ParseListProto(const SequenceProto& list_proto,

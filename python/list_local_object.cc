@@ -38,7 +38,7 @@ ListLocalObject::ListLocalObject(PyObject* py_list_object)
     : LocalObjectImpl(CHECK_NOTNULL(py_list_object)) {
 }
 
-LocalObject* ListLocalObject::Clone() const {
+VersionedLocalObject* ListLocalObject::Clone() const {
   PyObject* const py_list = py_object();
   PyObject* new_py_list = nullptr;
 

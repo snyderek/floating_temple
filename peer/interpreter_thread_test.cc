@@ -23,15 +23,15 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "fake_interpreter/fake_local_object.h"
-#include "include/c++/local_object.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
+#include "include/c++/versioned_local_object.h"
 #include "peer/const_live_object_ptr.h"
 #include "peer/live_object.h"
 #include "peer/make_transaction_id.h"
-#include "peer/mock_local_object.h"
 #include "peer/mock_sequence_point.h"
 #include "peer/mock_transaction_store.h"
+#include "peer/mock_versioned_local_object.h"
 #include "peer/peer_object_impl.h"
 #include "peer/pending_event.h"
 #include "peer/proto/transaction_id.pb.h"
@@ -93,13 +93,13 @@ void CallAppendMethod(Thread* thread, PeerObject* peer_object,
   CHECK(thread != nullptr);
 
   vector<Value> parameters(1);
-  parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
+  parameters[0].set_string_value(FakeVersionedLocalObject::kStringLocalType,
                                  string_to_append);
 
   Value return_value;
   CHECK(thread->CallMethod(peer_object, "append", parameters, &return_value));
 
-  CHECK_EQ(return_value.local_type(), FakeLocalObject::kVoidLocalType);
+  CHECK_EQ(return_value.local_type(), FakeVersionedLocalObject::kVoidLocalType);
   CHECK_EQ(return_value.type(), Value::EMPTY);
 }
 
@@ -143,7 +143,7 @@ TEST(InterpreterThreadTest, CallMethodInNestedTransactions) {
   MockTransactionStore transaction_store(&transaction_store_core);
   InterpreterThread thread(&transaction_store);
   const ConstLiveObjectPtr initial_live_object(
-      new LiveObject(new FakeLocalObject("a")));
+      new LiveObject(new FakeVersionedLocalObject("a")));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
@@ -185,9 +185,9 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   PeerObjectImpl peer_object(true), new_peer_object(true);
-  const MockLocalObjectCore local_object_core;
+  const MockVersionedLocalObjectCore local_object_core;
   ConstLiveObjectPtr live_object(
-      new LiveObject(new MockLocalObject(&local_object_core)));
+      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
 
   InterpreterThread thread(&transaction_store);
 
@@ -245,9 +245,9 @@ TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   PeerObjectImpl peer_object(true);
-  const MockLocalObjectCore local_object_core;
+  const MockVersionedLocalObjectCore local_object_core;
   ConstLiveObjectPtr live_object(
-      new LiveObject(new MockLocalObject(&local_object_core)));
+      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
 
   InterpreterThread thread(&transaction_store);
 
@@ -361,9 +361,9 @@ TEST(InterpreterThreadTest, CreatePeerObjectInDifferentTransaction) {
 
   ASSERT_TRUE(thread.BeginTransaction());
   PeerObject* const peer_object1 = thread.CreatePeerObject(
-      new FakeLocalObject("lucy."), "", true);
+      new FakeVersionedLocalObject("lucy."), "", true);
   PeerObject* const peer_object2 = thread.CreatePeerObject(
-      new FakeLocalObject("ethel."), "", true);
+      new FakeVersionedLocalObject("ethel."), "", true);
   // This method call is here only to force a transaction to be created.
   CallAppendMethod(&thread, peer_object1, "ricky.");
   ASSERT_TRUE(thread.EndTransaction());

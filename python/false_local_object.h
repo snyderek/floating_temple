@@ -29,7 +29,7 @@ class FalseLocalObject : public LocalObjectImpl {
  public:
   FalseLocalObject();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:

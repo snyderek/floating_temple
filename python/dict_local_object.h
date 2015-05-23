@@ -33,7 +33,7 @@ class DictLocalObject : public LocalObjectImpl {
  public:
   explicit DictLocalObject(PyObject* py_dict_object);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
   static DictLocalObject* ParseDictProto(const MappingProto& dict_proto,

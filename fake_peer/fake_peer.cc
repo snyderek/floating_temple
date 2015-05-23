@@ -20,8 +20,8 @@
 
 #include "base/logging.h"
 #include "fake_peer/fake_thread.h"
-#include "include/c++/local_object.h"
 #include "include/c++/value.h"
+#include "include/c++/versioned_local_object.h"
 
 using std::string;
 using std::vector;
@@ -33,7 +33,7 @@ class PeerObject;
 FakePeer::FakePeer() {
 }
 
-void FakePeer::RunProgram(LocalObject* local_object,
+void FakePeer::RunProgram(VersionedLocalObject* local_object,
                           const string& method_name,
                           Value* return_value,
                           bool linger) {

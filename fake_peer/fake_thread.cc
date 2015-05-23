@@ -22,7 +22,7 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "fake_peer/fake_peer_object.h"
-#include "include/c++/local_object.h"
+#include "include/c++/versioned_local_object.h"
 
 using std::string;
 using std::vector;
@@ -52,7 +52,7 @@ bool FakeThread::EndTransaction() {
   return true;
 }
 
-PeerObject* FakeThread::CreatePeerObject(LocalObject* initial_version,
+PeerObject* FakeThread::CreatePeerObject(VersionedLocalObject* initial_version,
                                          const string& name, bool versioned) {
   // TODO(dss): If an object with the given name was already created, return a
   // pointer to the existing PeerObject instance.
@@ -80,7 +80,7 @@ bool FakeThread::CallMethod(PeerObject* peer_object,
 
   FakePeerObject* const fake_peer_object = static_cast<FakePeerObject*>(
       peer_object);
-  LocalObject* const local_object = fake_peer_object->local_object();
+  VersionedLocalObject* const local_object = fake_peer_object->local_object();
 
   VLOG(1) << "local_object: " << local_object->Dump();
 

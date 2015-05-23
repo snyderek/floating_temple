@@ -64,7 +64,7 @@ ProxyInterpreter::ProxyInterpreter()
   state_.AddStateTransition(CALLBACK_RETURNED, START);
 }
 
-LocalObject* ProxyInterpreter::CreateProxyLocalObject(
+VersionedLocalObject* ProxyInterpreter::CreateProxyLocalObject(
     floatingtemple_LocalObject* local_object) {
   return new ProxyLocalObject(this, local_object);
 }
@@ -90,7 +90,7 @@ floatingtemple_Interpreter* ProxyInterpreter::SetInterpreterForCurrentThread(
   return old_interpreter;
 }
 
-LocalObject* ProxyInterpreter::DeserializeObject(
+VersionedLocalObject* ProxyInterpreter::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
   CHECK(context != nullptr);
 
@@ -190,7 +190,7 @@ void ProxyInterpreter::LeaveMethod() {
   state_.ChangeState(START);
 }
 
-LocalObject* ProxyInterpreter::CloneLocalObject(
+VersionedLocalObject* ProxyInterpreter::CloneLocalObject(
     const floatingtemple_LocalObject* local_object) {
   floatingtemple_LocalObject* new_local_object = nullptr;
 

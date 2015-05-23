@@ -28,8 +28,8 @@
 
 namespace floating_temple {
 
-class LocalObject;
 class StateVariableInternalInterface;
+class VersionedLocalObject;
 
 namespace c_harness {
 
@@ -38,16 +38,19 @@ class ProxyInterpreter : public Interpreter,
  public:
   ProxyInterpreter();
 
-  // The caller must take ownership of the returned LocalObject instance.
-  LocalObject* CreateProxyLocalObject(floatingtemple_LocalObject* local_object);
+  // The caller must take ownership of the returned VersionedLocalObject
+  // instance.
+  VersionedLocalObject* CreateProxyLocalObject(
+      floatingtemple_LocalObject* local_object);
 
   bool PollForCallback(floatingtemple_Interpreter* interpreter);
 
   floatingtemple_Interpreter* SetInterpreterForCurrentThread(
       floatingtemple_Interpreter* interpreter);
 
-  LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,
-                                 DeserializationContext* context) override;
+  VersionedLocalObject* DeserializeObject(
+      const void* buffer, std::size_t buffer_size,
+      DeserializationContext* context) override;
 
  private:
   enum {
@@ -73,7 +76,7 @@ class ProxyInterpreter : public Interpreter,
   void WaitForCallback();
   void LeaveMethod();
 
-  LocalObject* CloneLocalObject(
+  VersionedLocalObject* CloneLocalObject(
       const floatingtemple_LocalObject* local_object) override;
   std::size_t SerializeLocalObject(
       const floatingtemple_LocalObject* local_object,

@@ -32,7 +32,7 @@ TrueLocalObject::TrueLocalObject()
     : LocalObjectImpl(Py_True) {
 }
 
-LocalObject* TrueLocalObject::Clone() const {
+VersionedLocalObject* TrueLocalObject::Clone() const {
   return new TrueLocalObject();
 }
 

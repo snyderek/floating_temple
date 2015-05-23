@@ -20,11 +20,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "include/c++/local_object.h"
+#include "include/c++/versioned_local_object.h"
 
 namespace floating_temple {
 
-class FakeLocalObject : public LocalObject {
+class FakeVersionedLocalObject : public VersionedLocalObject {
  public:
   static const int kVoidLocalType;
   static const int kStringLocalType;
@@ -32,11 +32,11 @@ class FakeLocalObject : public LocalObject {
 
   static const char kSerializationPrefix[];
 
-  explicit FakeLocalObject(const std::string& s) : s_(s) {}
+  explicit FakeVersionedLocalObject(const std::string& s) : s_(s) {}
 
   const std::string& s() const { return s_; }
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
@@ -49,7 +49,7 @@ class FakeLocalObject : public LocalObject {
  private:
   std::string s_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeLocalObject);
+  DISALLOW_COPY_AND_ASSIGN(FakeVersionedLocalObject);
 };
 
 }  // namespace floating_temple

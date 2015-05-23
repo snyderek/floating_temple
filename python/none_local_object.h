@@ -29,7 +29,7 @@ class NoneLocalObject : public LocalObjectImpl {
  public:
   NoneLocalObject();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:

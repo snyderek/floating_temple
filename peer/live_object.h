@@ -26,8 +26,8 @@
 
 namespace floating_temple {
 
-class LocalObject;
 class Thread;
+class VersionedLocalObject;
 
 namespace peer {
 
@@ -36,10 +36,10 @@ class PeerObjectImpl;
 
 class LiveObject {
  public:
-  explicit LiveObject(LocalObject* local_object);
+  explicit LiveObject(VersionedLocalObject* local_object);
   ~LiveObject();
 
-  const LocalObject* local_object() const;
+  const VersionedLocalObject* local_object() const;
 
   LiveObjectPtr Clone() const;
   void Serialize(std::string* data,

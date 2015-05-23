@@ -86,7 +86,7 @@ void PeerImpl::Start(Interpreter* interpreter,
   state_.ChangeState(RUNNING);
 }
 
-void PeerImpl::RunProgram(LocalObject* local_object,
+void PeerImpl::RunProgram(VersionedLocalObject* local_object,
                           const string& method_name,
                           Value* return_value,
                           bool linger) {

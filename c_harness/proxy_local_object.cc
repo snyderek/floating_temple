@@ -41,7 +41,7 @@ ProxyLocalObject::~ProxyLocalObject() {
   proxy_interpreter_->FreeLocalObject(local_object_);
 }
 
-LocalObject* ProxyLocalObject::Clone() const {
+VersionedLocalObject* ProxyLocalObject::Clone() const {
   return proxy_interpreter_->CloneLocalObject(local_object_);
 }
 

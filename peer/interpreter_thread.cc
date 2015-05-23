@@ -65,7 +65,7 @@ InterpreterThread::InterpreterThread(
 InterpreterThread::~InterpreterThread() {
 }
 
-void InterpreterThread::RunProgram(LocalObject* local_object,
+void InterpreterThread::RunProgram(VersionedLocalObject* local_object,
                                    const string& method_name,
                                    Value* return_value,
                                    bool linger) {
@@ -169,9 +169,8 @@ bool InterpreterThread::EndTransaction() {
   return true;
 }
 
-PeerObject* InterpreterThread::CreatePeerObject(LocalObject* initial_version,
-                                                const string& name,
-                                                bool versioned) {
+PeerObject* InterpreterThread::CreatePeerObject(
+    VersionedLocalObject* initial_version, const string& name, bool versioned) {
   // Take ownership of *initial_version.
   ConstLiveObjectPtr new_live_object(new LiveObject(initial_version));
 

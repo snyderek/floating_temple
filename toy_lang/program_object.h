@@ -32,7 +32,7 @@ class ProgramObject : public LocalObjectImpl {
  public:
   explicit ProgramObject(const const_shared_ptr<Expression>& expression);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,

@@ -32,7 +32,7 @@ NoneLocalObject::NoneLocalObject()
     : LocalObjectImpl(Py_None) {
 }
 
-LocalObject* NoneLocalObject::Clone() const {
+VersionedLocalObject* NoneLocalObject::Clone() const {
   return new NoneLocalObject();
 }
 

@@ -32,7 +32,7 @@ UnserializableLocalObject::UnserializableLocalObject(PyObject* py_object)
     : LocalObjectImpl(CHECK_NOTNULL(py_object)) {
 }
 
-LocalObject* UnserializableLocalObject::Clone() const {
+VersionedLocalObject* UnserializableLocalObject::Clone() const {
   return new UnserializableLocalObject(py_object());
 }
 

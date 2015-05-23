@@ -32,18 +32,19 @@ using std::vector;
 
 namespace floating_temple {
 
-const int FakeLocalObject::kVoidLocalType = 0;
-const int FakeLocalObject::kStringLocalType = 1;
-const int FakeLocalObject::kObjectLocalType = 2;
+const int FakeVersionedLocalObject::kVoidLocalType = 0;
+const int FakeVersionedLocalObject::kStringLocalType = 1;
+const int FakeVersionedLocalObject::kObjectLocalType = 2;
 
-const char FakeLocalObject::kSerializationPrefix[] = "FakeLocalObject:";
+const char FakeVersionedLocalObject::kSerializationPrefix[] =
+    "FakeVersionedLocalObject:";
 
-LocalObject* FakeLocalObject::Clone() const {
-  return new FakeLocalObject(s_);
+VersionedLocalObject* FakeVersionedLocalObject::Clone() const {
+  return new FakeVersionedLocalObject(s_);
 }
 
-size_t FakeLocalObject::Serialize(void* buffer, size_t buffer_size,
-                                  SerializationContext* context) const {
+size_t FakeVersionedLocalObject::Serialize(
+    void* buffer, size_t buffer_size, SerializationContext* context) const {
   string serialized_form = kSerializationPrefix;
   serialized_form += s_;
 
@@ -56,11 +57,11 @@ size_t FakeLocalObject::Serialize(void* buffer, size_t buffer_size,
   return static_cast<size_t>(length);
 }
 
-void FakeLocalObject::InvokeMethod(Thread* thread,
-                                   PeerObject* peer_object,
-                                   const string& method_name,
-                                   const vector<Value>& parameters,
-                                   Value* return_value) {
+void FakeVersionedLocalObject::InvokeMethod(Thread* thread,
+                                            PeerObject* peer_object,
+                                            const string& method_name,
+                                            const vector<Value>& parameters,
+                                            Value* return_value) {
   CHECK(return_value != nullptr);
 
   VLOG(1) << "Applying method \"" << CEscape(method_name) << "\" on object "
@@ -85,7 +86,7 @@ void FakeLocalObject::InvokeMethod(Thread* thread,
   }
 }
 
-string FakeLocalObject::Dump() const {
+string FakeVersionedLocalObject::Dump() const {
   return StringPrintf("\"%s\"", CEscape(s_).c_str());
 }
 

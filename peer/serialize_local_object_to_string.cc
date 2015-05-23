@@ -21,7 +21,7 @@
 
 #include "base/logging.h"
 #include "include/c++/interpreter.h"
-#include "include/c++/local_object.h"
+#include "include/c++/versioned_local_object.h"
 #include "peer/deserialization_context_impl.h"
 #include "peer/serialization_context_impl.h"
 
@@ -33,7 +33,7 @@ namespace floating_temple {
 namespace peer {
 namespace {
 
-size_t TryToSerialize(const LocalObject* local_object,
+size_t TryToSerialize(const VersionedLocalObject* local_object,
                       void* buffer,
                       size_t buffer_size,
                       vector<PeerObjectImpl*>* referenced_peer_objects) {
@@ -49,7 +49,7 @@ size_t TryToSerialize(const LocalObject* local_object,
 }  // namespace
 
 void SerializeLocalObjectToString(
-    const LocalObject* local_object, string* data,
+    const VersionedLocalObject* local_object, string* data,
     vector<PeerObjectImpl*>* referenced_peer_objects) {
   CHECK(data != nullptr);
 
@@ -71,7 +71,7 @@ void SerializeLocalObjectToString(
   delete[] dynamic_buffer;
 }
 
-LocalObject* DeserializeLocalObjectFromString(
+VersionedLocalObject* DeserializeLocalObjectFromString(
     Interpreter* interpreter, const string& data,
     const vector<PeerObjectImpl*>& referenced_peer_objects) {
   CHECK(interpreter != nullptr);

@@ -25,10 +25,10 @@
 
 namespace floating_temple {
 
-class LocalObject;
 class PeerObject;
 class SerializationContext;
 class Thread;
+class VersionedLocalObject;
 
 namespace c_harness {
 
@@ -36,7 +36,7 @@ class ProxyInterpreterInternalInterface {
  public:
   virtual ~ProxyInterpreterInternalInterface() {}
 
-  virtual LocalObject* CloneLocalObject(
+  virtual VersionedLocalObject* CloneLocalObject(
       const floatingtemple_LocalObject* local_object) = 0;
   virtual std::size_t SerializeLocalObject(
       const floatingtemple_LocalObject* local_object,

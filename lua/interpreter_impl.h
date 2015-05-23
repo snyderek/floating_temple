@@ -40,8 +40,9 @@ class InterpreterImpl : public Interpreter {
   Thread* GetThreadObject();
   Thread* SetThreadObject(Thread* new_thread);
 
-  LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,
-                                 DeserializationContext* context) override;
+  VersionedLocalObject* DeserializeObject(
+      const void* buffer, std::size_t buffer_size,
+      DeserializationContext* context) override;
 
   static InterpreterImpl* instance();
 

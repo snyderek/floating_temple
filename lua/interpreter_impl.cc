@@ -69,7 +69,7 @@ Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
   return old_thread;
 }
 
-LocalObject* InterpreterImpl::DeserializeObject(
+VersionedLocalObject* InterpreterImpl::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
   // TODO(dss): Implement this.
   return nullptr;

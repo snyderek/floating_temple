@@ -17,7 +17,7 @@
 #define C_HARNESS_PROXY_LOCAL_OBJECT_H_
 
 #include "base/macros.h"
-#include "include/c++/local_object.h"
+#include "include/c++/versioned_local_object.h"
 #include "include/c/interpreter.h"
 
 namespace floating_temple {
@@ -25,13 +25,13 @@ namespace c_harness {
 
 class ProxyInterpreterInternalInterface;
 
-class ProxyLocalObject : public LocalObject {
+class ProxyLocalObject : public VersionedLocalObject {
  public:
   ProxyLocalObject(ProxyInterpreterInternalInterface* proxy_interpreter,
                    floatingtemple_LocalObject* local_object);
   ~ProxyLocalObject() override;
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,

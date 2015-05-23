@@ -32,7 +32,7 @@ class UnicodeLocalObject : public LocalObjectImpl {
  public:
   explicit UnicodeLocalObject(PyObject* py_unicode);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
   static UnicodeLocalObject* ParseUnicodeProto(

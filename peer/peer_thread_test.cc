@@ -32,8 +32,8 @@
 #include "peer/const_live_object_ptr.h"
 #include "peer/live_object.h"
 #include "peer/live_object_ptr.h"
-#include "peer/mock_local_object.h"
 #include "peer/mock_transaction_store.h"
+#include "peer/mock_versioned_local_object.h"
 #include "peer/peer_object_impl.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/shared_object.h"
@@ -88,9 +88,9 @@ TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
-  const MockLocalObjectCore local_object_core1;
+  const MockVersionedLocalObjectCore local_object_core1;
   LiveObjectPtr live_object1(
-      new LiveObject(new MockLocalObject(&local_object_core1)));
+      new LiveObject(new MockVersionedLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -140,9 +140,9 @@ TEST(PeerThreadTest, FlushEvents) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(111));
-  const MockLocalObjectCore local_object_core;
+  const MockVersionedLocalObjectCore local_object_core;
   LiveObjectPtr live_object(
-      new LiveObject(new MockLocalObject(&local_object_core)));
+      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -197,7 +197,8 @@ TEST(PeerThreadTest, MultipleTransactions) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(222));
-  FakeLocalObject* const local_object = new FakeLocalObject("snap.");
+  FakeVersionedLocalObject* const local_object = new FakeVersionedLocalObject(
+      "snap.");
   LiveObjectPtr live_object(new LiveObject(local_object));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
@@ -216,11 +217,12 @@ TEST(PeerThreadTest, MultipleTransactions) {
   const unordered_set<SharedObject*> new_shared_objects;
 
   CommittedValue empty_return_value;
-  empty_return_value.set_local_type(FakeLocalObject::kVoidLocalType);
+  empty_return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
   empty_return_value.set_empty();
 
   vector<CommittedValue> event1_parameters(1);
-  event1_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
+  event1_parameters[0].set_local_type(
+      FakeVersionedLocalObject::kStringLocalType);
   event1_parameters[0].set_string_value("crackle.");
 
   const MethodCallCommittedEvent event1(nullptr, "append", event1_parameters);
@@ -228,7 +230,8 @@ TEST(PeerThreadTest, MultipleTransactions) {
                                           empty_return_value);
 
   vector<CommittedValue> event3_parameters(1);
-  event3_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
+  event3_parameters[0].set_local_type(
+      FakeVersionedLocalObject::kStringLocalType);
   event3_parameters[0].set_string_value("pop.");
 
   const MethodCallCommittedEvent event3(nullptr, "append", event3_parameters);
@@ -260,7 +263,8 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(333));
-  LiveObjectPtr live_object(new LiveObject(new FakeLocalObject("peter.")));
+  LiveObjectPtr live_object(
+      new LiveObject(new FakeVersionedLocalObject("peter.")));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -278,11 +282,12 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
   const unordered_set<SharedObject*> new_shared_objects;
 
   CommittedValue empty_return_value;
-  empty_return_value.set_local_type(FakeLocalObject::kVoidLocalType);
+  empty_return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
   empty_return_value.set_empty();
 
   vector<CommittedValue> event1_parameters(1);
-  event1_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
+  event1_parameters[0].set_local_type(
+      FakeVersionedLocalObject::kStringLocalType);
   event1_parameters[0].set_string_value("paul.");
 
   const MethodCallCommittedEvent event1(nullptr, "append", event1_parameters);
@@ -290,7 +295,7 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
                                           empty_return_value);
 
   CommittedValue bogus_return_value;
-  bogus_return_value.set_local_type(FakeLocalObject::kStringLocalType);
+  bogus_return_value.set_local_type(FakeVersionedLocalObject::kStringLocalType);
   bogus_return_value.set_string_value("barney.");
 
   const MethodCallCommittedEvent event3(nullptr, "get",
@@ -300,7 +305,8 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
                                           bogus_return_value);
 
   vector<CommittedValue> event5_parameters(1);
-  event5_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
+  event5_parameters[0].set_local_type(
+      FakeVersionedLocalObject::kStringLocalType);
   event5_parameters[0].set_string_value("mary.");
 
   const MethodCallCommittedEvent event5(nullptr, "append", event5_parameters);
@@ -335,9 +341,9 @@ TEST(PeerThreadTest, MethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(1));
-  const MockLocalObjectCore local_object_core;
+  const MockVersionedLocalObjectCore local_object_core;
   LiveObjectPtr live_object(
-      new LiveObject(new MockLocalObject(&local_object_core)));
+      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -394,9 +400,9 @@ TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(1));
-  const MockLocalObjectCore local_object_core;
+  const MockVersionedLocalObjectCore local_object_core;
   LiveObjectPtr live_object(
-      new LiveObject(new MockLocalObject(&local_object_core)));
+      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -475,9 +481,9 @@ TEST(PeerThreadTest, TransactionInsideMethodCall) {
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
-  const MockLocalObjectCore local_object_core1;
+  const MockVersionedLocalObjectCore local_object_core1;
   LiveObjectPtr live_object1(
-      new LiveObject(new MockLocalObject(&local_object_core1)));
+      new LiveObject(new MockVersionedLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -550,7 +556,7 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
   CHECK(return_value != nullptr);
 
   PeerObject* const peer_object = thread->CreatePeerObject(
-      new FakeLocalObject(""), "", true);
+      new FakeVersionedLocalObject(""), "", true);
 
   {
     Value sub_return_value;
@@ -576,9 +582,9 @@ TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
-  const MockLocalObjectCore local_object_core1;
+  const MockVersionedLocalObjectCore local_object_core1;
   LiveObjectPtr live_object1(
-      new LiveObject(new MockLocalObject(&local_object_core1)));
+      new LiveObject(new MockVersionedLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);

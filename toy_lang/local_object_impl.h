@@ -26,8 +26,8 @@
 #include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
-#include "include/c++/local_object.h"
 #include "include/c++/value.h"
+#include "include/c++/versioned_local_object.h"
 
 namespace floating_temple {
 
@@ -49,7 +49,7 @@ class RangeIteratorProto;
 class StringProto;
 class SymbolTableProto;
 
-class LocalObjectImpl : public LocalObject {
+class LocalObjectImpl : public VersionedLocalObject {
  public:
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
@@ -67,7 +67,7 @@ class NoneObject : public LocalObjectImpl {
  public:
   NoneObject();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -87,7 +87,7 @@ class BoolObject : public LocalObjectImpl {
  public:
   explicit BoolObject(bool b);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -111,7 +111,7 @@ class IntObject : public LocalObjectImpl {
  public:
   explicit IntObject(int64 n);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -135,7 +135,7 @@ class StringObject : public LocalObjectImpl {
  public:
   explicit StringObject(const std::string& s);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -159,7 +159,7 @@ class SymbolTableObject : public LocalObjectImpl {
  public:
   SymbolTableObject();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -192,7 +192,7 @@ class ExpressionObject : public LocalObjectImpl {
  public:
   explicit ExpressionObject(const const_shared_ptr<Expression>& expression);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -217,7 +217,7 @@ class ListObject : public LocalObjectImpl {
  public:
   explicit ListObject(const std::vector<PeerObject*>& items);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -243,7 +243,7 @@ class MapObject : public LocalObjectImpl {
  public:
   MapObject();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -268,7 +268,7 @@ class RangeIteratorObject : public LocalObjectImpl {
  public:
   RangeIteratorObject(int64 limit, int64 start);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
@@ -309,7 +309,7 @@ class ListFunction : public Function {
  public:
   ListFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -326,7 +326,7 @@ class SetVariableFunction : public Function {
  public:
   SetVariableFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -343,7 +343,7 @@ class ForFunction : public Function {
  public:
   ForFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -360,7 +360,7 @@ class RangeFunction : public Function {
  public:
   RangeFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -377,7 +377,7 @@ class PrintFunction : public Function {
  public:
   PrintFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -394,7 +394,7 @@ class AddFunction : public Function {
  public:
   AddFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -411,7 +411,7 @@ class BeginTranFunction : public Function {
  public:
   BeginTranFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -428,7 +428,7 @@ class EndTranFunction : public Function {
  public:
   EndTranFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -445,7 +445,7 @@ class IfFunction : public Function {
  public:
   IfFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -462,7 +462,7 @@ class NotFunction : public Function {
  public:
   NotFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -479,7 +479,7 @@ class IsSetFunction : public Function {
  public:
   IsSetFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -496,7 +496,7 @@ class WhileFunction : public Function {
  public:
   WhileFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -513,7 +513,7 @@ class LessThanFunction : public Function {
  public:
   LessThanFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -530,7 +530,7 @@ class LenFunction : public Function {
  public:
   LenFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -547,7 +547,7 @@ class AppendFunction : public Function {
  public:
   AppendFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -564,7 +564,7 @@ class GetAtFunction : public Function {
  public:
   GetAtFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -581,7 +581,7 @@ class MapIsSetFunction : public Function {
  public:
   MapIsSetFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -598,7 +598,7 @@ class MapGetFunction : public Function {
  public:
   MapGetFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:
@@ -615,7 +615,7 @@ class MapSetFunction : public Function {
  public:
   MapSetFunction();
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:

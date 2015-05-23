@@ -31,7 +31,7 @@ using std::vector;
 namespace floating_temple {
 namespace peer {
 
-LiveObject::LiveObject(LocalObject* local_object)
+LiveObject::LiveObject(VersionedLocalObject* local_object)
     : node_(new LiveObjectNode(local_object)),
       ref_count_(0) {
 }
@@ -43,7 +43,7 @@ LiveObject::~LiveObject() {
   }
 }
 
-const LocalObject* LiveObject::local_object() const {
+const VersionedLocalObject* LiveObject::local_object() const {
   return GetNode()->local_object();
 }
 

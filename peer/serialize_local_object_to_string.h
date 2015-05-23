@@ -22,17 +22,17 @@
 namespace floating_temple {
 
 class Interpreter;
-class LocalObject;
+class VersionedLocalObject;
 
 namespace peer {
 
 class PeerObjectImpl;
 
 void SerializeLocalObjectToString(
-    const LocalObject* local_object, std::string* data,
+    const VersionedLocalObject* local_object, std::string* data,
     std::vector<PeerObjectImpl*>* referenced_peer_objects);
 
-LocalObject* DeserializeLocalObjectFromString(
+VersionedLocalObject* DeserializeLocalObjectFromString(
     Interpreter* interpreter, const std::string& data,
     const std::vector<PeerObjectImpl*>& referenced_peer_objects);
 

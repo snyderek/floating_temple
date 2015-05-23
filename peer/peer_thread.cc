@@ -29,8 +29,8 @@
 #include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
-#include "include/c++/local_object.h"
 #include "include/c++/value.h"
+#include "include/c++/versioned_local_object.h"
 #include "peer/committed_event.h"
 #include "peer/committed_value.h"
 #include "peer/const_live_object_ptr.h"
@@ -540,7 +540,7 @@ bool PeerThread::EndTransaction() {
   return HasNextEvent();
 }
 
-PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
+PeerObject* PeerThread::CreatePeerObject(VersionedLocalObject* initial_version,
                                          const string& name, bool versioned) {
   CHECK(initial_version != nullptr);
 

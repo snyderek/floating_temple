@@ -39,7 +39,7 @@ DictLocalObject::DictLocalObject(PyObject* py_dict_object)
     : LocalObjectImpl(CHECK_NOTNULL(py_dict_object)) {
 }
 
-LocalObject* DictLocalObject::Clone() const {
+VersionedLocalObject* DictLocalObject::Clone() const {
   PyObject* const py_dict = py_object();
   PyObject* new_py_dict = nullptr;
   {

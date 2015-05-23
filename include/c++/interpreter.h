@@ -21,7 +21,7 @@
 namespace floating_temple {
 
 class DeserializationContext;
-class LocalObject;
+class VersionedLocalObject;
 
 // This interface is implemented by the local interpreter. It represents the
 // local interpreter itself.
@@ -36,11 +36,11 @@ class Interpreter {
   // buffer points to a buffer that contains the serialized form of the object.
   // buffer_size is the size of the buffer in bytes.
   //
-  // Returns a pointer to a newly created LocalObject object. The caller must
-  // take ownership of this object.
-  virtual LocalObject* DeserializeObject(const void* buffer,
-                                         std::size_t buffer_size,
-                                         DeserializationContext* context) = 0;
+  // Returns a pointer to a newly created VersionedLocalObject object. The
+  // caller must take ownership of this object.
+  virtual VersionedLocalObject* DeserializeObject(
+      const void* buffer, std::size_t buffer_size,
+      DeserializationContext* context) = 0;
 };
 
 }  // namespace floating_temple

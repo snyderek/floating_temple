@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/mock_local_object.h"
+#include "peer/mock_versioned_local_object.h"
 
 #include <cstddef>
 #include <cstring>
@@ -31,16 +31,17 @@ using std::vector;
 namespace floating_temple {
 namespace peer {
 
-MockLocalObject::MockLocalObject(const MockLocalObjectCore* core)
+MockVersionedLocalObject::MockVersionedLocalObject(
+    const MockVersionedLocalObjectCore* core)
     : core_(CHECK_NOTNULL(core)) {
 }
 
-LocalObject* MockLocalObject::Clone() const {
-  return new MockLocalObject(core_);
+VersionedLocalObject* MockVersionedLocalObject::Clone() const {
+  return new MockVersionedLocalObject(core_);
 }
 
-size_t MockLocalObject::Serialize(void* buffer, size_t buffer_size,
-                                  SerializationContext* context) const {
+size_t MockVersionedLocalObject::Serialize(
+    void* buffer, size_t buffer_size, SerializationContext* context) const {
   CHECK(buffer != nullptr);
   CHECK(context != nullptr);
 
@@ -54,16 +55,16 @@ size_t MockLocalObject::Serialize(void* buffer, size_t buffer_size,
   return data_size;
 }
 
-void MockLocalObject::InvokeMethod(Thread* thread,
-                                   PeerObject* peer_object,
-                                   const string& method_name,
-                                   const vector<Value>& parameters,
-                                   Value* return_value) {
+void MockVersionedLocalObject::InvokeMethod(Thread* thread,
+                                            PeerObject* peer_object,
+                                            const string& method_name,
+                                            const vector<Value>& parameters,
+                                            Value* return_value) {
   core_->InvokeMethod(thread, peer_object, method_name, parameters,
                       return_value);
 }
 
-string MockLocalObject::Dump() const {
+string MockVersionedLocalObject::Dump() const {
   return "";
 }
 

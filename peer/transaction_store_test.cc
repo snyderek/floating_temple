@@ -26,9 +26,9 @@
 #include "base/macros.h"
 #include "fake_interpreter/fake_interpreter.h"
 #include "fake_interpreter/fake_local_object.h"
-#include "include/c++/local_object.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
+#include "include/c++/versioned_local_object.h"
 #include "peer/canonical_peer_map.h"
 #include "peer/get_peer_message_type.h"
 #include "peer/interpreter_thread.h"
@@ -58,11 +58,11 @@ MATCHER_P(IsPeerMessageType, type, "") {
   return GetPeerMessageType(arg) == type;
 }
 
-class TestProgramObject : public LocalObject {
+class TestProgramObject : public VersionedLocalObject {
  public:
   TestProgramObject() {}
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   size_t Serialize(void* buffer, size_t buffer_size,
                    SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
@@ -76,7 +76,7 @@ class TestProgramObject : public LocalObject {
   DISALLOW_COPY_AND_ASSIGN(TestProgramObject);
 };
 
-LocalObject* TestProgramObject::Clone() const {
+VersionedLocalObject* TestProgramObject::Clone() const {
   return new TestProgramObject();
 }
 
@@ -106,9 +106,9 @@ void TestProgramObject::InvokeMethod(Thread* thread,
     return;
   }
 
-  thread->CreatePeerObject(new FakeLocalObject(""), "athos", true);
-  thread->CreatePeerObject(new FakeLocalObject(""), "porthos", true);
-  thread->CreatePeerObject(new FakeLocalObject(""), "aramis", true);
+  thread->CreatePeerObject(new FakeVersionedLocalObject(""), "athos", true);
+  thread->CreatePeerObject(new FakeVersionedLocalObject(""), "porthos", true);
+  thread->CreatePeerObject(new FakeVersionedLocalObject(""), "aramis", true);
 
   if (!thread->EndTransaction()) {
     return;

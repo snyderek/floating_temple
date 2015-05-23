@@ -113,7 +113,7 @@ class PeerThread : private Thread {
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  PeerObject* CreatePeerObject(LocalObject* initial_version,
+  PeerObject* CreatePeerObject(VersionedLocalObject* initial_version,
                                const std::string& name,
                                bool versioned) override;
   bool CallMethod(PeerObject* peer_object,

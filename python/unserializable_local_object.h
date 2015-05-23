@@ -28,7 +28,7 @@ class UnserializableLocalObject : public LocalObjectImpl {
  public:
   explicit UnserializableLocalObject(PyObject* py_object);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
 
  protected:

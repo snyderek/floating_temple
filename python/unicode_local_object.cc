@@ -50,7 +50,7 @@ UnicodeLocalObject::UnicodeLocalObject(PyObject* py_unicode)
   CHECK_NE(PyUnicode_CheckExact(py_unicode), 0);
 }
 
-LocalObject* UnicodeLocalObject::Clone() const {
+VersionedLocalObject* UnicodeLocalObject::Clone() const {
   return new UnicodeLocalObject(py_object());
 }
 

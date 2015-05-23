@@ -175,9 +175,9 @@ peer_testing_lib = ft_env.Library(
     target = 'peer/peer_testing',
     source = Split("""
         peer/make_transaction_id.cc
-        peer/mock_local_object.cc
         peer/mock_sequence_point.cc
         peer/mock_transaction_store.cc
+        peer/mock_versioned_local_object.cc
       """),
   )
 

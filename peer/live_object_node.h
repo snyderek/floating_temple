@@ -25,8 +25,8 @@
 
 namespace floating_temple {
 
-class LocalObject;
 class Thread;
+class VersionedLocalObject;
 
 namespace peer {
 
@@ -34,10 +34,10 @@ class PeerObjectImpl;
 
 class LiveObjectNode {
  public:
-  explicit LiveObjectNode(LocalObject* local_object);
+  explicit LiveObjectNode(VersionedLocalObject* local_object);
   ~LiveObjectNode();
 
-  const LocalObject* local_object() const { return local_object_; }
+  const VersionedLocalObject* local_object() const { return local_object_; }
 
   void Serialize(std::string* data,
                  std::vector<PeerObjectImpl*>* referenced_peer_objects) const;
@@ -54,7 +54,7 @@ class LiveObjectNode {
  private:
   int GetRefCount() const;
 
-  LocalObject* const local_object_;  // Not NULL
+  VersionedLocalObject* const local_object_;  // Not NULL
 
   int ref_count_;
   mutable Mutex ref_count_mu_;

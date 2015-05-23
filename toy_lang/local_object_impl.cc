@@ -188,7 +188,7 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
 NoneObject::NoneObject() {
 }
 
-LocalObject* NoneObject::Clone() const {
+VersionedLocalObject* NoneObject::Clone() const {
   return new NoneObject();
 }
 
@@ -213,7 +213,7 @@ BoolObject::BoolObject(bool b)
     : b_(b) {
 }
 
-LocalObject* BoolObject::Clone() const {
+VersionedLocalObject* BoolObject::Clone() const {
   return new BoolObject(b_);
 }
 
@@ -258,7 +258,7 @@ IntObject::IntObject(int64 n)
     : n_(n) {
 }
 
-LocalObject* IntObject::Clone() const {
+VersionedLocalObject* IntObject::Clone() const {
   return new IntObject(n_);
 }
 
@@ -298,7 +298,7 @@ StringObject::StringObject(const string& s)
     : s_(s) {
 }
 
-LocalObject* StringObject::Clone() const {
+VersionedLocalObject* StringObject::Clone() const {
   return new StringObject(s_);
 }
 
@@ -336,7 +336,7 @@ SymbolTableObject::SymbolTableObject()
     : scopes_(1, make_linked_ptr(new unordered_map<string, PeerObject*>())) {
 }
 
-LocalObject* SymbolTableObject::Clone() const {
+VersionedLocalObject* SymbolTableObject::Clone() const {
   SymbolTableObject* new_object = new SymbolTableObject();
 
   {
@@ -594,7 +594,7 @@ ExpressionObject::ExpressionObject(
   CHECK(expression.get() != nullptr);
 }
 
-LocalObject* ExpressionObject::Clone() const {
+VersionedLocalObject* ExpressionObject::Clone() const {
   return new ExpressionObject(expression_);
 }
 
@@ -644,7 +644,7 @@ ListObject::ListObject(const vector<PeerObject*>& items)
     : items_(items) {
 }
 
-LocalObject* ListObject::Clone() const {
+VersionedLocalObject* ListObject::Clone() const {
   MutexLock lock(&items_mu_);
   return new ListObject(items_);
 }
@@ -762,7 +762,7 @@ void ListObject::PopulateObjectProto(ObjectProto* object_proto,
 MapObject::MapObject() {
 }
 
-LocalObject* MapObject::Clone() const {
+VersionedLocalObject* MapObject::Clone() const {
   MapObject* new_object = new MapObject();
   new_object->map_ = map_;
 
@@ -872,7 +872,7 @@ RangeIteratorObject::RangeIteratorObject(int64 limit, int64 start)
   CHECK_LE(start, limit);
 }
 
-LocalObject* RangeIteratorObject::Clone() const {
+VersionedLocalObject* RangeIteratorObject::Clone() const {
   int64 i_temp = 0;
   {
     MutexLock lock(&i_mu_);
@@ -988,7 +988,7 @@ void Function::InvokeMethod(Thread* thread,
 ListFunction::ListFunction() {
 }
 
-LocalObject* ListFunction::Clone() const {
+VersionedLocalObject* ListFunction::Clone() const {
   return new ListFunction();
 }
 
@@ -1012,7 +1012,7 @@ PeerObject* ListFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 SetVariableFunction::SetVariableFunction() {
 }
 
-LocalObject* SetVariableFunction::Clone() const {
+VersionedLocalObject* SetVariableFunction::Clone() const {
   return new SetVariableFunction();
 }
 
@@ -1050,7 +1050,7 @@ PeerObject* SetVariableFunction::Call(
 ForFunction::ForFunction() {
 }
 
-LocalObject* ForFunction::Clone() const {
+VersionedLocalObject* ForFunction::Clone() const {
   return new ForFunction();
 }
 
@@ -1122,7 +1122,7 @@ PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 RangeFunction::RangeFunction() {
 }
 
-LocalObject* RangeFunction::Clone() const {
+VersionedLocalObject* RangeFunction::Clone() const {
   return new RangeFunction();
 }
 
@@ -1152,7 +1152,7 @@ PeerObject* RangeFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 PrintFunction::PrintFunction() {
 }
 
-LocalObject* PrintFunction::Clone() const {
+VersionedLocalObject* PrintFunction::Clone() const {
   return new PrintFunction();
 }
 
@@ -1191,7 +1191,7 @@ PeerObject* PrintFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 AddFunction::AddFunction() {
 }
 
-LocalObject* AddFunction::Clone() const {
+VersionedLocalObject* AddFunction::Clone() const {
   return new AddFunction();
 }
 
@@ -1225,7 +1225,7 @@ PeerObject* AddFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 BeginTranFunction::BeginTranFunction() {
 }
 
-LocalObject* BeginTranFunction::Clone() const {
+VersionedLocalObject* BeginTranFunction::Clone() const {
   return new BeginTranFunction();
 }
 
@@ -1254,7 +1254,7 @@ PeerObject* BeginTranFunction::Call(
 EndTranFunction::EndTranFunction() {
 }
 
-LocalObject* EndTranFunction::Clone() const {
+VersionedLocalObject* EndTranFunction::Clone() const {
   return new EndTranFunction();
 }
 
@@ -1283,7 +1283,7 @@ PeerObject* EndTranFunction::Call(PeerObject* symbol_table_object,
 IfFunction::IfFunction() {
 }
 
-LocalObject* IfFunction::Clone() const {
+VersionedLocalObject* IfFunction::Clone() const {
   return new IfFunction();
 }
 
@@ -1334,7 +1334,7 @@ PeerObject* IfFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 NotFunction::NotFunction() {
 }
 
-LocalObject* NotFunction::Clone() const {
+VersionedLocalObject* NotFunction::Clone() const {
   return new NotFunction();
 }
 
@@ -1365,7 +1365,7 @@ PeerObject* NotFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 IsSetFunction::IsSetFunction() {
 }
 
-LocalObject* IsSetFunction::Clone() const {
+VersionedLocalObject* IsSetFunction::Clone() const {
   return new IsSetFunction();
 }
 
@@ -1401,7 +1401,7 @@ PeerObject* IsSetFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 WhileFunction::WhileFunction() {
 }
 
-LocalObject* WhileFunction::Clone() const {
+VersionedLocalObject* WhileFunction::Clone() const {
   return new WhileFunction();
 }
 
@@ -1462,7 +1462,7 @@ PeerObject* WhileFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 LessThanFunction::LessThanFunction() {
 }
 
-LocalObject* LessThanFunction::Clone() const {
+VersionedLocalObject* LessThanFunction::Clone() const {
   return new LessThanFunction();
 }
 
@@ -1500,7 +1500,7 @@ PeerObject* LessThanFunction::Call(
 LenFunction::LenFunction() {
 }
 
-LocalObject* LenFunction::Clone() const {
+VersionedLocalObject* LenFunction::Clone() const {
   return new LenFunction();
 }
 
@@ -1530,7 +1530,7 @@ PeerObject* LenFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 AppendFunction::AppendFunction() {
 }
 
-LocalObject* AppendFunction::Clone() const {
+VersionedLocalObject* AppendFunction::Clone() const {
   return new AppendFunction();
 }
 
@@ -1566,7 +1566,7 @@ PeerObject* AppendFunction::Call(PeerObject* symbol_table_object,
 GetAtFunction::GetAtFunction() {
 }
 
-LocalObject* GetAtFunction::Clone() const {
+VersionedLocalObject* GetAtFunction::Clone() const {
   return new GetAtFunction();
 }
 
@@ -1603,7 +1603,7 @@ PeerObject* GetAtFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 MapIsSetFunction::MapIsSetFunction() {
 }
 
-LocalObject* MapIsSetFunction::Clone() const {
+VersionedLocalObject* MapIsSetFunction::Clone() const {
   return new MapIsSetFunction();
 }
 
@@ -1642,7 +1642,7 @@ PeerObject* MapIsSetFunction::Call(
 MapGetFunction::MapGetFunction() {
 }
 
-LocalObject* MapGetFunction::Clone() const {
+VersionedLocalObject* MapGetFunction::Clone() const {
   return new MapGetFunction();
 }
 
@@ -1680,7 +1680,7 @@ PeerObject* MapGetFunction::Call(PeerObject* symbol_table_object,
 MapSetFunction::MapSetFunction() {
 }
 
-LocalObject* MapSetFunction::Clone() const {
+VersionedLocalObject* MapSetFunction::Clone() const {
   return new MapSetFunction();
 }
 

@@ -76,7 +76,7 @@ Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
   return old_thread;
 }
 
-LocalObject* InterpreterImpl::DeserializeObject(
+VersionedLocalObject* InterpreterImpl::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
   return LocalObjectImpl::Deserialize(buffer, buffer_size, context);
 }

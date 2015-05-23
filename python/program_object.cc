@@ -80,7 +80,7 @@ ProgramObject::ProgramObject(FILE* fp, const string& source_file_name,
       globals_(CHECK_NOTNULL(globals)) {
 }
 
-LocalObject* ProgramObject::Clone() const {
+VersionedLocalObject* ProgramObject::Clone() const {
   return new ProgramObject(fp_, source_file_name_, globals_);
 }
 

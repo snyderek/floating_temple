@@ -33,16 +33,16 @@
 #include "util/tcp.h"
 
 namespace floating_temple {
-class LocalObject;
 class PeerObject;
+class VersionedLocalObject;
 }
 
 using floating_temple::CreateNetworkPeer;
 using floating_temple::CreateStandalonePeer;
 using floating_temple::GetLocalAddress;
-using floating_temple::LocalObject;
 using floating_temple::PeerObject;
 using floating_temple::Value;
+using floating_temple::VersionedLocalObject;
 using floating_temple::c_harness::ProxyInterpreter;
 using std::printf;
 using std::string;
@@ -89,7 +89,7 @@ void floatingtemple_RunProgram(floatingtemple_Interpreter* interpreter,
 
   ProxyInterpreter* const proxy_interpreter = &peer->proxy_interpreter;
 
-  LocalObject* const proxy_local_object =
+  VersionedLocalObject* const proxy_local_object =
       proxy_interpreter->CreateProxyLocalObject(local_object);
 
   floatingtemple_Interpreter* const old_interpreter =

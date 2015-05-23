@@ -103,7 +103,7 @@ ProgramObject::ProgramObject(const const_shared_ptr<Expression>& expression)
   CHECK(expression.get() != nullptr);
 }
 
-LocalObject* ProgramObject::Clone() const {
+VersionedLocalObject* ProgramObject::Clone() const {
   return new ProgramObject(expression_);
 }
 

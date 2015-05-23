@@ -20,8 +20,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "include/c++/local_object.h"
 #include "include/c++/value.h"
+#include "include/c++/versioned_local_object.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
 namespace floating_temple {
@@ -32,9 +32,9 @@ class Thread;
 
 namespace peer {
 
-class MockLocalObjectCore {
+class MockVersionedLocalObjectCore {
  public:
-  MockLocalObjectCore() {}
+  MockVersionedLocalObjectCore() {}
 
   MOCK_CONST_METHOD1(Serialize, std::string(SerializationContext* context));
   MOCK_CONST_METHOD5(InvokeMethod,
@@ -45,14 +45,14 @@ class MockLocalObjectCore {
                           Value* return_value));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockLocalObjectCore);
+  DISALLOW_COPY_AND_ASSIGN(MockVersionedLocalObjectCore);
 };
 
-class MockLocalObject : public LocalObject {
+class MockVersionedLocalObject : public VersionedLocalObject {
  public:
-  explicit MockLocalObject(const MockLocalObjectCore* core);
+  explicit MockVersionedLocalObject(const MockVersionedLocalObjectCore* core);
 
-  LocalObject* Clone() const override;
+  VersionedLocalObject* Clone() const override;
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
@@ -63,9 +63,9 @@ class MockLocalObject : public LocalObject {
   std::string Dump() const override;
 
  private:
-  const MockLocalObjectCore* const core_;
+  const MockVersionedLocalObjectCore* const core_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockLocalObject);
+  DISALLOW_COPY_AND_ASSIGN(MockVersionedLocalObject);
 };
 
 }  // namespace peer

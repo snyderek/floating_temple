@@ -32,7 +32,7 @@ FalseLocalObject::FalseLocalObject()
     : LocalObjectImpl(Py_False) {
 }
 
-LocalObject* FalseLocalObject::Clone() const {
+VersionedLocalObject* FalseLocalObject::Clone() const {
   return new FalseLocalObject();
 }
 

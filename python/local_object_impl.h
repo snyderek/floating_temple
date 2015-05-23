@@ -20,7 +20,7 @@
 
 #include <cstddef>
 
-#include "include/c++/local_object.h"
+#include "include/c++/versioned_local_object.h"
 
 namespace floating_temple {
 
@@ -34,7 +34,7 @@ class ObjectProto;
 // Abstract class
 // TODO(dss): Rename this class. The "Impl" suffix doesn't make sense for an
 // abstract class.
-class LocalObjectImpl : public LocalObject {
+class LocalObjectImpl : public VersionedLocalObject {
  public:
   // Steals a reference to 'py_object'.
   explicit LocalObjectImpl(PyObject* py_object);

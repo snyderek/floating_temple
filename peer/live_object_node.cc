@@ -22,8 +22,8 @@
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
-#include "include/c++/local_object.h"
 #include "include/c++/value.h"
+#include "include/c++/versioned_local_object.h"
 #include "peer/peer_object_impl.h"
 #include "peer/serialize_local_object_to_string.h"
 
@@ -33,7 +33,7 @@ using std::vector;
 namespace floating_temple {
 namespace peer {
 
-LiveObjectNode::LiveObjectNode(LocalObject* local_object)
+LiveObjectNode::LiveObjectNode(VersionedLocalObject* local_object)
     : local_object_(CHECK_NOTNULL(local_object)),
       ref_count_(1) {
 }
@@ -58,7 +58,7 @@ LiveObjectNode* LiveObjectNode::InvokeMethod(Thread* thread,
   VLOG(2) << "Method: \"" << CEscape(method_name) << "\"";
 
   if (ref_count > 1) {
-    LocalObject* const new_local_object = local_object_->Clone();
+    VersionedLocalObject* const new_local_object = local_object_->Clone();
     VLOG(4) << "Before: " << new_local_object->Dump();
     new_local_object->InvokeMethod(thread, peer_object, method_name, parameters,
                                    return_value);

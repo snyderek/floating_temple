@@ -33,9 +33,9 @@
 
 namespace floating_temple {
 
-class LocalObject;
 class PeerObject;
 class Thread;
+class VersionedLocalObject;
 
 namespace python {
 
@@ -56,8 +56,9 @@ class InterpreterImpl : public Interpreter {
 
   Thread* SetThreadObject(Thread* new_thread);
 
-  LocalObject* DeserializeObject(const void* buffer, std::size_t buffer_size,
-                                 DeserializationContext* context) override;
+  VersionedLocalObject* DeserializeObject(
+      const void* buffer, std::size_t buffer_size,
+      DeserializationContext* context) override;
 
   PyObject* PeerObjectToPyProxyObject(PeerObject* peer_object);
   PeerObject* PyProxyObjectToPeerObject(PyObject* py_object);
@@ -89,7 +90,7 @@ PeerObject* InterpreterImpl::CreatePeerObject(PyObject* py_object,
     Py_INCREF(py_object);
   }
 
-  LocalObject* const local_object = new LocalObjectType(py_object);
+  VersionedLocalObject* const local_object = new LocalObjectType(py_object);
   return GetThreadObject()->CreatePeerObject(local_object, name, versioned);
 }
 

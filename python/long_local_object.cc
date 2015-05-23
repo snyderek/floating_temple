@@ -44,7 +44,7 @@ LongLocalObject::LongLocalObject(PyObject* py_long_object)
     : LocalObjectImpl(CHECK_NOTNULL(py_long_object)) {
 }
 
-LocalObject* LongLocalObject::Clone() const {
+VersionedLocalObject* LongLocalObject::Clone() const {
   return new LongLocalObject(py_object());
 }
 

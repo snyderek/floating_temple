@@ -46,7 +46,7 @@ class PeerImpl : public Peer {
              int send_receive_thread_count,
              bool delay_object_binding);
 
-  void RunProgram(LocalObject* local_object,
+  void RunProgram(VersionedLocalObject* local_object,
                   const std::string& method_name,
                   Value* return_value,
                   bool linger) override;

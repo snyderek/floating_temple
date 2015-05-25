@@ -39,16 +39,19 @@ namespace peer {
 class CanonicalPeer;
 class CommittedEvent;
 class PeerObjectImpl;
-class PeerThread;
-class SharedObjectTransaction;
 class SharedObjectTransactionInfo;
 class TransactionStoreInternalInterface;
 
+// TODO(dss): Consider factoring out the polymorphic aspects of this class into
+// a separate object that implements a pure interface. (In other words, use the
+// Pimpl idiom.)
+
+// Abstract
 class SharedObject {
  public:
   SharedObject(TransactionStoreInternalInterface* transaction_store,
                const Uuid& object_id);
-  ~SharedObject();
+  virtual ~SharedObject() {}
 
   const Uuid& object_id() const { return object_id_; }
 
@@ -64,45 +67,41 @@ class SharedObject {
   // parameter and an output parameter. This is confusing. Try to come up with a
   // more intuitive API.
 
-  ConstLiveObjectPtr GetWorkingVersion(
+  virtual ConstLiveObjectPtr GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
       std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
-          transactions_to_reject);
+          transactions_to_reject) = 0;
 
-  void GetTransactions(
+  virtual void GetTransactions(
       const MaxVersionMap& transaction_store_version_map,
       std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
           transactions,
-      MaxVersionMap* effective_version) const;
-  void StoreTransactions(
+      MaxVersionMap* effective_version) const = 0;
+  virtual void StoreTransactions(
       const CanonicalPeer* origin_peer,
       std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
           transactions,
-      const MaxVersionMap& version_map);
+      const MaxVersionMap& version_map) = 0;
 
-  void InsertTransaction(const CanonicalPeer* origin_peer,
-                         const TransactionId& transaction_id,
-                         std::vector<linked_ptr<CommittedEvent>>* events);
+  virtual void InsertTransaction(
+      const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
+      std::vector<linked_ptr<CommittedEvent>>* events) = 0;
 
-  void SetCachedLiveObject(const ConstLiveObjectPtr& cached_live_object,
-                           const SequencePointImpl& cached_sequence_point);
+  virtual void SetCachedLiveObject(
+      const ConstLiveObjectPtr& cached_live_object,
+      const SequencePointImpl& cached_sequence_point) = 0;
 
   std::string Dump() const;
 
+ protected:
+  TransactionStoreInternalInterface* transaction_store() const
+      { return transaction_store_; }
+
+  virtual std::string DumpCommittedVersions() const = 0;
+
  private:
-  bool ApplyTransactionsToWorkingVersion_Locked(
-      PeerThread* peer_thread, const SequencePointImpl& sequence_point,
-      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
-          transactions_to_reject);
-
-  void ComputeEffectiveVersion_Locked(
-      const MaxVersionMap& transaction_store_version_map,
-      MaxVersionMap* effective_version) const;
-  bool CanUseCachedLiveObject_Locked(
-      const SequencePointImpl& requested_sequence_point) const;
-
   std::string Dump_Locked() const;
 
   TransactionStoreInternalInterface* const transaction_store_;
@@ -113,14 +112,6 @@ class SharedObject {
 
   std::vector<PeerObjectImpl*> peer_objects_;
   mutable Mutex peer_objects_mu_;
-
-  std::map<TransactionId, linked_ptr<SharedObjectTransaction>>
-      committed_versions_;
-  MaxVersionMap version_map_;
-  std::unordered_set<const CanonicalPeer*> up_to_date_peers_;
-  ConstLiveObjectPtr cached_live_object_;
-  SequencePointImpl cached_sequence_point_;
-  mutable Mutex committed_versions_mu_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedObject);
 };

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/shared_object.h"
+#include "peer/versioned_shared_object.h"
 
 #include <string>
 #include <unordered_map>
@@ -40,6 +40,7 @@
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/sequence_point_impl.h"
+#include "peer/shared_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
@@ -59,7 +60,6 @@ namespace floating_temple {
 namespace peer {
 
 class PeerObjectImpl;
-class SharedObject;
 
 namespace {
 
@@ -77,7 +77,7 @@ class SharedObjectTest : public Test {
     object_id.set_high_word(0x0123456789abcdef);
     object_id.set_low_word(0xfedcba9876543210);
 
-    shared_object_ = new SharedObject(transaction_store_, object_id);
+    shared_object_ = new VersionedSharedObject(transaction_store_, object_id);
   }
 
   void TearDown() override {
@@ -715,9 +715,9 @@ TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
   InsertObjectCreationTransaction(&canonical_peer2, MakeTransactionId(30, 0, 0),
                                   "batman.");
 
-  // Call SharedObject::GetWorkingVersion and pass in a sequence point that only
-  // includes Transaction #3. The method should return the local object that's
-  // contained in the second OBJECT_CREATION event.
+  // Call VersionedSharedObject::GetWorkingVersion and pass in a sequence point
+  // that only includes Transaction #3. The method should return the local
+  // object that's contained in the second OBJECT_CREATION event.
   //
   // This simulates the scenario where the local peer has received the contents
   // of the shared object from a remote peer, but the currently executing local

@@ -168,6 +168,7 @@ peer_lib = ft_env.Library(
         peer/transaction_store.cc
         peer/uuid_util.cc
         peer/value_proto_util.cc
+        peer/versioned_shared_object.cc
       """),
   )
 
@@ -690,24 +691,6 @@ peer_peer_thread_test = ft_env.Program(
       ],
   )
 
-peer_shared_object_test = ft_env.Program(
-    target = 'peer/shared_object_test',
-    source = Split("""
-        peer/shared_object_test.cc
-      """) + [
-        peer_testing_lib,
-        peer_lib,
-        protocol_server_lib,
-        fake_interpreter_lib,
-        value_lib,
-        peer_proto_lib,
-        util_lib,
-        base_lib,
-        gmock_lib,
-        gtest_lib,
-      ],
-  )
-
 peer_toy_lang_integration_test = ft_env.Program(
     target = 'peer/toy_lang_integration_test',
     source = Split("""
@@ -754,6 +737,24 @@ peer_uuid_util_test = ft_env.Program(
         peer_proto_lib,
         util_lib,
         base_lib,
+        gtest_lib,
+      ],
+  )
+
+peer_versioned_shared_object_test = ft_env.Program(
+    target = 'peer/versioned_shared_object_test',
+    source = Split("""
+        peer/versioned_shared_object_test.cc
+      """) + [
+        peer_testing_lib,
+        peer_lib,
+        protocol_server_lib,
+        fake_interpreter_lib,
+        value_lib,
+        peer_proto_lib,
+        util_lib,
+        base_lib,
+        gmock_lib,
         gtest_lib,
       ],
   )
@@ -887,10 +888,10 @@ cxx_tests = [
     peer_max_version_map_test,
     peer_peer_id_test,
     peer_peer_thread_test,
-    peer_shared_object_test,
     peer_toy_lang_integration_test,
     peer_transaction_store_test,
     peer_uuid_util_test,
+    peer_versioned_shared_object_test,
     protocol_server_buffer_util_test,
     protocol_server_protocol_connection_impl_test,
     protocol_server_varint_test,

@@ -36,7 +36,7 @@
 #include "peer/mock_versioned_local_object.h"
 #include "peer/peer_object_impl.h"
 #include "peer/proto/uuid.pb.h"
-#include "peer/shared_object.h"
+#include "peer/versioned_shared_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
@@ -54,6 +54,9 @@ using testing::_;
 
 namespace floating_temple {
 namespace peer {
+
+class SharedObject;
+
 namespace {
 
 Uuid MakeUuid(int n) {
@@ -86,8 +89,8 @@ void TestMethod1(Thread* thread, const vector<Value>& parameters,
 TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  SharedObject shared_object1(&transaction_store, MakeUuid(1));
-  SharedObject shared_object2(&transaction_store, MakeUuid(2));
+  VersionedSharedObject shared_object1(&transaction_store, MakeUuid(1));
+  VersionedSharedObject shared_object2(&transaction_store, MakeUuid(2));
   const MockVersionedLocalObjectCore local_object_core1;
   LiveObjectPtr live_object1(
       new LiveObject(new MockVersionedLocalObject(&local_object_core1)));
@@ -139,7 +142,7 @@ TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
 TEST(PeerThreadTest, FlushEvents) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  SharedObject shared_object(&transaction_store, MakeUuid(111));
+  VersionedSharedObject shared_object(&transaction_store, MakeUuid(111));
   const MockVersionedLocalObjectCore local_object_core;
   LiveObjectPtr live_object(
       new LiveObject(new MockVersionedLocalObject(&local_object_core)));
@@ -196,7 +199,7 @@ TEST(PeerThreadTest, FlushEvents) {
 TEST(PeerThreadTest, MultipleTransactions) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  SharedObject shared_object(&transaction_store, MakeUuid(222));
+  VersionedSharedObject shared_object(&transaction_store, MakeUuid(222));
   FakeVersionedLocalObject* const local_object = new FakeVersionedLocalObject(
       "snap.");
   LiveObjectPtr live_object(new LiveObject(local_object));
@@ -262,7 +265,7 @@ TEST(PeerThreadTest, MultipleTransactions) {
 TEST(PeerThreadTest, TransactionAfterConflictDetected) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  SharedObject shared_object(&transaction_store, MakeUuid(333));
+  VersionedSharedObject shared_object(&transaction_store, MakeUuid(333));
   LiveObjectPtr live_object(
       new LiveObject(new FakeVersionedLocalObject("peter.")));
 
@@ -340,7 +343,7 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
 TEST(PeerThreadTest, MethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  SharedObject shared_object(&transaction_store, MakeUuid(1));
+  VersionedSharedObject shared_object(&transaction_store, MakeUuid(1));
   const MockVersionedLocalObjectCore local_object_core;
   LiveObjectPtr live_object(
       new LiveObject(new MockVersionedLocalObject(&local_object_core)));
@@ -399,7 +402,7 @@ TEST(PeerThreadTest, MethodCallWithoutReturn) {
 TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  SharedObject shared_object(&transaction_store, MakeUuid(1));
+  VersionedSharedObject shared_object(&transaction_store, MakeUuid(1));
   const MockVersionedLocalObjectCore local_object_core;
   LiveObjectPtr live_object(
       new LiveObject(new MockVersionedLocalObject(&local_object_core)));
@@ -479,8 +482,8 @@ void TestMethod3(Thread* thread, const vector<Value>& parameters,
 TEST(PeerThreadTest, TransactionInsideMethodCall) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  SharedObject shared_object1(&transaction_store, MakeUuid(1));
-  SharedObject shared_object2(&transaction_store, MakeUuid(2));
+  VersionedSharedObject shared_object1(&transaction_store, MakeUuid(1));
+  VersionedSharedObject shared_object2(&transaction_store, MakeUuid(2));
   const MockVersionedLocalObjectCore local_object_core1;
   LiveObjectPtr live_object1(
       new LiveObject(new MockVersionedLocalObject(&local_object_core1)));
@@ -580,8 +583,8 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
 TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  SharedObject shared_object1(&transaction_store, MakeUuid(1));
-  SharedObject shared_object2(&transaction_store, MakeUuid(2));
+  VersionedSharedObject shared_object1(&transaction_store, MakeUuid(1));
+  VersionedSharedObject shared_object2(&transaction_store, MakeUuid(2));
   const MockVersionedLocalObjectCore local_object_core1;
   LiveObjectPtr live_object1(
       new LiveObject(new MockVersionedLocalObject(&local_object_core1)));

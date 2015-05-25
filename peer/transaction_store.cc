@@ -61,6 +61,7 @@
 #include "peer/transaction_sequencer.h"
 #include "peer/uuid_util.h"
 #include "peer/value_proto_util.h"
+#include "peer/versioned_shared_object.h"
 
 using std::map;
 using std::pair;
@@ -631,7 +632,7 @@ SharedObject* TransactionStore::GetOrCreateSharedObject(const Uuid& object_id) {
 
   linked_ptr<SharedObject>& shared_object = shared_objects_[object_id];
   if (shared_object.get() == nullptr) {
-    shared_object.reset(new SharedObject(this, object_id));
+    shared_object.reset(new VersionedSharedObject(this, object_id));
   }
 
   return shared_object.get();
@@ -916,7 +917,8 @@ SharedObject* TransactionStore::GetSharedObjectForPeerObject(
   Uuid object_id;
   GenerateUuid(&object_id);
 
-  SharedObject* const new_shared_object = new SharedObject(this, object_id);
+  SharedObject* const new_shared_object = new VersionedSharedObject(this,
+                                                                    object_id);
   new_shared_object->AddPeerObject(peer_object);
 
   shared_object = peer_object->SetSharedObjectIfUnset(new_shared_object);

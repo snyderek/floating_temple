@@ -86,14 +86,6 @@ SharedObject::SharedObject(TransactionStoreInternalInterface* transaction_store,
 SharedObject::~SharedObject() {
 }
 
-bool SharedObject::IsVersioned() const {
-  MutexLock lock(&peer_objects_mu_);
-  if (peer_objects_.empty()) {
-    return false;
-  }
-  return peer_objects_.front()->versioned();
-}
-
 void SharedObject::GetInterestedPeers(
     unordered_set<const CanonicalPeer*>* interested_peers) const {
   CHECK(interested_peers != nullptr);

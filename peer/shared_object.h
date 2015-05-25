@@ -52,8 +52,6 @@ class SharedObject {
 
   const Uuid& object_id() const { return object_id_; }
 
-  bool IsVersioned() const;
-
   void GetInterestedPeers(
       std::unordered_set<const CanonicalPeer*>* interested_peers) const;
   void AddInterestedPeer(const CanonicalPeer* interested_peer);

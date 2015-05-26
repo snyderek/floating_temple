@@ -30,6 +30,7 @@
 
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
 namespace floating_temple {
 namespace {
@@ -48,14 +49,14 @@ class DumpContextImpl::DumpNode {
   virtual ~DumpNode() {}
 
   virtual void AddValue(DumpNode* node);
-  virtual void AppendJson(std::string* output) const = 0;
+  virtual void AppendJson(string* output) const = 0;
 };
 
 class DumpContextImpl::NullDumpNode : public DumpContextImpl::DumpNode {
  public:
   NullDumpNode();
 
-  void AppendJson(std::string* output) const override;
+  void AppendJson(string* output) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullDumpNode);
@@ -65,7 +66,7 @@ class DumpContextImpl::BoolDumpNode : public DumpContextImpl::DumpNode {
  public:
   explicit BoolDumpNode(bool b);
 
-  void AppendJson(std::string* output) const override;
+  void AppendJson(string* output) const override;
 
  private:
   const bool b_;
@@ -75,12 +76,12 @@ class DumpContextImpl::BoolDumpNode : public DumpContextImpl::DumpNode {
 
 class DumpContextImpl::StringDumpNode : public DumpContextImpl::DumpNode {
  public:
-  explicit StringDumpNode(const std::string& s);
+  explicit StringDumpNode(const string& s);
 
-  void AppendJson(std::string* output) const override;
+  void AppendJson(string* output) const override;
 
  private:
-  const std::string s_;
+  const string s_;
 
   DISALLOW_COPY_AND_ASSIGN(StringDumpNode);
 };
@@ -89,7 +90,7 @@ class DumpContextImpl::PointerDumpNode : public DumpContextImpl::DumpNode {
  public:
   explicit PointerDumpNode(const void* p);
 
-  void AppendJson(std::string* output) const override;
+  void AppendJson(string* output) const override;
 
  private:
   const void* const p_;
@@ -102,10 +103,10 @@ class DumpContextImpl::ListDumpNode : public DumpContextImpl::DumpNode {
   ListDumpNode();
 
   void AddValue(DumpNode* node) override;
-  void AppendJson(std::string* output) const override;
+  void AppendJson(string* output) const override;
 
  private:
-  std::vector<std::unique_ptr<DumpNode>> list_;
+  vector<unique_ptr<DumpNode>> list_;
 
   DISALLOW_COPY_AND_ASSIGN(ListDumpNode);
 };
@@ -115,11 +116,11 @@ class DumpContextImpl::MapDumpNode : public DumpContextImpl::DumpNode {
   MapDumpNode();
 
   void AddValue(DumpNode* node) override;
-  void AppendJson(std::string* output) const override;
+  void AppendJson(string* output) const override;
 
  private:
   // Preserve the order of the map items.
-  std::vector<std::unique_ptr<DumpNode>> map_;
+  vector<unique_ptr<DumpNode>> map_;
 
   DISALLOW_COPY_AND_ASSIGN(MapDumpNode);
 };
@@ -130,7 +131,7 @@ class DumpContextImpl::PrimitiveTypeDumpNode
  public:
   explicit PrimitiveTypeDumpNode(T value);
 
-  void AppendJson(std::string* output) const override;
+  void AppendJson(string* output) const override;
 
  private:
   const T value_;

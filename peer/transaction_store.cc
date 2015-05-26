@@ -249,8 +249,8 @@ PeerObjectImpl* TransactionStore::CreateUnboundPeerObject(bool versioned) {
   return peer_object;
 }
 
-PeerObjectImpl* TransactionStore::CreateBoundPeerObject(
-    const std::string& name, bool versioned) {
+PeerObjectImpl* TransactionStore::CreateBoundPeerObject(const string& name,
+                                                        bool versioned) {
   if (name.empty()) {
     PeerObjectImpl* const peer_object = CreateUnboundPeerObject(versioned);
     GetSharedObjectForPeerObject(peer_object);

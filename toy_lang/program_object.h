@@ -16,10 +16,10 @@
 #ifndef TOY_LANG_PROGRAM_OBJECT_H_
 #define TOY_LANG_PROGRAM_OBJECT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/const_shared_ptr.h"
 #include "base/macros.h"
 #include "toy_lang/local_object_impl.h"
 
@@ -30,7 +30,7 @@ class Expression;
 
 class ProgramObject : public LocalObjectImpl {
  public:
-  explicit ProgramObject(const const_shared_ptr<Expression>& expression);
+  explicit ProgramObject(const std::shared_ptr<const Expression>& expression);
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
@@ -45,7 +45,7 @@ class ProgramObject : public LocalObjectImpl {
                            SerializationContext* context) const override;
 
  private:
-  const const_shared_ptr<Expression> expression_;
+  const std::shared_ptr<const Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);
 };

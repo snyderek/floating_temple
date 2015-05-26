@@ -19,7 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "base/const_shared_ptr.h"
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
@@ -28,6 +27,7 @@
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
 
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -98,7 +98,7 @@ bool PopulateSymbolTable(PeerObject* symbol_table_object, Thread* thread,
 
 }  // namespace
 
-ProgramObject::ProgramObject(const const_shared_ptr<Expression>& expression)
+ProgramObject::ProgramObject(const shared_ptr<const Expression>& expression)
     : expression_(expression) {
   CHECK(expression.get() != nullptr);
 }

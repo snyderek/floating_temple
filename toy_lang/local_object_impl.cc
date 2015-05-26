@@ -18,11 +18,11 @@
 #include <cinttypes>
 #include <cstddef>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "base/const_shared_ptr.h"
 #include "base/escape.h"
 #include "base/integral_types.h"
 #include "base/linked_ptr.h"
@@ -42,6 +42,7 @@
 #include "toy_lang/symbol_table.h"
 
 using std::printf;
+using std::shared_ptr;
 using std::size_t;
 using std::string;
 using std::unordered_map;
@@ -173,9 +174,10 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
       return new MapSetFunction();
 
     case ObjectProto::PROGRAM: {
-      Expression* const expression = Expression::ParseExpressionProto(
-          object_proto.program_object().expression());
-      return new ProgramObject(make_const_shared_ptr(expression));
+      const shared_ptr<const Expression> expression(
+          Expression::ParseExpressionProto(
+              object_proto.program_object().expression()));
+      return new ProgramObject(expression);
     }
 
     default:
@@ -589,7 +591,7 @@ string SymbolTableObject::GetStringForLogging() const {
 }
 
 ExpressionObject::ExpressionObject(
-    const const_shared_ptr<Expression>& expression)
+    const shared_ptr<const Expression>& expression)
     : expression_(expression) {
   CHECK(expression.get() != nullptr);
 }
@@ -629,9 +631,9 @@ string ExpressionObject::Dump() const {
 // static
 ExpressionObject* ExpressionObject::ParseExpressionProto(
     const ExpressionProto& expression_proto) {
-  Expression* const expression = Expression::ParseExpressionProto(
-      expression_proto);
-  return new ExpressionObject(make_const_shared_ptr(expression));
+  const shared_ptr<const Expression> expression(
+      Expression::ParseExpressionProto(expression_proto));
+  return new ExpressionObject(expression);
 }
 
 void ExpressionObject::PopulateObjectProto(

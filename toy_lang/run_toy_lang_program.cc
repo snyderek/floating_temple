@@ -16,9 +16,9 @@
 #include "toy_lang/run_toy_lang_program.h"
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
-#include "base/const_shared_ptr.h"
 #include "base/logging.h"
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
@@ -30,6 +30,7 @@
 using std::FILE;
 using std::fclose;
 using std::fopen;
+using std::shared_ptr;
 using std::string;
 
 namespace floating_temple {
@@ -50,7 +51,7 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   CHECK(peer != nullptr);
 
   Lexer lexer(fp);
-  const const_shared_ptr<Expression> expression(ParseFile(&lexer));
+  const shared_ptr<const Expression> expression(ParseFile(&lexer));
 
   Value return_value;
   peer->RunProgram(new ProgramObject(expression), "run", &return_value, linger);

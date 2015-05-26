@@ -570,16 +570,6 @@ ft_env.Program(
 
 # Tests
 
-base_const_shared_ptr_test = ft_env.Program(
-    target = 'base/const_shared_ptr_test',
-    source = Split("""
-        base/const_shared_ptr_test.cc
-      """) + [
-        base_lib,
-        gtest_lib,
-      ],
-  )
-
 base_string_printf_test = ft_env.Program(
     target = 'base/string_printf_test',
     source = Split("""
@@ -880,7 +870,6 @@ util_stl_util_test = ft_env.Program(
   )
 
 cxx_tests = [
-    base_const_shared_ptr_test,
     base_string_printf_test,
     peer_connection_manager_test,
     peer_interpreter_thread_test,

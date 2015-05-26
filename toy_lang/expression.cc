@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 
-#include "base/const_shared_ptr.h"
 #include "base/escape.h"
 #include "base/integral_types.h"
 #include "base/linked_ptr.h"

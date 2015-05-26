@@ -17,11 +17,11 @@
 #define TOY_LANG_LOCAL_OBJECT_IMPL_H_
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "base/const_shared_ptr.h"
 #include "base/integral_types.h"
 #include "base/linked_ptr.h"
 #include "base/macros.h"
@@ -190,7 +190,8 @@ class SymbolTableObject : public LocalObjectImpl {
 
 class ExpressionObject : public LocalObjectImpl {
  public:
-  explicit ExpressionObject(const const_shared_ptr<Expression>& expression);
+  explicit ExpressionObject(
+      const std::shared_ptr<const Expression>& expression);
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
@@ -208,7 +209,7 @@ class ExpressionObject : public LocalObjectImpl {
                            SerializationContext* context) const override;
 
  private:
-  const const_shared_ptr<Expression> expression_;
+  const std::shared_ptr<const Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpressionObject);
 };

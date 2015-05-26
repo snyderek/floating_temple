@@ -15,12 +15,12 @@
 
 #include "toy_lang/local_object_impl.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <gflags/gflags.h>
 
-#include "base/const_shared_ptr.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "include/c++/peer_object.h"
@@ -32,6 +32,7 @@
 
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 using testing::InitGoogleMock;
@@ -93,7 +94,7 @@ TEST(LocalObjectImplTest, InvokeMethodOnExpressionObject) {
       .WillRepeatedly(Return(false));
 
   ExpressionObject expression_local_object(
-      const_shared_ptr<Expression>(new VariableExpression("some_variable")));
+      shared_ptr<const Expression>(new VariableExpression("some_variable")));
 
   MockPeerObject expression_peer_object;
 

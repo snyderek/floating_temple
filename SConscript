@@ -63,19 +63,6 @@ base_lib = ft_env.Library(
       """),
   )
 
-# "c_harness" subdirectory
-
-c_harness_lib = ft_env.Library(
-    target = 'c_harness/c_harness',
-    source = Split("""
-        c_harness/logging.cc
-        c_harness/peer.cc
-        c_harness/proxy_interpreter.cc
-        c_harness/proxy_local_object.cc
-        c_harness/value.cc
-      """),
-  )
-
 # "fake_interpreter" subdirectory
 #
 # A fake local interpreter implementation for testing.
@@ -443,23 +430,6 @@ value_lib = ft_env.Library(
     source = Split("""
         value/value.cc
       """),
-  )
-
-# Shared library
-
-# TODO(dss): Only export symbols from the shared library that are part of the
-# public interface.
-ft_env.AggregateLibrary(
-    target = 'lib/libfloating_temple.so',
-    source = [
-        base_lib,
-        c_harness_lib,
-        fake_peer_lib,
-        peer_lib,
-        peer_proto_lib,
-        protocol_server_lib,
-        value_lib,
-      ],
   )
 
 # Executables

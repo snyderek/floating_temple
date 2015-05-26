@@ -15,15 +15,16 @@
 
 #include "peer/mock_transaction_store.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "base/linked_ptr.h"
 #include "base/logging.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/peer_object_impl.h"
 
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -43,7 +44,7 @@ SequencePoint* MockTransactionStore::GetCurrentSequencePoint() const {
   return core_->GetCurrentSequencePoint();
 }
 
-ConstLiveObjectPtr MockTransactionStore::GetLiveObjectAtSequencePoint(
+shared_ptr<const LiveObject> MockTransactionStore::GetLiveObjectAtSequencePoint(
     PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
     bool wait) {
   CHECK(peer_object != nullptr);
@@ -82,7 +83,8 @@ PeerObjectImpl* MockTransactionStore::CreateBoundPeerObject(const string& name,
 void MockTransactionStore::CreateTransaction(
     const vector<linked_ptr<PendingEvent>>& events,
     TransactionId* transaction_id,
-    const unordered_map<PeerObjectImpl*, LiveObjectPtr>& modified_objects,
+    const unordered_map<PeerObjectImpl*, shared_ptr<LiveObject>>&
+        modified_objects,
     const SequencePoint* prev_sequence_point) {
   core_->CreateTransaction(events, transaction_id, modified_objects,
                            prev_sequence_point);

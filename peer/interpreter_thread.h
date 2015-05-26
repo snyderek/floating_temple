@@ -30,8 +30,6 @@
 #include "base/mutex.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
-#include "peer/const_live_object_ptr.h"
-#include "peer/live_object_ptr.h"
 #include "peer/proto/transaction_id.pb.h"
 
 namespace floating_temple {
@@ -40,6 +38,7 @@ class VersionedLocalObject;
 
 namespace peer {
 
+class LiveObject;
 class PeerObjectImpl;
 class PendingEvent;
 class SequencePoint;
@@ -75,7 +74,7 @@ class InterpreterThread : public Thread {
 
  private:
   struct NewObject {
-    ConstLiveObjectPtr live_object;
+    std::shared_ptr<const LiveObject> live_object;
     bool object_is_named;
   };
 
@@ -84,12 +83,12 @@ class InterpreterThread : public Thread {
                         PeerObjectImpl* callee_peer_object,
                         const std::string& method_name,
                         const std::vector<Value>& parameters,
-                        LiveObjectPtr* callee_live_object,
+                        std::shared_ptr<LiveObject>* callee_live_object,
                         Value* return_value);
   bool WaitForBlockingThreads_Locked(
       const TransactionId& method_call_transaction_id) const;
 
-  LiveObjectPtr GetLiveObject(PeerObjectImpl* peer_object);
+  std::shared_ptr<LiveObject> GetLiveObject(PeerObjectImpl* peer_object);
   const SequencePoint* GetSequencePoint();
 
   void AddTransactionEvent(PendingEvent* event);
@@ -97,11 +96,13 @@ class InterpreterThread : public Thread {
 
   void CheckIfValueIsNew(
       const Value& value,
-      std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>* live_objects,
+      std::unordered_map<PeerObjectImpl*, std::shared_ptr<const LiveObject>>*
+          live_objects,
       std::unordered_set<PeerObjectImpl*>* new_peer_objects);
   void CheckIfPeerObjectIsNew(
       PeerObjectImpl* peer_object,
-      std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>* live_objects,
+      std::unordered_map<PeerObjectImpl*, std::shared_ptr<const LiveObject>>*
+          live_objects,
       std::unordered_set<PeerObjectImpl*>* new_peer_objects);
 
   bool Rewinding() const;
@@ -112,12 +113,13 @@ class InterpreterThread : public Thread {
   int transaction_level_;
   std::vector<linked_ptr<PendingEvent>> events_;
   std::unordered_map<PeerObjectImpl*, NewObject> new_objects_;
-  std::unordered_map<PeerObjectImpl*, LiveObjectPtr> modified_objects_;
+  std::unordered_map<PeerObjectImpl*, std::shared_ptr<LiveObject>>
+      modified_objects_;
   std::unique_ptr<SequencePoint> sequence_point_;
   bool committing_transaction_;
 
   PeerObjectImpl* current_peer_object_;
-  LiveObjectPtr current_live_object_;
+  std::shared_ptr<LiveObject> current_live_object_;
 
   // ID of the last transaction that was committed by this thread.
   TransactionId current_transaction_id_;

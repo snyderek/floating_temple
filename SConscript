@@ -137,7 +137,6 @@ peer_lib = ft_env.Library(
         peer/committed_event.cc
         peer/committed_value.cc
         peer/connection_manager.cc
-        peer/const_live_object_ptr.cc
         peer/convert_value.cc
         peer/create_network_peer.cc
         peer/deserialization_context_impl.cc
@@ -147,7 +146,6 @@ peer_lib = ft_env.Library(
         peer/interpreter_thread.cc
         peer/live_object.cc
         peer/live_object_node.cc
-        peer/live_object_ptr.cc
         peer/max_version_map.cc
         peer/min_version_map.cc
         peer/peer_connection.cc

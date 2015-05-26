@@ -16,6 +16,7 @@
 #ifndef PEER_PENDING_EVENT_H_
 #define PEER_PENDING_EVENT_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -23,11 +24,11 @@
 
 #include "base/macros.h"
 #include "include/c++/value.h"
-#include "peer/const_live_object_ptr.h"
 
 namespace floating_temple {
 namespace peer {
 
+class LiveObject;
 class PeerObjectImpl;
 
 class PendingEvent {
@@ -41,13 +42,14 @@ class PendingEvent {
   };
 
   // new_peer_objects must be a subset of keys(live_objects).
-  PendingEvent(const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
-                   live_objects,
-               const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
-               PeerObjectImpl* prev_peer_object);
+  PendingEvent(
+      const std::unordered_map<PeerObjectImpl*,
+                               std::shared_ptr<const LiveObject>>& live_objects,
+      const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
+      PeerObjectImpl* prev_peer_object);
   virtual ~PendingEvent() {}
 
-  const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
+  const std::unordered_map<PeerObjectImpl*, std::shared_ptr<const LiveObject>>&
       live_objects() const { return live_objects_; }
   const std::unordered_set<PeerObjectImpl*>& new_peer_objects() const
       { return new_peer_objects_; }
@@ -62,7 +64,8 @@ class PendingEvent {
                                const Value** return_value) const;
 
  private:
-  const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr> live_objects_;
+  const std::unordered_map<PeerObjectImpl*, std::shared_ptr<const LiveObject>>
+      live_objects_;
   const std::unordered_set<PeerObjectImpl*> new_peer_objects_;
   PeerObjectImpl* const prev_peer_object_;
 };
@@ -70,9 +73,9 @@ class PendingEvent {
 class ObjectCreationPendingEvent : public PendingEvent {
  public:
   // prev_peer_object may be NULL.
-  ObjectCreationPendingEvent(PeerObjectImpl* prev_peer_object,
-                             PeerObjectImpl* new_peer_object,
-                             const ConstLiveObjectPtr& new_live_object);
+  ObjectCreationPendingEvent(
+      PeerObjectImpl* prev_peer_object, PeerObjectImpl* new_peer_object,
+      const std::shared_ptr<const LiveObject>& new_live_object);
 
   Type type() const override { return OBJECT_CREATION; }
 
@@ -106,8 +109,8 @@ class MethodCallPendingEvent : public PendingEvent {
  public:
   // prev_peer_object may be NULL.
   MethodCallPendingEvent(
-      const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
-          live_objects,
+      const std::unordered_map<PeerObjectImpl*,
+                               std::shared_ptr<const LiveObject>>& live_objects,
       const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
       PeerObjectImpl* prev_peer_object,
       PeerObjectImpl* next_peer_object,
@@ -131,8 +134,8 @@ class MethodReturnPendingEvent : public PendingEvent {
  public:
   // prev_peer_object must not be NULL.
   MethodReturnPendingEvent(
-      const std::unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>&
-          live_objects,
+      const std::unordered_map<PeerObjectImpl*,
+                               std::shared_ptr<const LiveObject>>& live_objects,
       const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
       PeerObjectImpl* prev_peer_object,
       PeerObjectImpl* next_peer_object,

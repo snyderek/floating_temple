@@ -17,6 +17,7 @@
 #define PEER_VERSIONED_SHARED_OBJECT_H_
 
 #include <map>
+#include <memory>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -24,7 +25,6 @@
 #include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/max_version_map.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/sequence_point_impl.h"
@@ -35,6 +35,7 @@ namespace floating_temple {
 namespace peer {
 
 class CanonicalPeer;
+class LiveObject;
 class PeerThread;
 class SharedObjectTransaction;
 class TransactionStoreInternalInterface;
@@ -46,7 +47,7 @@ class VersionedSharedObject : public SharedObject {
                         const Uuid& object_id);
   ~VersionedSharedObject() override;
 
-  ConstLiveObjectPtr GetWorkingVersion(
+  std::shared_ptr<const LiveObject> GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
       std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
@@ -66,7 +67,7 @@ class VersionedSharedObject : public SharedObject {
       const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
       std::vector<linked_ptr<CommittedEvent>>* events) override;
   void SetCachedLiveObject(
-      const ConstLiveObjectPtr& cached_live_object,
+      const std::shared_ptr<const LiveObject>& cached_live_object,
       const SequencePointImpl& cached_sequence_point) override;
 
  protected:
@@ -88,7 +89,7 @@ class VersionedSharedObject : public SharedObject {
       committed_versions_;
   MaxVersionMap version_map_;
   std::unordered_set<const CanonicalPeer*> up_to_date_peers_;
-  ConstLiveObjectPtr cached_live_object_;
+  std::shared_ptr<const LiveObject> cached_live_object_;
   SequencePointImpl cached_sequence_point_;
   mutable Mutex committed_versions_mu_;
 

@@ -17,6 +17,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -35,13 +36,11 @@
 #include "peer/canonical_peer_map.h"
 #include "peer/committed_event.h"
 #include "peer/committed_value.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/convert_value.h"
 #include "peer/get_event_proto_type.h"
 #include "peer/get_peer_message_type.h"
 #include "peer/interpreter_thread.h"
 #include "peer/live_object.h"
-#include "peer/live_object_ptr.h"
 #include "peer/max_version_map.h"
 #include "peer/min_version_map.h"
 #include "peer/peer_message_sender.h"
@@ -65,6 +64,7 @@
 
 using std::map;
 using std::pair;
+using std::shared_ptr;
 using std::size_t;
 using std::string;
 using std::unordered_map;
@@ -179,7 +179,7 @@ SequencePoint* TransactionStore::GetCurrentSequencePoint() const {
   return current_sequence_point_.Clone();
 }
 
-ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
+shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
     PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
     bool wait) {
   CHECK(peer_object != nullptr);
@@ -197,9 +197,11 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint(
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
   vector<pair<const CanonicalPeer*, TransactionId>> all_transactions_to_reject;
 
-  ConstLiveObjectPtr live_object = GetLiveObjectAtSequencePoint_Helper(
-      shared_object, *sequence_point_impl, &current_version_number,
-      &new_peer_objects, &all_transactions_to_reject);
+  shared_ptr<const LiveObject> live_object =
+      GetLiveObjectAtSequencePoint_Helper(shared_object, *sequence_point_impl,
+                                          &current_version_number,
+                                          &new_peer_objects,
+                                          &all_transactions_to_reject);
 
   if (live_object.get() == nullptr) {
     PeerMessage peer_message;
@@ -273,7 +275,8 @@ PeerObjectImpl* TransactionStore::CreateBoundPeerObject(const string& name,
 void TransactionStore::CreateTransaction(
     const vector<linked_ptr<PendingEvent>>& events,
     TransactionId* transaction_id,
-    const unordered_map<PeerObjectImpl*, LiveObjectPtr>& modified_objects,
+    const unordered_map<PeerObjectImpl*, shared_ptr<LiveObject>>&
+        modified_objects,
     const SequencePoint* prev_sequence_point) {
   CHECK(transaction_id != nullptr);
   CHECK(prev_sequence_point != nullptr);
@@ -352,7 +355,8 @@ void TransactionStore::CreateTransaction(
 
   for (const auto& modified_object_pair : modified_objects) {
     PeerObjectImpl* const peer_object = modified_object_pair.first;
-    const ConstLiveObjectPtr live_object = modified_object_pair.second;
+    const shared_ptr<const LiveObject> live_object =
+        modified_object_pair.second;
 
     SharedObject* const shared_object = peer_object->shared_object();
 
@@ -638,7 +642,8 @@ SharedObject* TransactionStore::GetOrCreateSharedObject(const Uuid& object_id) {
   return shared_object.get();
 }
 
-ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint_Helper(
+shared_ptr<const LiveObject>
+TransactionStore::GetLiveObjectAtSequencePoint_Helper(
     SharedObject* shared_object,
     const SequencePointImpl& sequence_point_impl,
     uint64* current_version_number,
@@ -665,9 +670,10 @@ ConstLiveObjectPtr TransactionStore::GetLiveObjectAtSequencePoint_Helper(
   VLOG(4) << "Sequence point: " << sequence_point_impl.Dump();
 
   vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
-  const ConstLiveObjectPtr live_object = shared_object->GetWorkingVersion(
-      current_version_map, sequence_point_impl, new_peer_objects,
-      &transactions_to_reject);
+  const shared_ptr<const LiveObject> live_object =
+      shared_object->GetWorkingVersion(current_version_map, sequence_point_impl,
+                                       new_peer_objects,
+                                       &transactions_to_reject);
 
   all_transactions_to_reject->insert(all_transactions_to_reject->end(),
                                      transactions_to_reject.begin(),
@@ -958,7 +964,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
 
   for (const auto& live_object_pair : pending_event->live_objects()) {
     PeerObjectImpl* const peer_object = live_object_pair.first;
-    const ConstLiveObjectPtr& live_object = live_object_pair.second;
+    const shared_ptr<const LiveObject>& live_object = live_object_pair.second;
 
     SharedObject* const shared_object = GetSharedObjectForPeerObject(
         peer_object);
@@ -1132,7 +1138,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
 
   switch (type) {
     case CommittedEvent::OBJECT_CREATION: {
-      ConstLiveObjectPtr live_object;
+      shared_ptr<const LiveObject> live_object;
       in->GetObjectCreation(&live_object);
 
       ObjectCreationEventProto* const object_creation_event_proto =
@@ -1316,7 +1322,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
             referenced_shared_object->GetOrCreatePeerObject(true);
       }
 
-      const ConstLiveObjectPtr live_object(
+      const shared_ptr<const LiveObject> live_object(
           new LiveObject(
               DeserializeLocalObjectFromString(
                   interpreter_, object_creation_event_proto.data(),

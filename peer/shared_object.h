@@ -17,6 +17,7 @@
 #define PEER_SHARED_OBJECT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -26,7 +27,6 @@
 #include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/max_version_map.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/proto/uuid.pb.h"
@@ -38,6 +38,7 @@ namespace peer {
 
 class CanonicalPeer;
 class CommittedEvent;
+class LiveObject;
 class PeerObjectImpl;
 class SharedObjectTransactionInfo;
 class TransactionStoreInternalInterface;
@@ -67,7 +68,7 @@ class SharedObject {
   // parameter and an output parameter. This is confusing. Try to come up with a
   // more intuitive API.
 
-  virtual ConstLiveObjectPtr GetWorkingVersion(
+  virtual std::shared_ptr<const LiveObject> GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
       std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
@@ -90,7 +91,7 @@ class SharedObject {
       std::vector<linked_ptr<CommittedEvent>>* events) = 0;
 
   virtual void SetCachedLiveObject(
-      const ConstLiveObjectPtr& cached_live_object,
+      const std::shared_ptr<const LiveObject>& cached_live_object,
       const SequencePointImpl& cached_sequence_point) = 0;
 
   std::string Dump() const;

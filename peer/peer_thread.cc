@@ -17,6 +17,7 @@
 
 #include <pthread.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -33,11 +34,9 @@
 #include "include/c++/versioned_local_object.h"
 #include "peer/committed_event.h"
 #include "peer/committed_value.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/convert_value.h"
 #include "peer/event_queue.h"
 #include "peer/live_object.h"
-#include "peer/live_object_ptr.h"
 #include "peer/peer_object_impl.h"
 #include "peer/shared_object.h"
 #include "peer/transaction_store_internal_interface.h"
@@ -46,6 +45,7 @@
 #include "util/state_variable_internal_interface.h"
 
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -76,14 +76,14 @@ PeerThread::~PeerThread() {
   state_.CheckState(NOT_STARTED | STOPPED);
 }
 
-ConstLiveObjectPtr PeerThread::live_object() const {
+shared_ptr<const LiveObject> PeerThread::live_object() const {
   return live_object_;
 }
 
 void PeerThread::Start(
     TransactionStoreInternalInterface* transaction_store,
     SharedObject* shared_object,
-    const LiveObjectPtr& live_object,
+    const shared_ptr<LiveObject>& live_object,
     unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects) {
   CHECK(transaction_store != nullptr);
   CHECK(shared_object != nullptr);
@@ -340,7 +340,7 @@ bool PeerThread::HasNextEvent() {
         // The live object hasn't been created yet. Create it from the
         // OBJECT_CREATION event.
 
-        ConstLiveObjectPtr new_live_object;
+        shared_ptr<const LiveObject> new_live_object;
         event->GetObjectCreation(&new_live_object);
 
         live_object_ = new_live_object->Clone();

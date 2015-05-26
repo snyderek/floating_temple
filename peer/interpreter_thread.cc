@@ -30,9 +30,7 @@
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
 #include "include/c++/value.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/live_object.h"
-#include "peer/live_object_ptr.h"
 #include "peer/peer_object_impl.h"
 #include "peer/pending_event.h"
 #include "peer/proto/transaction_id.pb.h"
@@ -41,6 +39,7 @@
 #include "peer/transaction_store_internal_interface.h"
 
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -172,7 +171,7 @@ bool InterpreterThread::EndTransaction() {
 PeerObject* InterpreterThread::CreatePeerObject(
     VersionedLocalObject* initial_version, const string& name, bool versioned) {
   // Take ownership of *initial_version.
-  ConstLiveObjectPtr new_live_object(new LiveObject(initial_version));
+  shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
 
   PeerObjectImpl* peer_object = nullptr;
 
@@ -208,7 +207,7 @@ PeerObject* InterpreterThread::CreatePeerObject(
       // Check if the named object is already known to this peer. As a side
       // effect, send a GET_OBJECT message to remote peers so that the content
       // of the named object can eventually be synchronized with other peers.
-      const ConstLiveObjectPtr existing_live_object =
+      const shared_ptr<const LiveObject> existing_live_object =
           transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
                                                            GetSequencePoint(),
                                                            false);
@@ -253,7 +252,7 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
 
   // Record the METHOD_CALL event.
   {
-    unordered_map<PeerObjectImpl*, ConstLiveObjectPtr> live_objects;
+    unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>> live_objects;
     unordered_set<PeerObjectImpl*> new_peer_objects;
 
     CheckIfPeerObjectIsNew(caller_peer_object, &live_objects,
@@ -278,7 +277,7 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
 
   // Repeatedly try to call the method until either 1) the method succeeds, or
   // 2) a rewind action is requested.
-  LiveObjectPtr callee_live_object;
+  shared_ptr<LiveObject> callee_live_object;
   if (!CallMethodHelper(method_call_transaction_id, caller_peer_object,
                         callee_peer_object, method_name, parameters,
                         &callee_live_object, return_value)) {
@@ -298,7 +297,7 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
 
   // Record the METHOD_RETURN event.
   {
-    unordered_map<PeerObjectImpl*, ConstLiveObjectPtr> live_objects;
+    unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>> live_objects;
     unordered_set<PeerObjectImpl*> new_peer_objects;
 
     CheckIfValueIsNew(*return_value, &live_objects, &new_peer_objects);
@@ -328,7 +327,7 @@ bool InterpreterThread::CallMethodHelper(
     PeerObjectImpl* callee_peer_object,
     const string& method_name,
     const vector<Value>& parameters,
-    LiveObjectPtr* callee_live_object,
+    shared_ptr<LiveObject>* callee_live_object,
     Value* return_value) {
   CHECK(callee_live_object != nullptr);
 
@@ -336,8 +335,8 @@ bool InterpreterThread::CallMethodHelper(
     // TODO(dss): If the caller object has been modified by another peer since
     // the method was called, rewind.
 
-    const LiveObjectPtr caller_live_object = current_live_object_;
-    const LiveObjectPtr callee_live_object_temp = GetLiveObject(
+    const shared_ptr<LiveObject> caller_live_object = current_live_object_;
+    const shared_ptr<LiveObject> callee_live_object_temp = GetLiveObject(
         callee_peer_object);
 
     current_peer_object_ = callee_peer_object;
@@ -391,16 +390,17 @@ bool InterpreterThread::WaitForBlockingThreads_Locked(
   }
 }
 
-LiveObjectPtr InterpreterThread::GetLiveObject(PeerObjectImpl* peer_object) {
+shared_ptr<LiveObject> InterpreterThread::GetLiveObject(
+    PeerObjectImpl* peer_object) {
   CHECK(peer_object != nullptr);
   // If the peer object was in new_objects_, it already should have been moved
   // to modified_objects_ by InterpreterThread::CheckIfPeerObjectIsNew.
   CHECK(new_objects_.find(peer_object) == new_objects_.end());
 
-  LiveObjectPtr& live_object = modified_objects_[peer_object];
+  shared_ptr<LiveObject>& live_object = modified_objects_[peer_object];
 
   if (live_object.get() == nullptr) {
-    const ConstLiveObjectPtr existing_live_object =
+    const shared_ptr<const LiveObject> existing_live_object =
         transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
                                                          GetSequencePoint(),
                                                          true);
@@ -444,7 +444,8 @@ void InterpreterThread::CommitTransaction() {
 
   while (!events_.empty()) {
     vector<linked_ptr<PendingEvent>> events_to_commit;
-    unordered_map<PeerObjectImpl*, LiveObjectPtr> modified_objects_to_commit;
+    unordered_map<PeerObjectImpl*, shared_ptr<LiveObject>>
+        modified_objects_to_commit;
     events_to_commit.swap(events_);
     modified_objects_to_commit.swap(modified_objects_);
 
@@ -465,7 +466,7 @@ void InterpreterThread::CommitTransaction() {
 
 void InterpreterThread::CheckIfValueIsNew(
     const Value& value,
-    unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>* live_objects,
+    unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>* live_objects,
     unordered_set<PeerObjectImpl*>* new_peer_objects) {
   if (value.type() == Value::PEER_OBJECT) {
     CheckIfPeerObjectIsNew(static_cast<PeerObjectImpl*>(value.peer_object()),
@@ -475,7 +476,7 @@ void InterpreterThread::CheckIfValueIsNew(
 
 void InterpreterThread::CheckIfPeerObjectIsNew(
     PeerObjectImpl* peer_object,
-    unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>* live_objects,
+    unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>* live_objects,
     unordered_set<PeerObjectImpl*>* new_peer_objects) {
   CHECK(live_objects != nullptr);
   CHECK(new_peer_objects != nullptr);
@@ -486,7 +487,7 @@ void InterpreterThread::CheckIfPeerObjectIsNew(
 
     if (it != new_objects_.end()) {
       const NewObject& new_object = it->second;
-      const ConstLiveObjectPtr& live_object = new_object.live_object;
+      const shared_ptr<const LiveObject>& live_object = new_object.live_object;
 
       live_objects->emplace(peer_object, live_object);
 

@@ -17,6 +17,7 @@
 #define PEER_TRANSACTION_STORE_H_
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -97,7 +98,7 @@ class TransactionStore : public ConnectionHandler,
 
   bool delay_object_binding() const override { return delay_object_binding_; }
   SequencePoint* GetCurrentSequencePoint() const override;
-  ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
+  std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
       bool wait) override;
   PeerObjectImpl* CreateUnboundPeerObject(bool versioned) override;
@@ -106,7 +107,7 @@ class TransactionStore : public ConnectionHandler,
   void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
-      const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
+      const std::unordered_map<PeerObjectImpl*, std::shared_ptr<LiveObject>>&
           modified_objects,
       const SequencePoint* prev_sequence_point) override;
   bool ObjectsAreEquivalent(const PeerObjectImpl* a,
@@ -131,7 +132,7 @@ class TransactionStore : public ConnectionHandler,
   SharedObject* GetSharedObject(const Uuid& object_id) const;
   SharedObject* GetOrCreateSharedObject(const Uuid& object_id);
 
-  ConstLiveObjectPtr GetLiveObjectAtSequencePoint_Helper(
+  std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint_Helper(
       SharedObject* shared_object,
       const SequencePointImpl& sequence_point_impl,
       uint64* current_version_number,

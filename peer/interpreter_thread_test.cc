@@ -15,6 +15,7 @@
 
 #include "peer/interpreter_thread.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "include/c++/versioned_local_object.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/live_object.h"
 #include "peer/make_transaction_id.h"
 #include "peer/mock_sequence_point.h"
@@ -40,6 +40,7 @@
 
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 using testing::AnyNumber;
@@ -142,7 +143,7 @@ TEST(InterpreterThreadTest, CallMethodInNestedTransactions) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   InterpreterThread thread(&transaction_store);
-  const ConstLiveObjectPtr initial_live_object(
+  const shared_ptr<const LiveObject> initial_live_object(
       new LiveObject(new FakeVersionedLocalObject("a")));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
@@ -186,7 +187,7 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
   MockTransactionStore transaction_store(&transaction_store_core);
   PeerObjectImpl peer_object(true), new_peer_object(true);
   const MockVersionedLocalObjectCore local_object_core;
-  ConstLiveObjectPtr live_object(
+  shared_ptr<const LiveObject> live_object(
       new LiveObject(new MockVersionedLocalObject(&local_object_core)));
 
   InterpreterThread thread(&transaction_store);
@@ -246,7 +247,7 @@ TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
   MockTransactionStore transaction_store(&transaction_store_core);
   PeerObjectImpl peer_object(true);
   const MockVersionedLocalObjectCore local_object_core;
-  ConstLiveObjectPtr live_object(
+  shared_ptr<const LiveObject> live_object(
       new LiveObject(new MockVersionedLocalObject(&local_object_core)));
 
   InterpreterThread thread(&transaction_store);

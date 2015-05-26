@@ -16,17 +16,18 @@
 #ifndef PEER_COMMITTED_EVENT_H_
 #define PEER_COMMITTED_EVENT_H_
 
+#include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
 #include "peer/committed_value.h"
-#include "peer/const_live_object_ptr.h"
 
 namespace floating_temple {
 namespace peer {
 
+class LiveObject;
 class SharedObject;
 
 class CommittedEvent {
@@ -53,7 +54,8 @@ class CommittedEvent {
 
   virtual Type type() const = 0;
 
-  virtual void GetObjectCreation(ConstLiveObjectPtr* live_object) const;
+  virtual void GetObjectCreation(
+      std::shared_ptr<const LiveObject>* live_object) const;
   virtual void GetMethodCall(
       SharedObject** caller, const std::string** method_name,
       const std::vector<CommittedValue>** parameters) const;
@@ -84,15 +86,17 @@ class CommittedEvent {
 
 class ObjectCreationCommittedEvent : public CommittedEvent {
  public:
-  explicit ObjectCreationCommittedEvent(const ConstLiveObjectPtr& live_object);
+  explicit ObjectCreationCommittedEvent(
+      const std::shared_ptr<const LiveObject>& live_object);
 
   Type type() const override { return OBJECT_CREATION; }
-  void GetObjectCreation(ConstLiveObjectPtr* live_object) const override;
+  void GetObjectCreation(
+      std::shared_ptr<const LiveObject>* live_object) const override;
   CommittedEvent* Clone() const override;
   std::string Dump() const override;
 
  private:
-  const ConstLiveObjectPtr live_object_;
+  const std::shared_ptr<const LiveObject> live_object_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectCreationCommittedEvent);
 };

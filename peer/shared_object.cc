@@ -29,7 +29,6 @@
 #include "base/mutex_lock.h"
 #include "base/string_printf.h"
 #include "peer/canonical_peer.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/max_version_map.h"
 #include "peer/peer_object_impl.h"
 #include "peer/proto/transaction_id.pb.h"

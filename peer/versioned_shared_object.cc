@@ -16,6 +16,7 @@
 #include "peer/versioned_shared_object.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -30,9 +31,7 @@
 #include "base/string_printf.h"
 #include "peer/canonical_peer.h"
 #include "peer/committed_event.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/live_object.h"
-#include "peer/live_object_ptr.h"
 #include "peer/max_version_map.h"
 #include "peer/peer_exclusion_map.h"
 #include "peer/peer_thread.h"
@@ -46,6 +45,7 @@
 
 using std::map;
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -82,7 +82,7 @@ VersionedSharedObject::VersionedSharedObject(
 VersionedSharedObject::~VersionedSharedObject() {
 }
 
-ConstLiveObjectPtr VersionedSharedObject::GetWorkingVersion(
+shared_ptr<const LiveObject> VersionedSharedObject::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
     unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
@@ -99,7 +99,7 @@ ConstLiveObjectPtr VersionedSharedObject::GetWorkingVersion(
             << sequence_point.version_map().Dump();
     VLOG(1) << "effective_version == " << effective_version.Dump();
 
-    return ConstLiveObjectPtr(nullptr);
+    return shared_ptr<const LiveObject>(nullptr);
   }
 
   if (CanUseCachedLiveObject_Locked(sequence_point)) {
@@ -109,8 +109,8 @@ ConstLiveObjectPtr VersionedSharedObject::GetWorkingVersion(
 
   for (;;) {
     PeerThread peer_thread;
-    peer_thread.Start(transaction_store(), this, LiveObjectPtr(nullptr),
-                      new_peer_objects);
+    peer_thread.Start(transaction_store(), this,
+                      shared_ptr<LiveObject>(nullptr), new_peer_objects);
 
     const bool success = ApplyTransactionsToWorkingVersion_Locked(
         &peer_thread, sequence_point, transactions_to_reject);
@@ -122,7 +122,7 @@ ConstLiveObjectPtr VersionedSharedObject::GetWorkingVersion(
     }
   }
 
-  return ConstLiveObjectPtr(nullptr);
+  return shared_ptr<const LiveObject>(nullptr);
 }
 
 void VersionedSharedObject::GetTransactions(
@@ -237,7 +237,7 @@ void VersionedSharedObject::InsertTransaction(
 }
 
 void VersionedSharedObject::SetCachedLiveObject(
-    const ConstLiveObjectPtr& cached_live_object,
+    const shared_ptr<const LiveObject>& cached_live_object,
     const SequencePointImpl& cached_sequence_point) {
   CHECK(cached_live_object.get() != nullptr);
 

@@ -15,6 +15,7 @@
 
 #include "peer/pending_event.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -23,10 +24,10 @@
 
 #include "base/logging.h"
 #include "include/c++/value.h"
-#include "peer/const_live_object_ptr.h"
 #include "util/stl_util.h"
 
 using std::make_pair;
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -36,7 +37,8 @@ namespace floating_temple {
 namespace peer {
 
 PendingEvent::PendingEvent(
-    const unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>& live_objects,
+    const unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>&
+        live_objects,
     const unordered_set<PeerObjectImpl*>& new_peer_objects,
     PeerObjectImpl* prev_peer_object)
     : live_objects_(live_objects),
@@ -63,9 +65,10 @@ void PendingEvent::GetMethodReturn(PeerObjectImpl** next_peer_object,
 
 ObjectCreationPendingEvent::ObjectCreationPendingEvent(
     PeerObjectImpl* prev_peer_object, PeerObjectImpl* new_peer_object,
-    const ConstLiveObjectPtr& new_live_object)
+    const shared_ptr<const LiveObject>& new_live_object)
     : PendingEvent(
-          MakeSingletonSet<unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>>(
+          MakeSingletonSet<unordered_map<PeerObjectImpl*,
+                                         shared_ptr<const LiveObject>>>(
               make_pair(CHECK_NOTNULL(new_peer_object), new_live_object)),
           MakeSingletonSet<unordered_set<PeerObjectImpl*>>(new_peer_object),
           prev_peer_object) {
@@ -73,20 +76,21 @@ ObjectCreationPendingEvent::ObjectCreationPendingEvent(
 
 BeginTransactionPendingEvent::BeginTransactionPendingEvent(
     PeerObjectImpl* prev_peer_object)
-    : PendingEvent(unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>(),
-                   unordered_set<PeerObjectImpl*>(),
-                   CHECK_NOTNULL(prev_peer_object)) {
+    : PendingEvent(
+          unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>(),
+          unordered_set<PeerObjectImpl*>(), CHECK_NOTNULL(prev_peer_object)) {
 }
 
 EndTransactionPendingEvent::EndTransactionPendingEvent(
     PeerObjectImpl* prev_peer_object)
-    : PendingEvent(unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>(),
-                   unordered_set<PeerObjectImpl*>(),
-                   CHECK_NOTNULL(prev_peer_object)) {
+    : PendingEvent(
+          unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>(),
+          unordered_set<PeerObjectImpl*>(), CHECK_NOTNULL(prev_peer_object)) {
 }
 
 MethodCallPendingEvent::MethodCallPendingEvent(
-    const unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>& live_objects,
+    const unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>&
+        live_objects,
     const unordered_set<PeerObjectImpl*>& new_peer_objects,
     PeerObjectImpl* prev_peer_object,
     PeerObjectImpl* next_peer_object,
@@ -112,7 +116,8 @@ void MethodCallPendingEvent::GetMethodCall(
 }
 
 MethodReturnPendingEvent::MethodReturnPendingEvent(
-    const unordered_map<PeerObjectImpl*, ConstLiveObjectPtr>& live_objects,
+    const unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>&
+        live_objects,
     const unordered_set<PeerObjectImpl*>& new_peer_objects,
     PeerObjectImpl* prev_peer_object,
     PeerObjectImpl* next_peer_object,

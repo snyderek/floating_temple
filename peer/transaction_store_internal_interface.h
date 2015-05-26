@@ -16,17 +16,17 @@
 #ifndef PEER_TRANSACTION_STORE_INTERNAL_INTERFACE_H_
 #define PEER_TRANSACTION_STORE_INTERNAL_INTERFACE_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "base/linked_ptr.h"
-#include "peer/const_live_object_ptr.h"
-#include "peer/live_object_ptr.h"
 
 namespace floating_temple {
 namespace peer {
 
+class LiveObject;
 class PeerObjectImpl;
 class PendingEvent;
 class SequencePoint;
@@ -41,7 +41,7 @@ class TransactionStoreInternalInterface {
   // The caller must take ownership of the returned SequencePoint instance.
   virtual SequencePoint* GetCurrentSequencePoint() const = 0;
 
-  virtual ConstLiveObjectPtr GetLiveObjectAtSequencePoint(
+  virtual std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
       bool wait) = 0;
 
@@ -52,7 +52,7 @@ class TransactionStoreInternalInterface {
   virtual void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
-      const std::unordered_map<PeerObjectImpl*, LiveObjectPtr>&
+      const std::unordered_map<PeerObjectImpl*, std::shared_ptr<LiveObject>>&
           modified_objects,
       const SequencePoint* prev_sequence_point) = 0;
 

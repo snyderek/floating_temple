@@ -18,6 +18,7 @@
 
 #include <pthread.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -28,9 +29,7 @@
 #include "include/c++/value.h"
 #include "peer/committed_event.h"
 #include "peer/committed_value.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/event_queue.h"
-#include "peer/live_object_ptr.h"
 #include "util/bool_variable.h"
 #include "util/state_variable.h"
 
@@ -41,6 +40,7 @@ class StateVariableInternalInterface;
 namespace peer {
 
 class CommittedEvent;
+class LiveObject;
 class PeerObjectImpl;
 class SharedObject;
 class TransactionStoreInternalInterface;
@@ -51,7 +51,7 @@ class PeerThread : private Thread {
   PeerThread();
   ~PeerThread() override;
 
-  ConstLiveObjectPtr live_object() const;
+  std::shared_ptr<const LiveObject> live_object() const;
 
   // Be sure to call FlushEvents() or Stop() before calling this method.
   bool conflict_detected() const { return conflict_detected_.Get(); }
@@ -59,7 +59,7 @@ class PeerThread : private Thread {
   void Start(
       TransactionStoreInternalInterface* transaction_store,
       SharedObject* shared_object,
-      const LiveObjectPtr& live_object,
+      const std::shared_ptr<LiveObject>& live_object,
       std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects);
   void Stop();
 
@@ -136,7 +136,7 @@ class PeerThread : private Thread {
 
   TransactionStoreInternalInterface* transaction_store_;
   SharedObject* shared_object_;
-  LiveObjectPtr live_object_;
+  std::shared_ptr<LiveObject> live_object_;
   std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects_;
 
   pthread_t replay_thread_;

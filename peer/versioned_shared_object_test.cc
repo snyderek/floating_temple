@@ -15,6 +15,7 @@
 
 #include "peer/versioned_shared_object.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -31,7 +32,6 @@
 #include "peer/canonical_peer.h"
 #include "peer/committed_event.h"
 #include "peer/committed_value.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/live_object.h"
 #include "peer/make_transaction_id.h"
 #include "peer/max_version_map.h"
@@ -46,7 +46,9 @@
 
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
+using std::make_shared;
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::unordered_set;
@@ -63,8 +65,8 @@ class PeerObjectImpl;
 
 namespace {
 
-ConstLiveObjectPtr MakeLocalObject(const string& s) {
-  return ConstLiveObjectPtr(new LiveObject(new FakeVersionedLocalObject(s)));
+shared_ptr<const LiveObject> MakeLocalObject(const string& s) {
+  return make_shared<const LiveObject>(new FakeVersionedLocalObject(s));
 }
 
 class SharedObjectTest : public Test {
@@ -494,9 +496,10 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
-    const ConstLiveObjectPtr live_object = shared_object_->GetWorkingVersion(
-        MaxVersionMap(), sequence_point, &new_peer_objects,
-        &transactions_to_reject);
+    const shared_ptr<const LiveObject> live_object =
+        shared_object_->GetWorkingVersion(MaxVersionMap(), sequence_point,
+                                          &new_peer_objects,
+                                          &transactions_to_reject);
 
     EXPECT_EQ(0u, new_peer_objects.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
@@ -526,7 +529,8 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
   {
     vector<linked_ptr<CommittedEvent>> events;
 
-    ConstLiveObjectPtr initial_live_object = MakeLocalObject("I don't know. ");
+    shared_ptr<const LiveObject> initial_live_object = MakeLocalObject(
+        "I don't know. ");
 
     vector<CommittedValue> parameters(1);
     parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
@@ -569,9 +573,10 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
-    const ConstLiveObjectPtr live_object = shared_object_->GetWorkingVersion(
-        MaxVersionMap(), sequence_point, &new_peer_objects,
-        &transactions_to_reject);
+    const shared_ptr<const LiveObject> live_object =
+        shared_object_->GetWorkingVersion(MaxVersionMap(), sequence_point,
+                                          &new_peer_objects,
+                                          &transactions_to_reject);
 
     EXPECT_EQ(0u, new_peer_objects.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
@@ -605,7 +610,8 @@ TEST_F(SharedObjectTest, BackingUp) {
   {
     vector<linked_ptr<CommittedEvent>> events;
 
-    ConstLiveObjectPtr initial_live_object = MakeLocalObject("Game. ");
+    shared_ptr<const LiveObject> initial_live_object = MakeLocalObject(
+        "Game. ");
 
     vector<CommittedValue> parameters(1);
     parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
@@ -673,9 +679,10 @@ TEST_F(SharedObjectTest, BackingUp) {
     unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
-    const ConstLiveObjectPtr live_object = shared_object_->GetWorkingVersion(
-        MaxVersionMap(), sequence_point, &new_peer_objects,
-        &transactions_to_reject);
+    const shared_ptr<const LiveObject> live_object =
+        shared_object_->GetWorkingVersion(MaxVersionMap(), sequence_point,
+                                          &new_peer_objects,
+                                          &transactions_to_reject);
 
     EXPECT_EQ(0u, new_peer_objects.size());
     EXPECT_EQ(0u, transactions_to_reject.size());

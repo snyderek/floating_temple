@@ -15,6 +15,7 @@
 
 #include "peer/live_object.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -23,8 +24,8 @@
 #include "base/mutex_lock.h"
 #include "include/c++/value.h"
 #include "peer/live_object_node.h"
-#include "peer/live_object_ptr.h"
 
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -32,8 +33,7 @@ namespace floating_temple {
 namespace peer {
 
 LiveObject::LiveObject(VersionedLocalObject* local_object)
-    : node_(new LiveObjectNode(local_object)),
-      ref_count_(0) {
+    : node_(new LiveObjectNode(local_object)) {
 }
 
 LiveObject::~LiveObject() {
@@ -47,8 +47,8 @@ const VersionedLocalObject* LiveObject::local_object() const {
   return GetNode()->local_object();
 }
 
-LiveObjectPtr LiveObject::Clone() const {
-  return LiveObjectPtr(new LiveObject(GetNode()));
+shared_ptr<LiveObject> LiveObject::Clone() const {
+  return shared_ptr<LiveObject>(new LiveObject(GetNode()));
 }
 
 void LiveObject::Serialize(
@@ -84,27 +84,13 @@ string LiveObject::Dump() const {
   return GetNode()->Dump();
 }
 
-void LiveObject::IncrementRefCount() {
-  MutexLock lock(&ref_count_mu_);
-  ++ref_count_;
-  CHECK_GE(ref_count_, 1);
-}
-
-bool LiveObject::DecrementRefCount() {
-  MutexLock lock(&ref_count_mu_);
-  CHECK_GE(ref_count_, 1);
-  --ref_count_;
-  return ref_count_ == 0;
-}
-
 LiveObject::LiveObject(LiveObjectNode* node)
-    : node_(CHECK_NOTNULL(node)),
-      ref_count_(0) {
+    : node_(CHECK_NOTNULL(node)) {
   node->IncrementRefCount();
 }
 
 LiveObjectNode* LiveObject::GetNode() const {
-  MutexLock lock(&ref_count_mu_);
+  MutexLock lock(&node_mu_);
   return node_;
 }
 

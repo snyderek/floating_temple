@@ -15,6 +15,7 @@
 
 #include "peer/committed_event.h"
 
+#include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -23,12 +24,12 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "peer/committed_value.h"
-#include "peer/const_live_object_ptr.h"
 #include "peer/live_object.h"
 #include "peer/shared_object.h"
 #include "peer/uuid_util.h"
 #include "util/stl_util.h"
 
+using std::shared_ptr;
 using std::string;
 using std::unordered_set;
 using std::vector;
@@ -42,7 +43,8 @@ CommittedEvent::CommittedEvent(
   CHECK(new_shared_objects.find(nullptr) == new_shared_objects.end());
 }
 
-void CommittedEvent::GetObjectCreation(ConstLiveObjectPtr* live_object) const {
+void CommittedEvent::GetObjectCreation(
+    shared_ptr<const LiveObject>* live_object) const {
   LOG(FATAL) << "Invalid call to GetObjectCreation (type == "
              << static_cast<int>(this->type()) << ")";
 }
@@ -136,14 +138,14 @@ string CommittedEvent::DumpNewSharedObjects() const {
 }
 
 ObjectCreationCommittedEvent::ObjectCreationCommittedEvent(
-    const ConstLiveObjectPtr& live_object)
+    const shared_ptr<const LiveObject>& live_object)
     : CommittedEvent(unordered_set<SharedObject*>()),
       live_object_(live_object) {
   CHECK(live_object.get() != nullptr);
 }
 
 void ObjectCreationCommittedEvent::GetObjectCreation(
-    ConstLiveObjectPtr* live_object) const {
+    shared_ptr<const LiveObject>* live_object) const {
   CHECK(live_object != nullptr);
   *live_object = live_object_;
 }

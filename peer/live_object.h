@@ -16,13 +16,13 @@
 #ifndef PEER_LIVE_OBJECT_H_
 #define PEER_LIVE_OBJECT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "include/c++/value.h"
-#include "peer/live_object_ptr.h"
 
 namespace floating_temple {
 
@@ -41,7 +41,7 @@ class LiveObject {
 
   const VersionedLocalObject* local_object() const;
 
-  LiveObjectPtr Clone() const;
+  std::shared_ptr<LiveObject> Clone() const;
   void Serialize(std::string* data,
                  std::vector<PeerObjectImpl*>* referenced_peer_objects) const;
   void InvokeMethod(Thread* thread,
@@ -52,9 +52,6 @@ class LiveObject {
 
   std::string Dump() const;
 
-  void IncrementRefCount();
-  bool DecrementRefCount();
-
  private:
   explicit LiveObject(LiveObjectNode* node);
 
@@ -62,9 +59,6 @@ class LiveObject {
 
   LiveObjectNode* node_;  // Not NULL
   mutable Mutex node_mu_;
-
-  int ref_count_;
-  mutable Mutex ref_count_mu_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveObject);
 };

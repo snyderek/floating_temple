@@ -40,8 +40,8 @@ class CanonicalPeer;
 class CommittedEvent;
 class LiveObject;
 class PeerObjectImpl;
-class SharedObjectTransactionInfo;
 class TransactionStoreInternalInterface;
+struct SharedObjectTransactionInfo;
 
 // TODO(dss): Consider factoring out the polymorphic aspects of this class into
 // a separate object that implements a pure interface. (In other words, use the

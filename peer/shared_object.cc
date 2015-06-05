@@ -40,7 +40,7 @@
 #include "peer/transaction_id_util.h"
 #include "peer/transaction_store_internal_interface.h"
 #include "peer/uuid_util.h"
-#include "peer/versioned_shared_object.h"
+#include "peer/versioned_object_content.h"
 
 using std::map;
 using std::pair;
@@ -208,7 +208,7 @@ ObjectContent* SharedObject::GetOrCreateObjectContent() {
   MutexLock lock(&object_content_mu_);
 
   if (object_content_.get() == nullptr) {
-    object_content_.reset(new VersionedSharedObject(transaction_store_, this));
+    object_content_.reset(new VersionedObjectContent(transaction_store_, this));
   }
 
   return object_content_.get();

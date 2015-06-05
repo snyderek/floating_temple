@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PEER_VERSIONED_SHARED_OBJECT_H_
-#define PEER_VERSIONED_SHARED_OBJECT_H_
+#ifndef PEER_VERSIONED_OBJECT_CONTENT_H_
+#define PEER_VERSIONED_OBJECT_CONTENT_H_
 
 #include <map>
 #include <memory>
@@ -42,12 +42,11 @@ class SharedObjectTransaction;
 class TransactionStoreInternalInterface;
 class Uuid;
 
-// TODO(dss): Rename this class to VersionedObjectContent.
-class VersionedSharedObject : public ObjectContent {
+class VersionedObjectContent : public ObjectContent {
  public:
-  VersionedSharedObject(TransactionStoreInternalInterface* transaction_store,
-                        SharedObject* shared_object);
-  ~VersionedSharedObject() override;
+  VersionedObjectContent(TransactionStoreInternalInterface* transaction_store,
+                         SharedObject* shared_object);
+  ~VersionedObjectContent() override;
 
   std::shared_ptr<const LiveObject> GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
@@ -96,10 +95,10 @@ class VersionedSharedObject : public ObjectContent {
   SequencePointImpl cached_sequence_point_;
   mutable Mutex committed_versions_mu_;
 
-  DISALLOW_COPY_AND_ASSIGN(VersionedSharedObject);
+  DISALLOW_COPY_AND_ASSIGN(VersionedObjectContent);
 };
 
 }  // namespace peer
 }  // namespace floating_temple
 
-#endif  // PEER_VERSIONED_SHARED_OBJECT_H_
+#endif  // PEER_VERSIONED_OBJECT_CONTENT_H_

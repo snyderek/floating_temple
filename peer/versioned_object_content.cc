@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/versioned_shared_object.h"
+#include "peer/versioned_object_content.h"
 
 #include <map>
 #include <memory>
@@ -73,17 +73,17 @@ FindTransactionIdInVector(
 
 }  // namespace
 
-VersionedSharedObject::VersionedSharedObject(
+VersionedObjectContent::VersionedObjectContent(
     TransactionStoreInternalInterface* transaction_store,
     SharedObject* shared_object)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       shared_object_(CHECK_NOTNULL(shared_object)) {
 }
 
-VersionedSharedObject::~VersionedSharedObject() {
+VersionedObjectContent::~VersionedObjectContent() {
 }
 
-shared_ptr<const LiveObject> VersionedSharedObject::GetWorkingVersion(
+shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
     unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
@@ -126,7 +126,7 @@ shared_ptr<const LiveObject> VersionedSharedObject::GetWorkingVersion(
   return shared_ptr<const LiveObject>(nullptr);
 }
 
-void VersionedSharedObject::GetTransactions(
+void VersionedObjectContent::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
     map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
     MaxVersionMap* effective_version) const {
@@ -163,7 +163,7 @@ void VersionedSharedObject::GetTransactions(
                                  effective_version);
 }
 
-void VersionedSharedObject::StoreTransactions(
+void VersionedObjectContent::StoreTransactions(
     const CanonicalPeer* origin_peer,
     map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
     const MaxVersionMap& version_map) {
@@ -207,7 +207,7 @@ void VersionedSharedObject::StoreTransactions(
   up_to_date_peers_.insert(origin_peer);
 }
 
-void VersionedSharedObject::InsertTransaction(
+void VersionedObjectContent::InsertTransaction(
     const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
     vector<linked_ptr<CommittedEvent>>* events) {
   CHECK(origin_peer != nullptr);
@@ -237,7 +237,7 @@ void VersionedSharedObject::InsertTransaction(
   up_to_date_peers_.insert(origin_peer);
 }
 
-void VersionedSharedObject::SetCachedLiveObject(
+void VersionedObjectContent::SetCachedLiveObject(
     const shared_ptr<const LiveObject>& cached_live_object,
     const SequencePointImpl& cached_sequence_point) {
   CHECK(cached_live_object.get() != nullptr);
@@ -247,7 +247,7 @@ void VersionedSharedObject::SetCachedLiveObject(
   cached_sequence_point_.CopyFrom(cached_sequence_point);
 }
 
-string VersionedSharedObject::Dump() const {
+string VersionedObjectContent::Dump() const {
   MutexLock lock(&committed_versions_mu_);
 
   string committed_versions_string;
@@ -300,7 +300,7 @@ string VersionedSharedObject::Dump() const {
       cached_sequence_point_.Dump().c_str());
 }
 
-bool VersionedSharedObject::ApplyTransactionsToWorkingVersion_Locked(
+bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
     PeerThread* peer_thread, const SequencePointImpl& sequence_point,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(peer_thread != nullptr);
@@ -334,7 +334,7 @@ bool VersionedSharedObject::ApplyTransactionsToWorkingVersion_Locked(
   return true;
 }
 
-void VersionedSharedObject::ComputeEffectiveVersion_Locked(
+void VersionedObjectContent::ComputeEffectiveVersion_Locked(
     const MaxVersionMap& transaction_store_version_map,
     MaxVersionMap* effective_version) const {
   CHECK(effective_version != nullptr);
@@ -361,7 +361,7 @@ void VersionedSharedObject::ComputeEffectiveVersion_Locked(
   }
 }
 
-bool VersionedSharedObject::CanUseCachedLiveObject_Locked(
+bool VersionedObjectContent::CanUseCachedLiveObject_Locked(
     const SequencePointImpl& requested_sequence_point) const {
   if (cached_live_object_.get() == nullptr) {
     return false;

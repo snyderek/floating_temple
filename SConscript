@@ -153,7 +153,7 @@ peer_lib = ft_env.Library(
         peer/transaction_store.cc
         peer/uuid_util.cc
         peer/value_proto_util.cc
-        peer/versioned_shared_object.cc
+        peer/versioned_object_content.cc
       """),
   )
 

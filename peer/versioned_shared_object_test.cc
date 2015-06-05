@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// TODO(dss): Rename this file to shared_object_test.cc.
+
 #include "peer/versioned_shared_object.h"
 
 #include <memory>
@@ -79,7 +81,7 @@ class SharedObjectTest : public Test {
     object_id.set_high_word(0x0123456789abcdef);
     object_id.set_low_word(0xfedcba9876543210);
 
-    shared_object_ = new VersionedSharedObject(transaction_store_, object_id);
+    shared_object_ = new SharedObject(transaction_store_, object_id);
   }
 
   void TearDown() override {
@@ -722,9 +724,9 @@ TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
   InsertObjectCreationTransaction(&canonical_peer2, MakeTransactionId(30, 0, 0),
                                   "batman.");
 
-  // Call VersionedSharedObject::GetWorkingVersion and pass in a sequence point
-  // that only includes Transaction #3. The method should return the local
-  // object that's contained in the second OBJECT_CREATION event.
+  // Call SharedObject::GetWorkingVersion and pass in a sequence point that only
+  // includes Transaction #3. The method should return the local object that's
+  // contained in the second OBJECT_CREATION event.
   //
   // This simulates the scenario where the local peer has received the contents
   // of the shared object from a remote peer, but the currently executing local

@@ -37,7 +37,6 @@
 #include "peer/peer_thread.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/sequence_point_impl.h"
-#include "peer/shared_object.h"
 #include "peer/shared_object_transaction.h"
 #include "peer/shared_object_transaction_info.h"
 #include "peer/transaction_id_util.h"
@@ -75,8 +74,10 @@ FindTransactionIdInVector(
 }  // namespace
 
 VersionedSharedObject::VersionedSharedObject(
-    TransactionStoreInternalInterface* transaction_store, const Uuid& object_id)
-    : SharedObject(transaction_store, object_id) {
+    TransactionStoreInternalInterface* transaction_store,
+    SharedObject* shared_object)
+    : transaction_store_(CHECK_NOTNULL(transaction_store)),
+      shared_object_(CHECK_NOTNULL(shared_object)) {
 }
 
 VersionedSharedObject::~VersionedSharedObject() {
@@ -109,7 +110,7 @@ shared_ptr<const LiveObject> VersionedSharedObject::GetWorkingVersion(
 
   for (;;) {
     PeerThread peer_thread;
-    peer_thread.Start(transaction_store(), this,
+    peer_thread.Start(transaction_store_, shared_object_,
                       shared_ptr<LiveObject>(nullptr), new_peer_objects);
 
     const bool success = ApplyTransactionsToWorkingVersion_Locked(
@@ -246,7 +247,7 @@ void VersionedSharedObject::SetCachedLiveObject(
   cached_sequence_point_.CopyFrom(cached_sequence_point);
 }
 
-string VersionedSharedObject::DumpCommittedVersions() const {
+string VersionedSharedObject::Dump() const {
   MutexLock lock(&committed_versions_mu_);
 
   string committed_versions_string;

@@ -16,6 +16,7 @@
 #include "peer/shared_object.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -29,17 +30,23 @@
 #include "base/mutex_lock.h"
 #include "base/string_printf.h"
 #include "peer/canonical_peer.h"
+#include "peer/live_object.h"
 #include "peer/max_version_map.h"
+#include "peer/object_content.h"
 #include "peer/peer_object_impl.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/proto/uuid.pb.h"
-#include "peer/sequence_point_impl.h"
 #include "peer/shared_object_transaction_info.h"
 #include "peer/transaction_id_util.h"
 #include "peer/transaction_store_internal_interface.h"
 #include "peer/uuid_util.h"
+#include "peer/versioned_shared_object.h"
 
+using std::map;
+using std::pair;
+using std::shared_ptr;
 using std::string;
+using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
@@ -50,6 +57,9 @@ SharedObject::SharedObject(TransactionStoreInternalInterface* transaction_store,
                            const Uuid& object_id)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       object_id_(object_id) {
+}
+
+SharedObject::~SharedObject() {
 }
 
 void SharedObject::GetInterestedPeers(
@@ -122,11 +132,86 @@ PeerObjectImpl* SharedObject::GetOrCreatePeerObject(bool versioned) {
   }
 }
 
+shared_ptr<const LiveObject> SharedObject::GetWorkingVersion(
+    const MaxVersionMap& transaction_store_version_map,
+    const SequencePointImpl& sequence_point,
+    unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
+  ObjectContent* const object_content_temp = GetObjectContent();
+
+  if (object_content_temp == nullptr) {
+    return shared_ptr<const LiveObject>(nullptr);
+  }
+
+  return object_content_temp->GetWorkingVersion(transaction_store_version_map,
+                                                sequence_point,
+                                                new_peer_objects,
+                                                transactions_to_reject);
+}
+
+void SharedObject::GetTransactions(
+    const MaxVersionMap& transaction_store_version_map,
+    map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
+    MaxVersionMap* effective_version) {
+  ObjectContent* const object_content_temp = GetObjectContent();
+
+  if (object_content_temp == nullptr) {
+    return;
+  }
+
+  return object_content_temp->GetTransactions(transaction_store_version_map,
+                                              transactions, effective_version);
+}
+
+void SharedObject::StoreTransactions(
+    const CanonicalPeer* origin_peer,
+    map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
+    const MaxVersionMap& version_map) {
+  GetOrCreateObjectContent()->StoreTransactions(origin_peer, transactions,
+                                                version_map);
+}
+
+void SharedObject::InsertTransaction(
+    const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
+    vector<linked_ptr<CommittedEvent>>* events) {
+  GetOrCreateObjectContent()->InsertTransaction(origin_peer, transaction_id,
+                                                events);
+}
+
+void SharedObject::SetCachedLiveObject(
+    const shared_ptr<const LiveObject>& cached_live_object,
+    const SequencePointImpl& cached_sequence_point) {
+  ObjectContent* const object_content_temp = GetObjectContent();
+
+  if (object_content_temp == nullptr) {
+    return;
+  }
+
+  object_content_temp->SetCachedLiveObject(cached_live_object,
+                                           cached_sequence_point);
+}
+
 string SharedObject::Dump() const {
   MutexLock lock1(&interested_peers_mu_);
   MutexLock lock2(&peer_objects_mu_);
+  MutexLock lock3(&object_content_mu_);
 
   return Dump_Locked();
+}
+
+ObjectContent* SharedObject::GetObjectContent() {
+  MutexLock lock(&object_content_mu_);
+  return object_content_.get();
+}
+
+ObjectContent* SharedObject::GetOrCreateObjectContent() {
+  MutexLock lock(&object_content_mu_);
+
+  if (object_content_.get() == nullptr) {
+    object_content_.reset(new VersionedSharedObject(transaction_store_, this));
+  }
+
+  return object_content_.get();
 }
 
 // TODO(dss): Inline this method into SharedObject::Dump.
@@ -169,7 +254,12 @@ string SharedObject::Dump_Locked() const {
     peer_objects_string += " ]";
   }
 
-  const string versioned_object_string = DumpCommittedVersions();
+  string versioned_object_string;
+  if (object_content_ == nullptr) {
+    versioned_object_string = "null";
+  } else {
+    versioned_object_string = object_content_->Dump();
+  }
 
   return StringPrintf(
       "{ \"object_id\": \"%s\", \"interested_peers\": %s, "

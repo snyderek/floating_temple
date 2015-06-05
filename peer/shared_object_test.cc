@@ -13,9 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// TODO(dss): Rename this file to shared_object_test.cc.
-
-#include "peer/versioned_shared_object.h"
+#include "peer/shared_object.h"
 
 #include <memory>
 #include <string>
@@ -42,7 +40,6 @@
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/sequence_point_impl.h"
-#include "peer/shared_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 

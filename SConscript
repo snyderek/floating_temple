@@ -131,7 +131,6 @@ peer_lib = ft_env.Library(
         peer/get_event_proto_type.cc
         peer/get_peer_message_type.cc
         peer/interpreter_thread.cc
-        peer/live_object.cc
         peer/live_object_node.cc
         peer/max_version_map.cc
         peer/min_version_map.cc
@@ -151,8 +150,10 @@ peer_lib = ft_env.Library(
         peer/transaction_id_util.cc
         peer/transaction_sequencer.cc
         peer/transaction_store.cc
+        peer/unversioned_live_object.cc
         peer/uuid_util.cc
         peer/value_proto_util.cc
+        peer/versioned_live_object.cc
         peer/versioned_object_content.cc
       """),
   )

@@ -20,48 +20,34 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "base/mutex.h"
 #include "include/c++/value.h"
 
 namespace floating_temple {
 
 class LocalObject;
 class Thread;
-class VersionedLocalObject;
 
 namespace peer {
 
-class LiveObjectNode;
 class PeerObjectImpl;
 
 class LiveObject {
  public:
-  explicit LiveObject(VersionedLocalObject* local_object);
-  ~LiveObject();
+  virtual ~LiveObject() {}
 
-  const LocalObject* local_object() const;
+  virtual const LocalObject* local_object() const = 0;
 
-  std::shared_ptr<LiveObject> Clone() const;
-  void Serialize(std::string* data,
-                 std::vector<PeerObjectImpl*>* referenced_peer_objects) const;
-  void InvokeMethod(Thread* thread,
-                    PeerObjectImpl* peer_object,
-                    const std::string& method_name,
-                    const std::vector<Value>& parameters,
-                    Value* return_value);
+  virtual std::shared_ptr<LiveObject> Clone() const = 0;
+  virtual void Serialize(
+      std::string* data,
+      std::vector<PeerObjectImpl*>* referenced_peer_objects) const = 0;
+  virtual void InvokeMethod(Thread* thread,
+                            PeerObjectImpl* peer_object,
+                            const std::string& method_name,
+                            const std::vector<Value>& parameters,
+                            Value* return_value) = 0;
 
-  std::string Dump() const;
-
- private:
-  explicit LiveObject(LiveObjectNode* node);
-
-  LiveObjectNode* GetNode() const;
-
-  LiveObjectNode* node_;  // Not NULL
-  mutable Mutex node_mu_;
-
-  DISALLOW_COPY_AND_ASSIGN(LiveObject);
+  virtual std::string Dump() const = 0;
 };
 
 }  // namespace peer

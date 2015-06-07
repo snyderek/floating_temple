@@ -60,6 +60,7 @@
 #include "peer/transaction_sequencer.h"
 #include "peer/uuid_util.h"
 #include "peer/value_proto_util.h"
+#include "peer/versioned_live_object.h"
 
 using std::map;
 using std::pair;
@@ -1321,7 +1322,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       }
 
       const shared_ptr<const LiveObject> live_object(
-          new LiveObject(
+          new VersionedLiveObject(
               DeserializeLocalObjectFromString(
                   interpreter_, object_creation_event_proto.data(),
                   referenced_peer_objects)));

@@ -35,6 +35,7 @@
 #include "peer/peer_object_impl.h"
 #include "peer/pending_event.h"
 #include "peer/proto/transaction_id.pb.h"
+#include "peer/versioned_live_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
@@ -144,7 +145,7 @@ TEST(InterpreterThreadTest, CallMethodInNestedTransactions) {
   MockTransactionStore transaction_store(&transaction_store_core);
   InterpreterThread thread(&transaction_store);
   const shared_ptr<const LiveObject> initial_live_object(
-      new LiveObject(new FakeVersionedLocalObject("a")));
+      new VersionedLiveObject(new FakeVersionedLocalObject("a")));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
@@ -188,7 +189,8 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
   PeerObjectImpl peer_object(true), new_peer_object(true);
   const MockVersionedLocalObjectCore local_object_core;
   shared_ptr<const LiveObject> live_object(
-      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
+      new VersionedLiveObject(
+          new MockVersionedLocalObject(&local_object_core)));
 
   InterpreterThread thread(&transaction_store);
 
@@ -248,7 +250,8 @@ TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
   PeerObjectImpl peer_object(true);
   const MockVersionedLocalObjectCore local_object_core;
   shared_ptr<const LiveObject> live_object(
-      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
+      new VersionedLiveObject(
+          new MockVersionedLocalObject(&local_object_core)));
 
   InterpreterThread thread(&transaction_store);
 

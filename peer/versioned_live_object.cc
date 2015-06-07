@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/live_object.h"
+#include "peer/versioned_live_object.h"
 
 #include <memory>
 #include <string>
@@ -22,7 +22,6 @@
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
-#include "include/c++/value.h"
 #include "include/c++/versioned_local_object.h"
 #include "peer/live_object_node.h"
 
@@ -33,35 +32,35 @@ using std::vector;
 namespace floating_temple {
 namespace peer {
 
-LiveObject::LiveObject(VersionedLocalObject* local_object)
+VersionedLiveObject::VersionedLiveObject(VersionedLocalObject* local_object)
     : node_(new LiveObjectNode(local_object)) {
 }
 
-LiveObject::~LiveObject() {
+VersionedLiveObject::~VersionedLiveObject() {
   LiveObjectNode* const node = GetNode();
   if (node->DecrementRefCount()) {
     delete node;
   }
 }
 
-const LocalObject* LiveObject::local_object() const {
+const LocalObject* VersionedLiveObject::local_object() const {
   return GetNode()->local_object();
 }
 
-shared_ptr<LiveObject> LiveObject::Clone() const {
-  return shared_ptr<LiveObject>(new LiveObject(GetNode()));
+shared_ptr<LiveObject> VersionedLiveObject::Clone() const {
+  return shared_ptr<LiveObject>(new VersionedLiveObject(GetNode()));
 }
 
-void LiveObject::Serialize(
+void VersionedLiveObject::Serialize(
     string* data, vector<PeerObjectImpl*>* referenced_peer_objects) const {
   GetNode()->Serialize(data, referenced_peer_objects);
 }
 
-void LiveObject::InvokeMethod(Thread* thread,
-                              PeerObjectImpl* peer_object,
-                              const string& method_name,
-                              const vector<Value>& parameters,
-                              Value* return_value) {
+void VersionedLiveObject::InvokeMethod(Thread* thread,
+                                       PeerObjectImpl* peer_object,
+                                       const string& method_name,
+                                       const vector<Value>& parameters,
+                                       Value* return_value) {
   LiveObjectNode* const new_node = GetNode()->InvokeMethod(
       thread, peer_object, method_name, parameters, return_value);
 
@@ -81,16 +80,16 @@ void LiveObject::InvokeMethod(Thread* thread,
   }
 }
 
-string LiveObject::Dump() const {
+string VersionedLiveObject::Dump() const {
   return GetNode()->Dump();
 }
 
-LiveObject::LiveObject(LiveObjectNode* node)
+VersionedLiveObject::VersionedLiveObject(LiveObjectNode* node)
     : node_(CHECK_NOTNULL(node)) {
   node->IncrementRefCount();
 }
 
-LiveObjectNode* LiveObject::GetNode() const {
+LiveObjectNode* VersionedLiveObject::GetNode() const {
   MutexLock lock(&node_mu_);
   return node_;
 }

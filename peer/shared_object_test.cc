@@ -40,12 +40,12 @@
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/sequence_point_impl.h"
+#include "peer/versioned_live_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
-using std::make_shared;
 using std::pair;
 using std::shared_ptr;
 using std::string;
@@ -65,7 +65,8 @@ class PeerObjectImpl;
 namespace {
 
 shared_ptr<const LiveObject> MakeLocalObject(const string& s) {
-  return make_shared<const LiveObject>(new FakeVersionedLocalObject(s));
+  return shared_ptr<const LiveObject>(
+      new VersionedLiveObject(new FakeVersionedLocalObject(s)));
 }
 
 class SharedObjectTest : public Test {

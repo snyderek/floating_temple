@@ -37,6 +37,7 @@
 #include "peer/sequence_point.h"
 #include "peer/transaction_id_util.h"
 #include "peer/transaction_store_internal_interface.h"
+#include "peer/versioned_live_object.h"
 
 using std::pair;
 using std::shared_ptr;
@@ -171,7 +172,8 @@ bool InterpreterThread::EndTransaction() {
 PeerObject* InterpreterThread::CreatePeerObject(
     VersionedLocalObject* initial_version, const string& name, bool versioned) {
   // Take ownership of *initial_version.
-  shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
+  shared_ptr<const LiveObject> new_live_object(
+      new VersionedLiveObject(initial_version));
 
   PeerObjectImpl* peer_object = nullptr;
 

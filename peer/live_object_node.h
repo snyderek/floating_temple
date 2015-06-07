@@ -32,6 +32,7 @@ namespace peer {
 
 class PeerObjectImpl;
 
+// TODO(dss): Rename this class to VersionedLiveObjectNode.
 class LiveObjectNode {
  public:
   explicit LiveObjectNode(VersionedLocalObject* local_object);

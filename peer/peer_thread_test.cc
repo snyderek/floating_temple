@@ -36,6 +36,7 @@
 #include "peer/peer_object_impl.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/shared_object.h"
+#include "peer/versioned_live_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
@@ -93,7 +94,8 @@ TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
   const MockVersionedLocalObjectCore local_object_core1;
   shared_ptr<LiveObject> live_object1(
-      new LiveObject(new MockVersionedLocalObject(&local_object_core1)));
+      new VersionedLiveObject(
+          new MockVersionedLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -145,7 +147,8 @@ TEST(PeerThreadTest, FlushEvents) {
   SharedObject shared_object(&transaction_store, MakeUuid(111));
   const MockVersionedLocalObjectCore local_object_core;
   shared_ptr<LiveObject> live_object(
-      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
+      new VersionedLiveObject(
+          new MockVersionedLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -202,7 +205,7 @@ TEST(PeerThreadTest, MultipleTransactions) {
   SharedObject shared_object(&transaction_store, MakeUuid(222));
   FakeVersionedLocalObject* const local_object = new FakeVersionedLocalObject(
       "snap.");
-  shared_ptr<LiveObject> live_object(new LiveObject(local_object));
+  shared_ptr<LiveObject> live_object(new VersionedLiveObject(local_object));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -267,7 +270,7 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(333));
   shared_ptr<LiveObject> live_object(
-      new LiveObject(new FakeVersionedLocalObject("peter.")));
+      new VersionedLiveObject(new FakeVersionedLocalObject("peter.")));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -346,7 +349,8 @@ TEST(PeerThreadTest, MethodCallWithoutReturn) {
   SharedObject shared_object(&transaction_store, MakeUuid(1));
   const MockVersionedLocalObjectCore local_object_core;
   shared_ptr<LiveObject> live_object(
-      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
+      new VersionedLiveObject(
+          new MockVersionedLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -405,7 +409,8 @@ TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
   SharedObject shared_object(&transaction_store, MakeUuid(1));
   const MockVersionedLocalObjectCore local_object_core;
   shared_ptr<LiveObject> live_object(
-      new LiveObject(new MockVersionedLocalObject(&local_object_core)));
+      new VersionedLiveObject(
+          new MockVersionedLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -486,7 +491,8 @@ TEST(PeerThreadTest, TransactionInsideMethodCall) {
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
   const MockVersionedLocalObjectCore local_object_core1;
   shared_ptr<LiveObject> live_object1(
-      new LiveObject(new MockVersionedLocalObject(&local_object_core1)));
+      new VersionedLiveObject(
+          new MockVersionedLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
@@ -587,7 +593,8 @@ TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
   const MockVersionedLocalObjectCore local_object_core1;
   shared_ptr<LiveObject> live_object1(
-      new LiveObject(new MockVersionedLocalObject(&local_object_core1)));
+      new VersionedLiveObject(
+          new MockVersionedLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);

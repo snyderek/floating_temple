@@ -23,6 +23,7 @@
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
 #include "include/c++/value.h"
+#include "include/c++/versioned_local_object.h"
 #include "peer/live_object_node.h"
 
 using std::shared_ptr;
@@ -43,7 +44,7 @@ LiveObject::~LiveObject() {
   }
 }
 
-const VersionedLocalObject* LiveObject::local_object() const {
+const LocalObject* LiveObject::local_object() const {
   return GetNode()->local_object();
 }
 

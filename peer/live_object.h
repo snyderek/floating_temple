@@ -26,6 +26,7 @@
 
 namespace floating_temple {
 
+class LocalObject;
 class Thread;
 class VersionedLocalObject;
 
@@ -39,7 +40,7 @@ class LiveObject {
   explicit LiveObject(VersionedLocalObject* local_object);
   ~LiveObject();
 
-  const VersionedLocalObject* local_object() const;
+  const LocalObject* local_object() const;
 
   std::shared_ptr<LiveObject> Clone() const;
   void Serialize(std::string* data,

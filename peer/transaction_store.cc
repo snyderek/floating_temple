@@ -441,6 +441,8 @@ void TransactionStore::HandleGetObjectMessage(
             << "object " << UuidToString(requested_object_id) << " but it does "
             << "not exist on this peer.";
 
+    // TODO(dss): Is there any point sending a reply if this peer doesn't know
+    // anything about the object?
     PeerMessage reply;
     reply.mutable_store_object_message()->mutable_object_id()->CopyFrom(
         requested_object_id);

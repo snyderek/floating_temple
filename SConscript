@@ -151,6 +151,7 @@ peer_lib = ft_env.Library(
         peer/transaction_sequencer.cc
         peer/transaction_store.cc
         peer/unversioned_live_object.cc
+        peer/unversioned_object_content.cc
         peer/uuid_util.cc
         peer/value_proto_util.cc
         peer/versioned_live_object.cc

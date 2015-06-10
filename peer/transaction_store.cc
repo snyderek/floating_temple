@@ -1025,11 +1025,13 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
       }
 
       if (prev_shared_object == next_shared_object) {
-        AddEventToSharedObjectTransactions(
-            prev_shared_object, origin_peer,
-            new SelfMethodCallCommittedEvent(new_shared_objects, *method_name,
-                                             committed_parameters),
-            shared_object_transactions);
+        if (prev_shared_object != nullptr) {
+          AddEventToSharedObjectTransactions(
+              prev_shared_object, origin_peer,
+              new SelfMethodCallCommittedEvent(new_shared_objects, *method_name,
+                                               committed_parameters),
+              shared_object_transactions);
+        }
       } else {
         if (prev_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
@@ -1040,11 +1042,13 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
               shared_object_transactions);
         }
 
-        AddEventToSharedObjectTransactions(
-            next_shared_object, origin_peer,
-            new MethodCallCommittedEvent(prev_shared_object, *method_name,
-                                         committed_parameters),
-            shared_object_transactions);
+        if (next_shared_object != nullptr) {
+          AddEventToSharedObjectTransactions(
+              next_shared_object, origin_peer,
+              new MethodCallCommittedEvent(prev_shared_object, *method_name,
+                                           committed_parameters),
+              shared_object_transactions);
+        }
       }
       break;
     }
@@ -1062,18 +1066,22 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
       ConvertValueToCommittedValue(*return_value, &committed_return_value);
 
       if (prev_shared_object == next_shared_object) {
-        AddEventToSharedObjectTransactions(
-            prev_shared_object, origin_peer,
-            new SelfMethodReturnCommittedEvent(new_shared_objects,
-                                               committed_return_value),
-            shared_object_transactions);
+        if (prev_shared_object != nullptr) {
+          AddEventToSharedObjectTransactions(
+              prev_shared_object, origin_peer,
+              new SelfMethodReturnCommittedEvent(new_shared_objects,
+                                                 committed_return_value),
+              shared_object_transactions);
+        }
       } else {
-        AddEventToSharedObjectTransactions(
-            prev_shared_object, origin_peer,
-            new MethodReturnCommittedEvent(new_shared_objects,
-                                           next_shared_object,
-                                           committed_return_value),
-            shared_object_transactions);
+        if (prev_shared_object != nullptr) {
+          AddEventToSharedObjectTransactions(
+              prev_shared_object, origin_peer,
+              new MethodReturnCommittedEvent(new_shared_objects,
+                                             next_shared_object,
+                                             committed_return_value),
+              shared_object_transactions);
+        }
 
         if (next_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(

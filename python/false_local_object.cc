@@ -20,8 +20,8 @@
 #include <string>
 
 #include "base/logging.h"
-#include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
+#include "python/versioned_local_object_impl.h"
 
 using std::string;
 
@@ -29,7 +29,7 @@ namespace floating_temple {
 namespace python {
 
 FalseLocalObject::FalseLocalObject()
-    : LocalObjectImpl(Py_False) {
+    : VersionedLocalObjectImpl(Py_False) {
 }
 
 VersionedLocalObject* FalseLocalObject::Clone() const {

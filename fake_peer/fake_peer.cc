@@ -20,8 +20,8 @@
 
 #include "base/logging.h"
 #include "fake_peer/fake_thread.h"
+#include "include/c++/unversioned_local_object.h"
 #include "include/c++/value.h"
-#include "include/c++/versioned_local_object.h"
 
 using std::string;
 using std::vector;
@@ -33,7 +33,7 @@ class PeerObject;
 FakePeer::FakePeer() {
 }
 
-void FakePeer::RunProgram(VersionedLocalObject* local_object,
+void FakePeer::RunProgram(UnversionedLocalObject* local_object,
                           const string& method_name,
                           Value* return_value,
                           bool linger) {
@@ -41,8 +41,8 @@ void FakePeer::RunProgram(VersionedLocalObject* local_object,
   CHECK(!linger) << "Linger mode isn't supported for the fake peer.";
 
   FakeThread thread;
-  PeerObject* const peer_object = thread.CreatePeerObject(local_object, "",
-                                                          false);
+  PeerObject* const peer_object = thread.CreateUnversionedPeerObject(
+      local_object, "");
 
   local_object->InvokeMethod(&thread, peer_object, method_name, vector<Value>(),
                              return_value);

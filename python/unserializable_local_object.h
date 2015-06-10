@@ -19,21 +19,16 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include "base/macros.h"
-#include "python/local_object_impl.h"
+#include "python/unversioned_local_object_impl.h"
 
 namespace floating_temple {
 namespace python {
 
-class UnserializableLocalObject : public LocalObjectImpl {
+class UnserializableLocalObject : public UnversionedLocalObjectImpl {
  public:
   explicit UnserializableLocalObject(PyObject* py_object);
 
-  VersionedLocalObject* Clone() const override;
   std::string Dump() const override;
-
- protected:
-  void PopulateObjectProto(ObjectProto* object_proto,
-                           SerializationContext* context) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UnserializableLocalObject);

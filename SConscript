@@ -231,7 +231,6 @@ python_lib = python_env.Library(
         python/get_serialized_object_type.cc
         python/interpreter_impl.cc
         python/list_local_object.cc
-        python/local_object_impl.cc
         python/long_local_object.cc
         python/make_value.cc
         python/method_context.cc
@@ -246,6 +245,8 @@ python_lib = python_env.Library(
         python/true_local_object.cc
         python/unicode_local_object.cc
         python/unserializable_local_object.cc
+        python/unversioned_local_object_impl.cc
+        python/versioned_local_object_impl.cc
       """),
   )
 

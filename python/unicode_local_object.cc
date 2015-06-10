@@ -22,9 +22,9 @@
 #include "base/escape.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
-#include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
+#include "python/versioned_local_object_impl.h"
 
 using std::string;
 
@@ -46,7 +46,7 @@ void GetUtf8String(PyObject* py_unicode, string* utf8_string) {
 }  // namespace
 
 UnicodeLocalObject::UnicodeLocalObject(PyObject* py_unicode)
-    : LocalObjectImpl(CHECK_NOTNULL(py_unicode)) {
+    : VersionedLocalObjectImpl(CHECK_NOTNULL(py_unicode)) {
   CHECK_NE(PyUnicode_CheckExact(py_unicode), 0);
 }
 

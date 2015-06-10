@@ -33,7 +33,7 @@ using std::string;
 
 namespace floating_temple {
 
-class VersionedLocalObject;
+class UnversionedLocalObject;
 
 namespace python {
 
@@ -72,7 +72,7 @@ void RunPythonFile(Peer* peer,
     CHECK_EQ(PyDict_SetItemString(globals, "__cached__", Py_None), 0);
   }
 
-  VersionedLocalObject* const program_object = new ProgramObject(
+  UnversionedLocalObject* const program_object = new ProgramObject(
       fp, source_file_name, globals);
 
   Py_BEGIN_ALLOW_THREADS

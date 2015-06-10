@@ -34,7 +34,7 @@
 
 namespace floating_temple {
 
-class VersionedLocalObject;
+class UnversionedLocalObject;
 
 namespace peer {
 
@@ -52,7 +52,7 @@ class InterpreterThread : public Thread {
       TransactionStoreInternalInterface* transaction_store);
   ~InterpreterThread() override;
 
-  void RunProgram(VersionedLocalObject* local_object,
+  void RunProgram(UnversionedLocalObject* local_object,
                   const std::string& method_name,
                   Value* return_value,
                   bool linger);
@@ -62,9 +62,11 @@ class InterpreterThread : public Thread {
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  PeerObject* CreatePeerObject(VersionedLocalObject* initial_version,
-                               const std::string& name,
-                               bool versioned) override;
+  PeerObject* CreateVersionedPeerObject(VersionedLocalObject* initial_version,
+                                        const std::string& name) override;
+  PeerObject* CreateUnversionedPeerObject(
+      UnversionedLocalObject* initial_version,
+      const std::string& name) override;
   bool CallMethod(PeerObject* peer_object,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,

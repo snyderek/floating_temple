@@ -51,8 +51,10 @@ class InterpreterImpl : public Interpreter {
                   const std::vector<Value>& parameters,
                   Value* return_value);
 
-  template<class LocalObjectType> PeerObject* CreatePeerObject(
-      PyObject* py_object, const std::string& name, bool versioned);
+  template<class LocalObjectType> PeerObject* CreateVersionedPeerObject(
+      PyObject* py_object, const std::string& name);
+  template<class LocalObjectType> PeerObject* CreateUnversionedPeerObject(
+      PyObject* py_object, const std::string& name);
 
   Thread* SetThreadObject(Thread* new_thread);
 
@@ -79,9 +81,8 @@ class InterpreterImpl : public Interpreter {
 };
 
 template<class LocalObjectType>
-PeerObject* InterpreterImpl::CreatePeerObject(PyObject* py_object,
-                                              const std::string& name,
-                                              bool versioned) {
+PeerObject* InterpreterImpl::CreateVersionedPeerObject(
+    PyObject* py_object, const std::string& name) {
   CHECK(py_object != nullptr);
   CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
 
@@ -90,8 +91,23 @@ PeerObject* InterpreterImpl::CreatePeerObject(PyObject* py_object,
     Py_INCREF(py_object);
   }
 
-  VersionedLocalObject* const local_object = new LocalObjectType(py_object);
-  return GetThreadObject()->CreatePeerObject(local_object, name, versioned);
+  LocalObjectType* const local_object = new LocalObjectType(py_object);
+  return GetThreadObject()->CreateVersionedPeerObject(local_object, name);
+}
+
+template<class LocalObjectType>
+PeerObject* InterpreterImpl::CreateUnversionedPeerObject(
+    PyObject* py_object, const std::string& name) {
+  CHECK(py_object != nullptr);
+  CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
+
+  {
+    PythonGilLock lock;
+    Py_INCREF(py_object);
+  }
+
+  LocalObjectType* const local_object = new LocalObjectType(py_object);
+  return GetThreadObject()->CreateUnversionedPeerObject(local_object, name);
 }
 
 }  // namespace python

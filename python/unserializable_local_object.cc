@@ -20,8 +20,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "python/local_object_impl.h"
-#include "python/proto/serialization.pb.h"
+#include "python/unversioned_local_object_impl.h"
 
 using std::string;
 
@@ -29,27 +28,11 @@ namespace floating_temple {
 namespace python {
 
 UnserializableLocalObject::UnserializableLocalObject(PyObject* py_object)
-    : LocalObjectImpl(CHECK_NOTNULL(py_object)) {
-}
-
-VersionedLocalObject* UnserializableLocalObject::Clone() const {
-  return new UnserializableLocalObject(py_object());
+    : UnversionedLocalObjectImpl(CHECK_NOTNULL(py_object)) {
 }
 
 string UnserializableLocalObject::Dump() const {
   return "{ \"type\": \"UnserializableLocalObject\" }";
-}
-
-void UnserializableLocalObject::PopulateObjectProto(
-    ObjectProto* object_proto, SerializationContext* context) const {
-  CHECK(object_proto != nullptr);
-
-  const PyTypeObject* const py_type = Py_TYPE(py_object());
-  CHECK(py_type != nullptr);
-  const char* const type_name = py_type->tp_name;
-  CHECK(type_name != nullptr);
-
-  object_proto->mutable_unserializable_object()->set_type_name(type_name);
 }
 
 }  // namespace python

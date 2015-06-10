@@ -24,6 +24,7 @@
 namespace floating_temple {
 
 class PeerObject;
+class UnversionedLocalObject;
 class VersionedLocalObject;
 
 // This interface is implemented by the peer. The local interpreter uses it to
@@ -75,9 +76,11 @@ class Thread {
   // TODO(dss): The local interpreter should take ownership of the PeerObject
   // instance. Otherwise, the peer has no way of knowing when the local
   // interpreter is done using it.
-  virtual PeerObject* CreatePeerObject(VersionedLocalObject* initial_version,
-                                       const std::string& name,
-                                       bool versioned) = 0;
+  virtual PeerObject* CreateVersionedPeerObject(
+      VersionedLocalObject* initial_version, const std::string& name) = 0;
+
+  virtual PeerObject* CreateUnversionedPeerObject(
+      UnversionedLocalObject* initial_version, const std::string& name) = 0;
 
   // Calls the specified method on the specified object, and copies the return
   // value to *return_value. Depending on how the interpreted code is being

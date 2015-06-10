@@ -28,12 +28,12 @@
 #include "base/mutex_lock.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
-#include "python/local_object_impl.h"
 #include "python/long_local_object.h"
 #include "python/py_proxy_object.h"
 #include "python/python_gil_lock.h"
 #include "python/unicode_local_object.h"
 #include "python/unserializable_local_object.h"
+#include "python/versioned_local_object_impl.h"
 
 using std::size_t;
 using std::string;
@@ -78,7 +78,7 @@ Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
 
 VersionedLocalObject* InterpreterImpl::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  return LocalObjectImpl::Deserialize(buffer, buffer_size, context);
+  return VersionedLocalObjectImpl::Deserialize(buffer, buffer_size, context);
 }
 
 PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
@@ -125,13 +125,13 @@ PeerObject* InterpreterImpl::PyProxyObjectToPeerObject(PyObject* py_object) {
 
   PeerObject* new_peer_object = nullptr;
   if (py_type == &PyLong_Type) {
-    new_peer_object = CreatePeerObject<LongLocalObject>(py_object, "", false);
+    new_peer_object = CreateVersionedPeerObject<LongLocalObject>(py_object, "");
   } else if (py_type == &PyUnicode_Type) {
-    new_peer_object = CreatePeerObject<UnicodeLocalObject>(py_object, "",
-                                                           false);
+    new_peer_object = CreateVersionedPeerObject<UnicodeLocalObject>(py_object,
+                                                                    "");
   } else {
-    new_peer_object = CreatePeerObject<UnserializableLocalObject>(py_object,
-                                                                  "", false);
+    new_peer_object = CreateUnversionedPeerObject<UnserializableLocalObject>(
+        py_object, "");
   }
 
   PeerObject* existing_peer_object = nullptr;

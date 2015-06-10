@@ -21,14 +21,14 @@
 #include <string>
 
 #include "base/macros.h"
-#include "python/local_object_impl.h"
+#include "python/versioned_local_object_impl.h"
 
 namespace floating_temple {
 namespace python {
 
 class UnicodeProto;
 
-class UnicodeLocalObject : public LocalObjectImpl {
+class UnicodeLocalObject : public VersionedLocalObjectImpl {
  public:
   explicit UnicodeLocalObject(PyObject* py_unicode);
 

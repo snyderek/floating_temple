@@ -24,19 +24,19 @@
 
 namespace floating_temple {
 
-class VersionedLocalObject;
+class LocalObject;
 
 class FakePeerObject : public PeerObject {
  public:
-  explicit FakePeerObject(VersionedLocalObject* local_object);
+  explicit FakePeerObject(LocalObject* local_object);
   ~FakePeerObject() override;
 
-  VersionedLocalObject* local_object() { return local_object_.get(); }
+  LocalObject* local_object() { return local_object_.get(); }
 
   std::string Dump() const override;
 
  private:
-  const std::unique_ptr<VersionedLocalObject> local_object_;
+  const std::unique_ptr<LocalObject> local_object_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePeerObject);
 };

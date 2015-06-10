@@ -19,7 +19,7 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include "base/macros.h"
-#include "python/local_object_impl.h"
+#include "python/versioned_local_object_impl.h"
 
 namespace floating_temple {
 
@@ -29,7 +29,7 @@ namespace python {
 
 class SequenceProto;
 
-class ListLocalObject : public LocalObjectImpl {
+class ListLocalObject : public VersionedLocalObjectImpl {
  public:
   explicit ListLocalObject(PyObject* py_list_object);
 

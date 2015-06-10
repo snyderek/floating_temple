@@ -21,14 +21,14 @@
 #include <string>
 
 #include "base/macros.h"
-#include "python/local_object_impl.h"
+#include "python/versioned_local_object_impl.h"
 
 namespace floating_temple {
 namespace python {
 
 class LongProto;
 
-class LongLocalObject : public LocalObjectImpl {
+class LongLocalObject : public VersionedLocalObjectImpl {
  public:
   explicit LongLocalObject(PyObject* py_long_object);
 

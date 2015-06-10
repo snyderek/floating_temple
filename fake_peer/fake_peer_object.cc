@@ -20,13 +20,13 @@
 
 #include "base/logging.h"
 #include "base/string_printf.h"
-#include "include/c++/versioned_local_object.h"
+#include "include/c++/local_object.h"
 
 using std::string;
 
 namespace floating_temple {
 
-FakePeerObject::FakePeerObject(VersionedLocalObject* local_object)
+FakePeerObject::FakePeerObject(LocalObject* local_object)
     : local_object_(CHECK_NOTNULL(local_object)) {
 }
 

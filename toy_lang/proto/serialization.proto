@@ -150,7 +150,6 @@ message ObjectProto {
     MAP_IS_SET_FUNCTION = 26;
     MAP_GET_FUNCTION = 27;
     MAP_SET_FUNCTION = 28;
-    PROGRAM = 29;
   }
 
   // Exactly one of the following fields must be set.
@@ -183,5 +182,4 @@ message ObjectProto {
   optional floating_temple.toy_lang.FunctionProto map_is_set_function = 26;
   optional floating_temple.toy_lang.FunctionProto map_get_function = 27;
   optional floating_temple.toy_lang.FunctionProto map_set_function = 28;
-  optional floating_temple.toy_lang.ProgramProto program_object = 29;
 }

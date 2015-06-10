@@ -364,10 +364,10 @@ TEST(InterpreterThreadTest, CreatePeerObjectInDifferentTransaction) {
   }
 
   ASSERT_TRUE(thread.BeginTransaction());
-  PeerObject* const peer_object1 = thread.CreatePeerObject(
-      new FakeVersionedLocalObject("lucy."), "", true);
-  PeerObject* const peer_object2 = thread.CreatePeerObject(
-      new FakeVersionedLocalObject("ethel."), "", true);
+  PeerObject* const peer_object1 = thread.CreateVersionedPeerObject(
+      new FakeVersionedLocalObject("lucy."), "");
+  PeerObject* const peer_object2 = thread.CreateVersionedPeerObject(
+      new FakeVersionedLocalObject("ethel."), "");
   // This method call is here only to force a transaction to be created.
   CallAppendMethod(&thread, peer_object1, "ricky.");
   ASSERT_TRUE(thread.EndTransaction());

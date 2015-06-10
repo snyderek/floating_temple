@@ -26,9 +26,9 @@
 #include "include/c++/serialization_context.h"
 #include "include/c++/value.h"
 #include "python/interpreter_impl.h"
-#include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
+#include "python/versioned_local_object_impl.h"
 
 using std::string;
 
@@ -36,7 +36,7 @@ namespace floating_temple {
 namespace python {
 
 DictLocalObject::DictLocalObject(PyObject* py_dict_object)
-    : LocalObjectImpl(CHECK_NOTNULL(py_dict_object)) {
+    : VersionedLocalObjectImpl(CHECK_NOTNULL(py_dict_object)) {
 }
 
 VersionedLocalObject* DictLocalObject::Clone() const {

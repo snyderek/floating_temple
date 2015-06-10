@@ -26,8 +26,8 @@ namespace peer {
 class CanonicalPeer;
 class CommittedEvent;
 
-// TODO(dss): Rename this struct to better distinguish it from the
-// SharedObjectTransaction class.
+// TODO(dss): Eliminate this struct and use the SharedObjectTransaction class
+// instead.
 struct SharedObjectTransactionInfo {
   std::vector<linked_ptr<CommittedEvent>> events;
   const CanonicalPeer* origin_peer;

@@ -21,28 +21,23 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "toy_lang/local_object_impl.h"
+#include "include/c++/unversioned_local_object.h"
 
 namespace floating_temple {
 namespace toy_lang {
 
 class Expression;
 
-class ProgramObject : public LocalObjectImpl {
+class ProgramObject : public UnversionedLocalObject {
  public:
   explicit ProgramObject(const std::shared_ptr<const Expression>& expression);
 
-  VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
   std::string Dump() const override;
-
- protected:
-  void PopulateObjectProto(ObjectProto* object_proto,
-                           SerializationContext* context) const override;
 
  private:
   const std::shared_ptr<const Expression> expression_;

@@ -35,8 +35,10 @@
 #include "peer/pending_event.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/sequence_point.h"
+#include "peer/shared_object.h"
 #include "peer/transaction_id_util.h"
 #include "peer/transaction_store_internal_interface.h"
+#include "peer/unversioned_live_object.h"
 #include "peer/versioned_live_object.h"
 
 using std::pair;
@@ -51,6 +53,16 @@ namespace floating_temple {
 class PeerObject;
 
 namespace peer {
+namespace {
+
+PeerObjectImpl* GetPeerObjectForEvent(PeerObjectImpl* peer_object) {
+  if (peer_object != nullptr && peer_object->versioned()) {
+    return peer_object;
+  }
+  return nullptr;
+}
+
+}  // namespace
 
 InterpreterThread::InterpreterThread(
     TransactionStoreInternalInterface* transaction_store)
@@ -65,13 +77,13 @@ InterpreterThread::InterpreterThread(
 InterpreterThread::~InterpreterThread() {
 }
 
-void InterpreterThread::RunProgram(VersionedLocalObject* local_object,
+void InterpreterThread::RunProgram(UnversionedLocalObject* local_object,
                                    const string& method_name,
                                    Value* return_value,
                                    bool linger) {
   CHECK(return_value != nullptr);
 
-  PeerObject* const peer_object = CreatePeerObject(local_object, "", false);
+  PeerObject* const peer_object = CreateUnversionedPeerObject(local_object, "");
 
   for (;;) {
     Value return_value_temp;
@@ -138,7 +150,7 @@ bool InterpreterThread::BeginTransaction() {
     return false;
   }
 
-  if (current_peer_object_ != nullptr) {
+  if (current_peer_object_ != nullptr && current_peer_object_->versioned()) {
     modified_objects_[current_peer_object_] = current_live_object_;
     AddTransactionEvent(new BeginTransactionPendingEvent(current_peer_object_));
   }
@@ -155,7 +167,7 @@ bool InterpreterThread::EndTransaction() {
     return false;
   }
 
-  if (current_peer_object_ != nullptr) {
+  if (current_peer_object_ != nullptr && current_peer_object_->versioned()) {
     modified_objects_[current_peer_object_] = current_live_object_;
     AddTransactionEvent(new EndTransactionPendingEvent(current_peer_object_));
   }
@@ -169,8 +181,8 @@ bool InterpreterThread::EndTransaction() {
   return true;
 }
 
-PeerObject* InterpreterThread::CreatePeerObject(
-    VersionedLocalObject* initial_version, const string& name, bool versioned) {
+PeerObject* InterpreterThread::CreateVersionedPeerObject(
+    VersionedLocalObject* initial_version, const string& name) {
   // Take ownership of *initial_version.
   shared_ptr<const LiveObject> new_live_object(
       new VersionedLiveObject(initial_version));
@@ -179,7 +191,7 @@ PeerObject* InterpreterThread::CreatePeerObject(
 
   if (name.empty()) {
     if (transaction_store_->delay_object_binding()) {
-      peer_object = transaction_store_->CreateUnboundPeerObject(versioned);
+      peer_object = transaction_store_->CreateUnboundPeerObject(true);
 
       NewObject new_object;
       new_object.live_object = new_live_object;
@@ -187,14 +199,14 @@ PeerObject* InterpreterThread::CreatePeerObject(
 
       CHECK(new_objects_.emplace(peer_object, new_object).second);
     } else {
-      peer_object = transaction_store_->CreateBoundPeerObject("", versioned);
+      peer_object = transaction_store_->CreateBoundPeerObject("", true);
 
       AddTransactionEvent(new ObjectCreationPendingEvent(current_peer_object_,
                                                          peer_object,
                                                          new_live_object));
     }
   } else {
-    peer_object = transaction_store_->CreateBoundPeerObject(name, versioned);
+    peer_object = transaction_store_->CreateBoundPeerObject(name, true);
 
     NewObject new_object;
     new_object.live_object = new_live_object;
@@ -225,6 +237,25 @@ PeerObject* InterpreterThread::CreatePeerObject(
       }
     }
   }
+
+  CHECK(peer_object != nullptr);
+  return peer_object;
+}
+
+PeerObject* InterpreterThread::CreateUnversionedPeerObject(
+    UnversionedLocalObject* initial_version, const string& name) {
+  // Take ownership of *initial_version.
+  shared_ptr<LiveObject> new_live_object(
+      new UnversionedLiveObject(initial_version));
+
+  PeerObjectImpl* const peer_object = transaction_store_->CreateBoundPeerObject(
+      name, false);
+
+  // TODO(dss): InterpreterThread should not call methods on SharedObject. This
+  // is the responsibility of TransactionStore.
+  SharedObject* const shared_object = peer_object->shared_object();
+  CHECK(shared_object != nullptr);
+  shared_object->CreateUnversionedObjectContent(new_live_object);
 
   CHECK(peer_object != nullptr);
   return peer_object;
@@ -266,15 +297,18 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
       CheckIfValueIsNew(parameter, &live_objects, &new_peer_objects);
     }
 
-    if (caller_peer_object != nullptr) {
+    if (caller_peer_object != nullptr && caller_peer_object->versioned()) {
       modified_objects_[caller_peer_object] = current_live_object_;
     }
 
-    AddTransactionEvent(new MethodCallPendingEvent(live_objects,
-                                                   new_peer_objects,
-                                                   caller_peer_object,
-                                                   callee_peer_object,
-                                                   method_name, parameters));
+    if ((caller_peer_object != nullptr && caller_peer_object->versioned()) ||
+        callee_peer_object->versioned()) {
+      AddTransactionEvent(
+          new MethodCallPendingEvent(live_objects, new_peer_objects,
+                                     GetPeerObjectForEvent(caller_peer_object),
+                                     GetPeerObjectForEvent(callee_peer_object),
+                                     method_name, parameters));
+    }
   }
 
   // Repeatedly try to call the method until either 1) the method succeeds, or
@@ -304,13 +338,18 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
 
     CheckIfValueIsNew(*return_value, &live_objects, &new_peer_objects);
 
-    modified_objects_[callee_peer_object] = callee_live_object;
+    if (callee_peer_object->versioned()) {
+      modified_objects_[callee_peer_object] = callee_live_object;
+    }
 
-    AddTransactionEvent(new MethodReturnPendingEvent(live_objects,
-                                                     new_peer_objects,
-                                                     callee_peer_object,
-                                                     caller_peer_object,
-                                                     *return_value));
+    if ((caller_peer_object != nullptr && caller_peer_object->versioned()) ||
+        callee_peer_object->versioned()) {
+      AddTransactionEvent(
+          new MethodReturnPendingEvent(
+              live_objects, new_peer_objects,
+              GetPeerObjectForEvent(callee_peer_object),
+              GetPeerObjectForEvent(caller_peer_object), *return_value));
+    }
   }
 
   return true;
@@ -399,17 +438,25 @@ shared_ptr<LiveObject> InterpreterThread::GetLiveObject(
   // to modified_objects_ by InterpreterThread::CheckIfPeerObjectIsNew.
   CHECK(new_objects_.find(peer_object) == new_objects_.end());
 
-  shared_ptr<LiveObject>& live_object = modified_objects_[peer_object];
+  if (peer_object->versioned()) {
+    shared_ptr<LiveObject>& live_object = modified_objects_[peer_object];
 
-  if (live_object.get() == nullptr) {
+    if (live_object.get() == nullptr) {
+      const shared_ptr<const LiveObject> existing_live_object =
+          transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
+                                                           GetSequencePoint(),
+                                                           true);
+      live_object = existing_live_object->Clone();
+    }
+
+    return live_object;
+  } else {
     const shared_ptr<const LiveObject> existing_live_object =
         transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
                                                          GetSequencePoint(),
                                                          true);
-    live_object = existing_live_object->Clone();
+    return existing_live_object->Clone();
   }
-
-  return live_object;
 }
 
 const SequencePoint* InterpreterThread::GetSequencePoint() {
@@ -483,7 +530,7 @@ void InterpreterThread::CheckIfPeerObjectIsNew(
   CHECK(live_objects != nullptr);
   CHECK(new_peer_objects != nullptr);
 
-  if (peer_object != nullptr) {
+  if (peer_object != nullptr && peer_object->versioned()) {
     const unordered_map<PeerObjectImpl*, NewObject>::iterator it =
         new_objects_.find(peer_object);
 

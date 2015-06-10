@@ -30,6 +30,8 @@
 #include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
+#include "include/c++/local_object.h"
+#include "include/c++/unversioned_local_object.h"
 #include "include/c++/value.h"
 #include "include/c++/versioned_local_object.h"
 #include "peer/committed_event.h"
@@ -520,27 +522,7 @@ void PeerThread::SetConflictDetected(const string& description) {
   conflict_detected_.Set(true);
 }
 
-bool PeerThread::BeginTransaction() {
-  if (conflict_detected_.Get() ||
-      !CheckNextEventType(CommittedEvent::BEGIN_TRANSACTION)) {
-    return false;
-  }
-
-  GetNextEvent();
-  return HasNextEvent();
-}
-
-bool PeerThread::EndTransaction() {
-  if (conflict_detected_.Get() ||
-      !CheckNextEventType(CommittedEvent::END_TRANSACTION)) {
-    return false;
-  }
-
-  GetNextEvent();
-  return HasNextEvent();
-}
-
-PeerObject* PeerThread::CreatePeerObject(VersionedLocalObject* initial_version,
+PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
                                          const string& name, bool versioned) {
   CHECK(initial_version != nullptr);
 
@@ -564,6 +546,36 @@ PeerObject* PeerThread::CreatePeerObject(VersionedLocalObject* initial_version,
   } else {
     return transaction_store_->CreateBoundPeerObject(name, versioned);
   }
+}
+
+bool PeerThread::BeginTransaction() {
+  if (conflict_detected_.Get() ||
+      !CheckNextEventType(CommittedEvent::BEGIN_TRANSACTION)) {
+    return false;
+  }
+
+  GetNextEvent();
+  return HasNextEvent();
+}
+
+bool PeerThread::EndTransaction() {
+  if (conflict_detected_.Get() ||
+      !CheckNextEventType(CommittedEvent::END_TRANSACTION)) {
+    return false;
+  }
+
+  GetNextEvent();
+  return HasNextEvent();
+}
+
+PeerObject* PeerThread::CreateVersionedPeerObject(
+    VersionedLocalObject* initial_version, const string& name) {
+  return CreatePeerObject(initial_version, name, true);
+}
+
+PeerObject* PeerThread::CreateUnversionedPeerObject(
+    UnversionedLocalObject* initial_version, const string& name) {
+  return CreatePeerObject(initial_version, name, false);
 }
 
 bool PeerThread::CallMethod(PeerObject* peer_object,

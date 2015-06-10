@@ -19,13 +19,13 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include "base/macros.h"
-#include "python/local_object_impl.h"
+#include "python/versioned_local_object_impl.h"
 
 namespace floating_temple {
 namespace python {
 
 // Local object that wraps the Python 'False' object.
-class FalseLocalObject : public LocalObjectImpl {
+class FalseLocalObject : public VersionedLocalObjectImpl {
  public:
   FalseLocalObject();
 

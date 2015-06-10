@@ -60,6 +60,9 @@ class SharedObject {
   void AddPeerObject(PeerObjectImpl* new_peer_object);
   PeerObjectImpl* GetOrCreatePeerObject(bool versioned);
 
+  void CreateUnversionedObjectContent(
+      const std::shared_ptr<LiveObject>& live_object);
+
   // TODO(dss): In the public methods below, 'new_peer_objects' is both an input
   // parameter and an output parameter. This is confusing. Try to come up with a
   // more intuitive API.
@@ -94,6 +97,7 @@ class SharedObject {
 
  private:
   ObjectContent* GetObjectContent();
+  // TODO(dss): Consider renaming this method to CreateVersionedObjectContent.
   ObjectContent* GetOrCreateObjectContent();
 
   std::string Dump_Locked() const;

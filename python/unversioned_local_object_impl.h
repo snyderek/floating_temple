@@ -13,50 +13,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PYTHON_LOCAL_OBJECT_IMPL_H_
-#define PYTHON_LOCAL_OBJECT_IMPL_H_
+#ifndef PYTHON_UNVERSIONED_LOCAL_OBJECT_IMPL_H_
+#define PYTHON_UNVERSIONED_LOCAL_OBJECT_IMPL_H_
 
 #include "third_party/Python-3.4.2/Include/Python.h"
 
-#include <cstddef>
-
-#include "include/c++/versioned_local_object.h"
+#include "include/c++/unversioned_local_object.h"
 
 namespace floating_temple {
-
-class DeserializationContext;
-class SerializationContext;
-
 namespace python {
-
-class ObjectProto;
 
 // Abstract class
 // TODO(dss): Rename this class. The "Impl" suffix doesn't make sense for an
 // abstract class.
-class LocalObjectImpl : public VersionedLocalObject {
+class UnversionedLocalObjectImpl : public UnversionedLocalObject {
  public:
   // Steals a reference to 'py_object'.
-  explicit LocalObjectImpl(PyObject* py_object);
-  ~LocalObjectImpl() override;
+  explicit UnversionedLocalObjectImpl(PyObject* py_object);
+  ~UnversionedLocalObjectImpl() override;
 
-  std::size_t Serialize(void* buffer, std::size_t buffer_size,
-                        SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
 
-  static LocalObjectImpl* Deserialize(const void* buffer,
-                                      std::size_t buffer_size,
-                                      DeserializationContext* context);
-
  protected:
   PyObject* py_object() const { return py_object_; }
-
-  virtual void PopulateObjectProto(ObjectProto* object_proto,
-                                   SerializationContext* context) const = 0;
 
  private:
   PyObject* const py_object_;
@@ -65,4 +48,4 @@ class LocalObjectImpl : public VersionedLocalObject {
 }  // namespace python
 }  // namespace floating_temple
 
-#endif  // PYTHON_LOCAL_OBJECT_IMPL_H_
+#endif  // PYTHON_UNVERSIONED_LOCAL_OBJECT_IMPL_H_

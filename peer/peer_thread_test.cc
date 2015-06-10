@@ -564,8 +564,8 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
   CHECK_EQ(parameters.size(), 0u);
   CHECK(return_value != nullptr);
 
-  PeerObject* const peer_object = thread->CreatePeerObject(
-      new FakeVersionedLocalObject(""), "", true);
+  PeerObject* const peer_object = thread->CreateVersionedPeerObject(
+      new FakeVersionedLocalObject(""), "");
 
   {
     Value sub_return_value;

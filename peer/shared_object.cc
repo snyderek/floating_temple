@@ -39,6 +39,7 @@
 #include "peer/shared_object_transaction_info.h"
 #include "peer/transaction_id_util.h"
 #include "peer/transaction_store_internal_interface.h"
+#include "peer/unversioned_object_content.h"
 #include "peer/uuid_util.h"
 #include "peer/versioned_object_content.h"
 
@@ -128,6 +129,26 @@ PeerObjectImpl* SharedObject::GetOrCreatePeerObject(bool versioned) {
       // TODO(dss): Notify the transaction store that it can delete
       // new_peer_object.
       return peer_objects_.back();
+    }
+  }
+}
+
+void SharedObject::CreateUnversionedObjectContent(
+    const shared_ptr<LiveObject>& live_object) {
+  {
+    MutexLock lock(&peer_objects_mu_);
+
+    if (!peer_objects_.empty()) {
+      CHECK(!peer_objects_.front()->versioned());
+    }
+  }
+
+  {
+    MutexLock lock(&object_content_mu_);
+
+    if (object_content_.get() == nullptr) {
+      object_content_.reset(new UnversionedObjectContent(transaction_store_,
+                                                         live_object));
     }
   }
 }

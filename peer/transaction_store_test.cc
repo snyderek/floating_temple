@@ -27,6 +27,7 @@
 #include "fake_interpreter/fake_interpreter.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/thread.h"
+#include "include/c++/unversioned_local_object.h"
 #include "include/c++/value.h"
 #include "include/c++/versioned_local_object.h"
 #include "peer/canonical_peer_map.h"
@@ -58,13 +59,10 @@ MATCHER_P(IsPeerMessageType, type, "") {
   return GetPeerMessageType(arg) == type;
 }
 
-class TestProgramObject : public VersionedLocalObject {
+class TestProgramObject : public UnversionedLocalObject {
  public:
   TestProgramObject() {}
 
-  VersionedLocalObject* Clone() const override;
-  size_t Serialize(void* buffer, size_t buffer_size,
-                   SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const string& method_name,
@@ -75,22 +73,6 @@ class TestProgramObject : public VersionedLocalObject {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestProgramObject);
 };
-
-VersionedLocalObject* TestProgramObject::Clone() const {
-  return new TestProgramObject();
-}
-
-size_t TestProgramObject::Serialize(void* buffer, size_t buffer_size,
-                                    SerializationContext* context) const {
-  const string kSerializedForm = "TestProgramObject:";
-  const size_t length = kSerializedForm.length();
-
-  if (length <= buffer_size) {
-    memcpy(buffer, kSerializedForm.data(), length);
-  }
-
-  return length;
-}
 
 void TestProgramObject::InvokeMethod(Thread* thread,
                                      PeerObject* peer_object,
@@ -106,9 +88,10 @@ void TestProgramObject::InvokeMethod(Thread* thread,
     return;
   }
 
-  thread->CreatePeerObject(new FakeVersionedLocalObject(""), "athos", true);
-  thread->CreatePeerObject(new FakeVersionedLocalObject(""), "porthos", true);
-  thread->CreatePeerObject(new FakeVersionedLocalObject(""), "aramis", true);
+  thread->CreateVersionedPeerObject(new FakeVersionedLocalObject(""), "athos");
+  thread->CreateVersionedPeerObject(new FakeVersionedLocalObject(""),
+                                    "porthos");
+  thread->CreateVersionedPeerObject(new FakeVersionedLocalObject(""), "aramis");
 
   if (!thread->EndTransaction()) {
     return;

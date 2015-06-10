@@ -97,7 +97,7 @@ MethodCallPendingEvent::MethodCallPendingEvent(
     const string& method_name,
     const vector<Value>& parameters)
     : PendingEvent(live_objects, new_peer_objects, prev_peer_object),
-      next_peer_object_(CHECK_NOTNULL(next_peer_object)),
+      next_peer_object_(next_peer_object),
       method_name_(method_name),
       parameters_(parameters) {
   CHECK(!method_name.empty());
@@ -122,8 +122,7 @@ MethodReturnPendingEvent::MethodReturnPendingEvent(
     PeerObjectImpl* prev_peer_object,
     PeerObjectImpl* next_peer_object,
     const Value& return_value)
-    : PendingEvent(live_objects, new_peer_objects,
-                   CHECK_NOTNULL(prev_peer_object)),
+    : PendingEvent(live_objects, new_peer_objects, prev_peer_object),
       next_peer_object_(next_peer_object),
       return_value_(return_value) {
 }

@@ -23,9 +23,9 @@
 
 #include "base/logging.h"
 #include "base/string_printf.h"
-#include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
+#include "python/versioned_local_object_impl.h"
 
 using std::size_t;
 using std::string;
@@ -41,7 +41,7 @@ const bool kSerializedFormIsSigned = true;
 }  // namespace
 
 LongLocalObject::LongLocalObject(PyObject* py_long_object)
-    : LocalObjectImpl(CHECK_NOTNULL(py_long_object)) {
+    : VersionedLocalObjectImpl(CHECK_NOTNULL(py_long_object)) {
 }
 
 VersionedLocalObject* LongLocalObject::Clone() const {

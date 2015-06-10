@@ -43,7 +43,7 @@ bool AddSymbol(PeerObject* symbol_table_object,
                const string& name,
                LocalObjectImpl* local_object) {
   return SetVariable(symbol_table_object, thread, name,
-                     thread->CreatePeerObject(local_object, "", true));
+                     thread->CreateVersionedPeerObject(local_object, ""));
 }
 
 #define ADD_SYMBOL(name, local_object) \
@@ -103,10 +103,6 @@ ProgramObject::ProgramObject(const shared_ptr<const Expression>& expression)
   CHECK(expression.get() != nullptr);
 }
 
-VersionedLocalObject* ProgramObject::Clone() const {
-  return new ProgramObject(expression_);
-}
-
 void ProgramObject::InvokeMethod(Thread* thread,
                                  PeerObject* peer_object,
                                  const string& method_name,
@@ -116,12 +112,12 @@ void ProgramObject::InvokeMethod(Thread* thread,
   CHECK_EQ(method_name, "run");
   CHECK(return_value != nullptr);
 
-  PeerObject* const shared_map_object = thread->CreatePeerObject(
-      new MapObject(), "shared", true);
-  PeerObject* const expression_object = thread->CreatePeerObject(
-      new ExpressionObject(expression_), "", true);
-  PeerObject* const symbol_table_object = thread->CreatePeerObject(
-      new SymbolTableObject(), "", true);
+  PeerObject* const shared_map_object = thread->CreateVersionedPeerObject(
+      new MapObject(), "shared");
+  PeerObject* const expression_object = thread->CreateVersionedPeerObject(
+      new ExpressionObject(expression_), "");
+  PeerObject* const symbol_table_object = thread->CreateVersionedPeerObject(
+      new SymbolTableObject(), "");
 
   if (!PopulateSymbolTable(symbol_table_object, thread, shared_map_object)) {
     return;
@@ -140,13 +136,6 @@ void ProgramObject::InvokeMethod(Thread* thread,
 
 string ProgramObject::Dump() const {
   return "{ \"type\": \"ProgramObject\" }";
-}
-
-void ProgramObject::PopulateObjectProto(ObjectProto* object_proto,
-                                        SerializationContext* context) const {
-  CHECK(object_proto != nullptr);
-  expression_->PopulateExpressionProto(
-      object_proto->mutable_program_object()->mutable_expression());
 }
 
 }  // namespace toy_lang

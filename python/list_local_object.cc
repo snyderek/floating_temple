@@ -25,9 +25,9 @@
 #include "include/c++/peer_object.h"
 #include "include/c++/serialization_context.h"
 #include "python/interpreter_impl.h"
-#include "python/local_object_impl.h"
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
+#include "python/versioned_local_object_impl.h"
 
 using std::string;
 
@@ -35,7 +35,7 @@ namespace floating_temple {
 namespace python {
 
 ListLocalObject::ListLocalObject(PyObject* py_list_object)
-    : LocalObjectImpl(CHECK_NOTNULL(py_list_object)) {
+    : VersionedLocalObjectImpl(CHECK_NOTNULL(py_list_object)) {
 }
 
 VersionedLocalObject* ListLocalObject::Clone() const {

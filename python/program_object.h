@@ -22,19 +22,16 @@
 #include <string>
 
 #include "base/macros.h"
-#include "include/c++/versioned_local_object.h"
+#include "include/c++/unversioned_local_object.h"
 
 namespace floating_temple {
 namespace python {
 
-class ProgramObject : public VersionedLocalObject {
+class ProgramObject : public UnversionedLocalObject {
  public:
   ProgramObject(std::FILE* fp, const std::string& source_file_name,
                 PyObject* globals);
 
-  VersionedLocalObject* Clone() const override;
-  std::size_t Serialize(void* buffer, std::size_t buffer_size,
-                        SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
                     PeerObject* peer_object,
                     const std::string& method_name,

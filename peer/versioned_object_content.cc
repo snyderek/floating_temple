@@ -214,16 +214,6 @@ void VersionedObjectContent::InsertTransaction(
   CHECK(IsValidTransactionId(transaction_id));
   CHECK(events != nullptr);
 
-  const vector<linked_ptr<CommittedEvent>>::size_type event_count =
-      events->size();
-
-  if (VLOG_IS_ON(2)) {
-    for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
-         ++i) {
-      VLOG(2) << "Event " << i << ": " << (*events)[i]->Dump();
-    }
-  }
-
   MutexLock lock(&committed_versions_mu_);
 
   linked_ptr<SharedObjectTransaction>& transaction =

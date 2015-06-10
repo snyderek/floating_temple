@@ -30,6 +30,7 @@
 #include "base/mutex_lock.h"
 #include "base/string_printf.h"
 #include "peer/canonical_peer.h"
+#include "peer/committed_event.h"
 #include "peer/live_object.h"
 #include "peer/max_version_map.h"
 #include "peer/object_content.h"
@@ -195,6 +196,16 @@ void SharedObject::StoreTransactions(
 void SharedObject::InsertTransaction(
     const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
     vector<linked_ptr<CommittedEvent>>* events) {
+  const vector<linked_ptr<CommittedEvent>>::size_type event_count =
+      events->size();
+
+  if (VLOG_IS_ON(2)) {
+    for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
+         ++i) {
+      VLOG(2) << "Event " << i << ": " << (*events)[i]->Dump();
+    }
+  }
+
   GetOrCreateObjectContent()->InsertTransaction(origin_peer, transaction_id,
                                                 events);
 }

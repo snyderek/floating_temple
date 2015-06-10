@@ -201,9 +201,10 @@ PeerObject* InterpreterThread::CreateVersionedPeerObject(
     } else {
       peer_object = transaction_store_->CreateBoundPeerObject("", true);
 
-      AddTransactionEvent(new ObjectCreationPendingEvent(current_peer_object_,
-                                                         peer_object,
-                                                         new_live_object));
+      AddTransactionEvent(
+          new ObjectCreationPendingEvent(
+              GetPeerObjectForEvent(current_peer_object_), peer_object,
+              new_live_object));
     }
   } else {
     peer_object = transaction_store_->CreateBoundPeerObject(name, true);

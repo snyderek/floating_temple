@@ -164,10 +164,10 @@ void VersionedObjectContent::GetTransactions(
 }
 
 void VersionedObjectContent::StoreTransactions(
-    const CanonicalPeer* origin_peer,
+    const CanonicalPeer* remote_peer,
     map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
     const MaxVersionMap& version_map) {
-  CHECK(origin_peer != nullptr);
+  CHECK(remote_peer != nullptr);
   CHECK(transactions != nullptr);
 
   MutexLock lock(&committed_versions_mu_);
@@ -182,8 +182,6 @@ void VersionedObjectContent::StoreTransactions(
 
     vector<linked_ptr<CommittedEvent>>* const events =
         &transaction_info->events;
-    // TODO(dss): Rename this local variable to distinguish it from the
-    // parameter 'origin_peer'.
     const CanonicalPeer* const origin_peer = transaction_info->origin_peer;
 
     CHECK(origin_peer != nullptr);
@@ -195,8 +193,6 @@ void VersionedObjectContent::StoreTransactions(
       transaction.reset(new SharedObjectTransaction(events, origin_peer));
     }
 
-    // TODO(dss): [BUG] The following statement should use the parameter named
-    // 'origin_peer', not the local variable with the same name.
     version_map_.AddPeerTransactionId(origin_peer, transaction_id);
   }
 
@@ -204,7 +200,7 @@ void VersionedObjectContent::StoreTransactions(
   GetVersionMapUnion(version_map_, version_map, &new_version_map);
   version_map_.Swap(&new_version_map);
 
-  up_to_date_peers_.insert(origin_peer);
+  up_to_date_peers_.insert(remote_peer);
 }
 
 void VersionedObjectContent::InsertTransaction(

@@ -56,7 +56,7 @@ class ObjectContent {
           transactions,
       MaxVersionMap* effective_version) const = 0;
   virtual void StoreTransactions(
-      const CanonicalPeer* origin_peer,
+      const CanonicalPeer* remote_peer,
       std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
           transactions,
       const MaxVersionMap& version_map) = 0;

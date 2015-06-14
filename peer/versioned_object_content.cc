@@ -281,12 +281,19 @@ string VersionedObjectContent::Dump() const {
     up_to_date_peers_string += " ]";
   }
 
+  string cached_live_object_string;
+  if (cached_live_object_.get() == nullptr) {
+    cached_live_object_string = "null";
+  } else {
+    cached_live_object_string = cached_live_object_->Dump();
+  }
+
   return StringPrintf(
       "{ \"committed_versions\": %s, \"version_map\": %s, "
       "\"up_to_date_peers\": %s, \"cached_live_object\": %s, "
       "\"cached_sequence_point\": %s }",
       committed_versions_string.c_str(), version_map_.Dump().c_str(),
-      up_to_date_peers_string.c_str(), cached_live_object_->Dump().c_str(),
+      up_to_date_peers_string.c_str(), cached_live_object_string.c_str(),
       cached_sequence_point_.Dump().c_str());
 }
 

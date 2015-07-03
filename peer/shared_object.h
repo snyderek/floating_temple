@@ -87,7 +87,7 @@ class SharedObject {
 
   void InsertTransaction(const CanonicalPeer* origin_peer,
                          const TransactionId& transaction_id,
-                         std::vector<linked_ptr<CommittedEvent>>* events);
+                         const std::vector<linked_ptr<CommittedEvent>>& events);
 
   void SetCachedLiveObject(
       const std::shared_ptr<const LiveObject>& cached_live_object,

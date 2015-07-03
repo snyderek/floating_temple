@@ -63,7 +63,7 @@ class ObjectContent {
 
   virtual void InsertTransaction(
       const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-      std::vector<linked_ptr<CommittedEvent>>* events) = 0;
+      const std::vector<linked_ptr<CommittedEvent>>& events) = 0;
 
   virtual void SetCachedLiveObject(
       const std::shared_ptr<const LiveObject>& cached_live_object,

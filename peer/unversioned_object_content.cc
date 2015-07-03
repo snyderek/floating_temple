@@ -75,7 +75,7 @@ void UnversionedObjectContent::StoreTransactions(
 
 void UnversionedObjectContent::InsertTransaction(
     const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-    vector<linked_ptr<CommittedEvent>>* events) {
+    const vector<linked_ptr<CommittedEvent>>& events) {
   LOG(FATAL) << "Unversioned objects can not have transactions.";
 }
 

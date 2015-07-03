@@ -739,20 +739,8 @@ void TransactionStore::ApplyTransaction(
 
     CHECK_EQ(shared_object_transaction->origin_peer(), origin_peer);
 
-    const vector<linked_ptr<CommittedEvent>>& src_events =
-        shared_object_transaction->events();
-    const vector<linked_ptr<CommittedEvent>>::size_type event_count =
-        src_events.size();
-
-    vector<linked_ptr<CommittedEvent>> dest_events;
-    dest_events.resize(event_count);
-
-    for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
-         ++i) {
-      dest_events[i].reset(src_events[i]->Clone());
-    }
-
-    shared_object->InsertTransaction(origin_peer, transaction_id, &dest_events);
+    shared_object->InsertTransaction(origin_peer, transaction_id,
+                                     shared_object_transaction->events());
   }
 
   UpdateCurrentSequencePoint(origin_peer, transaction_id);

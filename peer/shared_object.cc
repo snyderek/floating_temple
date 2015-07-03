@@ -195,14 +195,14 @@ void SharedObject::StoreTransactions(
 
 void SharedObject::InsertTransaction(
     const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-    vector<linked_ptr<CommittedEvent>>* events) {
+    const vector<linked_ptr<CommittedEvent>>& events) {
   const vector<linked_ptr<CommittedEvent>>::size_type event_count =
-      events->size();
+      events.size();
 
   if (VLOG_IS_ON(2)) {
     for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
          ++i) {
-      VLOG(2) << "Event " << i << ": " << (*events)[i]->Dump();
+      VLOG(2) << "Event " << i << ": " << events[i]->Dump();
     }
   }
 

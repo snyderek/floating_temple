@@ -180,10 +180,9 @@ void VersionedObjectContent::StoreTransactions(
 
 void VersionedObjectContent::InsertTransaction(
     const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-    vector<linked_ptr<CommittedEvent>>* events) {
+    const vector<linked_ptr<CommittedEvent>>& events) {
   CHECK(origin_peer != nullptr);
   CHECK(IsValidTransactionId(transaction_id));
-  CHECK(events != nullptr);
 
   MutexLock lock(&committed_versions_mu_);
 
@@ -191,7 +190,7 @@ void VersionedObjectContent::InsertTransaction(
       committed_versions_[transaction_id];
 
   if (transaction.get() == nullptr) {
-    transaction.reset(new SharedObjectTransaction(*events, origin_peer));
+    transaction.reset(new SharedObjectTransaction(events, origin_peer));
   }
 
   version_map_.AddPeerTransactionId(origin_peer, transaction_id);

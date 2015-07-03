@@ -30,7 +30,7 @@ class CommittedEvent;
 
 class SharedObjectTransaction {
  public:
-  SharedObjectTransaction(std::vector<linked_ptr<CommittedEvent>>* events,
+  SharedObjectTransaction(const std::vector<linked_ptr<CommittedEvent>>& events,
                           const CanonicalPeer* origin_peer);
   explicit SharedObjectTransaction(const CanonicalPeer* origin_peer);
   ~SharedObjectTransaction();

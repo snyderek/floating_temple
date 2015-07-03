@@ -32,11 +32,17 @@ namespace floating_temple {
 namespace peer {
 
 SharedObjectTransaction::SharedObjectTransaction(
-    vector<linked_ptr<CommittedEvent>>* events,
+    const vector<linked_ptr<CommittedEvent>>& events,
     const CanonicalPeer* origin_peer)
     : origin_peer_(CHECK_NOTNULL(origin_peer)) {
-  CHECK(events != nullptr);
-  events_.swap(*events);
+  const vector<linked_ptr<CommittedEvent>>::size_type event_count =
+      events.size();
+  events_.resize(event_count);
+
+  for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
+       ++i) {
+    events_[i].reset(events[i]->Clone());
+  }
 }
 
 SharedObjectTransaction::SharedObjectTransaction(
@@ -53,18 +59,7 @@ void SharedObjectTransaction::AddEvent(CommittedEvent* event) {
 }
 
 SharedObjectTransaction* SharedObjectTransaction::Clone() const {
-  const vector<linked_ptr<CommittedEvent>>::size_type event_count =
-      events_.size();
-
-  vector<linked_ptr<CommittedEvent>> new_events;
-  new_events.resize(event_count);
-
-  for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
-       ++i) {
-    new_events[i].reset(events_[i]->Clone());
-  }
-
-  return new SharedObjectTransaction(&new_events, origin_peer_);
+  return new SharedObjectTransaction(events_, origin_peer_);
 }
 
 string SharedObjectTransaction::Dump() const {

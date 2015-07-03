@@ -191,7 +191,7 @@ void VersionedObjectContent::InsertTransaction(
       committed_versions_[transaction_id];
 
   if (transaction.get() == nullptr) {
-    transaction.reset(new SharedObjectTransaction(events, origin_peer));
+    transaction.reset(new SharedObjectTransaction(*events, origin_peer));
   }
 
   version_map_.AddPeerTransactionId(origin_peer, transaction_id);

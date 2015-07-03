@@ -415,7 +415,7 @@ void TransactionStore::HandleApplyTransactionMessage(
       }
 
       SharedObjectTransaction* const transaction = new SharedObjectTransaction(
-          &events, remote_peer);
+          events, remote_peer);
       // TODO(dss): Fail gracefully if the remote peer sent a transaction with a
       // repeated object ID.
       CHECK(shared_object_transactions.emplace(
@@ -535,7 +535,7 @@ void TransactionStore::HandleStoreObjectMessage(
             transaction_proto.origin_peer_id());
 
     SharedObjectTransaction* const transaction = new SharedObjectTransaction(
-        &events, origin_peer);
+        events, origin_peer);
 
     CHECK(transactions.emplace(transaction_proto.transaction_id(),
                                make_linked_ptr(transaction)).second);

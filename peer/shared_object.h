@@ -79,12 +79,9 @@ class SharedObject {
       std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
           transactions,
       MaxVersionMap* effective_version);
-  // TODO(dss): Change the semantics of this method so that it doesn't modify
-  // the map that 'transactions' points to. This will make the method's
-  // interface more intuitive.
   void StoreTransactions(
       const CanonicalPeer* remote_peer,
-      std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
+      const std::map<TransactionId, linked_ptr<SharedObjectTransaction>>&
           transactions,
       const MaxVersionMap& version_map);
 

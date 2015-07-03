@@ -553,7 +553,7 @@ void TransactionStore::HandleStoreObjectMessage(
         canonical_peer_map_->GetCanonicalPeer(peer_id), last_transaction_id);
   }
 
-  shared_object->StoreTransactions(remote_peer, &transactions, version_map);
+  shared_object->StoreTransactions(remote_peer, transactions, version_map);
 
   for (int i = 0; i < store_object_message.interested_peer_id_size(); ++i) {
     const string& interested_peer_id =

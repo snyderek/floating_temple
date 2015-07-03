@@ -148,25 +148,23 @@ void VersionedObjectContent::GetTransactions(
 
 void VersionedObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
-    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
+    const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map) {
   CHECK(remote_peer != nullptr);
-  CHECK(transactions != nullptr);
 
   MutexLock lock(&committed_versions_mu_);
 
-  for (auto& transaction_pair : *transactions) {
+  for (const auto& transaction_pair : transactions) {
     const TransactionId& transaction_id = transaction_pair.first;
-    linked_ptr<SharedObjectTransaction>& src_transaction =
+    const linked_ptr<SharedObjectTransaction>& src_transaction =
         transaction_pair.second;
 
     CHECK(IsValidTransactionId(transaction_id));
-    CHECK(src_transaction.get() != nullptr);
 
     linked_ptr<SharedObjectTransaction>& dest_transaction =
         committed_versions_[transaction_id];
     if (dest_transaction.get() == nullptr) {
-      dest_transaction.reset(src_transaction.release());
+      dest_transaction.reset(src_transaction->Clone());
     }
 
     version_map_.AddPeerTransactionId(src_transaction->origin_peer(),

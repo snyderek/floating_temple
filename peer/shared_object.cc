@@ -187,7 +187,7 @@ void SharedObject::GetTransactions(
 
 void SharedObject::StoreTransactions(
     const CanonicalPeer* remote_peer,
-    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
+    const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map) {
   GetOrCreateObjectContent()->StoreTransactions(remote_peer, transactions,
                                                 version_map);

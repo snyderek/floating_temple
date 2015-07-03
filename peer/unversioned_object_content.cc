@@ -68,7 +68,7 @@ void UnversionedObjectContent::GetTransactions(
 
 void UnversionedObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
-    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
+    const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map) {
   LOG(FATAL) << "Unversioned objects can not have transactions.";
 }

@@ -846,14 +846,15 @@ void TransactionStore::RejectTransactions(
       }
     }
 
-    // TODO(dss): There's a race condition here. If an interpreter thread is
+    // TODO(dss): There's a race condition here. If a recording thread is
     // created after the recording_threads_ collection is copied, then execution
     // will not be suspended on the new thread as it should be.
     //
-    // This is not currently a problem, because only one interpreter thread is
+    // This is not currently a problem, because only one recording thread is
     // created per peer, and the remote peers should have no reason to reject
-    // the local peer's transactions until after the interpreter thread has
-    // started executing. Nonetheless, it would nice to fix the race condition.
+    // the local peer's transactions until after the recording thread has
+    // started executing. Nonetheless, it would be nice to fix the race
+    // condition.
 
     for (RecordingThread* const recording_thread : recording_threads_temp) {
       recording_thread->Rewind(invalidate_start_transaction_id);

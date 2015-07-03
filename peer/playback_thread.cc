@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/peer_thread.h"
+#include "peer/playback_thread.h"
 
 #include <pthread.h>
 
@@ -60,7 +60,7 @@ DEFINE_bool(treat_conflicts_as_fatal_for_debugging, false,
 namespace floating_temple {
 namespace peer {
 
-PeerThread::PeerThread()
+PlaybackThread::PlaybackThread()
     : transaction_store_(nullptr),
       shared_object_(nullptr),
       new_peer_objects_(nullptr),
@@ -74,15 +74,15 @@ PeerThread::PeerThread()
   state_.AddStateTransition(STOPPING, STOPPED);
 }
 
-PeerThread::~PeerThread() {
+PlaybackThread::~PlaybackThread() {
   state_.CheckState(NOT_STARTED | STOPPED);
 }
 
-shared_ptr<const LiveObject> PeerThread::live_object() const {
+shared_ptr<const LiveObject> PlaybackThread::live_object() const {
   return live_object_;
 }
 
-void PeerThread::Start(
+void PlaybackThread::Start(
     TransactionStoreInternalInterface* transaction_store,
     SharedObject* shared_object,
     const shared_ptr<LiveObject>& live_object,
@@ -100,17 +100,17 @@ void PeerThread::Start(
 
   // TODO(dss): There may be a performance cost associated with creating and
   // destroying threads. Consider recycling the threads that are used by the
-  // PeerThread class.
+  // PlaybackThread class.
   CHECK_PTHREAD_ERR(pthread_create(&replay_thread_, nullptr,
-                                   &PeerThread::ReplayThreadMain, this));
+                                   &PlaybackThread::ReplayThreadMain, this));
 
   state_.ChangeState(RUNNING);
 }
 
-void PeerThread::Stop() {
-  state_.Mutate(&PeerThread::ChangePausedToRunning);
+void PlaybackThread::Stop() {
+  state_.Mutate(&PlaybackThread::ChangePausedToRunning);
   event_queue_.SetEndOfSequence();
-  state_.Mutate(&PeerThread::WaitForPausedAndChangeToStopping);
+  state_.Mutate(&PlaybackThread::WaitForPausedAndChangeToStopping);
 
   void* thread_return_value = nullptr;
   CHECK_PTHREAD_ERR(pthread_join(replay_thread_, &thread_return_value));
@@ -118,18 +118,18 @@ void PeerThread::Stop() {
   state_.ChangeState(STOPPED);
 }
 
-void PeerThread::QueueEvent(const CommittedEvent* event) {
-  state_.Mutate(&PeerThread::ChangePausedToRunning);
+void PlaybackThread::QueueEvent(const CommittedEvent* event) {
+  state_.Mutate(&PlaybackThread::ChangePausedToRunning);
   event_queue_.QueueEvent(event);
 }
 
-void PeerThread::FlushEvents() {
-  state_.Mutate(&PeerThread::ChangePausedToRunning);
+void PlaybackThread::FlushEvents() {
+  state_.Mutate(&PlaybackThread::ChangePausedToRunning);
   event_queue_.SetEndOfSequence();
   state_.WaitForState(PAUSED);
 }
 
-void PeerThread::ReplayEvents() {
+void PlaybackThread::ReplayEvents() {
   state_.WaitForNotState(NOT_STARTED | STARTING);
 
   while (!conflict_detected_.Get() &&
@@ -143,11 +143,11 @@ void PeerThread::ReplayEvents() {
     GetNextEvent();
   }
 
-  state_.Mutate(&PeerThread::ChangeRunningToPaused);
+  state_.Mutate(&PlaybackThread::ChangeRunningToPaused);
   unbound_peer_objects_.clear();
 }
 
-void PeerThread::DoMethodCall() {
+void PlaybackThread::DoMethodCall() {
   CHECK(live_object_.get() != nullptr);
   CHECK(!conflict_detected_.Get());
 
@@ -212,10 +212,10 @@ void PeerThread::DoMethodCall() {
   }
 }
 
-void PeerThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
-                                  const string& method_name,
-                                  const vector<Value>& parameters,
-                                  Value* return_value) {
+void PlaybackThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
+                                      const string& method_name,
+                                      const vector<Value>& parameters,
+                                      Value* return_value) {
   CHECK(live_object_.get() != nullptr);
   CHECK(!conflict_detected_.Get());
   CHECK(return_value != nullptr);
@@ -267,10 +267,10 @@ void PeerThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
   }
 }
 
-void PeerThread::DoSubMethodCall(PeerObjectImpl* peer_object,
-                                 const string& method_name,
-                                 const vector<Value>& parameters,
-                                 Value* return_value) {
+void PlaybackThread::DoSubMethodCall(PeerObjectImpl* peer_object,
+                                     const string& method_name,
+                                     const vector<Value>& parameters,
+                                     Value* return_value) {
   CHECK(!conflict_detected_.Get());
 
   if (!CheckNextEventType(CommittedEvent::SUB_METHOD_CALL)) {
@@ -323,11 +323,11 @@ void PeerThread::DoSubMethodCall(PeerObjectImpl* peer_object,
   }
 }
 
-bool PeerThread::HasNextEvent() {
+bool PlaybackThread::HasNextEvent() {
   for (;;) {
     // Move to the next event in the queue.
     while (!event_queue_.HasNext()) {
-      if (state_.Mutate(&PeerThread::ChangeToPausedAndWaitForRunning) ==
+      if (state_.Mutate(&PlaybackThread::ChangeToPausedAndWaitForRunning) ==
               STOPPING) {
         return false;
       }
@@ -357,17 +357,18 @@ bool PeerThread::HasNextEvent() {
   }
 }
 
-CommittedEvent::Type PeerThread::PeekNextEventType() {
+CommittedEvent::Type PlaybackThread::PeekNextEventType() {
   CHECK(HasNextEvent());
   return event_queue_.PeekNext()->type();
 }
 
-const CommittedEvent* PeerThread::GetNextEvent() {
+const CommittedEvent* PlaybackThread::GetNextEvent() {
   CHECK(HasNextEvent());
   return event_queue_.GetNext();
 }
 
-bool PeerThread::CheckNextEventType(CommittedEvent::Type actual_event_type) {
+bool PlaybackThread::CheckNextEventType(
+    CommittedEvent::Type actual_event_type) {
   CHECK(!conflict_detected_.Get());
 
   if (!HasNextEvent()) {
@@ -389,7 +390,7 @@ bool PeerThread::CheckNextEventType(CommittedEvent::Type actual_event_type) {
   return true;
 }
 
-bool PeerThread::MethodCallMatches(
+bool PlaybackThread::MethodCallMatches(
     SharedObject* expected_shared_object,
     const string& expected_method_name,
     const vector<CommittedValue>& expected_parameters,
@@ -434,7 +435,7 @@ bool PeerThread::MethodCallMatches(
     return pending_value_type == Value::enum_const && \
         committed_value.getter_method() == pending_value.getter_method();
 
-bool PeerThread::ValueMatches(
+bool PlaybackThread::ValueMatches(
     const CommittedValue& committed_value, const Value& pending_value,
     const unordered_set<SharedObject*>& new_shared_objects) {
   if (committed_value.local_type() != pending_value.local_type()) {
@@ -473,7 +474,7 @@ bool PeerThread::ValueMatches(
 
 #undef COMPARE_FIELDS
 
-bool PeerThread::ObjectMatches(
+bool PlaybackThread::ObjectMatches(
     SharedObject* shared_object, PeerObjectImpl* peer_object,
     const unordered_set<SharedObject*>& new_shared_objects) {
   CHECK(shared_object != nullptr);
@@ -512,7 +513,7 @@ bool PeerThread::ObjectMatches(
   return shared_object->HasPeerObject(peer_object);
 }
 
-void PeerThread::SetConflictDetected(const string& description) {
+void PlaybackThread::SetConflictDetected(const string& description) {
   if (FLAGS_treat_conflicts_as_fatal_for_debugging) {
     LOG(FATAL) << "CONFLICT: " << description;
   } else {
@@ -522,8 +523,8 @@ void PeerThread::SetConflictDetected(const string& description) {
   conflict_detected_.Set(true);
 }
 
-PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
-                                         const string& name, bool versioned) {
+PeerObject* PlaybackThread::CreatePeerObject(
+    LocalObject* initial_version, const string& name, bool versioned) {
   CHECK(initial_version != nullptr);
 
   delete initial_version;
@@ -548,7 +549,7 @@ PeerObject* PeerThread::CreatePeerObject(LocalObject* initial_version,
   }
 }
 
-bool PeerThread::BeginTransaction() {
+bool PlaybackThread::BeginTransaction() {
   if (conflict_detected_.Get() ||
       !CheckNextEventType(CommittedEvent::BEGIN_TRANSACTION)) {
     return false;
@@ -558,7 +559,7 @@ bool PeerThread::BeginTransaction() {
   return HasNextEvent();
 }
 
-bool PeerThread::EndTransaction() {
+bool PlaybackThread::EndTransaction() {
   if (conflict_detected_.Get() ||
       !CheckNextEventType(CommittedEvent::END_TRANSACTION)) {
     return false;
@@ -568,20 +569,20 @@ bool PeerThread::EndTransaction() {
   return HasNextEvent();
 }
 
-PeerObject* PeerThread::CreateVersionedPeerObject(
+PeerObject* PlaybackThread::CreateVersionedPeerObject(
     VersionedLocalObject* initial_version, const string& name) {
   return CreatePeerObject(initial_version, name, true);
 }
 
-PeerObject* PeerThread::CreateUnversionedPeerObject(
+PeerObject* PlaybackThread::CreateUnversionedPeerObject(
     UnversionedLocalObject* initial_version, const string& name) {
   return CreatePeerObject(initial_version, name, false);
 }
 
-bool PeerThread::CallMethod(PeerObject* peer_object,
-                            const string& method_name,
-                            const vector<Value>& parameters,
-                            Value* return_value) {
+bool PlaybackThread::CallMethod(PeerObject* peer_object,
+                                const string& method_name,
+                                const vector<Value>& parameters,
+                                Value* return_value) {
   CHECK(!method_name.empty());
 
   if (conflict_detected_.Get() || !HasNextEvent()) {
@@ -600,22 +601,22 @@ bool PeerThread::CallMethod(PeerObject* peer_object,
   return !conflict_detected_.Get() && HasNextEvent();
 }
 
-bool PeerThread::ObjectsAreEquivalent(const PeerObject* a,
-                                      const PeerObject* b) const {
+bool PlaybackThread::ObjectsAreEquivalent(const PeerObject* a,
+                                          const PeerObject* b) const {
   return transaction_store_->ObjectsAreEquivalent(
       static_cast<const PeerObjectImpl*>(a),
       static_cast<const PeerObjectImpl*>(b));
 }
 
 // static
-void* PeerThread::ReplayThreadMain(void* peer_thread_raw) {
-  CHECK(peer_thread_raw != nullptr);
-  static_cast<PeerThread*>(peer_thread_raw)->ReplayEvents();
+void* PlaybackThread::ReplayThreadMain(void* playback_thread_raw) {
+  CHECK(playback_thread_raw != nullptr);
+  static_cast<PlaybackThread*>(playback_thread_raw)->ReplayEvents();
   return nullptr;
 }
 
 // static
-void PeerThread::ChangeRunningToPaused(
+void PlaybackThread::ChangeRunningToPaused(
     StateVariableInternalInterface* state_variable) {
   CHECK(state_variable != nullptr);
 
@@ -625,7 +626,7 @@ void PeerThread::ChangeRunningToPaused(
 }
 
 // static
-void PeerThread::ChangePausedToRunning(
+void PlaybackThread::ChangePausedToRunning(
     StateVariableInternalInterface* state_variable) {
   CHECK(state_variable != nullptr);
 
@@ -635,7 +636,7 @@ void PeerThread::ChangePausedToRunning(
 }
 
 // static
-void PeerThread::ChangeToPausedAndWaitForRunning(
+void PlaybackThread::ChangeToPausedAndWaitForRunning(
     StateVariableInternalInterface* state_variable) {
   CHECK(state_variable != nullptr);
 
@@ -647,7 +648,7 @@ void PeerThread::ChangeToPausedAndWaitForRunning(
 }
 
 // static
-void PeerThread::WaitForPausedAndChangeToStopping(
+void PlaybackThread::WaitForPausedAndChangeToStopping(
     StateVariableInternalInterface* state_variable) {
   CHECK(state_variable != nullptr);
 

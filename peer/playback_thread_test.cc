@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/peer_thread.h"
+#include "peer/playback_thread.h"
 
 #include <memory>
 #include <string>
@@ -87,7 +87,7 @@ void TestMethod1(Thread* thread, const vector<Value>& parameters,
   return_value->set_empty(0);
 }
 
-TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
+TEST(PlaybackThreadTest, SubMethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
@@ -129,19 +129,19 @@ TEST(PeerThreadTest, SubMethodCallWithoutReturn) {
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 
-  PeerThread peer_thread;
-  peer_thread.Start(&transaction_store, &shared_object1, live_object1,
-                    &new_peer_objects);
+  PlaybackThread playback_thread;
+  playback_thread.Start(&transaction_store, &shared_object1, live_object1,
+                        &new_peer_objects);
 
-  peer_thread.QueueEvent(&event1);
-  peer_thread.QueueEvent(&event2);
+  playback_thread.QueueEvent(&event1);
+  playback_thread.QueueEvent(&event2);
 
-  peer_thread.Stop();
+  playback_thread.Stop();
 
-  EXPECT_FALSE(peer_thread.conflict_detected());
+  EXPECT_FALSE(playback_thread.conflict_detected());
 }
 
-TEST(PeerThreadTest, FlushEvents) {
+TEST(PlaybackThreadTest, FlushEvents) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(111));
@@ -185,21 +185,21 @@ TEST(PeerThreadTest, FlushEvents) {
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 
-  PeerThread peer_thread;
-  peer_thread.Start(&transaction_store, &shared_object, live_object,
-                    &new_peer_objects);
+  PlaybackThread playback_thread;
+  playback_thread.Start(&transaction_store, &shared_object, live_object,
+                        &new_peer_objects);
 
-  peer_thread.QueueEvent(&event1);
-  peer_thread.QueueEvent(&event2);
+  playback_thread.QueueEvent(&event1);
+  playback_thread.QueueEvent(&event2);
 
-  peer_thread.FlushEvents();
+  playback_thread.FlushEvents();
 
-  peer_thread.Stop();
+  playback_thread.Stop();
 
-  EXPECT_FALSE(peer_thread.conflict_detected());
+  EXPECT_FALSE(playback_thread.conflict_detected());
 }
 
-TEST(PeerThreadTest, MultipleTransactions) {
+TEST(PlaybackThreadTest, MultipleTransactions) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(222));
@@ -246,26 +246,26 @@ TEST(PeerThreadTest, MultipleTransactions) {
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 
-  PeerThread peer_thread;
-  peer_thread.Start(&transaction_store, &shared_object, live_object,
-                    &new_peer_objects);
+  PlaybackThread playback_thread;
+  playback_thread.Start(&transaction_store, &shared_object, live_object,
+                        &new_peer_objects);
 
-  peer_thread.QueueEvent(&event1);
-  peer_thread.QueueEvent(&event2);
+  playback_thread.QueueEvent(&event1);
+  playback_thread.QueueEvent(&event2);
 
-  peer_thread.FlushEvents();
+  playback_thread.FlushEvents();
 
-  peer_thread.QueueEvent(&event3);
-  peer_thread.QueueEvent(&event4);
+  playback_thread.QueueEvent(&event3);
+  playback_thread.QueueEvent(&event4);
 
-  peer_thread.Stop();
+  playback_thread.Stop();
 
-  EXPECT_FALSE(peer_thread.conflict_detected());
+  EXPECT_FALSE(playback_thread.conflict_detected());
   EXPECT_EQ(0u, new_peer_objects.size());
   EXPECT_EQ("snap.crackle.pop.", local_object->s());
 }
 
-TEST(PeerThreadTest, TransactionAfterConflictDetected) {
+TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(333));
@@ -321,29 +321,29 @@ TEST(PeerThreadTest, TransactionAfterConflictDetected) {
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 
-  PeerThread peer_thread;
-  peer_thread.Start(&transaction_store, &shared_object, live_object,
-                    &new_peer_objects);
+  PlaybackThread playback_thread;
+  playback_thread.Start(&transaction_store, &shared_object, live_object,
+                        &new_peer_objects);
 
-  peer_thread.QueueEvent(&event1);
-  peer_thread.QueueEvent(&event2);
-  peer_thread.QueueEvent(&event3);
-  peer_thread.QueueEvent(&event4);
+  playback_thread.QueueEvent(&event1);
+  playback_thread.QueueEvent(&event2);
+  playback_thread.QueueEvent(&event3);
+  playback_thread.QueueEvent(&event4);
 
-  peer_thread.FlushEvents();
+  playback_thread.FlushEvents();
 
-  // Keep queuing events even though a conflict has occurred. The PeerThread
+  // Keep queuing events even though a conflict has occurred. The PlaybackThread
   // instance should quietly ignore these events.
-  peer_thread.QueueEvent(&event5);
-  peer_thread.QueueEvent(&event6);
+  playback_thread.QueueEvent(&event5);
+  playback_thread.QueueEvent(&event6);
 
-  peer_thread.Stop();
+  playback_thread.Stop();
 
-  EXPECT_TRUE(peer_thread.conflict_detected());
+  EXPECT_TRUE(playback_thread.conflict_detected());
   EXPECT_EQ(0u, new_peer_objects.size());
 }
 
-TEST(PeerThreadTest, MethodCallWithoutReturn) {
+TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(1));
@@ -392,18 +392,18 @@ TEST(PeerThreadTest, MethodCallWithoutReturn) {
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 
-  PeerThread peer_thread;
-  peer_thread.Start(&transaction_store, &shared_object, live_object,
-                    &new_peer_objects);
-  peer_thread.QueueEvent(&event1);
-  peer_thread.QueueEvent(&event2);
-  peer_thread.QueueEvent(&event3);
-  peer_thread.Stop();
+  PlaybackThread playback_thread;
+  playback_thread.Start(&transaction_store, &shared_object, live_object,
+                        &new_peer_objects);
+  playback_thread.QueueEvent(&event1);
+  playback_thread.QueueEvent(&event2);
+  playback_thread.QueueEvent(&event3);
+  playback_thread.Stop();
 
-  EXPECT_FALSE(peer_thread.conflict_detected());
+  EXPECT_FALSE(playback_thread.conflict_detected());
 }
 
-TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
+TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(1));
@@ -447,16 +447,16 @@ TEST(PeerThreadTest, SelfMethodCallWithoutReturn) {
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 
-  PeerThread peer_thread;
-  peer_thread.Start(&transaction_store, &shared_object, live_object,
-                    &new_peer_objects);
+  PlaybackThread playback_thread;
+  playback_thread.Start(&transaction_store, &shared_object, live_object,
+                        &new_peer_objects);
 
-  peer_thread.QueueEvent(&event1);
-  peer_thread.QueueEvent(&event2);
+  playback_thread.QueueEvent(&event1);
+  playback_thread.QueueEvent(&event2);
 
-  peer_thread.Stop();
+  playback_thread.Stop();
 
-  EXPECT_FALSE(peer_thread.conflict_detected());
+  EXPECT_FALSE(playback_thread.conflict_detected());
 }
 
 void TestMethod3(Thread* thread, const vector<Value>& parameters,
@@ -484,7 +484,7 @@ void TestMethod3(Thread* thread, const vector<Value>& parameters,
   return_value->set_empty(0);
 }
 
-TEST(PeerThreadTest, TransactionInsideMethodCall) {
+TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
@@ -536,26 +536,26 @@ TEST(PeerThreadTest, TransactionInsideMethodCall) {
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 
-  PeerThread peer_thread;
-  peer_thread.Start(&transaction_store, &shared_object1, live_object1,
-                    &new_peer_objects);
+  PlaybackThread playback_thread;
+  playback_thread.Start(&transaction_store, &shared_object1, live_object1,
+                        &new_peer_objects);
 
-  peer_thread.QueueEvent(&event1);
-  peer_thread.QueueEvent(&event2);
+  playback_thread.QueueEvent(&event1);
+  playback_thread.QueueEvent(&event2);
 
-  peer_thread.FlushEvents();
+  playback_thread.FlushEvents();
 
-  peer_thread.QueueEvent(&event3);
-  peer_thread.QueueEvent(&event4);
-  peer_thread.QueueEvent(&event5);
+  playback_thread.QueueEvent(&event3);
+  playback_thread.QueueEvent(&event4);
+  playback_thread.QueueEvent(&event5);
 
-  peer_thread.FlushEvents();
+  playback_thread.FlushEvents();
 
-  peer_thread.QueueEvent(&event6);
+  playback_thread.QueueEvent(&event6);
 
-  peer_thread.Stop();
+  playback_thread.Stop();
 
-  EXPECT_FALSE(peer_thread.conflict_detected());
+  EXPECT_FALSE(playback_thread.conflict_detected());
 }
 
 void TestMethod5(Thread* thread, const vector<Value>& parameters,
@@ -586,7 +586,7 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
   return_value->set_empty(0);
 }
 
-TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
+TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
@@ -640,20 +640,20 @@ TEST(PeerThreadTest, NewObjectIsUsedInTwoEvents) {
 
   unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
 
-  PeerThread peer_thread;
-  peer_thread.Start(&transaction_store, &shared_object1, live_object1,
-                    &new_peer_objects);
+  PlaybackThread playback_thread;
+  playback_thread.Start(&transaction_store, &shared_object1, live_object1,
+                        &new_peer_objects);
 
-  peer_thread.QueueEvent(&event1);
-  peer_thread.QueueEvent(&event2);
-  peer_thread.QueueEvent(&event3);
-  peer_thread.QueueEvent(&event4);
-  peer_thread.QueueEvent(&event5);
-  peer_thread.QueueEvent(&event6);
+  playback_thread.QueueEvent(&event1);
+  playback_thread.QueueEvent(&event2);
+  playback_thread.QueueEvent(&event3);
+  playback_thread.QueueEvent(&event4);
+  playback_thread.QueueEvent(&event5);
+  playback_thread.QueueEvent(&event6);
 
-  peer_thread.Stop();
+  playback_thread.Stop();
 
-  EXPECT_FALSE(peer_thread.conflict_detected());
+  EXPECT_FALSE(playback_thread.conflict_detected());
 
   EXPECT_EQ(1, new_peer_objects.size());
   EXPECT_FALSE(new_peer_objects.find(&shared_object2) ==

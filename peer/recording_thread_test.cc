@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/interpreter_thread.h"
+#include "peer/recording_thread.h"
 
 #include <memory>
 #include <string>
@@ -139,11 +139,11 @@ class TransactionIdSetter {
   DISALLOW_COPY_AND_ASSIGN(TransactionIdSetter);
 };
 
-TEST(InterpreterThreadTest, CallMethodInNestedTransactions) {
+TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
   PeerObjectImpl peer_object(true);
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  InterpreterThread thread(&transaction_store);
+  RecordingThread thread(&transaction_store);
   const shared_ptr<const LiveObject> initial_live_object(
       new VersionedLiveObject(new FakeVersionedLocalObject("a")));
 
@@ -183,7 +183,7 @@ void CallEndTransaction(Thread* thread) {
   CHECK(thread->EndTransaction());
 }
 
-TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
+TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   PeerObjectImpl peer_object(true), new_peer_object(true);
@@ -192,7 +192,7 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
       new VersionedLiveObject(
           new MockVersionedLocalObject(&local_object_core)));
 
-  InterpreterThread thread(&transaction_store);
+  RecordingThread thread(&transaction_store);
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
@@ -231,7 +231,7 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
                                   &TransactionIdSetter::CopyTransactionId)));
 
   // Call the "test-method" method. The method calls Thread::BeginTransaction,
-  // and then creates a new peer object and returns it. The InterpreterThread
+  // and then creates a new peer object and returns it. The RecordingThread
   // instance should create an implicit transaction that contains the start of
   // the "test-method" call and the call to BeginTransaction.
   //
@@ -244,7 +244,7 @@ TEST(InterpreterThreadTest, CallBeginTransactionFromWithinMethod) {
   EXPECT_EQ(&new_peer_object, return_value.peer_object());
 }
 
-TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
+TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   PeerObjectImpl peer_object(true);
@@ -253,7 +253,7 @@ TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
       new VersionedLiveObject(
           new MockVersionedLocalObject(&local_object_core)));
 
-  InterpreterThread thread(&transaction_store);
+  RecordingThread thread(&transaction_store);
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
@@ -308,8 +308,7 @@ TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
   ASSERT_TRUE(thread.BeginTransaction());
 
   // Call the "test-method" method. The method calls Thread::EndTransaction and
-  // then returns. The InterpreterThread instance should create two
-  // transactions:
+  // then returns. The RecordingThread instance should create two transactions:
   //
   // The first transaction (explicit) contains everything from the
   // BeginTransaction call to the EndTransaction call.
@@ -327,10 +326,10 @@ TEST(InterpreterThreadTest, CallEndTransactionFromWithinMethod) {
 // transaction. The object should still be available in the later transaction,
 // even though the content of the object was never committed. (An object is not
 // committed until it's involved in a method call.)
-TEST(InterpreterThreadTest, CreatePeerObjectInDifferentTransaction) {
+TEST(RecordingThreadTest, CreatePeerObjectInDifferentTransaction) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  InterpreterThread thread(&transaction_store);
+  RecordingThread thread(&transaction_store);
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());

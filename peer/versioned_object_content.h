@@ -36,7 +36,7 @@ namespace peer {
 
 class CanonicalPeer;
 class LiveObject;
-class PeerThread;
+class PlaybackThread;
 class SharedObject;
 class SharedObjectTransaction;
 class TransactionStoreInternalInterface;
@@ -74,7 +74,7 @@ class VersionedObjectContent : public ObjectContent {
 
  private:
   bool ApplyTransactionsToWorkingVersion_Locked(
-      PeerThread* peer_thread, const SequencePointImpl& sequence_point,
+      PlaybackThread* playback_thread, const SequencePointImpl& sequence_point,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject);
 

@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PEER_INTERPRETER_THREAD_H_
-#define PEER_INTERPRETER_THREAD_H_
+#ifndef PEER_RECORDING_THREAD_H_
+#define PEER_RECORDING_THREAD_H_
 
 #include <pthread.h>
 
@@ -44,13 +44,12 @@ class PendingEvent;
 class SequencePoint;
 class TransactionStoreInternalInterface;
 
-// TODO(dss): Rename this class to RecordingThread.
 // TODO(dss): Make this class inherit privately from class Thread.
-class InterpreterThread : public Thread {
+class RecordingThread : public Thread {
  public:
-  explicit InterpreterThread(
+  explicit RecordingThread(
       TransactionStoreInternalInterface* transaction_store);
-  ~InterpreterThread() override;
+  ~RecordingThread() override;
 
   void RunProgram(UnversionedLocalObject* local_object,
                   const std::string& method_name,
@@ -139,10 +138,10 @@ class InterpreterThread : public Thread {
   mutable CondVar blocking_threads_empty_cond_;
   mutable Mutex rejected_transaction_id_mu_;
 
-  DISALLOW_COPY_AND_ASSIGN(InterpreterThread);
+  DISALLOW_COPY_AND_ASSIGN(RecordingThread);
 };
 
 }  // namespace peer
 }  // namespace floating_temple
 
-#endif  // PEER_INTERPRETER_THREAD_H_
+#endif  // PEER_RECORDING_THREAD_H_

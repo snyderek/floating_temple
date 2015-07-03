@@ -52,12 +52,12 @@ class CommittedEvent;
 class CommittedValue;
 class EventProto;
 class GetObjectMessage;
-class InterpreterThread;
 class InvalidateTransactionsMessage;
 class PeerMessage;
 class PeerMessageSender;
 class PeerObjectImpl;
 class PendingEvent;
+class RecordingThread;
 class RejectTransactionMessage;
 class SharedObject;
 class StoreObjectMessage;
@@ -74,9 +74,9 @@ class TransactionStore : public ConnectionHandler,
                    bool delay_object_binding);
   ~TransactionStore() override;
 
-  // The caller must not take ownership of the returned InterpreterThread
+  // The caller must not take ownership of the returned RecordingThread
   // instance.
-  InterpreterThread* CreateInterpreterThread();
+  RecordingThread* CreateRecordingThread();
 
   void NotifyNewConnection(const CanonicalPeer* remote_peer) override;
   // TODO(dss): Move parsing of the peer message to the ConnectionManager class.
@@ -210,8 +210,8 @@ class TransactionStore : public ConnectionHandler,
   TransactionIdGenerator transaction_id_generator_;
   TransactionSequencer transaction_sequencer_;
 
-  std::vector<linked_ptr<InterpreterThread>> interpreter_threads_;
-  mutable Mutex interpreter_threads_mu_;
+  std::vector<linked_ptr<RecordingThread>> recording_threads_;
+  mutable Mutex recording_threads_mu_;
 
   SharedObjectMap shared_objects_;
   mutable Mutex shared_objects_mu_;

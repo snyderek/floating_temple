@@ -32,9 +32,9 @@
 #include "include/c++/versioned_local_object.h"
 #include "peer/canonical_peer_map.h"
 #include "peer/get_peer_message_type.h"
-#include "peer/interpreter_thread.h"
 #include "peer/mock_peer_message_sender.h"
 #include "peer/proto/peer.pb.h"
+#include "peer/recording_thread.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
@@ -130,12 +130,12 @@ TEST(TransactionStoreTest,
                   remote_peer, IsPeerMessageType(PeerMessage::GET_OBJECT), _))
       .Times(3);
 
-  InterpreterThread* const interpreter_thread =
-      transaction_store.CreateInterpreterThread();
+  RecordingThread* const recording_thread =
+      transaction_store.CreateRecordingThread();
 
   Value return_value;
-  interpreter_thread->RunProgram(new TestProgramObject(), "run", &return_value,
-                                 false);
+  recording_thread->RunProgram(new TestProgramObject(), "run", &return_value,
+                               false);
   EXPECT_EQ(Value::EMPTY, return_value.type());
 
   transaction_store.NotifyNewConnection(remote_peer);

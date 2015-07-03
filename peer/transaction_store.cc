@@ -39,7 +39,6 @@
 #include "peer/convert_value.h"
 #include "peer/get_event_proto_type.h"
 #include "peer/get_peer_message_type.h"
-#include "peer/interpreter_thread.h"
 #include "peer/live_object.h"
 #include "peer/max_version_map.h"
 #include "peer/min_version_map.h"
@@ -51,6 +50,7 @@
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/proto/value_proto.pb.h"
+#include "peer/recording_thread.h"
 #include "peer/sequence_point_impl.h"
 #include "peer/serialize_local_object_to_string.h"
 #include "peer/shared_object.h"
@@ -100,12 +100,12 @@ TransactionStore::TransactionStore(CanonicalPeerMap* canonical_peer_map,
 TransactionStore::~TransactionStore() {
 }
 
-InterpreterThread* TransactionStore::CreateInterpreterThread() {
-  InterpreterThread* const thread = new InterpreterThread(this);
+RecordingThread* TransactionStore::CreateRecordingThread() {
+  RecordingThread* const thread = new RecordingThread(this);
 
   {
-    MutexLock lock(&interpreter_threads_mu_);
-    interpreter_threads_.emplace_back(thread);
+    MutexLock lock(&recording_threads_mu_);
+    recording_threads_.emplace_back(thread);
   }
 
   return thread;
@@ -820,36 +820,34 @@ void TransactionStore::RejectTransactions(
   }
 
   if (IsValidTransactionId(invalidate_start_transaction_id)) {
-    vector<InterpreterThread*> interpreter_threads_temp;
+    vector<RecordingThread*> recording_threads_temp;
     {
-      MutexLock lock(&interpreter_threads_mu_);
+      MutexLock lock(&recording_threads_mu_);
 
-      const vector<linked_ptr<InterpreterThread>>::size_type thread_count =
-          interpreter_threads_.size();
-      interpreter_threads_temp.resize(thread_count);
+      const vector<linked_ptr<RecordingThread>>::size_type thread_count =
+          recording_threads_.size();
+      recording_threads_temp.resize(thread_count);
 
-      for (vector<linked_ptr<InterpreterThread>>::size_type i = 0;
+      for (vector<linked_ptr<RecordingThread>>::size_type i = 0;
            i < thread_count; ++i) {
-        interpreter_threads_temp[i] = interpreter_threads_[i].get();
+        recording_threads_temp[i] = recording_threads_[i].get();
       }
     }
 
     // TODO(dss): There's a race condition here. If an interpreter thread is
-    // created after the interpreter_threads_ collection is copied, then
-    // execution will not be suspended on the new thread as it should be.
+    // created after the recording_threads_ collection is copied, then execution
+    // will not be suspended on the new thread as it should be.
     //
     // This is not currently a problem, because only one interpreter thread is
     // created per peer, and the remote peers should have no reason to reject
     // the local peer's transactions until after the interpreter thread has
     // started executing. Nonetheless, it would nice to fix the race condition.
 
-    for (InterpreterThread* const interpreter_thread :
-             interpreter_threads_temp) {
-      interpreter_thread->Rewind(invalidate_start_transaction_id);
+    for (RecordingThread* const recording_thread : recording_threads_temp) {
+      recording_thread->Rewind(invalidate_start_transaction_id);
     }
-    for (InterpreterThread* const interpreter_thread :
-             interpreter_threads_temp) {
-      interpreter_thread->Resume();
+    for (RecordingThread* const recording_thread : recording_threads_temp) {
+      recording_thread->Resume();
     }
 
     PeerMessage peer_message;

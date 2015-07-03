@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/interpreter_thread.h"
+#include "peer/recording_thread.h"
 
 #include <pthread.h>
 
@@ -64,7 +64,7 @@ PeerObjectImpl* GetPeerObjectForEvent(PeerObjectImpl* peer_object) {
 
 }  // namespace
 
-InterpreterThread::InterpreterThread(
+RecordingThread::RecordingThread(
     TransactionStoreInternalInterface* transaction_store)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       transaction_level_(0),
@@ -74,13 +74,13 @@ InterpreterThread::InterpreterThread(
   GetMinTransactionId(&rejected_transaction_id_);
 }
 
-InterpreterThread::~InterpreterThread() {
+RecordingThread::~RecordingThread() {
 }
 
-void InterpreterThread::RunProgram(UnversionedLocalObject* local_object,
-                                   const string& method_name,
-                                   Value* return_value,
-                                   bool linger) {
+void RecordingThread::RunProgram(UnversionedLocalObject* local_object,
+                                 const string& method_name,
+                                 Value* return_value,
+                                 bool linger) {
   CHECK(return_value != nullptr);
 
   PeerObject* const peer_object = CreateUnversionedPeerObject(local_object, "");
@@ -95,7 +95,7 @@ void InterpreterThread::RunProgram(UnversionedLocalObject* local_object,
       }
 
       // TODO(dss): The following code is similar to code in
-      // InterpreterThread::CallMethodHelper. Consider merging the duplicate
+      // RecordingThread::CallMethodHelper. Consider merging the duplicate
       // functionality.
 
       MutexLock lock(&rejected_transaction_id_mu_);
@@ -109,7 +109,7 @@ void InterpreterThread::RunProgram(UnversionedLocalObject* local_object,
       }
 
       // A rewind operation was requested. Wait for each blocking thread to call
-      // InterpreterThread::Resume before continuing.
+      // RecordingThread::Resume before continuing.
       while (!blocking_threads_.empty()) {
         blocking_threads_empty_cond_.Wait(&rejected_transaction_id_mu_);
       }
@@ -120,7 +120,7 @@ void InterpreterThread::RunProgram(UnversionedLocalObject* local_object,
   }
 }
 
-void InterpreterThread::Rewind(const TransactionId& rejected_transaction_id) {
+void RecordingThread::Rewind(const TransactionId& rejected_transaction_id) {
   MutexLock lock(&rejected_transaction_id_mu_);
 
   if (!Rewinding_Locked() ||
@@ -133,7 +133,7 @@ void InterpreterThread::Rewind(const TransactionId& rejected_transaction_id) {
   CHECK(blocking_threads_.insert(pthread_self()).second);
 }
 
-void InterpreterThread::Resume() {
+void RecordingThread::Resume() {
   MutexLock lock(&rejected_transaction_id_mu_);
 
   CHECK_EQ(blocking_threads_.erase(pthread_self()), 1u);
@@ -143,7 +143,7 @@ void InterpreterThread::Resume() {
   }
 }
 
-bool InterpreterThread::BeginTransaction() {
+bool RecordingThread::BeginTransaction() {
   CHECK_GE(transaction_level_, 0);
 
   if (Rewinding()) {
@@ -160,7 +160,7 @@ bool InterpreterThread::BeginTransaction() {
   return true;
 }
 
-bool InterpreterThread::EndTransaction() {
+bool RecordingThread::EndTransaction() {
   CHECK_GT(transaction_level_, 0);
 
   if (Rewinding()) {
@@ -181,7 +181,7 @@ bool InterpreterThread::EndTransaction() {
   return true;
 }
 
-PeerObject* InterpreterThread::CreateVersionedPeerObject(
+PeerObject* RecordingThread::CreateVersionedPeerObject(
     VersionedLocalObject* initial_version, const string& name) {
   // Take ownership of *initial_version.
   shared_ptr<const LiveObject> new_live_object(
@@ -243,7 +243,7 @@ PeerObject* InterpreterThread::CreateVersionedPeerObject(
   return peer_object;
 }
 
-PeerObject* InterpreterThread::CreateUnversionedPeerObject(
+PeerObject* RecordingThread::CreateUnversionedPeerObject(
     UnversionedLocalObject* initial_version, const string& name) {
   // Take ownership of *initial_version.
   shared_ptr<LiveObject> new_live_object(
@@ -252,8 +252,8 @@ PeerObject* InterpreterThread::CreateUnversionedPeerObject(
   PeerObjectImpl* const peer_object = transaction_store_->CreateBoundPeerObject(
       name, false);
 
-  // TODO(dss): InterpreterThread should not call methods on SharedObject. This
-  // is the responsibility of TransactionStore.
+  // TODO(dss): RecordingThread should not call methods on SharedObject. This is
+  // the responsibility of TransactionStore.
   SharedObject* const shared_object = peer_object->shared_object();
   CHECK(shared_object != nullptr);
   shared_object->CreateUnversionedObjectContent(new_live_object);
@@ -262,10 +262,10 @@ PeerObject* InterpreterThread::CreateUnversionedPeerObject(
   return peer_object;
 }
 
-bool InterpreterThread::CallMethod(PeerObject* peer_object,
-                                   const string& method_name,
-                                   const vector<Value>& parameters,
-                                   Value* return_value) {
+bool RecordingThread::CallMethod(PeerObject* peer_object,
+                                 const string& method_name,
+                                 const vector<Value>& parameters,
+                                 Value* return_value) {
   CHECK(peer_object != nullptr);
   CHECK(!method_name.empty());
   CHECK(return_value != nullptr);
@@ -356,14 +356,14 @@ bool InterpreterThread::CallMethod(PeerObject* peer_object,
   return true;
 }
 
-bool InterpreterThread::ObjectsAreEquivalent(const PeerObject* a,
-                                             const PeerObject* b) const {
+bool RecordingThread::ObjectsAreEquivalent(const PeerObject* a,
+                                           const PeerObject* b) const {
   return transaction_store_->ObjectsAreEquivalent(
       static_cast<const PeerObjectImpl*>(a),
       static_cast<const PeerObjectImpl*>(b));
 }
 
-bool InterpreterThread::CallMethodHelper(
+bool RecordingThread::CallMethodHelper(
     const TransactionId& method_call_transaction_id,
     PeerObjectImpl* caller_peer_object,
     PeerObjectImpl* callee_peer_object,
@@ -416,7 +416,7 @@ bool InterpreterThread::CallMethodHelper(
 // Waits for blocking_threads_ to be empty, which indicates it's safe to resume
 // execution. Returns true if blocking_threads_ is empty. Returns false if
 // another thread initiates a rewind operation during the wait.
-bool InterpreterThread::WaitForBlockingThreads_Locked(
+bool RecordingThread::WaitForBlockingThreads_Locked(
     const TransactionId& method_call_transaction_id) const {
   for (;;) {
     if (CompareTransactionIds(rejected_transaction_id_,
@@ -432,11 +432,11 @@ bool InterpreterThread::WaitForBlockingThreads_Locked(
   }
 }
 
-shared_ptr<LiveObject> InterpreterThread::GetLiveObject(
+shared_ptr<LiveObject> RecordingThread::GetLiveObject(
     PeerObjectImpl* peer_object) {
   CHECK(peer_object != nullptr);
   // If the peer object was in new_objects_, it already should have been moved
-  // to modified_objects_ by InterpreterThread::CheckIfPeerObjectIsNew.
+  // to modified_objects_ by RecordingThread::CheckIfPeerObjectIsNew.
   CHECK(new_objects_.find(peer_object) == new_objects_.end());
 
   if (peer_object->versioned()) {
@@ -460,7 +460,7 @@ shared_ptr<LiveObject> InterpreterThread::GetLiveObject(
   }
 }
 
-const SequencePoint* InterpreterThread::GetSequencePoint() {
+const SequencePoint* RecordingThread::GetSequencePoint() {
   if (sequence_point_.get() == nullptr) {
     sequence_point_.reset(transaction_store_->GetCurrentSequencePoint());
   }
@@ -468,7 +468,7 @@ const SequencePoint* InterpreterThread::GetSequencePoint() {
   return sequence_point_.get();
 }
 
-void InterpreterThread::AddTransactionEvent(PendingEvent* event) {
+void RecordingThread::AddTransactionEvent(PendingEvent* event) {
   CHECK_GE(transaction_level_, 0);
   CHECK(event != nullptr);
 
@@ -482,7 +482,7 @@ void InterpreterThread::AddTransactionEvent(PendingEvent* event) {
   }
 }
 
-void InterpreterThread::CommitTransaction() {
+void RecordingThread::CommitTransaction() {
   CHECK(!events_.empty());
 
   // Prevent infinite recursion.
@@ -514,7 +514,7 @@ void InterpreterThread::CommitTransaction() {
   committing_transaction_ = false;
 }
 
-void InterpreterThread::CheckIfValueIsNew(
+void RecordingThread::CheckIfValueIsNew(
     const Value& value,
     unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>* live_objects,
     unordered_set<PeerObjectImpl*>* new_peer_objects) {
@@ -524,7 +524,7 @@ void InterpreterThread::CheckIfValueIsNew(
   }
 }
 
-void InterpreterThread::CheckIfPeerObjectIsNew(
+void RecordingThread::CheckIfPeerObjectIsNew(
     PeerObjectImpl* peer_object,
     unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>* live_objects,
     unordered_set<PeerObjectImpl*>* new_peer_objects) {
@@ -556,12 +556,12 @@ void InterpreterThread::CheckIfPeerObjectIsNew(
   }
 }
 
-bool InterpreterThread::Rewinding() const {
+bool RecordingThread::Rewinding() const {
   MutexLock lock(&rejected_transaction_id_mu_);
   return Rewinding_Locked();
 }
 
-bool InterpreterThread::Rewinding_Locked() const {
+bool RecordingThread::Rewinding_Locked() const {
   return IsValidTransactionId(rejected_transaction_id_);
 }
 

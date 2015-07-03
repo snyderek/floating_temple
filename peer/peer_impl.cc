@@ -22,8 +22,8 @@
 #include "base/logging.h"
 #include "peer/canonical_peer_map.h"
 #include "peer/connection_manager.h"
-#include "peer/interpreter_thread.h"
 #include "peer/peer_id.h"
+#include "peer/recording_thread.h"
 #include "peer/transaction_store.h"
 #include "util/state_variable.h"
 
@@ -94,10 +94,9 @@ void PeerImpl::RunProgram(UnversionedLocalObject* local_object,
     return;
   }
 
-  InterpreterThread* const interpreter_thread =
-      transaction_store_->CreateInterpreterThread();
-  interpreter_thread->RunProgram(local_object, method_name, return_value,
-                                 linger);
+  RecordingThread* const recording_thread =
+      transaction_store_->CreateRecordingThread();
+  recording_thread->RunProgram(local_object, method_name, return_value, linger);
 }
 
 void PeerImpl::Stop() {

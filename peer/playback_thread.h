@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PEER_PEER_THREAD_H_
-#define PEER_PEER_THREAD_H_
+#ifndef PEER_PLAYBACK_THREAD_H_
+#define PEER_PLAYBACK_THREAD_H_
 
 #include <pthread.h>
 
@@ -46,11 +46,10 @@ class PeerObjectImpl;
 class SharedObject;
 class TransactionStoreInternalInterface;
 
-// TODO(dss): Rename this class to PlaybackThread.
-class PeerThread : private Thread {
+class PlaybackThread : private Thread {
  public:
-  PeerThread();
-  ~PeerThread() override;
+  PlaybackThread();
+  ~PlaybackThread() override;
 
   std::shared_ptr<const LiveObject> live_object() const;
 
@@ -129,7 +128,7 @@ class PeerThread : private Thread {
   bool ObjectsAreEquivalent(const PeerObject* a,
                             const PeerObject* b) const override;
 
-  static void* ReplayThreadMain(void* peer_thread_raw);
+  static void* ReplayThreadMain(void* playback_thread_raw);
 
   static void ChangeRunningToPaused(
       StateVariableInternalInterface* state_variable);
@@ -153,10 +152,10 @@ class PeerThread : private Thread {
 
   StateVariable state_;
 
-  DISALLOW_COPY_AND_ASSIGN(PeerThread);
+  DISALLOW_COPY_AND_ASSIGN(PlaybackThread);
 };
 
 }  // namespace peer
 }  // namespace floating_temple
 
-#endif  // PEER_PEER_THREAD_H_
+#endif  // PEER_PLAYBACK_THREAD_H_

@@ -130,7 +130,6 @@ peer_lib = ft_env.Library(
         peer/event_queue.cc
         peer/get_event_proto_type.cc
         peer/get_peer_message_type.cc
-        peer/interpreter_thread.cc
         peer/live_object_node.cc
         peer/max_version_map.cc
         peer/min_version_map.cc
@@ -139,8 +138,9 @@ peer_lib = ft_env.Library(
         peer/peer_id.cc
         peer/peer_impl.cc
         peer/peer_object_impl.cc
-        peer/peer_thread.cc
         peer/pending_event.cc
+        peer/playback_thread.cc
+        peer/recording_thread.cc
         peer/sequence_point_impl.cc
         peer/serialization_context_impl.cc
         peer/serialize_local_object_to_string.cc
@@ -568,24 +568,6 @@ peer_connection_manager_test = ft_env.Program(
       ],
   )
 
-peer_interpreter_thread_test = ft_env.Program(
-    target = 'peer/interpreter_thread_test',
-    source = Split("""
-        peer/interpreter_thread_test.cc
-      """) + [
-        peer_testing_lib,
-        peer_lib,
-        protocol_server_lib,
-        fake_interpreter_lib,
-        value_lib,
-        peer_proto_lib,
-        util_lib,
-        base_lib,
-        gmock_lib,
-        gtest_lib,
-      ],
-  )
-
 peer_interval_set_test = ft_env.Program(
     target = 'peer/interval_set_test',
     source = Split("""
@@ -634,10 +616,28 @@ peer_peer_id_test = ft_env.Program(
       ],
   )
 
-peer_peer_thread_test = ft_env.Program(
-    target = 'peer/peer_thread_test',
+peer_playback_thread_test = ft_env.Program(
+    target = 'peer/playback_thread_test',
     source = Split("""
-        peer/peer_thread_test.cc
+        peer/playback_thread_test.cc
+      """) + [
+        peer_testing_lib,
+        peer_lib,
+        protocol_server_lib,
+        fake_interpreter_lib,
+        value_lib,
+        peer_proto_lib,
+        util_lib,
+        base_lib,
+        gmock_lib,
+        gtest_lib,
+      ],
+  )
+
+peer_recording_thread_test = ft_env.Program(
+    target = 'peer/recording_thread_test',
+    source = Split("""
+        peer/recording_thread_test.cc
       """) + [
         peer_testing_lib,
         peer_lib,
@@ -843,11 +843,11 @@ util_stl_util_test = ft_env.Program(
 cxx_tests = [
     base_string_printf_test,
     peer_connection_manager_test,
-    peer_interpreter_thread_test,
     peer_interval_set_test,
     peer_max_version_map_test,
     peer_peer_id_test,
-    peer_peer_thread_test,
+    peer_playback_thread_test,
+    peer_recording_thread_test,
     peer_shared_object_test,
     peer_toy_lang_integration_test,
     peer_transaction_store_test,

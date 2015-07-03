@@ -34,7 +34,7 @@
 #include "peer/live_object.h"
 #include "peer/max_version_map.h"
 #include "peer/peer_exclusion_map.h"
-#include "peer/peer_thread.h"
+#include "peer/playback_thread.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/sequence_point_impl.h"
 #include "peer/shared_object_transaction.h"
@@ -109,17 +109,17 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
   }
 
   for (;;) {
-    PeerThread peer_thread;
-    peer_thread.Start(transaction_store_, shared_object_,
-                      shared_ptr<LiveObject>(nullptr), new_peer_objects);
+    PlaybackThread playback_thread;
+    playback_thread.Start(transaction_store_, shared_object_,
+                          shared_ptr<LiveObject>(nullptr), new_peer_objects);
 
     const bool success = ApplyTransactionsToWorkingVersion_Locked(
-        &peer_thread, sequence_point, transactions_to_reject);
+        &playback_thread, sequence_point, transactions_to_reject);
 
-    peer_thread.Stop();
+    playback_thread.Stop();
 
     if (success) {
-      return peer_thread.live_object();
+      return playback_thread.live_object();
     }
   }
 
@@ -294,9 +294,9 @@ string VersionedObjectContent::Dump() const {
 }
 
 bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
-    PeerThread* peer_thread, const SequencePointImpl& sequence_point,
+    PlaybackThread* playback_thread, const SequencePointImpl& sequence_point,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
-  CHECK(peer_thread != nullptr);
+  CHECK(playback_thread != nullptr);
   CHECK(transactions_to_reject != nullptr);
 
   for (const auto& transaction_pair : committed_versions_) {
@@ -311,12 +311,12 @@ bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
           FindTransactionIdInVector(*transactions_to_reject, transaction_id) ==
               transactions_to_reject->end()) {
         for (const linked_ptr<CommittedEvent>& event : events) {
-          peer_thread->QueueEvent(event.get());
+          playback_thread->QueueEvent(event.get());
         }
 
-        peer_thread->FlushEvents();
+        playback_thread->FlushEvents();
 
-        if (peer_thread->conflict_detected()) {
+        if (playback_thread->conflict_detected()) {
           transactions_to_reject->emplace_back(origin_peer, transaction_id);
           return false;
         }

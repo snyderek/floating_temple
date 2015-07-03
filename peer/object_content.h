@@ -37,7 +37,7 @@ class LiveObject;
 class PeerObjectImpl;
 class SequencePointImpl;
 class SharedObject;
-class SharedObjectTransactionInfo;
+class SharedObjectTransaction;
 
 class ObjectContent {
  public:
@@ -52,12 +52,12 @@ class ObjectContent {
 
   virtual void GetTransactions(
       const MaxVersionMap& transaction_store_version_map,
-      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
+      std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
           transactions,
       MaxVersionMap* effective_version) const = 0;
   virtual void StoreTransactions(
       const CanonicalPeer* remote_peer,
-      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
+      std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
           transactions,
       const MaxVersionMap& version_map) = 0;
 

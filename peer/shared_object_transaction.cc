@@ -39,7 +39,32 @@ SharedObjectTransaction::SharedObjectTransaction(
   events_.swap(*events);
 }
 
+SharedObjectTransaction::SharedObjectTransaction(
+    const CanonicalPeer* origin_peer)
+    : origin_peer_(CHECK_NOTNULL(origin_peer)) {
+}
+
 SharedObjectTransaction::~SharedObjectTransaction() {
+}
+
+void SharedObjectTransaction::AddEvent(CommittedEvent* event) {
+  CHECK(event != nullptr);
+  events_.emplace_back(event);
+}
+
+SharedObjectTransaction* SharedObjectTransaction::Clone() const {
+  const vector<linked_ptr<CommittedEvent>>::size_type event_count =
+      events_.size();
+
+  vector<linked_ptr<CommittedEvent>> new_events;
+  new_events.resize(event_count);
+
+  for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
+       ++i) {
+    new_events[i].reset(events_[i]->Clone());
+  }
+
+  return new SharedObjectTransaction(&new_events, origin_peer_);
 }
 
 string SharedObjectTransaction::Dump() const {

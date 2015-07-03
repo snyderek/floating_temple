@@ -41,8 +41,8 @@ class CommittedEvent;
 class ObjectContent;
 class PeerObjectImpl;
 class SequencePointImpl;
+class SharedObjectTransaction;
 class TransactionStoreInternalInterface;
-struct SharedObjectTransactionInfo;
 
 class SharedObject {
  public:
@@ -76,12 +76,15 @@ class SharedObject {
 
   void GetTransactions(
       const MaxVersionMap& transaction_store_version_map,
-      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
+      std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
           transactions,
       MaxVersionMap* effective_version);
+  // TODO(dss): Change the semantics of this method so that it doesn't modify
+  // the map that 'transactions' points to. This will make the method's
+  // interface more intuitive.
   void StoreTransactions(
       const CanonicalPeer* remote_peer,
-      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
+      std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
           transactions,
       const MaxVersionMap& version_map);
 

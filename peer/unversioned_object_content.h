@@ -45,12 +45,12 @@ class UnversionedObjectContent : public ObjectContent {
           transactions_to_reject) override;
   void GetTransactions(
       const MaxVersionMap& transaction_store_version_map,
-      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
+      std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
           transactions,
       MaxVersionMap* effective_version) const override;
   void StoreTransactions(
       const CanonicalPeer* remote_peer,
-      std::map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>*
+      std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
           transactions,
       const MaxVersionMap& version_map) override;
   void InsertTransaction(

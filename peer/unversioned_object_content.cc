@@ -60,7 +60,7 @@ shared_ptr<const LiveObject> UnversionedObjectContent::GetWorkingVersion(
 
 void UnversionedObjectContent::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
-    map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
+    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
     MaxVersionMap* effective_version) const {
   CHECK(effective_version != nullptr);
   effective_version->CopyFrom(transaction_store_version_map);
@@ -68,7 +68,7 @@ void UnversionedObjectContent::GetTransactions(
 
 void UnversionedObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
-    map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
+    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
     const MaxVersionMap& version_map) {
   LOG(FATAL) << "Unversioned objects can not have transactions.";
 }

@@ -54,7 +54,7 @@
 #include "peer/sequence_point_impl.h"
 #include "peer/serialize_local_object_to_string.h"
 #include "peer/shared_object.h"
-#include "peer/shared_object_transaction_info.h"
+#include "peer/shared_object_transaction.h"
 #include "peer/transaction_id_generator.h"
 #include "peer/transaction_id_util.h"
 #include "peer/transaction_sequencer.h"
@@ -333,7 +333,7 @@ void TransactionStore::CreateTransaction(
     }
   }
 
-  unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>
+  unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>
       shared_object_transactions;
 
   for (vector<linked_ptr<PendingEvent>>::size_type i = 0; i < event_count;
@@ -392,7 +392,7 @@ void TransactionStore::HandleApplyTransactionMessage(
   const TransactionId& transaction_id =
       apply_transaction_message.transaction_id();
 
-  unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>
+  unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>
       shared_object_transactions;
 
   for (int i = 0; i < apply_transaction_message.object_transaction_size();
@@ -406,20 +406,20 @@ void TransactionStore::HandleApplyTransactionMessage(
     if (shared_object != nullptr) {
       const int event_count = object_transaction.event_size();
 
-      linked_ptr<SharedObjectTransactionInfo>& transaction =
-          shared_object_transactions[shared_object];
-      if (transaction.get() == nullptr) {
-        transaction.reset(new SharedObjectTransactionInfo());
-        transaction->origin_peer = remote_peer;
-      }
-
-      vector<linked_ptr<CommittedEvent>>* const events = &transaction->events;
-      events->resize(event_count);
+      vector<linked_ptr<CommittedEvent>> events;
+      events.resize(event_count);
 
       for (int j = 0; j < event_count; ++j) {
         const EventProto& event_proto = object_transaction.event(j);
-        (*events)[j].reset(ConvertEventProtoToCommittedEvent(event_proto));
+        events[j].reset(ConvertEventProtoToCommittedEvent(event_proto));
       }
+
+      SharedObjectTransaction* const transaction = new SharedObjectTransaction(
+          &events, remote_peer);
+      // TODO(dss): Fail gracefully if the remote peer sent a transaction with a
+      // repeated object ID.
+      CHECK(shared_object_transactions.emplace(
+                shared_object, make_linked_ptr(transaction)).second);
     }
   }
 
@@ -466,7 +466,7 @@ void TransactionStore::HandleGetObjectMessage(
       reply.mutable_store_object_message();
   store_object_message->mutable_object_id()->CopyFrom(requested_object_id);
 
-  map<TransactionId, linked_ptr<SharedObjectTransactionInfo>> transactions;
+  map<TransactionId, linked_ptr<SharedObjectTransaction>> transactions;
   MaxVersionMap effective_version;
 
   requested_shared_object->GetTransactions(current_version_temp, &transactions,
@@ -474,20 +474,20 @@ void TransactionStore::HandleGetObjectMessage(
 
   for (const auto& transaction_pair : transactions) {
     const TransactionId& transaction_id = transaction_pair.first;
-    const SharedObjectTransactionInfo& transaction_info =
-        *transaction_pair.second;
+    const SharedObjectTransaction* const transaction =
+        transaction_pair.second.get();
 
     TransactionProto* const transaction_proto =
         store_object_message->add_transaction();
     transaction_proto->mutable_transaction_id()->CopyFrom(transaction_id);
 
-    for (const linked_ptr<CommittedEvent>& event : transaction_info.events) {
+    for (const linked_ptr<CommittedEvent>& event : transaction->events()) {
       ConvertCommittedEventToEventProto(event.get(),
                                         transaction_proto->add_event());
     }
 
     transaction_proto->set_origin_peer_id(
-        transaction_info.origin_peer->peer_id());
+        transaction->origin_peer()->peer_id());
   }
 
   for (const auto& version_pair : effective_version.peer_transaction_ids()) {
@@ -514,32 +514,31 @@ void TransactionStore::HandleStoreObjectMessage(
 
   SharedObject* const shared_object = GetOrCreateSharedObject(object_id);
 
-  map<TransactionId, linked_ptr<SharedObjectTransactionInfo>> transactions;
+  map<TransactionId, linked_ptr<SharedObjectTransaction>> transactions;
 
   for (int i = 0; i < store_object_message.transaction_size(); ++i) {
     const TransactionProto& transaction_proto =
         store_object_message.transaction(i);
-    SharedObjectTransactionInfo* const transaction_info =
-        new SharedObjectTransactionInfo();
-
-    const TransactionId& transaction_id = transaction_proto.transaction_id();
 
     const int event_count = transaction_proto.event_size();
 
-    vector<linked_ptr<CommittedEvent>>* const events =
-        &transaction_info->events;
-    events->resize(event_count);
+    vector<linked_ptr<CommittedEvent>> events;
+    events.resize(event_count);
 
     for (int j = 0; j < event_count; ++j) {
       const EventProto& event_proto = transaction_proto.event(j);
-      (*events)[j].reset(ConvertEventProtoToCommittedEvent(event_proto));
+      events[j].reset(ConvertEventProtoToCommittedEvent(event_proto));
     }
 
-    transaction_info->origin_peer = canonical_peer_map_->GetCanonicalPeer(
-        transaction_proto.origin_peer_id());
+    const CanonicalPeer* const origin_peer =
+        canonical_peer_map_->GetCanonicalPeer(
+            transaction_proto.origin_peer_id());
 
-    CHECK(transactions.emplace(transaction_id,
-                               make_linked_ptr(transaction_info)).second);
+    SharedObjectTransaction* const transaction = new SharedObjectTransaction(
+        &events, origin_peer);
+
+    CHECK(transactions.emplace(transaction_proto.transaction_id(),
+                               make_linked_ptr(transaction)).second);
   }
 
   MaxVersionMap version_map;
@@ -686,7 +685,7 @@ TransactionStore::GetLiveObjectAtSequencePoint_Helper(
 
 void TransactionStore::ApplyTransactionAndSendMessage(
     const TransactionId& transaction_id,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
+    unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
         shared_object_transactions) {
   CHECK(shared_object_transactions != nullptr);
 
@@ -699,16 +698,17 @@ void TransactionStore::ApplyTransactionAndSendMessage(
 
   for (const auto& transaction_pair : *shared_object_transactions) {
     SharedObject* const shared_object = transaction_pair.first;
-    const SharedObjectTransactionInfo& transaction = *transaction_pair.second;
+    const SharedObjectTransaction* const transaction =
+        transaction_pair.second.get();
 
-    CHECK_EQ(transaction.origin_peer, local_peer_);
+    CHECK_EQ(transaction->origin_peer(), local_peer_);
 
     ObjectTransactionProto* const object_transaction =
         apply_transaction_message->add_object_transaction();
     object_transaction->mutable_object_id()->CopyFrom(
         shared_object->object_id());
 
-    for (const linked_ptr<CommittedEvent>& event : transaction.events) {
+    for (const linked_ptr<CommittedEvent>& event : transaction->events()) {
       ConvertCommittedEventToEventProto(event.get(),
                                         object_transaction->add_event());
     }
@@ -724,7 +724,7 @@ void TransactionStore::ApplyTransactionAndSendMessage(
 void TransactionStore::ApplyTransaction(
     const TransactionId& transaction_id,
     const CanonicalPeer* origin_peer,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
+    unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
         shared_object_transactions) {
   CHECK(origin_peer != nullptr);
   CHECK(shared_object_transactions != nullptr);
@@ -734,13 +734,25 @@ void TransactionStore::ApplyTransaction(
 
   for (const auto& transaction_pair : *shared_object_transactions) {
     SharedObject* const shared_object = transaction_pair.first;
-    SharedObjectTransactionInfo* const shared_object_transaction =
+    const SharedObjectTransaction* const shared_object_transaction =
         transaction_pair.second.get();
 
-    CHECK_EQ(shared_object_transaction->origin_peer, origin_peer);
+    CHECK_EQ(shared_object_transaction->origin_peer(), origin_peer);
 
-    shared_object->InsertTransaction(origin_peer, transaction_id,
-                                     &shared_object_transaction->events);
+    const vector<linked_ptr<CommittedEvent>>& src_events =
+        shared_object_transaction->events();
+    const vector<linked_ptr<CommittedEvent>>::size_type event_count =
+        src_events.size();
+
+    vector<linked_ptr<CommittedEvent>> dest_events;
+    dest_events.resize(event_count);
+
+    for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
+         ++i) {
+      dest_events[i].reset(src_events[i]->Clone());
+    }
+
+    shared_object->InsertTransaction(origin_peer, transaction_id, &dest_events);
   }
 
   UpdateCurrentSequencePoint(origin_peer, transaction_id);
@@ -944,7 +956,7 @@ SharedObject* TransactionStore::GetSharedObjectForPeerObject(
 
 void TransactionStore::ConvertPendingEventToCommittedEvents(
     const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
+    unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
         shared_object_transactions) {
   CHECK(pending_event != nullptr);
 
@@ -1508,23 +1520,22 @@ void TransactionStore::AddEventToSharedObjectTransactions(
     SharedObject* shared_object,
     const CanonicalPeer* origin_peer,
     CommittedEvent* event,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransactionInfo>>*
+    unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
         shared_object_transactions) {
   CHECK(shared_object != nullptr);
   CHECK(origin_peer != nullptr);
   CHECK(event != nullptr);
   CHECK(shared_object_transactions != nullptr);
 
-  linked_ptr<SharedObjectTransactionInfo>& transaction =
+  linked_ptr<SharedObjectTransaction>& transaction =
       (*shared_object_transactions)[shared_object];
   if (transaction.get() == nullptr) {
-    transaction.reset(new SharedObjectTransactionInfo());
-    transaction->origin_peer = origin_peer;
+    transaction.reset(new SharedObjectTransaction(origin_peer));
   } else {
-    CHECK_EQ(transaction->origin_peer, origin_peer);
+    CHECK_EQ(transaction->origin_peer(), origin_peer);
   }
 
-  transaction->events.emplace_back(event);
+  transaction->AddEvent(event);
 }
 
 }  // namespace peer

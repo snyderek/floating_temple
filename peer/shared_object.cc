@@ -37,7 +37,7 @@
 #include "peer/peer_object_impl.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/proto/uuid.pb.h"
-#include "peer/shared_object_transaction_info.h"
+#include "peer/shared_object_transaction.h"
 #include "peer/transaction_id_util.h"
 #include "peer/transaction_store_internal_interface.h"
 #include "peer/unversioned_object_content.h"
@@ -173,7 +173,7 @@ shared_ptr<const LiveObject> SharedObject::GetWorkingVersion(
 
 void SharedObject::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
-    map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
+    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
     MaxVersionMap* effective_version) {
   ObjectContent* const object_content_temp = GetObjectContent();
 
@@ -187,7 +187,7 @@ void SharedObject::GetTransactions(
 
 void SharedObject::StoreTransactions(
     const CanonicalPeer* remote_peer,
-    map<TransactionId, linked_ptr<SharedObjectTransactionInfo>>* transactions,
+    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
     const MaxVersionMap& version_map) {
   GetOrCreateObjectContent()->StoreTransactions(remote_peer, transactions,
                                                 version_map);

@@ -60,9 +60,9 @@ class PendingEvent;
 class RecordingThread;
 class RejectTransactionMessage;
 class SharedObject;
+class SharedObjectTransaction;
 class StoreObjectMessage;
 class ValueProto;
-struct SharedObjectTransactionInfo;
 
 class TransactionStore : public ConnectionHandler,
                          private TransactionStoreInternalInterface {
@@ -140,16 +140,17 @@ class TransactionStore : public ConnectionHandler,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           all_transactions_to_reject);
 
+  // TODO(dss): Change the semantics of these methods so that they don't modify
+  // the map that 'shared_object_transactions' points to. This will make the
+  // methods' interfaces more intuitive.
   void ApplyTransactionAndSendMessage(
       const TransactionId& transaction_id,
-      std::unordered_map<SharedObject*,
-                         linked_ptr<SharedObjectTransactionInfo>>*
+      std::unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
           shared_object_transactions);
   void ApplyTransaction(
       const TransactionId& transaction_id,
       const CanonicalPeer* origin_peer,
-      std::unordered_map<SharedObject*,
-                         linked_ptr<SharedObjectTransactionInfo>>*
+      std::unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
           shared_object_transactions);
 
   void RejectTransactionsAndSendMessages(
@@ -180,8 +181,7 @@ class TransactionStore : public ConnectionHandler,
 
   void ConvertPendingEventToCommittedEvents(
       const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
-      std::unordered_map<SharedObject*,
-                         linked_ptr<SharedObjectTransactionInfo>>*
+      std::unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
           shared_object_transactions);
   void ConvertValueToCommittedValue(const Value& in, CommittedValue* out);
 
@@ -197,8 +197,7 @@ class TransactionStore : public ConnectionHandler,
       SharedObject* shared_object,
       const CanonicalPeer* origin_peer,
       CommittedEvent* event,
-      std::unordered_map<SharedObject*,
-                         linked_ptr<SharedObjectTransactionInfo>>*
+      std::unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
           shared_object_transactions);
 
   CanonicalPeerMap* const canonical_peer_map_;

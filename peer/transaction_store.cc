@@ -343,7 +343,7 @@ void TransactionStore::CreateTransaction(
   }
 
   ApplyTransactionAndSendMessage(transaction_id_temp,
-                                 &shared_object_transactions);
+                                 shared_object_transactions);
 
   transaction_sequencer_.ReleaseTransaction(transaction_id_temp);
 
@@ -423,7 +423,7 @@ void TransactionStore::HandleApplyTransactionMessage(
     }
   }
 
-  ApplyTransaction(transaction_id, remote_peer, &shared_object_transactions);
+  ApplyTransaction(transaction_id, remote_peer, shared_object_transactions);
 }
 
 void TransactionStore::HandleGetObjectMessage(
@@ -685,10 +685,8 @@ TransactionStore::GetLiveObjectAtSequencePoint_Helper(
 
 void TransactionStore::ApplyTransactionAndSendMessage(
     const TransactionId& transaction_id,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
+    const unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>&
         shared_object_transactions) {
-  CHECK(shared_object_transactions != nullptr);
-
   PeerMessage peer_message;
   ApplyTransactionMessage* const apply_transaction_message =
       peer_message.mutable_apply_transaction_message();
@@ -696,7 +694,7 @@ void TransactionStore::ApplyTransactionAndSendMessage(
 
   unordered_set<SharedObject*> affected_objects;
 
-  for (const auto& transaction_pair : *shared_object_transactions) {
+  for (const auto& transaction_pair : shared_object_transactions) {
     SharedObject* const shared_object = transaction_pair.first;
     const SharedObjectTransaction* const transaction =
         transaction_pair.second.get();
@@ -724,15 +722,14 @@ void TransactionStore::ApplyTransactionAndSendMessage(
 void TransactionStore::ApplyTransaction(
     const TransactionId& transaction_id,
     const CanonicalPeer* origin_peer,
-    unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
+    const unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>&
         shared_object_transactions) {
   CHECK(origin_peer != nullptr);
-  CHECK(shared_object_transactions != nullptr);
 
   // TODO(dss): Make sure that the transaction has a later timestamp than the
   // previous transaction received from the same originating peer.
 
-  for (const auto& transaction_pair : *shared_object_transactions) {
+  for (const auto& transaction_pair : shared_object_transactions) {
     SharedObject* const shared_object = transaction_pair.first;
     const SharedObjectTransaction* const shared_object_transaction =
         transaction_pair.second.get();

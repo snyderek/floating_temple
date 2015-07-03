@@ -140,17 +140,16 @@ class TransactionStore : public ConnectionHandler,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           all_transactions_to_reject);
 
-  // TODO(dss): Change the semantics of these methods so that they don't modify
-  // the map that 'shared_object_transactions' points to. This will make the
-  // methods' interfaces more intuitive.
   void ApplyTransactionAndSendMessage(
       const TransactionId& transaction_id,
-      std::unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
+      const std::unordered_map<SharedObject*,
+                               linked_ptr<SharedObjectTransaction>>&
           shared_object_transactions);
   void ApplyTransaction(
       const TransactionId& transaction_id,
       const CanonicalPeer* origin_peer,
-      std::unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
+      const std::unordered_map<SharedObject*,
+                               linked_ptr<SharedObjectTransaction>>&
           shared_object_transactions);
 
   void RejectTransactionsAndSendMessages(

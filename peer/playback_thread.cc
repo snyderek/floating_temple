@@ -39,7 +39,7 @@
 #include "peer/convert_value.h"
 #include "peer/event_queue.h"
 #include "peer/live_object.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 #include "peer/shared_object.h"
 #include "peer/transaction_store_internal_interface.h"
 #include "util/bool_variable.h"
@@ -63,7 +63,7 @@ namespace peer {
 PlaybackThread::PlaybackThread()
     : transaction_store_(nullptr),
       shared_object_(nullptr),
-      new_peer_objects_(nullptr),
+      new_object_references_(nullptr),
       conflict_detected_(false),
       state_(NOT_STARTED) {
   state_.AddStateTransition(NOT_STARTED, STARTING);
@@ -86,17 +86,17 @@ void PlaybackThread::Start(
     TransactionStoreInternalInterface* transaction_store,
     SharedObject* shared_object,
     const shared_ptr<LiveObject>& live_object,
-    unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects) {
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references) {
   CHECK(transaction_store != nullptr);
   CHECK(shared_object != nullptr);
-  CHECK(new_peer_objects != nullptr);
+  CHECK(new_object_references != nullptr);
 
   state_.ChangeState(STARTING);
 
   transaction_store_ = transaction_store;
   shared_object_ = shared_object;
   live_object_ = live_object;
-  new_peer_objects_ = new_peer_objects;
+  new_object_references_ = new_object_references;
 
   // TODO(dss): There may be a performance cost associated with creating and
   // destroying threads. Consider recycling the threads that are used by the
@@ -144,7 +144,7 @@ void PlaybackThread::ReplayEvents() {
   }
 
   state_.Mutate(&PlaybackThread::ChangeRunningToPaused);
-  unbound_peer_objects_.clear();
+  unbound_object_references_.clear();
 }
 
 void PlaybackThread::DoMethodCall() {
@@ -179,11 +179,11 @@ void PlaybackThread::DoMethodCall() {
     return;
   }
 
-  PeerObjectImpl* const peer_object = shared_object_->GetOrCreatePeerObject(
-      true);
+  ObjectReferenceImpl* const object_reference =
+      shared_object_->GetOrCreateObjectReference(true);
 
   Value return_value;
-  live_object_->InvokeMethod(this, peer_object, method_name, parameters,
+  live_object_->InvokeMethod(this, object_reference, method_name, parameters,
                              &return_value);
 
   if (conflict_detected_.Get() ||
@@ -212,7 +212,7 @@ void PlaybackThread::DoMethodCall() {
   }
 }
 
-void PlaybackThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
+void PlaybackThread::DoSelfMethodCall(ObjectReferenceImpl* object_reference,
                                       const string& method_name,
                                       const vector<Value>& parameters,
                                       Value* return_value) {
@@ -232,7 +232,7 @@ void PlaybackThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
     event->GetSelfMethodCall(&expected_method_name, &expected_parameters);
 
     if (!MethodCallMatches(shared_object_, *expected_method_name,
-                           *expected_parameters, peer_object, method_name,
+                           *expected_parameters, object_reference, method_name,
                            parameters, event->new_shared_objects())) {
       SetConflictDetected("Self method call doesn't match expected method "
                           "call.");
@@ -244,7 +244,7 @@ void PlaybackThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
     return;
   }
 
-  live_object_->InvokeMethod(this, peer_object, method_name, parameters,
+  live_object_->InvokeMethod(this, object_reference, method_name, parameters,
                              return_value);
 
   if (conflict_detected_.Get() ||
@@ -267,7 +267,7 @@ void PlaybackThread::DoSelfMethodCall(PeerObjectImpl* peer_object,
   }
 }
 
-void PlaybackThread::DoSubMethodCall(PeerObjectImpl* peer_object,
+void PlaybackThread::DoSubMethodCall(ObjectReferenceImpl* object_reference,
                                      const string& method_name,
                                      const vector<Value>& parameters,
                                      Value* return_value) {
@@ -293,7 +293,7 @@ void PlaybackThread::DoSubMethodCall(PeerObjectImpl* peer_object,
     }
 
     if (!MethodCallMatches(callee, *expected_method_name, *expected_parameters,
-                           peer_object, method_name, parameters,
+                           object_reference, method_name, parameters,
                            event->new_shared_objects())) {
       SetConflictDetected("Sub method call doesn't match expected method "
                           "call.");
@@ -394,13 +394,14 @@ bool PlaybackThread::MethodCallMatches(
     SharedObject* expected_shared_object,
     const string& expected_method_name,
     const vector<CommittedValue>& expected_parameters,
-    PeerObjectImpl* peer_object,
+    ObjectReferenceImpl* object_reference,
     const string& method_name,
     const vector<Value>& parameters,
     const unordered_set<SharedObject*>& new_shared_objects) {
-  CHECK(peer_object != nullptr);
+  CHECK(object_reference != nullptr);
 
-  if (!ObjectMatches(expected_shared_object, peer_object, new_shared_objects)) {
+  if (!ObjectMatches(expected_shared_object, object_reference,
+                     new_shared_objects)) {
     VLOG(2) << "Objects don't match.";
     return false;
   }
@@ -458,11 +459,11 @@ bool PlaybackThread::ValueMatches(
     COMPARE_FIELDS(BYTES, bytes_value);
 
     case CommittedValue::SHARED_OBJECT:
-      return pending_value_type == Value::PEER_OBJECT &&
-          ObjectMatches(
-              committed_value.shared_object(),
-              static_cast<PeerObjectImpl*>(pending_value.peer_object()),
-              new_shared_objects);
+      return pending_value_type == Value::OBJECT_REFERENCE &&
+          ObjectMatches(committed_value.shared_object(),
+                        static_cast<ObjectReferenceImpl*>(
+                            pending_value.object_reference()),
+                        new_shared_objects);
 
     default:
       LOG(FATAL) << "Unexpected committed value type: "
@@ -475,42 +476,43 @@ bool PlaybackThread::ValueMatches(
 #undef COMPARE_FIELDS
 
 bool PlaybackThread::ObjectMatches(
-    SharedObject* shared_object, PeerObjectImpl* peer_object,
+    SharedObject* shared_object, ObjectReferenceImpl* object_reference,
     const unordered_set<SharedObject*>& new_shared_objects) {
   CHECK(shared_object != nullptr);
-  CHECK(peer_object != nullptr);
+  CHECK(object_reference != nullptr);
 
   const bool shared_object_is_new =
       (new_shared_objects.find(shared_object) != new_shared_objects.end());
 
-  const unordered_set<PeerObjectImpl*>::iterator unbound_it =
-      unbound_peer_objects_.find(peer_object);
-  const bool peer_object_is_unbound =
-      (unbound_it != unbound_peer_objects_.end());
+  const unordered_set<ObjectReferenceImpl*>::iterator unbound_it =
+      unbound_object_references_.find(object_reference);
+  const bool object_reference_is_unbound =
+      (unbound_it != unbound_object_references_.end());
 
-  if (shared_object_is_new && peer_object_is_unbound) {
-    const pair<unordered_map<SharedObject*, PeerObjectImpl*>::iterator, bool>
-        insert_result = new_peer_objects_->emplace(shared_object, nullptr);
+  if (shared_object_is_new && object_reference_is_unbound) {
+    const pair<unordered_map<SharedObject*, ObjectReferenceImpl*>::iterator,
+               bool>
+        insert_result = new_object_references_->emplace(shared_object, nullptr);
 
     if (!insert_result.second) {
       return false;
     }
 
-    insert_result.first->second = peer_object;
-    unbound_peer_objects_.erase(unbound_it);
+    insert_result.first->second = object_reference;
+    unbound_object_references_.erase(unbound_it);
 
     return true;
   }
 
-  const unordered_map<SharedObject*, PeerObjectImpl*>::const_iterator
-      new_peer_object_it = new_peer_objects_->find(shared_object);
+  const unordered_map<SharedObject*, ObjectReferenceImpl*>::const_iterator
+      new_object_reference_it = new_object_references_->find(shared_object);
 
-  if (new_peer_object_it != new_peer_objects_->end() &&
-      new_peer_object_it->second == peer_object) {
+  if (new_object_reference_it != new_object_references_->end() &&
+      new_object_reference_it->second == object_reference) {
     return true;
   }
 
-  return shared_object->HasPeerObject(peer_object);
+  return shared_object->HasObjectReference(object_reference);
 }
 
 void PlaybackThread::SetConflictDetected(const string& description) {
@@ -523,7 +525,7 @@ void PlaybackThread::SetConflictDetected(const string& description) {
   conflict_detected_.Set(true);
 }
 
-PeerObject* PlaybackThread::CreatePeerObject(
+ObjectReference* PlaybackThread::CreateObjectReference(
     LocalObject* initial_version, const string& name, bool versioned) {
   CHECK(initial_version != nullptr);
 
@@ -533,19 +535,19 @@ PeerObject* PlaybackThread::CreatePeerObject(
     if (transaction_store_->delay_object_binding() ||
         conflict_detected_.Get() ||
         !CheckNextEventType(CommittedEvent::SUB_OBJECT_CREATION)) {
-      PeerObjectImpl* const peer_object =
-          transaction_store_->CreateUnboundPeerObject(versioned);
-      CHECK(unbound_peer_objects_.insert(peer_object).second);
-      return peer_object;
+      ObjectReferenceImpl* const object_reference =
+          transaction_store_->CreateUnboundObjectReference(versioned);
+      CHECK(unbound_object_references_.insert(object_reference).second);
+      return object_reference;
     } else {
       const unordered_set<SharedObject*>& new_shared_objects =
           GetNextEvent()->new_shared_objects();
       CHECK_EQ(new_shared_objects.size(), 1u);
       SharedObject* const shared_object = *new_shared_objects.begin();
-      return shared_object->GetOrCreatePeerObject(versioned);
+      return shared_object->GetOrCreateObjectReference(versioned);
     }
   } else {
-    return transaction_store_->CreateBoundPeerObject(name, versioned);
+    return transaction_store_->CreateBoundObjectReference(name, versioned);
   }
 }
 
@@ -569,17 +571,17 @@ bool PlaybackThread::EndTransaction() {
   return HasNextEvent();
 }
 
-PeerObject* PlaybackThread::CreateVersionedPeerObject(
+ObjectReference* PlaybackThread::CreateVersionedObject(
     VersionedLocalObject* initial_version, const string& name) {
-  return CreatePeerObject(initial_version, name, true);
+  return CreateObjectReference(initial_version, name, true);
 }
 
-PeerObject* PlaybackThread::CreateUnversionedPeerObject(
+ObjectReference* PlaybackThread::CreateUnversionedObject(
     UnversionedLocalObject* initial_version, const string& name) {
-  return CreatePeerObject(initial_version, name, false);
+  return CreateObjectReference(initial_version, name, false);
 }
 
-bool PlaybackThread::CallMethod(PeerObject* peer_object,
+bool PlaybackThread::CallMethod(ObjectReference* object_reference,
                                 const string& method_name,
                                 const vector<Value>& parameters,
                                 Value* return_value) {
@@ -589,23 +591,25 @@ bool PlaybackThread::CallMethod(PeerObject* peer_object,
     return false;
   }
 
-  PeerObjectImpl* const peer_object_impl = static_cast<PeerObjectImpl*>(
-      peer_object);
+  ObjectReferenceImpl* const object_reference_impl =
+      static_cast<ObjectReferenceImpl*>(object_reference);
 
-  if (shared_object_->HasPeerObject(peer_object_impl)) {
-    DoSelfMethodCall(peer_object_impl, method_name, parameters, return_value);
+  if (shared_object_->HasObjectReference(object_reference_impl)) {
+    DoSelfMethodCall(object_reference_impl, method_name, parameters,
+                     return_value);
   } else {
-    DoSubMethodCall(peer_object_impl, method_name, parameters, return_value);
+    DoSubMethodCall(object_reference_impl, method_name, parameters,
+                    return_value);
   }
 
   return !conflict_detected_.Get() && HasNextEvent();
 }
 
-bool PlaybackThread::ObjectsAreEquivalent(const PeerObject* a,
-                                          const PeerObject* b) const {
-  return transaction_store_->ObjectsAreEquivalent(
-      static_cast<const PeerObjectImpl*>(a),
-      static_cast<const PeerObjectImpl*>(b));
+bool PlaybackThread::ObjectsAreIdentical(const ObjectReference* a,
+                                         const ObjectReference* b) const {
+  return transaction_store_->ObjectsAreIdentical(
+      static_cast<const ObjectReferenceImpl*>(a),
+      static_cast<const ObjectReferenceImpl*>(b));
 }
 
 // static

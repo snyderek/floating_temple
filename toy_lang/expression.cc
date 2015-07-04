@@ -39,26 +39,26 @@ namespace floating_temple {
 namespace toy_lang {
 namespace {
 
-PeerObject* EvaluateExpressionList(
-    PeerObject* symbol_table_object, Thread* thread,
+ObjectReference* EvaluateExpressionList(
+    ObjectReference* symbol_table_object, Thread* thread,
     const vector<linked_ptr<Expression>>& expressions) {
   CHECK(thread != nullptr);
 
   const vector<linked_ptr<Expression>>::size_type size = expressions.size();
-  vector<PeerObject*> peer_objects(size);
+  vector<ObjectReference*> object_references(size);
 
   for (vector<linked_ptr<Expression>>::size_type i = 0; i < size; ++i) {
-    PeerObject* const peer_object = expressions[i]->Evaluate(
+    ObjectReference* const object_reference = expressions[i]->Evaluate(
         symbol_table_object, thread);
 
-    if (peer_object == nullptr) {
+    if (object_reference == nullptr) {
       return nullptr;
     }
 
-    peer_objects[i] = peer_object;
+    object_references[i] = object_reference;
   }
 
-  return thread->CreateVersionedPeerObject(new ListObject(peer_objects), "");
+  return thread->CreateVersionedObject(new ListObject(object_references), "");
 }
 
 }  // namespace
@@ -106,10 +106,10 @@ IntExpression::IntExpression(int64 n)
     : n_(n) {
 }
 
-PeerObject* IntExpression::Evaluate(PeerObject* symbol_table_object,
-                                    Thread* thread) const {
+ObjectReference* IntExpression::Evaluate(ObjectReference* symbol_table_object,
+                                         Thread* thread) const {
   CHECK(thread != nullptr);
-  return thread->CreateVersionedPeerObject(new IntObject(n_), "");
+  return thread->CreateVersionedObject(new IntObject(n_), "");
 }
 
 void IntExpression::PopulateExpressionProto(
@@ -132,10 +132,10 @@ StringExpression::StringExpression(const string& s)
     : s_(s) {
 }
 
-PeerObject* StringExpression::Evaluate(PeerObject* symbol_table_object,
-                                       Thread* thread) const {
+ObjectReference* StringExpression::Evaluate(
+    ObjectReference* symbol_table_object, Thread* thread) const {
   CHECK(thread != nullptr);
-  return thread->CreateVersionedPeerObject(new StringObject(s_), "");
+  return thread->CreateVersionedObject(new StringObject(s_), "");
 }
 
 void StringExpression::PopulateExpressionProto(
@@ -158,11 +158,10 @@ ExpressionExpression::ExpressionExpression(Expression* expression)
     : expression_(CHECK_NOTNULL(expression)) {
 }
 
-PeerObject* ExpressionExpression::Evaluate(PeerObject* symbol_table_object,
-                                           Thread* thread) const {
+ObjectReference* ExpressionExpression::Evaluate(
+    ObjectReference* symbol_table_object, Thread* thread) const {
   CHECK(thread != nullptr);
-  return thread->CreateVersionedPeerObject(new ExpressionObject(expression_),
-                                           "");
+  return thread->CreateVersionedObject(new ExpressionObject(expression_), "");
 }
 
 void ExpressionExpression::PopulateExpressionProto(
@@ -190,9 +189,9 @@ VariableExpression::VariableExpression(const string& name)
   CHECK(!name.empty());
 }
 
-PeerObject* VariableExpression::Evaluate(PeerObject* symbol_table_object,
-                                         Thread* thread) const {
-  PeerObject* object = nullptr;
+ObjectReference* VariableExpression::Evaluate(
+    ObjectReference* symbol_table_object, Thread* thread) const {
+  ObjectReference* object = nullptr;
   if (!GetVariable(symbol_table_object, thread, name_, &object)) {
     return nullptr;
   }
@@ -225,18 +224,18 @@ FunctionExpression::FunctionExpression(Expression* function,
   }
 }
 
-PeerObject* FunctionExpression::Evaluate(PeerObject* symbol_table_object,
-                                         Thread* thread) const {
+ObjectReference* FunctionExpression::Evaluate(
+    ObjectReference* symbol_table_object, Thread* thread) const {
   CHECK(thread != nullptr);
 
-  PeerObject* const function_object = function_->Evaluate(symbol_table_object,
-                                                          thread);
+  ObjectReference* const function_object = function_->Evaluate(
+      symbol_table_object, thread);
 
   if (function_object == nullptr) {
     return nullptr;
   }
 
-  PeerObject* const parameter_list_object = EvaluateExpressionList(
+  ObjectReference* const parameter_list_object = EvaluateExpressionList(
       symbol_table_object, thread, parameters_);
 
   if (parameter_list_object == nullptr) {
@@ -244,8 +243,8 @@ PeerObject* FunctionExpression::Evaluate(PeerObject* symbol_table_object,
   }
 
   vector<Value> parameter_values(2);
-  parameter_values[0].set_peer_object(0, symbol_table_object);
-  parameter_values[1].set_peer_object(0, parameter_list_object);
+  parameter_values[0].set_object_reference(0, symbol_table_object);
+  parameter_values[1].set_object_reference(0, parameter_list_object);
 
   Value return_value;
   if (!thread->CallMethod(function_object, "call", parameter_values,
@@ -253,10 +252,10 @@ PeerObject* FunctionExpression::Evaluate(PeerObject* symbol_table_object,
     return nullptr;
   }
 
-  CHECK_EQ(return_value.type(), Value::PEER_OBJECT)
+  CHECK_EQ(return_value.type(), Value::OBJECT_REFERENCE)
       << "The 'call' method should have returned an object.";
 
-  return return_value.peer_object();
+  return return_value.object_reference();
 }
 
 void FunctionExpression::PopulateExpressionProto(
@@ -310,8 +309,8 @@ ListExpression::ListExpression(const vector<Expression*>& list_items)
   }
 }
 
-PeerObject* ListExpression::Evaluate(PeerObject* symbol_table_object,
-                                     Thread* thread) const {
+ObjectReference* ListExpression::Evaluate(ObjectReference* symbol_table_object,
+                                          Thread* thread) const {
   return EvaluateExpressionList(symbol_table_object, thread, list_items_);
 }
 

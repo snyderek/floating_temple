@@ -52,17 +52,17 @@ shared_ptr<LiveObject> VersionedLiveObject::Clone() const {
 }
 
 void VersionedLiveObject::Serialize(
-    string* data, vector<PeerObjectImpl*>* referenced_peer_objects) const {
-  GetNode()->Serialize(data, referenced_peer_objects);
+    string* data, vector<ObjectReferenceImpl*>* object_references) const {
+  GetNode()->Serialize(data, object_references);
 }
 
 void VersionedLiveObject::InvokeMethod(Thread* thread,
-                                       PeerObjectImpl* peer_object,
+                                       ObjectReferenceImpl* object_reference,
                                        const string& method_name,
                                        const vector<Value>& parameters,
                                        Value* return_value) {
   LiveObjectNode* const new_node = GetNode()->InvokeMethod(
-      thread, peer_object, method_name, parameters, return_value);
+      thread, object_reference, method_name, parameters, return_value);
 
   LiveObjectNode* old_node = nullptr;
   {

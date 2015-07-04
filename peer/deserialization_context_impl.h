@@ -24,17 +24,17 @@
 namespace floating_temple {
 namespace peer {
 
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 
 class DeserializationContextImpl : public DeserializationContext {
  public:
   explicit DeserializationContextImpl(
-      const std::vector<PeerObjectImpl*>* peer_objects);
+      const std::vector<ObjectReferenceImpl*>* object_references);
 
-  PeerObject* GetPeerObjectByIndex(int index) override;
+  ObjectReference* GetObjectReferenceByIndex(int index) override;
 
  private:
-  const std::vector<PeerObjectImpl*>* const peer_objects_;
+  const std::vector<ObjectReferenceImpl*>* const object_references_;
 
   DISALLOW_COPY_AND_ASSIGN(DeserializationContextImpl);
 };

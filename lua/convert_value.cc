@@ -28,7 +28,7 @@ using std::string;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace lua {
 
@@ -58,11 +58,11 @@ void LuaValueToValue(const TValue* lua_value, Value* value) {
       break;
     }
 
-    case LUA_TPEEROBJECT:
-      value->set_peer_object(
+    case LUA_TOBJECTREFERENCE:
+      value->set_object_reference(
           lua_type,
-          *reinterpret_cast<floating_temple::PeerObject* const*>(
-              &val_(lua_value).po));
+          *reinterpret_cast<floating_temple::ObjectReference* const*>(
+              &val_(lua_value).obj_ref));
       break;
 
     default:
@@ -96,9 +96,10 @@ void ValueToLuaValue(const Value& value, TValue* lua_value) {
       break;
     }
 
-    case LUA_TPEEROBJECT: {
-      *reinterpret_cast<floating_temple::PeerObject**>(&val_(lua_value).po) =
-          value.peer_object();
+    case LUA_TOBJECTREFERENCE: {
+      *reinterpret_cast<floating_temple::ObjectReference**>(
+          &val_(lua_value).obj_ref) =
+          value.object_reference();
       settt_(lua_value, lua_type);
       break;
     }

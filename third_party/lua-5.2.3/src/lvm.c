@@ -281,8 +281,9 @@ int luaV_equalobj_ (lua_State *L, const TValue *t1, const TValue *t2) {
       tm = get_equalTM(L, hvalue(t1)->metatable, hvalue(t2)->metatable, TM_EQ);
       break;  /* will try TM */
     }
-    case LUA_TPEEROBJECT:
-      return (*ft_peerobjectsequalhook)(&val_(t1).po, &val_(t2).po);
+    case LUA_TOBJECTREFERENCE:
+      return (*ft_objectreferencesequalhook)(&val_(t1).obj_ref,
+                                             &val_(t2).obj_ref);
     default:
       lua_assert(iscollectable(t1));
       return gcvalue(t1) == gcvalue(t2);

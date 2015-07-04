@@ -51,7 +51,8 @@ class VersionedObjectContent : public ObjectContent {
   std::shared_ptr<const LiveObject> GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
-      std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
+          new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject) override;
   void GetTransactions(

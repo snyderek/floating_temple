@@ -34,7 +34,7 @@
 #include "peer/live_object.h"
 #include "peer/max_version_map.h"
 #include "peer/object_content.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/shared_object_transaction.h"
@@ -79,13 +79,15 @@ void SharedObject::AddInterestedPeer(const CanonicalPeer* interested_peer) {
   interested_peers_.insert(interested_peer);
 }
 
-bool SharedObject::HasPeerObject(const PeerObjectImpl* peer_object) const {
-  CHECK(peer_object != nullptr);
+bool SharedObject::HasObjectReference(
+    const ObjectReferenceImpl* object_reference) const {
+  CHECK(object_reference != nullptr);
 
-  MutexLock lock(&peer_objects_mu_);
+  MutexLock lock(&object_references_mu_);
 
-  for (const PeerObjectImpl* const matching_peer_object : peer_objects_) {
-    if (matching_peer_object == peer_object) {
+  for (const ObjectReferenceImpl* const matching_object_reference :
+           object_references_) {
+    if (matching_object_reference == object_reference) {
       return true;
     }
   }
@@ -93,43 +95,44 @@ bool SharedObject::HasPeerObject(const PeerObjectImpl* peer_object) const {
   return false;
 }
 
-void SharedObject::AddPeerObject(PeerObjectImpl* new_peer_object) {
-  CHECK(new_peer_object != nullptr);
+void SharedObject::AddObjectReference(
+    ObjectReferenceImpl* new_object_reference) {
+  CHECK(new_object_reference != nullptr);
 
-  const bool versioned = new_peer_object->versioned();
+  const bool versioned = new_object_reference->versioned();
 
-  MutexLock lock(&peer_objects_mu_);
+  MutexLock lock(&object_references_mu_);
 
-  if (!peer_objects_.empty()) {
-    CHECK_EQ(versioned, peer_objects_.front()->versioned());
+  if (!object_references_.empty()) {
+    CHECK_EQ(versioned, object_references_.front()->versioned());
   }
 
-  peer_objects_.push_back(new_peer_object);
+  object_references_.push_back(new_object_reference);
 }
 
-PeerObjectImpl* SharedObject::GetOrCreatePeerObject(bool versioned) {
+ObjectReferenceImpl* SharedObject::GetOrCreateObjectReference(bool versioned) {
   {
-    MutexLock lock(&peer_objects_mu_);
+    MutexLock lock(&object_references_mu_);
 
-    if (!peer_objects_.empty()) {
-      return peer_objects_.back();
+    if (!object_references_.empty()) {
+      return object_references_.back();
     }
   }
 
-  PeerObjectImpl* const new_peer_object =
-      transaction_store_->CreateUnboundPeerObject(versioned);
-  CHECK_EQ(new_peer_object->SetSharedObjectIfUnset(this), this);
+  ObjectReferenceImpl* const new_object_reference =
+      transaction_store_->CreateUnboundObjectReference(versioned);
+  CHECK_EQ(new_object_reference->SetSharedObjectIfUnset(this), this);
 
   {
-    MutexLock lock(&peer_objects_mu_);
+    MutexLock lock(&object_references_mu_);
 
-    if (peer_objects_.empty()) {
-      peer_objects_.push_back(new_peer_object);
-      return new_peer_object;
+    if (object_references_.empty()) {
+      object_references_.push_back(new_object_reference);
+      return new_object_reference;
     } else {
       // TODO(dss): Notify the transaction store that it can delete
-      // new_peer_object.
-      return peer_objects_.back();
+      // new_object_reference.
+      return object_references_.back();
     }
   }
 }
@@ -137,10 +140,10 @@ PeerObjectImpl* SharedObject::GetOrCreatePeerObject(bool versioned) {
 void SharedObject::CreateUnversionedObjectContent(
     const shared_ptr<LiveObject>& live_object) {
   {
-    MutexLock lock(&peer_objects_mu_);
+    MutexLock lock(&object_references_mu_);
 
-    if (!peer_objects_.empty()) {
-      CHECK(!peer_objects_.front()->versioned());
+    if (!object_references_.empty()) {
+      CHECK(!object_references_.front()->versioned());
     }
   }
 
@@ -157,7 +160,7 @@ void SharedObject::CreateUnversionedObjectContent(
 shared_ptr<const LiveObject> SharedObject::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
-    unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   ObjectContent* const object_content_temp = GetObjectContent();
 
@@ -167,7 +170,7 @@ shared_ptr<const LiveObject> SharedObject::GetWorkingVersion(
 
   return object_content_temp->GetWorkingVersion(transaction_store_version_map,
                                                 sequence_point,
-                                                new_peer_objects,
+                                                new_object_references,
                                                 transactions_to_reject);
 }
 
@@ -225,7 +228,7 @@ void SharedObject::SetCachedLiveObject(
 
 string SharedObject::Dump() const {
   MutexLock lock1(&interested_peers_mu_);
-  MutexLock lock2(&peer_objects_mu_);
+  MutexLock lock2(&object_references_mu_);
   MutexLock lock3(&object_content_mu_);
 
   return Dump_Locked();
@@ -268,22 +271,23 @@ string SharedObject::Dump_Locked() const {
     interested_peer_ids_string += " ]";
   }
 
-  string peer_objects_string;
-  if (peer_objects_.empty()) {
-    peer_objects_string = "[]";
+  string object_references_string;
+  if (object_references_.empty()) {
+    object_references_string = "[]";
   } else {
-    peer_objects_string = "[";
+    object_references_string = "[";
 
-    for (vector<PeerObjectImpl*>::const_iterator it = peer_objects_.begin();
-         it != peer_objects_.end(); ++it) {
-      if (it != peer_objects_.begin()) {
-        peer_objects_string += ",";
+    for (vector<ObjectReferenceImpl*>::const_iterator it =
+             object_references_.begin();
+         it != object_references_.end(); ++it) {
+      if (it != object_references_.begin()) {
+        object_references_string += ",";
       }
 
-      StringAppendF(&peer_objects_string, " \"%p\"", *it);
+      StringAppendF(&object_references_string, " \"%p\"", *it);
     }
 
-    peer_objects_string += " ]";
+    object_references_string += " ]";
   }
 
   string versioned_object_string;
@@ -295,9 +299,9 @@ string SharedObject::Dump_Locked() const {
 
   return StringPrintf(
       "{ \"object_id\": \"%s\", \"interested_peers\": %s, "
-      "\"peer_objects\": %s, \"versioned_object\": %s }",
+      "\"object_references\": %s, \"versioned_object\": %s }",
       UuidToString(object_id_).c_str(), interested_peer_ids_string.c_str(),
-      peer_objects_string.c_str(), versioned_object_string.c_str());
+      object_references_string.c_str(), versioned_object_string.c_str());
 }
 
 }  // namespace peer

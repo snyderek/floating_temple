@@ -32,7 +32,7 @@ using std::string;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 static_assert(sizeof(int) <= sizeof(int64),
               "This code assumes that the 'int' type is small enough to fit "
@@ -70,8 +70,9 @@ void MakeValue(PyObject* in, Value* out) {
     out->set_empty(LOCAL_TYPE_PYOBJECT);
   } else {
     InterpreterImpl* const interpreter = InterpreterImpl::instance();
-    PeerObject* const peer_object = interpreter->PyProxyObjectToPeerObject(in);
-    out->set_peer_object(LOCAL_TYPE_PYOBJECT, peer_object);
+    ObjectReference* const object_reference =
+        interpreter->PyProxyObjectToObjectReference(in);
+    out->set_object_reference(LOCAL_TYPE_PYOBJECT, object_reference);
   }
 }
 
@@ -129,9 +130,10 @@ PyObject* ExtractValue(const Value& value, MethodContext* method_context) {
     case Value::EMPTY:
       return nullptr;
 
-    case Value::PEER_OBJECT: {
+    case Value::OBJECT_REFERENCE: {
       InterpreterImpl* const interpreter = InterpreterImpl::instance();
-      return interpreter->PeerObjectToPyProxyObject(value.peer_object());
+      return interpreter->ObjectReferenceToPyProxyObject(
+          value.object_reference());
     }
 
     default:

@@ -22,7 +22,7 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "include/c++/deserialization_context.h"
-#include "include/c++/peer_object.h"
+#include "include/c++/object_reference.h"
 #include "include/c++/serialization_context.h"
 #include "include/c++/value.h"
 #include "python/interpreter_impl.h"
@@ -71,13 +71,14 @@ string DictLocalObject::Dump() const {
         item_found = true;
       }
 
-      PeerObject* const key_peer_object =
-          interpreter->PyProxyObjectToPeerObject(py_key);
-      PeerObject* const value_peer_object =
-          interpreter->PyProxyObjectToPeerObject(py_value);
+      ObjectReference* const key_object_reference =
+          interpreter->PyProxyObjectToObjectReference(py_key);
+      ObjectReference* const value_object_reference =
+          interpreter->PyProxyObjectToObjectReference(py_value);
 
-      StringAppendF(&items_string, " %s: %s", key_peer_object->Dump().c_str(),
-                    value_peer_object->Dump().c_str());
+      StringAppendF(&items_string, " %s: %s",
+                    key_object_reference->Dump().c_str(),
+                    value_object_reference->Dump().c_str());
     }
   }
 
@@ -114,15 +115,15 @@ DictLocalObject* DictLocalObject::ParseDictProto(
       const int value_object_index = static_cast<int>(
           item_proto.value().object_index());
 
-      PeerObject* const key_peer_object = context->GetPeerObjectByIndex(
-          key_object_index);
-      PeerObject* const value_peer_object = context->GetPeerObjectByIndex(
-          value_object_index);
+      ObjectReference* const key_object_reference =
+          context->GetObjectReferenceByIndex(key_object_index);
+      ObjectReference* const value_object_reference =
+          context->GetObjectReferenceByIndex(value_object_index);
 
-      PyObject* const py_key = interpreter->PeerObjectToPyProxyObject(
-          key_peer_object);
-      PyObject* const py_value = interpreter->PeerObjectToPyProxyObject(
-          value_peer_object);
+      PyObject* const py_key = interpreter->ObjectReferenceToPyProxyObject(
+          key_object_reference);
+      PyObject* const py_value = interpreter->ObjectReferenceToPyProxyObject(
+          value_object_reference);
 
       CHECK_EQ(PyDict_SetItem(py_dict, py_key, py_value), 0);
     }
@@ -148,15 +149,15 @@ void DictLocalObject::PopulateObjectProto(ObjectProto* object_proto,
     PythonGilLock lock;
 
     while (PyDict_Next(py_dict, &pos, &py_key, &py_value) != 0) {
-      PeerObject* const key_peer_object =
-          interpreter->PyProxyObjectToPeerObject(py_key);
-      PeerObject* const value_peer_object =
-          interpreter->PyProxyObjectToPeerObject(py_value);
+      ObjectReference* const key_object_reference =
+          interpreter->PyProxyObjectToObjectReference(py_key);
+      ObjectReference* const value_object_reference =
+          interpreter->PyProxyObjectToObjectReference(py_value);
 
-      const int key_object_index = context->GetIndexForPeerObject(
-          key_peer_object);
-      const int value_object_index = context->GetIndexForPeerObject(
-          value_peer_object);
+      const int key_object_index = context->GetIndexForObjectReference(
+          key_object_reference);
+      const int value_object_index = context->GetIndexForObjectReference(
+          value_object_reference);
 
       MappingItemProto* const item = dict_proto->add_item();
       item->mutable_key()->set_object_index(key_object_index);

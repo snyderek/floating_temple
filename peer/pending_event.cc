@@ -37,102 +37,107 @@ namespace floating_temple {
 namespace peer {
 
 PendingEvent::PendingEvent(
-    const unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>&
+    const unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>&
         live_objects,
-    const unordered_set<PeerObjectImpl*>& new_peer_objects,
-    PeerObjectImpl* prev_peer_object)
+    const unordered_set<ObjectReferenceImpl*>& new_object_references,
+    ObjectReferenceImpl* prev_object_reference)
     : live_objects_(live_objects),
-      new_peer_objects_(new_peer_objects),
-      prev_peer_object_(prev_peer_object) {
-  // Check that new_peer_objects is a subset of keys(live_objects).
-  for (PeerObjectImpl* const peer_object : new_peer_objects) {
-    CHECK(live_objects.find(peer_object) != live_objects.end());
+      new_object_references_(new_object_references),
+      prev_object_reference_(prev_object_reference) {
+  // Check that new_object_references is a subset of keys(live_objects).
+  for (ObjectReferenceImpl* const object_reference : new_object_references) {
+    CHECK(live_objects.find(object_reference) != live_objects.end());
   }
 }
 
-void PendingEvent::GetMethodCall(PeerObjectImpl** next_peer_object,
+void PendingEvent::GetMethodCall(ObjectReferenceImpl** next_object_reference,
                                  const string** method_name,
                                  const vector<Value>** parameters) const {
   LOG(FATAL) << "Invalid call to GetMethodCall (type == "
              << static_cast<int>(this->type()) << ")";
 }
 
-void PendingEvent::GetMethodReturn(PeerObjectImpl** next_peer_object,
+void PendingEvent::GetMethodReturn(ObjectReferenceImpl** next_object_reference,
                                    const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
 }
 
 ObjectCreationPendingEvent::ObjectCreationPendingEvent(
-    PeerObjectImpl* prev_peer_object, PeerObjectImpl* new_peer_object,
+    ObjectReferenceImpl* prev_object_reference,
+    ObjectReferenceImpl* new_object_reference,
     const shared_ptr<const LiveObject>& new_live_object)
     : PendingEvent(
-          MakeSingletonSet<unordered_map<PeerObjectImpl*,
+          MakeSingletonSet<unordered_map<ObjectReferenceImpl*,
                                          shared_ptr<const LiveObject>>>(
-              make_pair(CHECK_NOTNULL(new_peer_object), new_live_object)),
-          MakeSingletonSet<unordered_set<PeerObjectImpl*>>(new_peer_object),
-          prev_peer_object) {
+              make_pair(CHECK_NOTNULL(new_object_reference), new_live_object)),
+          MakeSingletonSet<unordered_set<ObjectReferenceImpl*>>(
+              new_object_reference),
+          prev_object_reference) {
 }
 
 BeginTransactionPendingEvent::BeginTransactionPendingEvent(
-    PeerObjectImpl* prev_peer_object)
+    ObjectReferenceImpl* prev_object_reference)
     : PendingEvent(
-          unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>(),
-          unordered_set<PeerObjectImpl*>(), CHECK_NOTNULL(prev_peer_object)) {
+          unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>(),
+          unordered_set<ObjectReferenceImpl*>(),
+          CHECK_NOTNULL(prev_object_reference)) {
 }
 
 EndTransactionPendingEvent::EndTransactionPendingEvent(
-    PeerObjectImpl* prev_peer_object)
+    ObjectReferenceImpl* prev_object_reference)
     : PendingEvent(
-          unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>(),
-          unordered_set<PeerObjectImpl*>(), CHECK_NOTNULL(prev_peer_object)) {
+          unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>(),
+          unordered_set<ObjectReferenceImpl*>(),
+          CHECK_NOTNULL(prev_object_reference)) {
 }
 
 MethodCallPendingEvent::MethodCallPendingEvent(
-    const unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>&
+    const unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>&
         live_objects,
-    const unordered_set<PeerObjectImpl*>& new_peer_objects,
-    PeerObjectImpl* prev_peer_object,
-    PeerObjectImpl* next_peer_object,
+    const unordered_set<ObjectReferenceImpl*>& new_object_references,
+    ObjectReferenceImpl* prev_object_reference,
+    ObjectReferenceImpl* next_object_reference,
     const string& method_name,
     const vector<Value>& parameters)
-    : PendingEvent(live_objects, new_peer_objects, prev_peer_object),
-      next_peer_object_(next_peer_object),
+    : PendingEvent(live_objects, new_object_references, prev_object_reference),
+      next_object_reference_(next_object_reference),
       method_name_(method_name),
       parameters_(parameters) {
   CHECK(!method_name.empty());
 }
 
 void MethodCallPendingEvent::GetMethodCall(
-    PeerObjectImpl** next_peer_object, const string** method_name,
+    ObjectReferenceImpl** next_object_reference, const string** method_name,
     const vector<Value>** parameters) const {
-  CHECK(next_peer_object != nullptr);
+  CHECK(next_object_reference != nullptr);
   CHECK(method_name != nullptr);
   CHECK(parameters != nullptr);
 
-  *next_peer_object = next_peer_object_;
+  *next_object_reference = next_object_reference_;
   *method_name = &method_name_;
   *parameters = &parameters_;
 }
 
 MethodReturnPendingEvent::MethodReturnPendingEvent(
-    const unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>&
+    const unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>&
         live_objects,
-    const unordered_set<PeerObjectImpl*>& new_peer_objects,
-    PeerObjectImpl* prev_peer_object,
-    PeerObjectImpl* next_peer_object,
+    const unordered_set<ObjectReferenceImpl*>& new_object_references,
+    ObjectReferenceImpl* prev_object_reference,
+    ObjectReferenceImpl* next_object_reference,
     const Value& return_value)
-    : PendingEvent(live_objects, new_peer_objects, prev_peer_object),
-      next_peer_object_(next_peer_object),
+    : PendingEvent(live_objects, new_object_references, prev_object_reference),
+      next_object_reference_(next_object_reference),
       return_value_(return_value) {
 }
 
 void MethodReturnPendingEvent::GetMethodReturn(
-    PeerObjectImpl** next_peer_object, const Value** return_value) const {
-  CHECK(next_peer_object != nullptr);
+    ObjectReferenceImpl** next_object_reference,
+    const Value** return_value) const {
+  CHECK(next_object_reference != nullptr);
   CHECK(return_value != nullptr);
 
-  *next_peer_object = next_peer_object_;
+  *next_object_reference = next_object_reference_;
   *return_value = &return_value_;
 }
 

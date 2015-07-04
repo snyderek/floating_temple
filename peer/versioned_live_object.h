@@ -37,9 +37,9 @@ class VersionedLiveObject : public LiveObject {
   std::shared_ptr<LiveObject> Clone() const override;
   void Serialize(
       std::string* data,
-      std::vector<PeerObjectImpl*>* referenced_peer_objects) const override;
+      std::vector<ObjectReferenceImpl*>* object_references) const override;
   void InvokeMethod(Thread* thread,
-                    PeerObjectImpl* peer_object,
+                    ObjectReferenceImpl* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;

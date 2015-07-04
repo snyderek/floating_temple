@@ -33,7 +33,7 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 class Thread;
 class VersionedLocalObject;
 
@@ -46,14 +46,14 @@ class InterpreterImpl : public Interpreter {
 
   void BeginTransaction();
   void EndTransaction();
-  bool CallMethod(PeerObject* peer_object,
+  bool CallMethod(ObjectReference* object_reference,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,
                   Value* return_value);
 
-  template<class LocalObjectType> PeerObject* CreateVersionedPeerObject(
+  template<class LocalObjectType> ObjectReference* CreateVersionedObject(
       PyObject* py_object, const std::string& name);
-  template<class LocalObjectType> PeerObject* CreateUnversionedPeerObject(
+  template<class LocalObjectType> ObjectReference* CreateUnversionedObject(
       PyObject* py_object, const std::string& name);
 
   Thread* SetThreadObject(Thread* new_thread);
@@ -62,16 +62,16 @@ class InterpreterImpl : public Interpreter {
       const void* buffer, std::size_t buffer_size,
       DeserializationContext* context) override;
 
-  PyObject* PeerObjectToPyProxyObject(PeerObject* peer_object);
-  PeerObject* PyProxyObjectToPeerObject(PyObject* py_object);
+  PyObject* ObjectReferenceToPyProxyObject(ObjectReference* object_reference);
+  ObjectReference* PyProxyObjectToObjectReference(PyObject* py_object);
 
   static InterpreterImpl* instance();
 
  private:
   Thread* GetThreadObject();
 
-  std::unordered_map<PeerObject*, PyObject*> proxy_objects_;
-  std::unordered_map<PyObject*, PeerObject*> unserializable_objects_;
+  std::unordered_map<ObjectReference*, PyObject*> proxy_objects_;
+  std::unordered_map<PyObject*, ObjectReference*> unserializable_objects_;
   mutable Mutex objects_mu_;
 
   static __thread Thread* thread_object_;
@@ -81,7 +81,7 @@ class InterpreterImpl : public Interpreter {
 };
 
 template<class LocalObjectType>
-PeerObject* InterpreterImpl::CreateVersionedPeerObject(
+ObjectReference* InterpreterImpl::CreateVersionedObject(
     PyObject* py_object, const std::string& name) {
   CHECK(py_object != nullptr);
   CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
@@ -92,11 +92,11 @@ PeerObject* InterpreterImpl::CreateVersionedPeerObject(
   }
 
   LocalObjectType* const local_object = new LocalObjectType(py_object);
-  return GetThreadObject()->CreateVersionedPeerObject(local_object, name);
+  return GetThreadObject()->CreateVersionedObject(local_object, name);
 }
 
 template<class LocalObjectType>
-PeerObject* InterpreterImpl::CreateUnversionedPeerObject(
+ObjectReference* InterpreterImpl::CreateUnversionedObject(
     PyObject* py_object, const std::string& name) {
   CHECK(py_object != nullptr);
   CHECK(Py_TYPE(py_object) != &PyProxyObject_Type);
@@ -107,7 +107,7 @@ PeerObject* InterpreterImpl::CreateUnversionedPeerObject(
   }
 
   LocalObjectType* const local_object = new LocalObjectType(py_object);
-  return GetThreadObject()->CreateUnversionedPeerObject(local_object, name);
+  return GetThreadObject()->CreateUnversionedObject(local_object, name);
 }
 
 }  // namespace python

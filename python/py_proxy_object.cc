@@ -31,7 +31,7 @@ using std::vector;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace python {
 namespace {
@@ -41,7 +41,7 @@ const uint64 kMagicNumber = 0x32418b0f5ce3c367;
 struct PyProxyObject {
   PyObject_HEAD
   uint64 magic_number;
-  PeerObject* peer_object;
+  ObjectReference* object_reference;
 };
 
 vector<Value> CreateParameterVector(PyObject* self) {
@@ -69,13 +69,14 @@ T MethodBody(PyObject* self, const string& method_name,
   VLOG(3) << "Shim method: " << method_name;
 
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
-  PeerObject* const peer_object = PyProxyObject_GetPeerObject(self);
+  ObjectReference* const object_reference = PyProxyObject_GetObjectReference(
+      self);
 
   Value return_value;
   bool success = false;
   {
     Py_BEGIN_ALLOW_THREADS
-    success = interpreter->CallMethod(peer_object, method_name, params,
+    success = interpreter->CallMethod(object_reference, method_name, params,
                                       &return_value);
     Py_END_ALLOW_THREADS
   }
@@ -317,20 +318,20 @@ PyTypeObject PyProxyObject_Type = {
   PyObject_Del                                // tp_free
 };
 
-PyObject* PyProxyObject_New(PeerObject* peer_object) {
-  CHECK(peer_object != nullptr);
+PyObject* PyProxyObject_New(ObjectReference* object_reference) {
+  CHECK(object_reference != nullptr);
 
   PyProxyObject* const py_proxy_object = PyObject_New(PyProxyObject,
                                                       &PyProxyObject_Type);
   CHECK(py_proxy_object != nullptr);
 
   py_proxy_object->magic_number = kMagicNumber;
-  py_proxy_object->peer_object = peer_object;
+  py_proxy_object->object_reference = object_reference;
 
   return reinterpret_cast<PyObject*>(py_proxy_object);
 }
 
-PeerObject* PyProxyObject_GetPeerObject(PyObject* py_object) {
+ObjectReference* PyProxyObject_GetObjectReference(PyObject* py_object) {
   CHECK(py_object != nullptr);
   CHECK(Py_TYPE(py_object) == &PyProxyObject_Type);
 
@@ -338,9 +339,9 @@ PeerObject* PyProxyObject_GetPeerObject(PyObject* py_object) {
       py_object);
 
   CHECK_EQ(py_proxy_object->magic_number, kMagicNumber);
-  CHECK(py_proxy_object->peer_object != nullptr);
+  CHECK(py_proxy_object->object_reference != nullptr);
 
-  return py_proxy_object->peer_object;
+  return py_proxy_object->object_reference;
 }
 
 }  // namespace python

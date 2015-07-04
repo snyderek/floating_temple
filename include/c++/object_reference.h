@@ -13,20 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef INCLUDE_CPP_PEER_OBJECT_H_
-#define INCLUDE_CPP_PEER_OBJECT_H_
+#ifndef INCLUDE_CPP_OBJECT_REFERENCE_H_
+#define INCLUDE_CPP_OBJECT_REFERENCE_H_
 
 #include <string>
 
 namespace floating_temple {
 
-class PeerObject {
+class ObjectReference {
  public:
-  virtual ~PeerObject() {}
+  virtual ~ObjectReference() {}
 
   virtual std::string Dump() const = 0;
 };
 
 }  // namespace floating_temple
 
-#endif  // INCLUDE_CPP_PEER_OBJECT_H_
+#endif  // INCLUDE_CPP_OBJECT_REFERENCE_H_

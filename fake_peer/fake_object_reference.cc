@@ -13,34 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FAKE_PEER_FAKE_PEER_OBJECT_H_
-#define FAKE_PEER_FAKE_PEER_OBJECT_H_
+#include "fake_peer/fake_object_reference.h"
 
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
-#include "include/c++/peer_object.h"
+#include "base/logging.h"
+#include "base/string_printf.h"
+#include "include/c++/local_object.h"
+
+using std::string;
 
 namespace floating_temple {
 
-class LocalObject;
+FakeObjectReference::FakeObjectReference(LocalObject* local_object)
+    : local_object_(CHECK_NOTNULL(local_object)) {
+}
 
-class FakePeerObject : public PeerObject {
- public:
-  explicit FakePeerObject(LocalObject* local_object);
-  ~FakePeerObject() override;
+FakeObjectReference::~FakeObjectReference() {
+  VLOG(1) << "Deleting fake object reference " << StringPrintf("%p", this);
+}
 
-  LocalObject* local_object() { return local_object_.get(); }
-
-  std::string Dump() const override;
-
- private:
-  const std::unique_ptr<LocalObject> local_object_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePeerObject);
-};
+string FakeObjectReference::Dump() const {
+  return StringPrintf("{ \"local_object\": \"%p\" }", local_object_.get());
+}
 
 }  // namespace floating_temple
-
-#endif  // FAKE_PEER_FAKE_PEER_OBJECT_H_

@@ -20,7 +20,7 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "include/c++/peer_object.h"
+#include "include/c++/object_reference.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 
@@ -30,7 +30,7 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-bool EnterScope(PeerObject* symbol_table_object, Thread* thread) {
+bool EnterScope(ObjectReference* symbol_table_object, Thread* thread) {
   CHECK(thread != nullptr);
 
   Value dummy;
@@ -38,7 +38,7 @@ bool EnterScope(PeerObject* symbol_table_object, Thread* thread) {
                             &dummy);
 }
 
-bool LeaveScope(PeerObject* symbol_table_object, Thread* thread) {
+bool LeaveScope(ObjectReference* symbol_table_object, Thread* thread) {
   CHECK(thread != nullptr);
 
   Value dummy;
@@ -46,7 +46,7 @@ bool LeaveScope(PeerObject* symbol_table_object, Thread* thread) {
                             &dummy);
 }
 
-bool IsVariableSet(PeerObject* symbol_table_object, Thread* thread,
+bool IsVariableSet(ObjectReference* symbol_table_object, Thread* thread,
                    const string& name, bool* is_set) {
   CHECK(thread != nullptr);
   CHECK(is_set != nullptr);
@@ -66,8 +66,8 @@ bool IsVariableSet(PeerObject* symbol_table_object, Thread* thread,
   return true;
 }
 
-bool GetVariable(PeerObject* symbol_table_object, Thread* thread,
-                 const string& name, PeerObject** object) {
+bool GetVariable(ObjectReference* symbol_table_object, Thread* thread,
+                 const string& name, ObjectReference** object) {
   CHECK(thread != nullptr);
   CHECK(object != nullptr);
 
@@ -81,19 +81,19 @@ bool GetVariable(PeerObject* symbol_table_object, Thread* thread,
     return false;
   }
 
-  *object = object_value.peer_object();
+  *object = object_value.object_reference();
   return true;
 }
 
-bool SetVariable(PeerObject* symbol_table_object, Thread* thread,
-                 const string& name, PeerObject* object) {
+bool SetVariable(ObjectReference* symbol_table_object, Thread* thread,
+                 const string& name, ObjectReference* object) {
   CHECK(thread != nullptr);
 
   VLOG(1) << "Symbol table: Set \"" << CEscape(name) << "\"";
 
   vector<Value> params(2);
   params[0].set_string_value(0, name);
-  params[1].set_peer_object(0, object);
+  params[1].set_object_reference(0, object);
 
   Value dummy;
   if (!thread->CallMethod(symbol_table_object, "set", params, &dummy)) {

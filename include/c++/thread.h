@@ -23,7 +23,7 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 class UnversionedLocalObject;
 class VersionedLocalObject;
 
@@ -60,26 +60,26 @@ class Thread {
   // return from LocalObject::InvokeMethod.
   virtual bool EndTransaction() = 0;
 
-  // Returns a pointer to a newly created peer object that corresponds to an
+  // Returns a reference to a newly created shared object that corresponds to an
   // existing local object. *initial_version is the initial version of the local
   // object; it may later be cloned via VersionedLocalObject::Clone to create
   // additional versions of the object.
   //
   // The peer takes ownership of *initial_version. The caller must not take
-  // ownership of the returned PeerObject instance.
+  // ownership of the returned ObjectReference instance.
   //
   // If 'name' is not the empty string, it will be used as the name for the new
   // object. Object names are global: if a remote peer creates an object with
   // the same name as an object on the local peer, the two objects will be
   // treated as a single object by the distributed interpreter.
   //
-  // TODO(dss): The local interpreter should take ownership of the PeerObject
-  // instance. Otherwise, the peer has no way of knowing when the local
-  // interpreter is done using it.
-  virtual PeerObject* CreateVersionedPeerObject(
+  // TODO(dss): The local interpreter should take ownership of the
+  // ObjectReference instance. Otherwise, the peer has no way of knowing when
+  // the local interpreter is done using it.
+  virtual ObjectReference* CreateVersionedObject(
       VersionedLocalObject* initial_version, const std::string& name) = 0;
 
-  virtual PeerObject* CreateUnversionedPeerObject(
+  virtual ObjectReference* CreateUnversionedObject(
       UnversionedLocalObject* initial_version, const std::string& name) = 0;
 
   // Calls the specified method on the specified object, and copies the return
@@ -93,13 +93,13 @@ class Thread {
   //
   // IMPORTANT: If CallMethod returns false, the caller must immediately return
   // from LocalObject::InvokeMethod.
-  virtual bool CallMethod(PeerObject* peer_object,
+  virtual bool CallMethod(ObjectReference* object_reference,
                           const std::string& method_name,
                           const std::vector<Value>& parameters,
                           Value* return_value) = 0;
 
-  virtual bool ObjectsAreEquivalent(const PeerObject* a,
-                                    const PeerObject* b) const = 0;
+  virtual bool ObjectsAreIdentical(const ObjectReference* a,
+                                   const ObjectReference* b) const = 0;
 };
 
 }  // namespace floating_temple

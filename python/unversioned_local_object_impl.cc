@@ -215,12 +215,12 @@ UnversionedLocalObjectImpl::~UnversionedLocalObjectImpl() {
 // TODO(dss): This implementation of this method is duplicated in the
 // VersionedLocalObjectImpl class. Factor out the duplicate code.
 void UnversionedLocalObjectImpl::InvokeMethod(Thread* thread,
-                                              PeerObject* peer_object,
+                                              ObjectReference* object_reference,
                                               const string& method_name,
                                               const vector<Value>& parameters,
                                               Value* return_value) {
   CHECK(thread != nullptr);
-  CHECK(peer_object != nullptr);
+  CHECK(object_reference != nullptr);
 
   VLOG(3) << "Invoke method on local object: " << method_name;
 

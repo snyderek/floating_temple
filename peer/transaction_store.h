@@ -53,9 +53,9 @@ class CommittedValue;
 class EventProto;
 class GetObjectMessage;
 class InvalidateTransactionsMessage;
+class ObjectReferenceImpl;
 class PeerMessage;
 class PeerMessageSender;
-class PeerObjectImpl;
 class PendingEvent;
 class RecordingThread;
 class RejectTransactionMessage;
@@ -99,19 +99,19 @@ class TransactionStore : public ConnectionHandler,
   bool delay_object_binding() const override { return delay_object_binding_; }
   SequencePoint* GetCurrentSequencePoint() const override;
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
-      PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
-      bool wait) override;
-  PeerObjectImpl* CreateUnboundPeerObject(bool versioned) override;
-  PeerObjectImpl* CreateBoundPeerObject(const std::string& name,
-                                        bool versioned) override;
+      ObjectReferenceImpl* object_reference,
+      const SequencePoint* sequence_point, bool wait) override;
+  ObjectReferenceImpl* CreateUnboundObjectReference(bool versioned) override;
+  ObjectReferenceImpl* CreateBoundObjectReference(const std::string& name,
+                                                  bool versioned) override;
   void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
-      const std::unordered_map<PeerObjectImpl*, std::shared_ptr<LiveObject>>&
-          modified_objects,
+      const std::unordered_map<ObjectReferenceImpl*,
+                               std::shared_ptr<LiveObject>>& modified_objects,
       const SequencePoint* prev_sequence_point) override;
-  bool ObjectsAreEquivalent(const PeerObjectImpl* a,
-                            const PeerObjectImpl* b) const override;
+  bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
+                           const ObjectReferenceImpl* b) const override;
 
   void HandleApplyTransactionMessage(
       const CanonicalPeer* remote_peer,
@@ -136,7 +136,8 @@ class TransactionStore : public ConnectionHandler,
       SharedObject* shared_object,
       const SequencePointImpl& sequence_point_impl,
       uint64* current_version_number,
-      std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
+          new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           all_transactions_to_reject);
 
@@ -172,11 +173,12 @@ class TransactionStore : public ConnectionHandler,
   // current_sequence_point_mu_ must be locked.
   void IncrementVersionNumber_Locked();
 
-  void CreateNewPeerObjects(
-      const std::unordered_map<SharedObject*, PeerObjectImpl*>&
-          new_peer_objects);
+  void CreateNewObjectReferences(
+      const std::unordered_map<SharedObject*, ObjectReferenceImpl*>&
+          new_object_references);
 
-  SharedObject* GetSharedObjectForPeerObject(PeerObjectImpl* peer_object);
+  SharedObject* GetSharedObjectForObjectReference(
+      ObjectReferenceImpl* object_reference);
 
   void ConvertPendingEventToCommittedEvents(
       const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
@@ -217,8 +219,8 @@ class TransactionStore : public ConnectionHandler,
   std::unordered_set<SharedObject*> named_objects_;
   mutable Mutex named_objects_mu_;
 
-  std::vector<linked_ptr<PeerObjectImpl>> peer_objects_;
-  mutable Mutex peer_objects_mu_;
+  std::vector<linked_ptr<ObjectReferenceImpl>> object_references_;
+  mutable Mutex object_references_mu_;
 
   SequencePointImpl current_sequence_point_;
   uint64 version_number_;

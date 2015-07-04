@@ -25,17 +25,18 @@
 namespace floating_temple {
 namespace peer {
 
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 
 class SerializationContextImpl : public SerializationContext {
  public:
-  explicit SerializationContextImpl(std::vector<PeerObjectImpl*>* peer_objects);
+  explicit SerializationContextImpl(
+      std::vector<ObjectReferenceImpl*>* object_references);
 
-  int GetIndexForPeerObject(PeerObject* peer_object) override;
+  int GetIndexForObjectReference(ObjectReference* object_reference) override;
 
  private:
-  std::vector<PeerObjectImpl*>* const peer_objects_;
-  std::unordered_map<PeerObjectImpl*, int> indexes_;
+  std::vector<ObjectReferenceImpl*>* const object_references_;
+  std::unordered_map<ObjectReferenceImpl*, int> indexes_;
 
   DISALLOW_COPY_AND_ASSIGN(SerializationContextImpl);
 };

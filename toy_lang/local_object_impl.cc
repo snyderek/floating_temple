@@ -31,7 +31,7 @@
 #include "base/mutex_lock.h"
 #include "base/string_printf.h"
 #include "include/c++/deserialization_context.h"
-#include "include/c++/peer_object.h"
+#include "include/c++/object_reference.h"
 #include "include/c++/serialization_context.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
@@ -188,7 +188,7 @@ VersionedLocalObject* NoneObject::Clone() const {
 }
 
 void NoneObject::InvokeMethod(Thread* thread,
-                              PeerObject* peer_object,
+                              ObjectReference* object_reference,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {
@@ -213,7 +213,7 @@ VersionedLocalObject* BoolObject::Clone() const {
 }
 
 void BoolObject::InvokeMethod(Thread* thread,
-                              PeerObject* peer_object,
+                              ObjectReference* object_reference,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {
@@ -258,7 +258,7 @@ VersionedLocalObject* IntObject::Clone() const {
 }
 
 void IntObject::InvokeMethod(Thread* thread,
-                             PeerObject* peer_object,
+                             ObjectReference* object_reference,
                              const string& method_name,
                              const vector<Value>& parameters,
                              Value* return_value) {
@@ -298,7 +298,7 @@ VersionedLocalObject* StringObject::Clone() const {
 }
 
 void StringObject::InvokeMethod(Thread* thread,
-                                PeerObject* peer_object,
+                                ObjectReference* object_reference,
                                 const string& method_name,
                                 const vector<Value>& parameters,
                                 Value* return_value) {
@@ -328,7 +328,8 @@ void StringObject::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 SymbolTableObject::SymbolTableObject()
-    : scopes_(1, make_linked_ptr(new unordered_map<string, PeerObject*>())) {
+    : scopes_(1,
+              make_linked_ptr(new unordered_map<string, ObjectReference*>())) {
 }
 
 VersionedLocalObject* SymbolTableObject::Clone() const {
@@ -342,7 +343,7 @@ VersionedLocalObject* SymbolTableObject::Clone() const {
 
     for (ScopeVector::size_type i = 0; i < symbol_table_size; ++i) {
       new_object->scopes_[i].reset(
-          new unordered_map<string, PeerObject*>(*scopes_[i]));
+          new unordered_map<string, ObjectReference*>(*scopes_[i]));
     }
   }
 
@@ -350,7 +351,7 @@ VersionedLocalObject* SymbolTableObject::Clone() const {
 }
 
 void SymbolTableObject::InvokeMethod(Thread* thread,
-                                     PeerObject* peer_object,
+                                     ObjectReference* object_reference,
                                      const string& method_name,
                                      const vector<Value>& parameters,
                                      Value* return_value) {
@@ -362,8 +363,8 @@ void SymbolTableObject::InvokeMethod(Thread* thread,
 
   if (method_name == "enter_scope") {
     CHECK_EQ(parameters.size(), 0u);
-    unordered_map<string, PeerObject*>* const symbol_map =
-        new unordered_map<string, PeerObject*>();
+    unordered_map<string, ObjectReference*>* const symbol_map =
+        new unordered_map<string, ObjectReference*>();
     {
       MutexLock lock(&scopes_mu_);
       scopes_.emplace_back(symbol_map);
@@ -387,7 +388,7 @@ void SymbolTableObject::InvokeMethod(Thread* thread,
 
       for (ScopeVector::const_reverse_iterator it = scopes_.rbegin();
            it != scopes_.rend(); ++it) {
-        const unordered_map<string, PeerObject*>& symbol_map = **it;
+        const unordered_map<string, ObjectReference*>& symbol_map = **it;
 
         if (symbol_map.find(symbol_name) != symbol_map.end()) {
           return_value->set_bool_value(0, true);
@@ -407,12 +408,12 @@ void SymbolTableObject::InvokeMethod(Thread* thread,
 
       for (ScopeVector::const_reverse_iterator it = scopes_.rbegin();
            it != scopes_.rend(); ++it) {
-        const unordered_map<string, PeerObject*>& symbol_map = **it;
+        const unordered_map<string, ObjectReference*>& symbol_map = **it;
 
-        const unordered_map<string, PeerObject*>::const_iterator it2 =
+        const unordered_map<string, ObjectReference*>::const_iterator it2 =
             symbol_map.find(symbol_name);
         if (it2 != symbol_map.end()) {
-          return_value->set_peer_object(0, it2->second);
+          return_value->set_object_reference(0, it2->second);
           return;
         }
       }
@@ -424,25 +425,25 @@ void SymbolTableObject::InvokeMethod(Thread* thread,
 
     const string& symbol_name = parameters[0].string_value();
 
-    PeerObject* const peer_object = parameters[1].peer_object();
+    ObjectReference* const object_reference = parameters[1].object_reference();
 
     {
       MutexLock lock(&scopes_mu_);
 
       for (ScopeVector::reverse_iterator it = scopes_.rbegin();
            it != scopes_.rend(); ++it) {
-        unordered_map<string, PeerObject*>* const symbol_map = it->get();
+        unordered_map<string, ObjectReference*>* const symbol_map = it->get();
 
-        const unordered_map<string, PeerObject*>::iterator it2 =
+        const unordered_map<string, ObjectReference*>::iterator it2 =
             symbol_map->find(symbol_name);
         if (it2 != symbol_map->end()) {
-          it2->second = peer_object;
+          it2->second = object_reference;
           return_value->set_empty(0);
           return;
         }
       }
 
-      (*scopes_.back())[symbol_name] = peer_object;
+      (*scopes_.back())[symbol_name] = object_reference;
     }
 
     return_value->set_empty(0);
@@ -467,13 +468,13 @@ string SymbolTableObject::Dump() const {
           scopes_string += ",";
         }
 
-        const unordered_map<string, PeerObject*>& symbol_map = **it;
+        const unordered_map<string, ObjectReference*>& symbol_map = **it;
 
         if (symbol_map.empty()) {
           scopes_string += " {}";
         } else {
           scopes_string += " {";
-          for (unordered_map<string, PeerObject*>::const_iterator it2 =
+          for (unordered_map<string, ObjectReference*>::const_iterator it2 =
                    symbol_map.begin();
                it2 != symbol_map.end(); ++it2) {
             if (it2 != symbol_map.begin()) {
@@ -509,8 +510,8 @@ SymbolTableObject* SymbolTableObject::ParseSymbolTableProto(
   for (int i = 0; i < symbol_table_proto.map_size(); ++i) {
     const SymbolMapProto& symbol_map_proto = symbol_table_proto.map(i);
 
-    unordered_map<string, PeerObject*>* const symbol_map =
-        new unordered_map<string, PeerObject*>();
+    unordered_map<string, ObjectReference*>* const symbol_map =
+        new unordered_map<string, ObjectReference*>();
     (*scope)[i].reset(symbol_map);
 
     for (int j = 0; j < symbol_map_proto.definition_size(); ++j) {
@@ -519,10 +520,10 @@ SymbolTableObject* SymbolTableObject::ParseSymbolTableProto(
 
       const string& name = symbol_definition_proto.name();
       const int64 object_index = symbol_definition_proto.object_index();
-      PeerObject* const peer_object = context->GetPeerObjectByIndex(
-          object_index);
+      ObjectReference* const object_reference =
+          context->GetObjectReferenceByIndex(object_index);
 
-      CHECK(symbol_map->emplace(name, peer_object).second);
+      CHECK(symbol_map->emplace(name, object_reference).second);
     }
   }
 
@@ -539,15 +540,16 @@ void SymbolTableObject::PopulateObjectProto(
   MutexLock lock(&scopes_mu_);
 
   for (const auto& scope : scopes_) {
-    const unordered_map<string, PeerObject*>& symbol_map = *scope;
+    const unordered_map<string, ObjectReference*>& symbol_map = *scope;
     SymbolMapProto* const symbol_map_proto = symbol_table_proto->add_map();
 
     for (const auto& symbol_pair : symbol_map) {
       SymbolDefinitionProto* const symbol_definition_proto =
           symbol_map_proto->add_definition();
 
-      PeerObject* const peer_object = symbol_pair.second;
-      const int object_index = context->GetIndexForPeerObject(peer_object);
+      ObjectReference* const object_reference = symbol_pair.second;
+      const int object_index = context->GetIndexForObjectReference(
+          object_reference);
 
       symbol_definition_proto->set_name(symbol_pair.first);
       symbol_definition_proto->set_object_index(object_index);
@@ -566,8 +568,8 @@ string SymbolTableObject::GetStringForLogging() const {
     }
 
     msg += " {";
-    const unordered_map<string, PeerObject*>& symbol_map = **it;
-    for (unordered_map<string, PeerObject*>::const_iterator it2 =
+    const unordered_map<string, ObjectReference*>& symbol_map = **it;
+    for (unordered_map<string, ObjectReference*>::const_iterator it2 =
              symbol_map.begin();
          it2 != symbol_map.end(); ++it2) {
       if (it2 != symbol_map.begin()) {
@@ -594,7 +596,7 @@ VersionedLocalObject* ExpressionObject::Clone() const {
 }
 
 void ExpressionObject::InvokeMethod(Thread* thread,
-                                    PeerObject* peer_object,
+                                    ObjectReference* object_reference,
                                     const string& method_name,
                                     const vector<Value>& parameters,
                                     Value* return_value) {
@@ -603,14 +605,15 @@ void ExpressionObject::InvokeMethod(Thread* thread,
   if (method_name == "eval") {
     CHECK_EQ(parameters.size(), 1u);
 
-    PeerObject* const symbol_table_object = parameters[0].peer_object();
+    ObjectReference* const symbol_table_object =
+        parameters[0].object_reference();
 
-    PeerObject* const peer_object = expression_->Evaluate(symbol_table_object,
-                                                          thread);
-    if (peer_object == nullptr) {
+    ObjectReference* const object_reference = expression_->Evaluate(
+        symbol_table_object, thread);
+    if (object_reference == nullptr) {
       return;
     }
-    return_value->set_peer_object(0, peer_object);
+    return_value->set_object_reference(0, object_reference);
   } else {
     LOG(FATAL) << "Unsupported method: \"" << CEscape(method_name) << "\"";
   }
@@ -635,7 +638,7 @@ void ExpressionObject::PopulateObjectProto(
       object_proto->mutable_expression_object());
 }
 
-ListObject::ListObject(const vector<PeerObject*>& items)
+ListObject::ListObject(const vector<ObjectReference*>& items)
     : items_(items) {
 }
 
@@ -645,7 +648,7 @@ VersionedLocalObject* ListObject::Clone() const {
 }
 
 void ListObject::InvokeMethod(Thread* thread,
-                              PeerObject* peer_object,
+                              ObjectReference* object_reference,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {
@@ -665,13 +668,13 @@ void ListObject::InvokeMethod(Thread* thread,
     MutexLock lock(&items_mu_);
     CHECK(!items_.empty());
     const int64 length = static_cast<int64>(items_.size());
-    return_value->set_peer_object(0, items_[TrueMod(index, length)]);
+    return_value->set_object_reference(0, items_[TrueMod(index, length)]);
   } else if (method_name == "append") {
     CHECK_EQ(parameters.size(), 1u);
 
     {
       MutexLock lock(&items_mu_);
-      items_.push_back(parameters[0].peer_object());
+      items_.push_back(parameters[0].object_reference());
     }
 
     return_value->set_empty(0);
@@ -682,7 +685,7 @@ void ListObject::InvokeMethod(Thread* thread,
     {
       MutexLock lock(&items_mu_);
 
-      for (vector<PeerObject*>::const_iterator it = items_.begin();
+      for (vector<ObjectReference*>::const_iterator it = items_.begin();
            it != items_.end(); ++it) {
         if (it != items_.begin()) {
           s += ' ';
@@ -714,7 +717,7 @@ string ListObject::Dump() const {
       items_string = "[]";
     } else {
       items_string = "[";
-      for (vector<PeerObject*>::const_iterator it = items_.begin();
+      for (vector<ObjectReference*>::const_iterator it = items_.begin();
            it != items_.end(); ++it) {
         // TODO(dss): Insert commas between the list items.
         StringAppendF(&items_string, " %s", (*it)->Dump().c_str());
@@ -732,11 +735,11 @@ ListObject* ListObject::ParseListProto(const ListProto& list_proto,
                                        DeserializationContext* context) {
   CHECK(context != nullptr);
 
-  vector<PeerObject*> items(list_proto.object_index_size());
+  vector<ObjectReference*> items(list_proto.object_index_size());
 
   for (int i = 0; i < list_proto.object_index_size(); ++i) {
     const int64 object_index = list_proto.object_index(i);
-    items[i] = context->GetPeerObjectByIndex(object_index);
+    items[i] = context->GetObjectReferenceByIndex(object_index);
   }
 
   return new ListObject(items);
@@ -748,8 +751,9 @@ void ListObject::PopulateObjectProto(ObjectProto* object_proto,
 
   MutexLock lock(&items_mu_);
 
-  for (PeerObject* const peer_object : items_) {
-    const int object_index = context->GetIndexForPeerObject(peer_object);
+  for (ObjectReference* const object_reference : items_) {
+    const int object_index = context->GetIndexForObjectReference(
+        object_reference);
     list_proto->add_object_index(object_index);
   }
 }
@@ -765,7 +769,7 @@ VersionedLocalObject* MapObject::Clone() const {
 }
 
 void MapObject::InvokeMethod(Thread* thread,
-                             PeerObject* peer_object,
+                             ObjectReference* object_reference,
                              const string& method_name,
                              const vector<Value>& parameters,
                              Value* return_value) {
@@ -781,18 +785,18 @@ void MapObject::InvokeMethod(Thread* thread,
 
     const string& key = parameters[0].string_value();
 
-    const unordered_map<string, PeerObject*>::const_iterator it = map_.find(
-        key);
+    const unordered_map<string, ObjectReference*>::const_iterator it =
+        map_.find(key);
     CHECK(it != map_.end()) << "Key not found: \"" << CEscape(key) << "\"";
 
-    return_value->set_peer_object(0, it->second);
+    return_value->set_object_reference(0, it->second);
   } else if (method_name == "set") {
     CHECK_EQ(parameters.size(), 2u);
 
     const string& key = parameters[0].string_value();
-    PeerObject* const peer_object = parameters[1].peer_object();
+    ObjectReference* const object_reference = parameters[1].object_reference();
 
-    map_[key] = peer_object;
+    map_[key] = object_reference;
 
     return_value->set_empty(0);
   } else {
@@ -807,7 +811,8 @@ string MapObject::Dump() const {
     map_string = "{}";
   } else {
     map_string = "{";
-    for (unordered_map<string, PeerObject*>::const_iterator it = map_.begin();
+    for (unordered_map<string, ObjectReference*>::const_iterator it =
+             map_.begin();
          it != map_.end(); ++it) {
       if (it != map_.begin()) {
         map_string += ",";
@@ -829,16 +834,17 @@ MapObject* MapObject::ParseMapProto(const MapProto& map_proto,
   CHECK(context != nullptr);
 
   MapObject* const new_object = new MapObject();
-  unordered_map<string, PeerObject*>* const the_map = &new_object->map_;
+  unordered_map<string, ObjectReference*>* const the_map = &new_object->map_;
 
   for (int i = 0; i < map_proto.entry_size(); ++i) {
     const MapEntryProto& entry_proto = map_proto.entry(i);
 
     const string& key = entry_proto.key();
     const int64 object_index = entry_proto.value_object_index();
-    PeerObject* const peer_object = context->GetPeerObjectByIndex(object_index);
+    ObjectReference* const object_reference =
+        context->GetObjectReferenceByIndex(object_index);
 
-    CHECK(the_map->emplace(key, peer_object).second);
+    CHECK(the_map->emplace(key, object_reference).second);
   }
 
   return new_object;
@@ -853,8 +859,9 @@ void MapObject::PopulateObjectProto(ObjectProto* object_proto,
   for (const auto& map_pair : map_) {
     MapEntryProto* const entry_proto = map_proto->add_entry();
 
-    PeerObject* const peer_object = map_pair.second;
-    const int object_index = context->GetIndexForPeerObject(peer_object);
+    ObjectReference* const object_reference = map_pair.second;
+    const int object_index = context->GetIndexForObjectReference(
+        object_reference);
 
     entry_proto->set_key(map_pair.first);
     entry_proto->set_value_object_index(object_index);
@@ -878,7 +885,7 @@ VersionedLocalObject* RangeIteratorObject::Clone() const {
 }
 
 void RangeIteratorObject::InvokeMethod(Thread* thread,
-                                       PeerObject* peer_object,
+                                       ObjectReference* object_reference,
                                        const string& method_name,
                                        const vector<Value>& parameters,
                                        Value* return_value) {
@@ -934,7 +941,7 @@ void RangeIteratorObject::PopulateObjectProto(
 }
 
 void Function::InvokeMethod(Thread* thread,
-                            PeerObject* peer_object,
+                            ObjectReference* object_reference,
                             const string& method_name,
                             const vector<Value>& parameters,
                             Value* return_value) {
@@ -944,8 +951,10 @@ void Function::InvokeMethod(Thread* thread,
   if (method_name == "call") {
     CHECK_EQ(parameters.size(), 2u);
 
-    PeerObject* const symbol_table_object = parameters[0].peer_object();
-    PeerObject* const parameter_list_object = parameters[1].peer_object();
+    ObjectReference* const symbol_table_object =
+        parameters[0].object_reference();
+    ObjectReference* const parameter_list_object =
+        parameters[1].object_reference();
 
     Value length_value;
     if (!thread->CallMethod(parameter_list_object, "length", vector<Value>(),
@@ -954,7 +963,7 @@ void Function::InvokeMethod(Thread* thread,
     }
 
     const int64 parameter_count = length_value.int64_value();
-    vector<PeerObject*> param_objects(parameter_count);
+    vector<ObjectReference*> param_objects(parameter_count);
 
     for (int64 i = 0; i < parameter_count; ++i) {
       vector<Value> get_at_params(1);
@@ -966,15 +975,15 @@ void Function::InvokeMethod(Thread* thread,
         return;
       }
 
-      param_objects[i] = list_item_value.peer_object();
+      param_objects[i] = list_item_value.object_reference();
     }
 
-    PeerObject* const return_object = Call(symbol_table_object, thread,
+    ObjectReference* const return_object = Call(symbol_table_object, thread,
                                            param_objects);
     if (return_object == nullptr) {
       return;
     }
-    return_value->set_peer_object(0, return_object);
+    return_value->set_object_reference(0, return_object);
   } else {
     LOG(FATAL) << "Unsupported method: \"" << CEscape(method_name) << "\"";
   }
@@ -996,12 +1005,13 @@ void ListFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_list_function();
 }
 
-PeerObject* ListFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                               const vector<PeerObject*>& parameters) const {
+ObjectReference* ListFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
 
   LocalObjectImpl* const local_object = new ListObject(parameters);
-  return thread->CreateVersionedPeerObject(local_object, "");
+  return thread->CreateVersionedObject(local_object, "");
 }
 
 SetVariableFunction::SetVariableFunction() {
@@ -1020,9 +1030,9 @@ void SetVariableFunction::PopulateObjectProto(
   object_proto->mutable_set_variable_function();
 }
 
-PeerObject* SetVariableFunction::Call(
-    PeerObject* symbol_table_object, Thread* thread,
-    const vector<PeerObject*>& parameters) const {
+ObjectReference* SetVariableFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
@@ -1032,7 +1042,7 @@ PeerObject* SetVariableFunction::Call(
     return nullptr;
   }
 
-  PeerObject* const object = parameters[1];
+  ObjectReference* const object = parameters[1];
 
   if (!SetVariable(symbol_table_object, thread, variable_name.string_value(),
                    object)) {
@@ -1058,8 +1068,9 @@ void ForFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_for_function();
 }
 
-PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                              const vector<PeerObject*>& parameters) const {
+ObjectReference* ForFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 3u);
 
@@ -1069,11 +1080,11 @@ PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  PeerObject* const iter = parameters[1];
-  PeerObject* const expression = parameters[2];
+  ObjectReference* const iter = parameters[1];
+  ObjectReference* const expression = parameters[2];
 
   vector<Value> eval_parameters(1);
-  eval_parameters[0].set_peer_object(0, symbol_table_object);
+  eval_parameters[0].set_object_reference(0, symbol_table_object);
 
   for (;;) {
     Value has_next;
@@ -1096,7 +1107,7 @@ PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 
     if (!SetVariable(
             symbol_table_object, thread, variable_name.string_value(),
-            thread->CreateVersionedPeerObject(
+            thread->CreateVersionedObject(
                 new IntObject(iter_value.int64_value()), ""))) {
       return nullptr;
     }
@@ -1111,7 +1122,7 @@ PeerObject* ForFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     }
   }
 
-  return thread->CreateVersionedPeerObject(new NoneObject(), "");
+  return thread->CreateVersionedObject(new NoneObject(), "");
 }
 
 RangeFunction::RangeFunction() {
@@ -1130,8 +1141,9 @@ void RangeFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_range_function();
 }
 
-PeerObject* RangeFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                                const vector<PeerObject*>& parameters) const {
+ObjectReference* RangeFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
@@ -1140,7 +1152,7 @@ PeerObject* RangeFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(
+  return thread->CreateVersionedObject(
       new RangeIteratorObject(limit.int64_value(), 0), "");
 }
 
@@ -1160,11 +1172,12 @@ void PrintFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_print_function();
 }
 
-PeerObject* PrintFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                                const vector<PeerObject*>& parameters) const {
+ObjectReference* PrintFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
 
-  for (vector<PeerObject*>::const_iterator it = parameters.begin();
+  for (vector<ObjectReference*>::const_iterator it = parameters.begin();
        it != parameters.end(); ++it) {
     if (it != parameters.begin()) {
       printf(" ");
@@ -1180,7 +1193,7 @@ PeerObject* PrintFunction::Call(PeerObject* symbol_table_object, Thread* thread,
 
   printf("\n");
 
-  return thread->CreateVersionedPeerObject(new NoneObject(), "");
+  return thread->CreateVersionedObject(new NoneObject(), "");
 }
 
 AddFunction::AddFunction() {
@@ -1199,22 +1212,24 @@ void AddFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_add_function();
 }
 
-PeerObject* AddFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                              const vector<PeerObject*>& parameters) const {
+ObjectReference* AddFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
 
   int64 sum = 0;
 
-  for (PeerObject* const peer_object : parameters) {
+  for (ObjectReference* const object_reference : parameters) {
     Value number;
-    if (!thread->CallMethod(peer_object, "get_int", vector<Value>(), &number)) {
+    if (!thread->CallMethod(object_reference, "get_int", vector<Value>(),
+                            &number)) {
       return nullptr;
     }
 
     sum += number.int64_value();
   }
 
-  return thread->CreateVersionedPeerObject(new IntObject(sum), "");
+  return thread->CreateVersionedObject(new IntObject(sum), "");
 }
 
 BeginTranFunction::BeginTranFunction() {
@@ -1233,9 +1248,9 @@ void BeginTranFunction::PopulateObjectProto(
   object_proto->mutable_begin_tran_function();
 }
 
-PeerObject* BeginTranFunction::Call(
-    PeerObject* symbol_table_object, Thread* thread,
-    const vector<PeerObject*>& parameters) const {
+ObjectReference* BeginTranFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 0u);
 
@@ -1243,7 +1258,7 @@ PeerObject* BeginTranFunction::Call(
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(new NoneObject(), "");
+  return thread->CreateVersionedObject(new NoneObject(), "");
 }
 
 EndTranFunction::EndTranFunction() {
@@ -1262,9 +1277,9 @@ void EndTranFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_end_tran_function();
 }
 
-PeerObject* EndTranFunction::Call(PeerObject* symbol_table_object,
-                                  Thread* thread,
-                                  const vector<PeerObject*>& parameters) const {
+ObjectReference* EndTranFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 0u);
 
@@ -1272,7 +1287,7 @@ PeerObject* EndTranFunction::Call(PeerObject* symbol_table_object,
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(new NoneObject(), "");
+  return thread->CreateVersionedObject(new NoneObject(), "");
 }
 
 IfFunction::IfFunction() {
@@ -1291,8 +1306,9 @@ void IfFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_if_function();
 }
 
-PeerObject* IfFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                             const vector<PeerObject*>& parameters) const {
+ObjectReference* IfFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_GE(parameters.size(), 2u);
   CHECK_LE(parameters.size(), 3u);
@@ -1303,27 +1319,27 @@ PeerObject* IfFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  PeerObject* expression = nullptr;
+  ObjectReference* expression = nullptr;
 
   if (condition.bool_value()) {
     expression = parameters[1];
   } else {
     if (parameters.size() < 3u) {
-      return thread->CreateVersionedPeerObject(new NoneObject(), "");
+      return thread->CreateVersionedObject(new NoneObject(), "");
     }
 
     expression = parameters[2];
   }
 
   vector<Value> eval_parameters(1);
-  eval_parameters[0].set_peer_object(0, symbol_table_object);
+  eval_parameters[0].set_object_reference(0, symbol_table_object);
 
   Value result;
   if (!thread->CallMethod(expression, "eval", eval_parameters, &result)) {
     return nullptr;
   }
 
-  return result.peer_object();
+  return result.object_reference();
 }
 
 NotFunction::NotFunction() {
@@ -1342,8 +1358,9 @@ void NotFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_not_function();
 }
 
-PeerObject* NotFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                              const vector<PeerObject*>& parameters) const {
+ObjectReference* NotFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
@@ -1353,8 +1370,8 @@ PeerObject* NotFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(
-      new BoolObject(!condition.bool_value()), "");
+  return thread->CreateVersionedObject(new BoolObject(!condition.bool_value()),
+                                       "");
 }
 
 IsSetFunction::IsSetFunction() {
@@ -1373,8 +1390,9 @@ void IsSetFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_is_set_function();
 }
 
-PeerObject* IsSetFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                                const vector<PeerObject*>& parameters) const {
+ObjectReference* IsSetFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
@@ -1390,7 +1408,7 @@ PeerObject* IsSetFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(new BoolObject(is_set), "");
+  return thread->CreateVersionedObject(new BoolObject(is_set), "");
 }
 
 WhileFunction::WhileFunction() {
@@ -1409,16 +1427,17 @@ void WhileFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_while_function();
 }
 
-PeerObject* WhileFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                                const vector<PeerObject*>& parameters) const {
+ObjectReference* WhileFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
-  PeerObject* const condition_expression = parameters[0];
-  PeerObject* const expression = parameters[1];
+  ObjectReference* const condition_expression = parameters[0];
+  ObjectReference* const expression = parameters[1];
 
   vector<Value> eval_parameters(1);
-  eval_parameters[0].set_peer_object(0, symbol_table_object);
+  eval_parameters[0].set_object_reference(0, symbol_table_object);
 
   for (;;) {
     Value condition_object;
@@ -1428,7 +1447,7 @@ PeerObject* WhileFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     }
 
     Value condition;
-    if (!thread->CallMethod(condition_object.peer_object(), "get_bool",
+    if (!thread->CallMethod(condition_object.object_reference(), "get_bool",
                             vector<Value>(), &condition)) {
       return nullptr;
     }
@@ -1451,7 +1470,7 @@ PeerObject* WhileFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     }
   }
 
-  return thread->CreateVersionedPeerObject(new NoneObject(), "");
+  return thread->CreateVersionedObject(new NoneObject(), "");
 }
 
 LessThanFunction::LessThanFunction() {
@@ -1470,9 +1489,9 @@ void LessThanFunction::PopulateObjectProto(
   object_proto->mutable_less_than_function();
 }
 
-PeerObject* LessThanFunction::Call(
-    PeerObject* symbol_table_object, Thread* thread,
-    const vector<PeerObject*>& parameters) const {
+ObjectReference* LessThanFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
@@ -1488,7 +1507,7 @@ PeerObject* LessThanFunction::Call(
     operands[i] = number.int64_value();
   }
 
-  return thread->CreateVersionedPeerObject(
+  return thread->CreateVersionedObject(
       new BoolObject(operands[0] < operands[1]), "");
 }
 
@@ -1508,8 +1527,9 @@ void LenFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_len_function();
 }
 
-PeerObject* LenFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                              const vector<PeerObject*>& parameters) const {
+ObjectReference* LenFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
@@ -1518,8 +1538,7 @@ PeerObject* LenFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(new IntObject(length.int64_value()),
-                                           "");
+  return thread->CreateVersionedObject(new IntObject(length.int64_value()), "");
 }
 
 AppendFunction::AppendFunction() {
@@ -1538,24 +1557,24 @@ void AppendFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_append_function();
 }
 
-PeerObject* AppendFunction::Call(PeerObject* symbol_table_object,
-                                 Thread* thread,
-                                 const vector<PeerObject*>& parameters) const {
+ObjectReference* AppendFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
-  PeerObject* const the_list = parameters[0];
-  PeerObject* const object = parameters[1];
+  ObjectReference* const the_list = parameters[0];
+  ObjectReference* const object = parameters[1];
 
   vector<Value> append_params(1);
-  append_params[0].set_peer_object(0, object);
+  append_params[0].set_object_reference(0, object);
 
   Value dummy;
   if (!thread->CallMethod(the_list, "append", append_params, &dummy)) {
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(new NoneObject(), "");
+  return thread->CreateVersionedObject(new NoneObject(), "");
 }
 
 GetAtFunction::GetAtFunction() {
@@ -1574,8 +1593,9 @@ void GetAtFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_get_at_function();
 }
 
-PeerObject* GetAtFunction::Call(PeerObject* symbol_table_object, Thread* thread,
-                                const vector<PeerObject*>& parameters) const {
+ObjectReference* GetAtFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
@@ -1592,7 +1612,7 @@ PeerObject* GetAtFunction::Call(PeerObject* symbol_table_object, Thread* thread,
     return nullptr;
   }
 
-  return item.peer_object();
+  return item.object_reference();
 }
 
 MapIsSetFunction::MapIsSetFunction() {
@@ -1611,9 +1631,9 @@ void MapIsSetFunction::PopulateObjectProto(
   object_proto->mutable_map_is_set_function();
 }
 
-PeerObject* MapIsSetFunction::Call(
-    PeerObject* symbol_table_object, Thread* thread,
-    const vector<PeerObject*>& parameters) const {
+ObjectReference* MapIsSetFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
@@ -1630,8 +1650,7 @@ PeerObject* MapIsSetFunction::Call(
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(new BoolObject(result.bool_value()),
-                                           "");
+  return thread->CreateVersionedObject(new BoolObject(result.bool_value()), "");
 }
 
 MapGetFunction::MapGetFunction() {
@@ -1650,9 +1669,9 @@ void MapGetFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_map_get_function();
 }
 
-PeerObject* MapGetFunction::Call(PeerObject* symbol_table_object,
-                                 Thread* thread,
-                                 const vector<PeerObject*>& parameters) const {
+ObjectReference* MapGetFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
@@ -1669,7 +1688,7 @@ PeerObject* MapGetFunction::Call(PeerObject* symbol_table_object,
     return nullptr;
   }
 
-  return result.peer_object();
+  return result.object_reference();
 }
 
 MapSetFunction::MapSetFunction() {
@@ -1688,9 +1707,9 @@ void MapSetFunction::PopulateObjectProto(ObjectProto* object_proto,
   object_proto->mutable_map_set_function();
 }
 
-PeerObject* MapSetFunction::Call(PeerObject* symbol_table_object,
-                                 Thread* thread,
-                                 const vector<PeerObject*>& parameters) const {
+ObjectReference* MapSetFunction::Call(
+    ObjectReference* symbol_table_object, Thread* thread,
+    const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 3u);
 
@@ -1701,14 +1720,14 @@ PeerObject* MapSetFunction::Call(PeerObject* symbol_table_object,
 
   vector<Value> set_params(2);
   set_params[0] = key;
-  set_params[1].set_peer_object(0, parameters[2]);
+  set_params[1].set_object_reference(0, parameters[2]);
 
   Value result;
   if (!thread->CallMethod(parameters[0], "set", set_params, &result)) {
     return nullptr;
   }
 
-  return thread->CreateVersionedPeerObject(new NoneObject(), "");
+  return thread->CreateVersionedObject(new NoneObject(), "");
 }
 
 }  // namespace toy_lang

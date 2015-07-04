@@ -29,7 +29,7 @@ namespace floating_temple {
 namespace peer {
 
 class LiveObject;
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 
 class PendingEvent {
  public:
@@ -41,40 +41,43 @@ class PendingEvent {
     METHOD_RETURN
   };
 
-  // new_peer_objects must be a subset of keys(live_objects).
+  // new_object_references must be a subset of keys(live_objects).
   PendingEvent(
-      const std::unordered_map<PeerObjectImpl*,
+      const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<const LiveObject>>& live_objects,
-      const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
-      PeerObjectImpl* prev_peer_object);
+      const std::unordered_set<ObjectReferenceImpl*>& new_object_references,
+      ObjectReferenceImpl* prev_object_reference);
   virtual ~PendingEvent() {}
 
-  const std::unordered_map<PeerObjectImpl*, std::shared_ptr<const LiveObject>>&
+  const std::unordered_map<ObjectReferenceImpl*,
+                           std::shared_ptr<const LiveObject>>&
       live_objects() const { return live_objects_; }
-  const std::unordered_set<PeerObjectImpl*>& new_peer_objects() const
-      { return new_peer_objects_; }
-  PeerObjectImpl* prev_peer_object() const { return prev_peer_object_; }
+  const std::unordered_set<ObjectReferenceImpl*>& new_object_references() const
+      { return new_object_references_; }
+  ObjectReferenceImpl* prev_object_reference() const
+      { return prev_object_reference_; }
 
   virtual Type type() const = 0;
 
-  virtual void GetMethodCall(PeerObjectImpl** next_peer_object,
+  virtual void GetMethodCall(ObjectReferenceImpl** next_object_reference,
                              const std::string** method_name,
                              const std::vector<Value>** parameters) const;
-  virtual void GetMethodReturn(PeerObjectImpl** next_peer_object,
+  virtual void GetMethodReturn(ObjectReferenceImpl** next_object_reference,
                                const Value** return_value) const;
 
  private:
-  const std::unordered_map<PeerObjectImpl*, std::shared_ptr<const LiveObject>>
-      live_objects_;
-  const std::unordered_set<PeerObjectImpl*> new_peer_objects_;
-  PeerObjectImpl* const prev_peer_object_;
+  const std::unordered_map<ObjectReferenceImpl*,
+                           std::shared_ptr<const LiveObject>> live_objects_;
+  const std::unordered_set<ObjectReferenceImpl*> new_object_references_;
+  ObjectReferenceImpl* const prev_object_reference_;
 };
 
 class ObjectCreationPendingEvent : public PendingEvent {
  public:
-  // prev_peer_object may be NULL.
+  // prev_object_reference may be NULL.
   ObjectCreationPendingEvent(
-      PeerObjectImpl* prev_peer_object, PeerObjectImpl* new_peer_object,
+      ObjectReferenceImpl* prev_object_reference,
+      ObjectReferenceImpl* new_object_reference,
       const std::shared_ptr<const LiveObject>& new_live_object);
 
   Type type() const override { return OBJECT_CREATION; }
@@ -85,8 +88,9 @@ class ObjectCreationPendingEvent : public PendingEvent {
 
 class BeginTransactionPendingEvent : public PendingEvent {
  public:
-  // prev_peer_object must not be NULL.
-  explicit BeginTransactionPendingEvent(PeerObjectImpl* prev_peer_object);
+  // prev_object_reference must not be NULL.
+  explicit BeginTransactionPendingEvent(
+      ObjectReferenceImpl* prev_object_reference);
 
   Type type() const override { return BEGIN_TRANSACTION; }
 
@@ -96,8 +100,9 @@ class BeginTransactionPendingEvent : public PendingEvent {
 
 class EndTransactionPendingEvent : public PendingEvent {
  public:
-  // prev_peer_object must not be NULL.
-  explicit EndTransactionPendingEvent(PeerObjectImpl* prev_peer_object);
+  // prev_object_reference must not be NULL.
+  explicit EndTransactionPendingEvent(
+      ObjectReferenceImpl* prev_object_reference);
 
   Type type() const override { return END_TRANSACTION; }
 
@@ -107,23 +112,23 @@ class EndTransactionPendingEvent : public PendingEvent {
 
 class MethodCallPendingEvent : public PendingEvent {
  public:
-  // prev_peer_object may be NULL.
+  // prev_object_reference may be NULL.
   MethodCallPendingEvent(
-      const std::unordered_map<PeerObjectImpl*,
+      const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<const LiveObject>>& live_objects,
-      const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
-      PeerObjectImpl* prev_peer_object,
-      PeerObjectImpl* next_peer_object,
+      const std::unordered_set<ObjectReferenceImpl*>& new_object_references,
+      ObjectReferenceImpl* prev_object_reference,
+      ObjectReferenceImpl* next_object_reference,
       const std::string& method_name,
       const std::vector<Value>& parameters);
 
   Type type() const override { return METHOD_CALL; }
-  void GetMethodCall(PeerObjectImpl** next_peer_object,
+  void GetMethodCall(ObjectReferenceImpl** next_object_reference,
                      const std::string** method_name,
                      const std::vector<Value>** parameters) const override;
 
  private:
-  PeerObjectImpl* const next_peer_object_;
+  ObjectReferenceImpl* const next_object_reference_;
   const std::string method_name_;
   const std::vector<Value> parameters_;
 
@@ -132,21 +137,21 @@ class MethodCallPendingEvent : public PendingEvent {
 
 class MethodReturnPendingEvent : public PendingEvent {
  public:
-  // prev_peer_object must not be NULL.
+  // prev_object_reference must not be NULL.
   MethodReturnPendingEvent(
-      const std::unordered_map<PeerObjectImpl*,
+      const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<const LiveObject>>& live_objects,
-      const std::unordered_set<PeerObjectImpl*>& new_peer_objects,
-      PeerObjectImpl* prev_peer_object,
-      PeerObjectImpl* next_peer_object,
+      const std::unordered_set<ObjectReferenceImpl*>& new_object_references,
+      ObjectReferenceImpl* prev_object_reference,
+      ObjectReferenceImpl* next_object_reference,
       const Value& return_value);
 
   Type type() const override { return METHOD_RETURN; }
-  void GetMethodReturn(PeerObjectImpl** next_peer_object,
+  void GetMethodReturn(ObjectReferenceImpl** next_object_reference,
                        const Value** return_value) const override;
 
  private:
-  PeerObjectImpl* const next_peer_object_;
+  ObjectReferenceImpl* const next_object_reference_;
   const Value return_value_;
 
   DISALLOW_COPY_AND_ASSIGN(MethodReturnPendingEvent);

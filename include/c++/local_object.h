@@ -23,7 +23,7 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 class Thread;
 
 // TODO(dss): Rewrite the following paragraph. It's confusing.
@@ -50,7 +50,7 @@ class LocalObject {
   //
   // TODO(dss): Support exceptions.
   virtual void InvokeMethod(Thread* thread,
-                            PeerObject* peer_object,
+                            ObjectReference* object_reference,
                             const std::string& method_name,
                             const std::vector<Value>& parameters,
                             Value* return_value) = 0;

@@ -26,7 +26,7 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 class SerializationContext;
 class Thread;
 
@@ -39,7 +39,7 @@ class MockVersionedLocalObjectCore {
   MOCK_CONST_METHOD1(Serialize, std::string(SerializationContext* context));
   MOCK_CONST_METHOD5(InvokeMethod,
                      void(Thread* thread,
-                          PeerObject* peer_object,
+                          ObjectReference* object_reference,
                           const std::string& method_name,
                           const std::vector<Value>& parameters,
                           Value* return_value));
@@ -56,7 +56,7 @@ class MockVersionedLocalObject : public VersionedLocalObject {
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;

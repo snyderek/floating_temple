@@ -42,7 +42,7 @@ namespace peer {
 
 class CommittedEvent;
 class LiveObject;
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 class SharedObject;
 class TransactionStoreInternalInterface;
 
@@ -60,7 +60,8 @@ class PlaybackThread : private Thread {
       TransactionStoreInternalInterface* transaction_store,
       SharedObject* shared_object,
       const std::shared_ptr<LiveObject>& live_object,
-      std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects);
+      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
+          new_object_references);
   void Stop();
 
   void QueueEvent(const CommittedEvent* event);
@@ -80,11 +81,11 @@ class PlaybackThread : private Thread {
 
   // TODO(dss): Rename these methods.
   void DoMethodCall();
-  void DoSelfMethodCall(PeerObjectImpl* peer_object,
+  void DoSelfMethodCall(ObjectReferenceImpl* object_reference,
                         const std::string& method_name,
                         const std::vector<Value>& parameters,
                         Value* return_value);
-  void DoSubMethodCall(PeerObjectImpl* peer_object,
+  void DoSubMethodCall(ObjectReferenceImpl* object_reference,
                        const std::string& method_name,
                        const std::vector<Value>& parameters,
                        Value* return_value);
@@ -98,7 +99,7 @@ class PlaybackThread : private Thread {
       SharedObject* expected_shared_object,
       const std::string& expected_method_name,
       const std::vector<CommittedValue>& expected_parameters,
-      PeerObjectImpl* peer_object,
+      ObjectReferenceImpl* object_reference,
       const std::string& method_name,
       const std::vector<Value>& parameters,
       const std::unordered_set<SharedObject*>& new_shared_objects);
@@ -106,27 +107,28 @@ class PlaybackThread : private Thread {
       const CommittedValue& committed_value, const Value& pending_value,
       const std::unordered_set<SharedObject*>& new_shared_objects);
   bool ObjectMatches(
-      SharedObject* shared_object, PeerObjectImpl* peer_object,
+      SharedObject* shared_object, ObjectReferenceImpl* object_reference,
       const std::unordered_set<SharedObject*>& new_shared_objects);
 
   void SetConflictDetected(const std::string& description);
 
-  PeerObject* CreatePeerObject(LocalObject* initial_version,
-                               const std::string& name, bool versioned);
+  ObjectReference* CreateObjectReference(LocalObject* initial_version,
+                                         const std::string& name,
+                                         bool versioned);
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  PeerObject* CreateVersionedPeerObject(VersionedLocalObject* initial_version,
-                                        const std::string& name) override;
-  PeerObject* CreateUnversionedPeerObject(
+  ObjectReference* CreateVersionedObject(VersionedLocalObject* initial_version,
+                                         const std::string& name) override;
+  ObjectReference* CreateUnversionedObject(
       UnversionedLocalObject* initial_version,
       const std::string& name) override;
-  bool CallMethod(PeerObject* peer_object,
+  bool CallMethod(ObjectReference* object_reference,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,
                   Value* return_value) override;
-  bool ObjectsAreEquivalent(const PeerObject* a,
-                            const PeerObject* b) const override;
+  bool ObjectsAreIdentical(const ObjectReference* a,
+                           const ObjectReference* b) const override;
 
   static void* ReplayThreadMain(void* playback_thread_raw);
 
@@ -142,11 +144,12 @@ class PlaybackThread : private Thread {
   TransactionStoreInternalInterface* transaction_store_;
   SharedObject* shared_object_;
   std::shared_ptr<LiveObject> live_object_;
-  std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects_;
+  std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
+      new_object_references_;
 
   pthread_t replay_thread_;
   EventQueue event_queue_;
-  std::unordered_set<PeerObjectImpl*> unbound_peer_objects_;
+  std::unordered_set<ObjectReferenceImpl*> unbound_object_references_;
 
   BoolVariable conflict_detected_;
 

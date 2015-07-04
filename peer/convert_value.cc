@@ -18,7 +18,7 @@
 #include "base/logging.h"
 #include "include/c++/value.h"
 #include "peer/committed_value.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/proto/value_proto.pb.h"
 #include "peer/shared_object.h"
@@ -91,8 +91,8 @@ void ConvertCommittedValueToValue(const CommittedValue& in, Value* out) {
     CONVERT_FIELD(BYTES, set_bytes_value, bytes_value);
 
     case CommittedValue::SHARED_OBJECT:
-      out->set_peer_object(local_type,
-                           in.shared_object()->GetOrCreatePeerObject(true));
+      out->set_object_reference(
+          local_type, in.shared_object()->GetOrCreateObjectReference(true));
       break;
 
     default:

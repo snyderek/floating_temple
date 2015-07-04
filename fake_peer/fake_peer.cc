@@ -28,7 +28,7 @@ using std::vector;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 FakePeer::FakePeer() {
 }
@@ -41,11 +41,11 @@ void FakePeer::RunProgram(UnversionedLocalObject* local_object,
   CHECK(!linger) << "Linger mode isn't supported for the fake peer.";
 
   FakeThread thread;
-  PeerObject* const peer_object = thread.CreateUnversionedPeerObject(
+  ObjectReference* const object_reference = thread.CreateUnversionedObject(
       local_object, "");
 
-  local_object->InvokeMethod(&thread, peer_object, method_name, vector<Value>(),
-                             return_value);
+  local_object->InvokeMethod(&thread, object_reference, method_name,
+                             vector<Value>(), return_value);
 }
 
 void FakePeer::Stop() {

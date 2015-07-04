@@ -39,7 +39,7 @@ class UnversionedLocalObject;
 namespace peer {
 
 class LiveObject;
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 class PendingEvent;
 class SequencePoint;
 class TransactionStoreInternalInterface;
@@ -61,17 +61,17 @@ class RecordingThread : public Thread {
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  PeerObject* CreateVersionedPeerObject(VersionedLocalObject* initial_version,
-                                        const std::string& name) override;
-  PeerObject* CreateUnversionedPeerObject(
+  ObjectReference* CreateVersionedObject(VersionedLocalObject* initial_version,
+                                         const std::string& name) override;
+  ObjectReference* CreateUnversionedObject(
       UnversionedLocalObject* initial_version,
       const std::string& name) override;
-  bool CallMethod(PeerObject* peer_object,
+  bool CallMethod(ObjectReference* object_reference,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,
                   Value* return_value) override;
-  bool ObjectsAreEquivalent(const PeerObject* a,
-                            const PeerObject* b) const override;
+  bool ObjectsAreIdentical(const ObjectReference* a,
+                           const ObjectReference* b) const override;
 
  private:
   struct NewObject {
@@ -80,8 +80,8 @@ class RecordingThread : public Thread {
   };
 
   bool CallMethodHelper(const TransactionId& method_call_transaction_id,
-                        PeerObjectImpl* caller_peer_object,
-                        PeerObjectImpl* callee_peer_object,
+                        ObjectReferenceImpl* caller_object_reference,
+                        ObjectReferenceImpl* callee_object_reference,
                         const std::string& method_name,
                         const std::vector<Value>& parameters,
                         std::shared_ptr<LiveObject>* callee_live_object,
@@ -89,7 +89,8 @@ class RecordingThread : public Thread {
   bool WaitForBlockingThreads_Locked(
       const TransactionId& method_call_transaction_id) const;
 
-  std::shared_ptr<LiveObject> GetLiveObject(PeerObjectImpl* peer_object);
+  std::shared_ptr<LiveObject> GetLiveObject(
+      ObjectReferenceImpl* object_reference);
   const SequencePoint* GetSequencePoint();
 
   void AddTransactionEvent(PendingEvent* event);
@@ -97,14 +98,14 @@ class RecordingThread : public Thread {
 
   void CheckIfValueIsNew(
       const Value& value,
-      std::unordered_map<PeerObjectImpl*, std::shared_ptr<const LiveObject>>*
-          live_objects,
-      std::unordered_set<PeerObjectImpl*>* new_peer_objects);
-  void CheckIfPeerObjectIsNew(
-      PeerObjectImpl* peer_object,
-      std::unordered_map<PeerObjectImpl*, std::shared_ptr<const LiveObject>>*
-          live_objects,
-      std::unordered_set<PeerObjectImpl*>* new_peer_objects);
+      std::unordered_map<ObjectReferenceImpl*,
+                         std::shared_ptr<const LiveObject>>* live_objects,
+      std::unordered_set<ObjectReferenceImpl*>* new_object_references);
+  void CheckIfObjectIsNew(
+      ObjectReferenceImpl* object_reference,
+      std::unordered_map<ObjectReferenceImpl*,
+                         std::shared_ptr<const LiveObject>>* live_objects,
+      std::unordered_set<ObjectReferenceImpl*>* new_object_references);
 
   bool Rewinding() const;
   bool Rewinding_Locked() const;
@@ -113,13 +114,13 @@ class RecordingThread : public Thread {
 
   int transaction_level_;
   std::vector<linked_ptr<PendingEvent>> events_;
-  std::unordered_map<PeerObjectImpl*, NewObject> new_objects_;
-  std::unordered_map<PeerObjectImpl*, std::shared_ptr<LiveObject>>
+  std::unordered_map<ObjectReferenceImpl*, NewObject> new_objects_;
+  std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
       modified_objects_;
   std::unique_ptr<SequencePoint> sequence_point_;
   bool committing_transaction_;
 
-  PeerObjectImpl* current_peer_object_;
+  ObjectReferenceImpl* current_object_reference_;
   std::shared_ptr<LiveObject> current_live_object_;
 
   // ID of the last transaction that was committed by this thread.

@@ -30,7 +30,7 @@ namespace floating_temple {
 namespace peer {
 
 class LiveObject;
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 class PendingEvent;
 class SequencePoint;
 class TransactionId;
@@ -42,22 +42,23 @@ class MockTransactionStoreCore {
   MOCK_CONST_METHOD0(GetCurrentSequencePoint, SequencePoint*());
   MOCK_CONST_METHOD3(
       GetLiveObjectAtSequencePoint,
-      std::shared_ptr<const LiveObject>(PeerObjectImpl* peer_object,
+      std::shared_ptr<const LiveObject>(ObjectReferenceImpl* object_reference,
                                         const SequencePoint* sequence_point,
                                         bool wait));
-  MOCK_CONST_METHOD1(CreateUnboundPeerObject, void(bool versioned));
-  MOCK_CONST_METHOD2(CreateBoundPeerObject,
+  MOCK_CONST_METHOD1(CreateUnboundObjectReference, void(bool versioned));
+  MOCK_CONST_METHOD2(CreateBoundObjectReference,
                      void(const std::string& name, bool versioned));
   MOCK_CONST_METHOD4(
       CreateTransaction,
       void(const std::vector<linked_ptr<PendingEvent>>& events,
            TransactionId* transaction_id,
-           const std::unordered_map<PeerObjectImpl*,
+           const std::unordered_map<ObjectReferenceImpl*,
                                     std::shared_ptr<LiveObject>>&
                modified_objects,
            const SequencePoint* prev_sequence_point));
-  MOCK_CONST_METHOD2(ObjectsAreEquivalent,
-                     bool(const PeerObjectImpl* a, const PeerObjectImpl* b));
+  MOCK_CONST_METHOD2(ObjectsAreIdentical,
+                     bool(const ObjectReferenceImpl* a,
+                          const ObjectReferenceImpl* b));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStoreCore);
@@ -71,25 +72,26 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   bool delay_object_binding() const override { return true; }
   SequencePoint* GetCurrentSequencePoint() const override;
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
-      PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
-      bool wait) override;
-  PeerObjectImpl* CreateUnboundPeerObject(bool versioned) override;
-  PeerObjectImpl* CreateBoundPeerObject(const std::string& name,
-                                        bool versioned) override;
+      ObjectReferenceImpl* object_reference,
+      const SequencePoint* sequence_point, bool wait) override;
+  ObjectReferenceImpl* CreateUnboundObjectReference(bool versioned) override;
+  ObjectReferenceImpl* CreateBoundObjectReference(const std::string& name,
+                                                  bool versioned) override;
   void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
-      const std::unordered_map<PeerObjectImpl*, std::shared_ptr<LiveObject>>&
-          modified_objects,
+      const std::unordered_map<ObjectReferenceImpl*,
+                               std::shared_ptr<LiveObject>>& modified_objects,
       const SequencePoint* prev_sequence_point) override;
-  bool ObjectsAreEquivalent(const PeerObjectImpl* a,
-                            const PeerObjectImpl* b) const override;
+  bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
+                           const ObjectReferenceImpl* b) const override;
 
  private:
   const MockTransactionStoreCore* const core_;
 
-  std::vector<linked_ptr<PeerObjectImpl>> unnamed_objects_;
-  std::unordered_map<std::string, linked_ptr<PeerObjectImpl>> named_objects_;
+  std::vector<linked_ptr<ObjectReferenceImpl>> unnamed_objects_;
+  std::unordered_map<std::string, linked_ptr<ObjectReferenceImpl>>
+      named_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);
 };

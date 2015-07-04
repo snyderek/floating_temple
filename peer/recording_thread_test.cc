@@ -32,7 +32,7 @@
 #include "peer/mock_sequence_point.h"
 #include "peer/mock_transaction_store.h"
 #include "peer/mock_versioned_local_object.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 #include "peer/pending_event.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/versioned_live_object.h"
@@ -59,7 +59,7 @@ using testing::_;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace peer {
 namespace {
@@ -77,11 +77,11 @@ MATCHER_P(IsMethodCallPendingEvent, expected_method_name, "") {
     return false;
   }
 
-  PeerObjectImpl* next_peer_object = nullptr;
+  ObjectReferenceImpl* next_object_reference = nullptr;
   const string* method_name = nullptr;
   const vector<Value>* parameters = nullptr;
 
-  arg->GetMethodCall(&next_peer_object, &method_name, &parameters);
+  arg->GetMethodCall(&next_object_reference, &method_name, &parameters);
 
   return *method_name == expected_method_name;
 }
@@ -90,7 +90,7 @@ MATCHER(IsMethodReturnPendingEvent, "") {
   return arg->type() == PendingEvent::METHOD_RETURN;
 }
 
-void CallAppendMethod(Thread* thread, PeerObject* peer_object,
+void CallAppendMethod(Thread* thread, ObjectReference* object_reference,
                       const string& string_to_append) {
   CHECK(thread != nullptr);
 
@@ -99,7 +99,8 @@ void CallAppendMethod(Thread* thread, PeerObject* peer_object,
                                  string_to_append);
 
   Value return_value;
-  CHECK(thread->CallMethod(peer_object, "append", parameters, &return_value));
+  CHECK(thread->CallMethod(object_reference, "append", parameters,
+                           &return_value));
 
   CHECK_EQ(return_value.local_type(), FakeVersionedLocalObject::kVoidLocalType);
   CHECK_EQ(return_value.type(), Value::EMPTY);
@@ -140,7 +141,7 @@ class TransactionIdSetter {
 };
 
 TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
-  PeerObjectImpl peer_object(true);
+  ObjectReferenceImpl object_reference(true);
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   RecordingThread thread(&transaction_store);
@@ -150,12 +151,12 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core,
-              GetLiveObjectAtSequencePoint(&peer_object, _, _))
+              GetLiveObjectAtSequencePoint(&object_reference, _, _))
       .WillRepeatedly(Return(initial_live_object));
   // TODO(dss): Add expectations for
-  // transaction_store_core.CreateUnboundPeerObject and
-  // transaction_store_core.CreateBoundPeerObject.
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  // transaction_store_core.CreateUnboundObjectReference and
+  // transaction_store_core.CreateBoundObjectReference.
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   const TransactionIdSetter transaction_id_setter(MakeTransactionId(30, 0, 0));
@@ -165,11 +166,11 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
                                   &TransactionIdSetter::CopyTransactionId)));
 
   ASSERT_TRUE(thread.BeginTransaction());
-  CallAppendMethod(&thread, &peer_object, "b");
+  CallAppendMethod(&thread, &object_reference, "b");
   ASSERT_TRUE(thread.BeginTransaction());
-  CallAppendMethod(&thread, &peer_object, "c");
+  CallAppendMethod(&thread, &object_reference, "c");
   ASSERT_TRUE(thread.EndTransaction());
-  CallAppendMethod(&thread, &peer_object, "d");
+  CallAppendMethod(&thread, &object_reference, "d");
   ASSERT_TRUE(thread.EndTransaction());
 }
 
@@ -186,7 +187,7 @@ void CallEndTransaction(Thread* thread) {
 TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  PeerObjectImpl peer_object(true), new_peer_object(true);
+  ObjectReferenceImpl object_reference(true), new_object_reference(true);
   const MockVersionedLocalObjectCore local_object_core;
   shared_ptr<const LiveObject> live_object(
       new VersionedLiveObject(
@@ -197,17 +198,17 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core,
-              GetLiveObjectAtSequencePoint(&peer_object, _, _))
+              GetLiveObjectAtSequencePoint(&object_reference, _, _))
       .WillRepeatedly(Return(live_object));
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   Value canned_return_value;
-  canned_return_value.set_peer_object(0, &new_peer_object);
+  canned_return_value.set_object_reference(0, &new_object_reference);
   const ValueSetter value_setter(canned_return_value);
 
   EXPECT_CALL(local_object_core, Serialize(_))
@@ -231,23 +232,24 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
                                   &TransactionIdSetter::CopyTransactionId)));
 
   // Call the "test-method" method. The method calls Thread::BeginTransaction,
-  // and then creates a new peer object and returns it. The RecordingThread
-  // instance should create an implicit transaction that contains the start of
-  // the "test-method" call and the call to BeginTransaction.
+  // creates a new object, and returns the new object reference. The
+  // RecordingThread instance should create an implicit transaction that
+  // contains the start of the "test-method" call and the call to
+  // BeginTransaction.
   //
   // No other transaction should be created, because the explicit transaction
   // (initiated by the call to BeginTransaction) is never terminated.
 
   Value return_value;
-  ASSERT_TRUE(thread.CallMethod(&peer_object, "test-method", vector<Value>(),
-                                &return_value));
-  EXPECT_EQ(&new_peer_object, return_value.peer_object());
+  ASSERT_TRUE(thread.CallMethod(&object_reference, "test-method",
+                                vector<Value>(), &return_value));
+  EXPECT_EQ(&new_object_reference, return_value.object_reference());
 }
 
 TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  PeerObjectImpl peer_object(true);
+  ObjectReferenceImpl object_reference(true);
   const MockVersionedLocalObjectCore local_object_core;
   shared_ptr<const LiveObject> live_object(
       new VersionedLiveObject(
@@ -258,13 +260,13 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core,
-              GetLiveObjectAtSequencePoint(&peer_object, _, _))
+              GetLiveObjectAtSequencePoint(&object_reference, _, _))
       .WillRepeatedly(Return(live_object));
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   Value canned_return_value;
@@ -317,16 +319,16 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
   // EndTransaction call to the "test-method" return.
 
   Value return_value;
-  ASSERT_TRUE(thread.CallMethod(&peer_object, "test-method", vector<Value>(),
-                                &return_value));
+  ASSERT_TRUE(thread.CallMethod(&object_reference, "test-method",
+                                vector<Value>(), &return_value));
   EXPECT_EQ(Value::EMPTY, return_value.type());
 }
 
-// Create a peer object, and then call a method on that object in a different
+// Create an object, and then call a method on that object in a different
 // transaction. The object should still be available in the later transaction,
 // even though the content of the object was never committed. (An object is not
 // committed until it's involved in a method call.)
-TEST(RecordingThreadTest, CreatePeerObjectInDifferentTransaction) {
+TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   RecordingThread thread(&transaction_store);
@@ -338,11 +340,11 @@ TEST(RecordingThreadTest, CreatePeerObjectInDifferentTransaction) {
   // copy, in fact, since the object hasn't been committed).
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AtLeast(1));
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   const TransactionIdSetter transaction_id_setter1(MakeTransactionId(20, 0, 0));
@@ -363,18 +365,18 @@ TEST(RecordingThreadTest, CreatePeerObjectInDifferentTransaction) {
   }
 
   ASSERT_TRUE(thread.BeginTransaction());
-  PeerObject* const peer_object1 = thread.CreateVersionedPeerObject(
+  ObjectReference* const object_reference1 = thread.CreateVersionedObject(
       new FakeVersionedLocalObject("lucy."), "");
-  PeerObject* const peer_object2 = thread.CreateVersionedPeerObject(
+  ObjectReference* const object_reference2 = thread.CreateVersionedObject(
       new FakeVersionedLocalObject("ethel."), "");
   // This method call is here only to force a transaction to be created.
-  CallAppendMethod(&thread, peer_object1, "ricky.");
+  CallAppendMethod(&thread, object_reference1, "ricky.");
   ASSERT_TRUE(thread.EndTransaction());
 
   ASSERT_TRUE(thread.BeginTransaction());
-  // peer_object2 should still be available, even though it was created in an
-  // earlier transaction.
-  CallAppendMethod(&thread, peer_object2, "fred.");
+  // object_reference2 should still be available, even though it was created in
+  // an earlier transaction.
+  CallAppendMethod(&thread, object_reference2, "fred.");
   ASSERT_TRUE(thread.EndTransaction());
 }
 

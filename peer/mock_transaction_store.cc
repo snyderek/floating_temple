@@ -22,7 +22,7 @@
 
 #include "base/linked_ptr.h"
 #include "base/logging.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 
 using std::shared_ptr;
 using std::string;
@@ -45,54 +45,57 @@ SequencePoint* MockTransactionStore::GetCurrentSequencePoint() const {
 }
 
 shared_ptr<const LiveObject> MockTransactionStore::GetLiveObjectAtSequencePoint(
-    PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
+    ObjectReferenceImpl* object_reference, const SequencePoint* sequence_point,
     bool wait) {
-  CHECK(peer_object != nullptr);
+  CHECK(object_reference != nullptr);
 
-  return core_->GetLiveObjectAtSequencePoint(peer_object, sequence_point, wait);
+  return core_->GetLiveObjectAtSequencePoint(object_reference, sequence_point,
+                                             wait);
 }
 
-PeerObjectImpl* MockTransactionStore::CreateUnboundPeerObject(bool versioned) {
-  core_->CreateUnboundPeerObject(versioned);
+ObjectReferenceImpl* MockTransactionStore::CreateUnboundObjectReference(
+    bool versioned) {
+  core_->CreateUnboundObjectReference(versioned);
 
-  PeerObjectImpl* const peer_object = new PeerObjectImpl(versioned);
-  unnamed_objects_.emplace_back(peer_object);
-  return peer_object;
+  ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl(
+      versioned);
+  unnamed_objects_.emplace_back(object_reference);
+  return object_reference;
 }
 
-PeerObjectImpl* MockTransactionStore::CreateBoundPeerObject(const string& name,
-                                                            bool versioned) {
-  core_->CreateBoundPeerObject(name, versioned);
+ObjectReferenceImpl* MockTransactionStore::CreateBoundObjectReference(
+    const string& name, bool versioned) {
+  core_->CreateBoundObjectReference(name, versioned);
 
-  linked_ptr<PeerObjectImpl>* peer_object = nullptr;
+  linked_ptr<ObjectReferenceImpl>* object_reference = nullptr;
 
   if (name.empty()) {
     unnamed_objects_.emplace_back(nullptr);
-    peer_object = &unnamed_objects_.back();
+    object_reference = &unnamed_objects_.back();
   } else {
-    peer_object = &named_objects_[name];
+    object_reference = &named_objects_[name];
   }
 
-  if (peer_object->get() == nullptr) {
-    peer_object->reset(new PeerObjectImpl(versioned));
+  if (object_reference->get() == nullptr) {
+    object_reference->reset(new ObjectReferenceImpl(versioned));
   }
 
-  return peer_object->get();
+  return object_reference->get();
 }
 
 void MockTransactionStore::CreateTransaction(
     const vector<linked_ptr<PendingEvent>>& events,
     TransactionId* transaction_id,
-    const unordered_map<PeerObjectImpl*, shared_ptr<LiveObject>>&
+    const unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>&
         modified_objects,
     const SequencePoint* prev_sequence_point) {
   core_->CreateTransaction(events, transaction_id, modified_objects,
                            prev_sequence_point);
 }
 
-bool MockTransactionStore::ObjectsAreEquivalent(const PeerObjectImpl* a,
-                                                const PeerObjectImpl* b) const {
-  return core_->ObjectsAreEquivalent(a, b);
+bool MockTransactionStore::ObjectsAreIdentical(
+    const ObjectReferenceImpl* a, const ObjectReferenceImpl* b) const {
+  return core_->ObjectsAreIdentical(a, b);
 }
 
 }  // namespace peer

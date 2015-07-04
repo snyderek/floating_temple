@@ -42,8 +42,8 @@
 #include "peer/live_object.h"
 #include "peer/max_version_map.h"
 #include "peer/min_version_map.h"
+#include "peer/object_reference_impl.h"
 #include "peer/peer_message_sender.h"
-#include "peer/peer_object_impl.h"
 #include "peer/pending_event.h"
 #include "peer/proto/event.pb.h"
 #include "peer/proto/peer.pb.h"
@@ -180,27 +180,27 @@ SequencePoint* TransactionStore::GetCurrentSequencePoint() const {
 }
 
 shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
-    PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
+    ObjectReferenceImpl* object_reference, const SequencePoint* sequence_point,
     bool wait) {
-  CHECK(peer_object != nullptr);
+  CHECK(object_reference != nullptr);
 
-  SharedObject* const shared_object = peer_object->shared_object();
-  // The peer object must have been created by a committed transaction, because
+  SharedObject* const shared_object = object_reference->shared_object();
+  // The object must have been created by a committed transaction, because
   // otherwise the pending transaction wouldn't need to request it. Therefore a
-  // shared object should exist for the peer object.
+  // shared object should exist for the object reference.
   CHECK(shared_object != nullptr);
 
   const SequencePointImpl* const sequence_point_impl =
       static_cast<const SequencePointImpl*>(sequence_point);
 
   uint64 current_version_number = 0;
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
   vector<pair<const CanonicalPeer*, TransactionId>> all_transactions_to_reject;
 
   shared_ptr<const LiveObject> live_object =
       GetLiveObjectAtSequencePoint_Helper(shared_object, *sequence_point_impl,
                                           &current_version_number,
-                                          &new_peer_objects,
+                                          &new_object_references,
                                           &all_transactions_to_reject);
 
   if (live_object.get() == nullptr) {
@@ -217,7 +217,7 @@ shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
       while (live_object.get() == nullptr) {
         live_object = GetLiveObjectAtSequencePoint_Helper(
             shared_object, *sequence_point_impl, &current_version_number,
-            &new_peer_objects, &all_transactions_to_reject);
+            &new_object_references, &all_transactions_to_reject);
       }
     }
   }
@@ -232,31 +232,34 @@ shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
 
   UpdateCurrentSequencePoint(local_peer_, new_transaction_id);
 
-  CreateNewPeerObjects(new_peer_objects);
+  CreateNewObjectReferences(new_object_references);
 
   return live_object;
 }
 
-PeerObjectImpl* TransactionStore::CreateUnboundPeerObject(bool versioned) {
-  PeerObjectImpl* const peer_object = new PeerObjectImpl(versioned);
-  CHECK(peer_object != nullptr);
+ObjectReferenceImpl* TransactionStore::CreateUnboundObjectReference(
+    bool versioned) {
+  ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl(
+      versioned);
+  CHECK(object_reference != nullptr);
 
   {
-    MutexLock lock(&peer_objects_mu_);
-    // TODO(dss): Garbage-collect PeerObjectImpl instances when they're no
-    // longer being used.
-    peer_objects_.emplace_back(peer_object);
+    MutexLock lock(&object_references_mu_);
+    // TODO(dss): [BUG] Garbage-collect ObjectReferenceImpl instances when
+    // they're no longer being used.
+    object_references_.emplace_back(object_reference);
   }
 
-  return peer_object;
+  return object_reference;
 }
 
-PeerObjectImpl* TransactionStore::CreateBoundPeerObject(const string& name,
-                                                        bool versioned) {
+ObjectReferenceImpl* TransactionStore::CreateBoundObjectReference(
+    const string& name, bool versioned) {
   if (name.empty()) {
-    PeerObjectImpl* const peer_object = CreateUnboundPeerObject(versioned);
-    GetSharedObjectForPeerObject(peer_object);
-    return peer_object;
+    ObjectReferenceImpl* const object_reference = CreateUnboundObjectReference(
+        versioned);
+    GetSharedObjectForObjectReference(object_reference);
+    return object_reference;
   } else {
     Uuid object_id;
     GeneratePredictableUuid(object_namespace_uuid_, name, &object_id);
@@ -268,14 +271,14 @@ PeerObjectImpl* TransactionStore::CreateBoundPeerObject(const string& name,
       named_objects_.insert(shared_object);
     }
 
-    return shared_object->GetOrCreatePeerObject(versioned);
+    return shared_object->GetOrCreateObjectReference(versioned);
   }
 }
 
 void TransactionStore::CreateTransaction(
     const vector<linked_ptr<PendingEvent>>& events,
     TransactionId* transaction_id,
-    const unordered_map<PeerObjectImpl*, shared_ptr<LiveObject>>&
+    const unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>&
         modified_objects,
     const SequencePoint* prev_sequence_point) {
   CHECK(transaction_id != nullptr);
@@ -310,11 +313,12 @@ void TransactionStore::CreateTransaction(
           break;
 
         case PendingEvent::METHOD_CALL: {
-          PeerObjectImpl* next_peer_object = nullptr;
+          ObjectReferenceImpl* next_object_reference = nullptr;
           const string* method_name = nullptr;
           const vector<Value>* parameters = nullptr;
 
-          event->GetMethodCall(&next_peer_object, &method_name, &parameters);
+          event->GetMethodCall(&next_object_reference, &method_name,
+                               &parameters);
 
           VLOG(3) << "Event " << i << ": METHOD_CALL \""
                   << CEscape(*method_name) << "\"";
@@ -354,11 +358,11 @@ void TransactionStore::CreateTransaction(
                                                      transaction_id_temp);
 
   for (const auto& modified_object_pair : modified_objects) {
-    PeerObjectImpl* const peer_object = modified_object_pair.first;
+    ObjectReferenceImpl* const object_reference = modified_object_pair.first;
     const shared_ptr<const LiveObject> live_object =
         modified_object_pair.second;
 
-    SharedObject* const shared_object = peer_object->shared_object();
+    SharedObject* const shared_object = object_reference->shared_object();
 
     if (shared_object != nullptr) {
       shared_object->SetCachedLiveObject(live_object,
@@ -369,8 +373,8 @@ void TransactionStore::CreateTransaction(
   transaction_id->Swap(&transaction_id_temp);
 }
 
-bool TransactionStore::ObjectsAreEquivalent(const PeerObjectImpl* a,
-                                            const PeerObjectImpl* b) const {
+bool TransactionStore::ObjectsAreIdentical(const ObjectReferenceImpl* a,
+                                           const ObjectReferenceImpl* b) const {
   CHECK(a != nullptr);
   CHECK(b != nullptr);
 
@@ -648,7 +652,7 @@ TransactionStore::GetLiveObjectAtSequencePoint_Helper(
     SharedObject* shared_object,
     const SequencePointImpl& sequence_point_impl,
     uint64* current_version_number,
-    unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>*
         all_transactions_to_reject) {
   CHECK(shared_object != nullptr);
@@ -673,7 +677,7 @@ TransactionStore::GetLiveObjectAtSequencePoint_Helper(
   vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
   const shared_ptr<const LiveObject> live_object =
       shared_object->GetWorkingVersion(current_version_map, sequence_point_impl,
-                                       new_peer_objects,
+                                       new_object_references,
                                        &transactions_to_reject);
 
   all_transactions_to_reject->insert(all_transactions_to_reject->end(),
@@ -895,24 +899,27 @@ void TransactionStore::IncrementVersionNumber_Locked() {
   version_number_changed_cond_.Broadcast();
 }
 
-void TransactionStore::CreateNewPeerObjects(
-    const unordered_map<SharedObject*, PeerObjectImpl*>& new_peer_objects) {
-  for (const auto& new_peer_object_pair : new_peer_objects) {
-    SharedObject* const shared_object = new_peer_object_pair.first;
-    PeerObjectImpl* const peer_object = new_peer_object_pair.second;
+void TransactionStore::CreateNewObjectReferences(
+    const unordered_map<SharedObject*, ObjectReferenceImpl*>&
+        new_object_references) {
+  for (const auto& new_object_reference_pair : new_object_references) {
+    SharedObject* const shared_object = new_object_reference_pair.first;
+    ObjectReferenceImpl* const object_reference =
+        new_object_reference_pair.second;
 
-    shared_object->AddPeerObject(peer_object);
-    CHECK_EQ(peer_object->SetSharedObjectIfUnset(shared_object), shared_object);
+    shared_object->AddObjectReference(object_reference);
+    CHECK_EQ(object_reference->SetSharedObjectIfUnset(shared_object),
+             shared_object);
   }
 }
 
-SharedObject* TransactionStore::GetSharedObjectForPeerObject(
-    PeerObjectImpl* peer_object) {
-  if (peer_object == nullptr) {
+SharedObject* TransactionStore::GetSharedObjectForObjectReference(
+    ObjectReferenceImpl* object_reference) {
+  if (object_reference == nullptr) {
     return nullptr;
   }
 
-  SharedObject* shared_object = peer_object->shared_object();
+  SharedObject* shared_object = object_reference->shared_object();
 
   if (shared_object != nullptr) {
     return shared_object;
@@ -922,9 +929,9 @@ SharedObject* TransactionStore::GetSharedObjectForPeerObject(
   GenerateUuid(&object_id);
 
   SharedObject* const new_shared_object = new SharedObject(this, object_id);
-  new_shared_object->AddPeerObject(peer_object);
+  new_shared_object->AddObjectReference(object_reference);
 
-  shared_object = peer_object->SetSharedObjectIfUnset(new_shared_object);
+  shared_object = object_reference->SetSharedObjectIfUnset(new_shared_object);
 
   if (shared_object != new_shared_object) {
     delete new_shared_object;
@@ -947,24 +954,25 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
   CHECK(pending_event != nullptr);
 
   unordered_set<SharedObject*> new_shared_objects;
-  for (PeerObjectImpl* const peer_object : pending_event->new_peer_objects()) {
-    SharedObject* const shared_object = GetSharedObjectForPeerObject(
-        peer_object);
+  for (ObjectReferenceImpl* const object_reference :
+           pending_event->new_object_references()) {
+    SharedObject* const shared_object = GetSharedObjectForObjectReference(
+        object_reference);
     CHECK(new_shared_objects.insert(shared_object).second);
   }
 
-  SharedObject* const prev_shared_object = GetSharedObjectForPeerObject(
-      pending_event->prev_peer_object());
+  SharedObject* const prev_shared_object = GetSharedObjectForObjectReference(
+      pending_event->prev_object_reference());
 
   CHECK(new_shared_objects.find(prev_shared_object) ==
             new_shared_objects.end());
 
   for (const auto& live_object_pair : pending_event->live_objects()) {
-    PeerObjectImpl* const peer_object = live_object_pair.first;
+    ObjectReferenceImpl* const object_reference = live_object_pair.first;
     const shared_ptr<const LiveObject>& live_object = live_object_pair.second;
 
-    SharedObject* const shared_object = GetSharedObjectForPeerObject(
-        peer_object);
+    SharedObject* const shared_object = GetSharedObjectForObjectReference(
+        object_reference);
 
     AddEventToSharedObjectTransactions(
         shared_object, origin_peer,
@@ -1002,15 +1010,15 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
       break;
 
     case PendingEvent::METHOD_CALL: {
-      PeerObjectImpl* next_peer_object = nullptr;
+      ObjectReferenceImpl* next_object_reference = nullptr;
       const string* method_name = nullptr;
       const vector<Value>* parameters = nullptr;
 
-      pending_event->GetMethodCall(&next_peer_object, &method_name,
+      pending_event->GetMethodCall(&next_object_reference, &method_name,
                                    &parameters);
 
-      SharedObject* const next_shared_object = GetSharedObjectForPeerObject(
-          next_peer_object);
+      SharedObject* const next_shared_object =
+          GetSharedObjectForObjectReference(next_object_reference);
 
       const vector<Value>::size_type parameter_count = parameters->size();
       vector<CommittedValue> committed_parameters(parameter_count);
@@ -1050,13 +1058,13 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
     }
 
     case PendingEvent::METHOD_RETURN: {
-      PeerObjectImpl* next_peer_object = nullptr;
+      ObjectReferenceImpl* next_object_reference = nullptr;
       const Value* return_value = nullptr;
 
-      pending_event->GetMethodReturn(&next_peer_object, &return_value);
+      pending_event->GetMethodReturn(&next_object_reference, &return_value);
 
-      SharedObject* const next_shared_object = GetSharedObjectForPeerObject(
-          next_peer_object);
+      SharedObject* const next_shared_object =
+          GetSharedObjectForObjectReference(next_object_reference);
 
       CommittedValue committed_return_value;
       ConvertValueToCommittedValue(*return_value, &committed_return_value);
@@ -1120,10 +1128,11 @@ void TransactionStore::ConvertValueToCommittedValue(const Value& in,
     CONVERT_VALUE(STRING, set_string_value, string_value);
     CONVERT_VALUE(BYTES, set_bytes_value, bytes_value);
 
-    case Value::PEER_OBJECT: {
-      PeerObjectImpl* const peer_object = static_cast<PeerObjectImpl*>(
-          in.peer_object());
-      out->set_shared_object(GetSharedObjectForPeerObject(peer_object));
+    case Value::OBJECT_REFERENCE: {
+      ObjectReferenceImpl* const object_reference =
+          static_cast<ObjectReferenceImpl*>(in.object_reference());
+      out->set_shared_object(
+          GetSharedObjectForObjectReference(object_reference));
       break;
     }
 
@@ -1149,13 +1158,13 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       ObjectCreationEventProto* const object_creation_event_proto =
           out->mutable_object_creation();
 
-      vector<PeerObjectImpl*> referenced_peer_objects;
+      vector<ObjectReferenceImpl*> object_references;
       live_object->Serialize(object_creation_event_proto->mutable_data(),
-                             &referenced_peer_objects);
+                             &object_references);
 
-      for (PeerObjectImpl* const peer_object : referenced_peer_objects) {
-        SharedObject* const shared_object = GetSharedObjectForPeerObject(
-            peer_object);
+      for (ObjectReferenceImpl* const object_reference : object_references) {
+        SharedObject* const shared_object = GetSharedObjectForObjectReference(
+            object_reference);
         object_creation_event_proto->add_referenced_object_id()->CopyFrom(
             shared_object->object_id());
       }
@@ -1316,22 +1325,22 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
 
       const int referenced_object_count =
           object_creation_event_proto.referenced_object_id_size();
-      vector<PeerObjectImpl*> referenced_peer_objects(referenced_object_count);
+      vector<ObjectReferenceImpl*> object_references(referenced_object_count);
 
       for (int i = 0; i < referenced_object_count; ++i) {
         const Uuid& object_id =
             object_creation_event_proto.referenced_object_id(i);
         SharedObject* const referenced_shared_object = GetOrCreateSharedObject(
             object_id);
-        referenced_peer_objects[i] =
-            referenced_shared_object->GetOrCreatePeerObject(true);
+        object_references[i] =
+            referenced_shared_object->GetOrCreateObjectReference(true);
       }
 
       const shared_ptr<const LiveObject> live_object(
           new VersionedLiveObject(
               DeserializeLocalObjectFromString(
                   interpreter_, object_creation_event_proto.data(),
-                  referenced_peer_objects)));
+                  object_references)));
 
       return new ObjectCreationCommittedEvent(live_object);
     }

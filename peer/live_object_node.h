@@ -30,7 +30,7 @@ class VersionedLocalObject;
 
 namespace peer {
 
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 
 // TODO(dss): Rename this class to VersionedLiveObjectNode.
 class LiveObjectNode {
@@ -41,9 +41,9 @@ class LiveObjectNode {
   const VersionedLocalObject* local_object() const { return local_object_; }
 
   void Serialize(std::string* data,
-                 std::vector<PeerObjectImpl*>* referenced_peer_objects) const;
+                 std::vector<ObjectReferenceImpl*>* object_references) const;
   LiveObjectNode* InvokeMethod(Thread* thread,
-                               PeerObjectImpl* peer_object,
+                               ObjectReferenceImpl* object_reference,
                                const std::string& method_name,
                                const std::vector<Value>& parameters,
                                Value* return_value);

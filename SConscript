@@ -83,8 +83,8 @@ fake_peer_lib = ft_env.Library(
     target = 'fake_peer/fake_peer',
     source = Split("""
         fake_peer/create_standalone_peer.cc
+        fake_peer/fake_object_reference.cc
         fake_peer/fake_peer.cc
-        fake_peer/fake_peer_object.cc
         fake_peer/fake_thread.cc
       """),
   )
@@ -133,11 +133,11 @@ peer_lib = ft_env.Library(
         peer/live_object_node.cc
         peer/max_version_map.cc
         peer/min_version_map.cc
+        peer/object_reference_impl.cc
         peer/peer_connection.cc
         peer/peer_exclusion_map.cc
         peer/peer_id.cc
         peer/peer_impl.cc
-        peer/peer_object_impl.cc
         peer/pending_event.cc
         peer/playback_thread.cc
         peer/recording_thread.cc

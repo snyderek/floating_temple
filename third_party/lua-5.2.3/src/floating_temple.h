@@ -20,11 +20,11 @@ extern "C" {
 
 
 /* This hook function returns non-zero if the objects are equal. */
-typedef int (*ft_PeerObjectsEqualHook) (const struct PeerObject *po1,
-                                        const struct PeerObject *po2);
-LUAI_DDEC ft_PeerObjectsEqualHook ft_peerobjectsequalhook;
-LUA_API ft_PeerObjectsEqualHook ft_installpeerobjectsequalhook
-    (ft_PeerObjectsEqualHook hook);
+typedef int (*ft_ObjectReferencesEqualHook) (const struct ObjectReference *po1,
+                                             const struct ObjectReference *po2);
+LUAI_DDEC ft_ObjectReferencesEqualHook ft_objectreferencesequalhook;
+LUA_API ft_ObjectReferencesEqualHook ft_installobjectreferencesequalhook
+    (ft_ObjectReferencesEqualHook hook);
 
 
 /* Each of these hook functions returns non-zero if it performed the operation.

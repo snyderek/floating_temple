@@ -26,15 +26,15 @@ class VersionedLocalObject;
 
 namespace peer {
 
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 
 void SerializeLocalObjectToString(
     const VersionedLocalObject* local_object, std::string* data,
-    std::vector<PeerObjectImpl*>* referenced_peer_objects);
+    std::vector<ObjectReferenceImpl*>* object_references);
 
 VersionedLocalObject* DeserializeLocalObjectFromString(
     Interpreter* interpreter, const std::string& data,
-    const std::vector<PeerObjectImpl*>& referenced_peer_objects);
+    const std::vector<ObjectReferenceImpl*>& object_references);
 
 }  // namespace peer
 }  // namespace floating_temple

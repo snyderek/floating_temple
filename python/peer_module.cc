@@ -25,7 +25,7 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace python {
 namespace {
@@ -76,11 +76,10 @@ PyMODINIT_FUNC PyInit_peer() {
 
   PyObject* const py_dict = PyDict_New();
   CHECK(py_dict != nullptr);
-  PeerObject* const dict_peer_object =
-      interpreter->CreateVersionedPeerObject<DictLocalObject>(py_dict,
-                                                              "shared");
-  PyObject* const py_dict_proxy_object = interpreter->PeerObjectToPyProxyObject(
-      dict_peer_object);
+  ObjectReference* const dict_object_reference =
+      interpreter->CreateVersionedObject<DictLocalObject>(py_dict, "shared");
+  PyObject* const py_dict_proxy_object =
+      interpreter->ObjectReferenceToPyProxyObject(dict_object_reference);
   CHECK_EQ(PyModule_AddObject(py_module, "shared", py_dict_proxy_object), 0);
 
   return py_module;

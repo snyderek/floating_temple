@@ -36,13 +36,13 @@ namespace {
 size_t TryToSerialize(const VersionedLocalObject* local_object,
                       void* buffer,
                       size_t buffer_size,
-                      vector<PeerObjectImpl*>* referenced_peer_objects) {
+                      vector<ObjectReferenceImpl*>* object_references) {
   CHECK(local_object != nullptr);
-  CHECK(referenced_peer_objects != nullptr);
+  CHECK(object_references != nullptr);
 
-  referenced_peer_objects->clear();
+  object_references->clear();
 
-  SerializationContextImpl context(referenced_peer_objects);
+  SerializationContextImpl context(object_references);
   return local_object->Serialize(buffer, buffer_size, &context);
 }
 
@@ -50,13 +50,13 @@ size_t TryToSerialize(const VersionedLocalObject* local_object,
 
 void SerializeLocalObjectToString(
     const VersionedLocalObject* local_object, string* data,
-    vector<PeerObjectImpl*>* referenced_peer_objects) {
+    vector<ObjectReferenceImpl*>* object_references) {
   CHECK(data != nullptr);
 
   char static_buffer[1000];
   const size_t data_size = TryToSerialize(local_object, static_buffer,
                                           sizeof static_buffer,
-                                          referenced_peer_objects);
+                                          object_references);
 
   if (data_size <= sizeof static_buffer) {
     data->assign(static_buffer, data_size);
@@ -65,7 +65,7 @@ void SerializeLocalObjectToString(
 
   char* const dynamic_buffer = new char[data_size];
   CHECK_EQ(TryToSerialize(local_object, dynamic_buffer, data_size,
-                          referenced_peer_objects), data_size);
+                          object_references), data_size);
 
   data->assign(dynamic_buffer, data_size);
   delete[] dynamic_buffer;
@@ -73,10 +73,10 @@ void SerializeLocalObjectToString(
 
 VersionedLocalObject* DeserializeLocalObjectFromString(
     Interpreter* interpreter, const string& data,
-    const vector<PeerObjectImpl*>& referenced_peer_objects) {
+    const vector<ObjectReferenceImpl*>& object_references) {
   CHECK(interpreter != nullptr);
 
-  DeserializationContextImpl context(&referenced_peer_objects);
+  DeserializationContextImpl context(&object_references);
   return interpreter->DeserializeObject(data.data(),
                                         static_cast<size_t>(data.size()),
                                         &context);

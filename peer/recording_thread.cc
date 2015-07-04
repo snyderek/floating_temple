@@ -31,7 +31,7 @@
 #include "base/mutex_lock.h"
 #include "include/c++/value.h"
 #include "peer/live_object.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 #include "peer/pending_event.h"
 #include "peer/proto/transaction_id.pb.h"
 #include "peer/sequence_point.h"
@@ -50,14 +50,15 @@ using std::vector;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace peer {
 namespace {
 
-PeerObjectImpl* GetPeerObjectForEvent(PeerObjectImpl* peer_object) {
-  if (peer_object != nullptr && peer_object->versioned()) {
-    return peer_object;
+ObjectReferenceImpl* GetObjectReferenceForEvent(
+    ObjectReferenceImpl* object_reference) {
+  if (object_reference != nullptr && object_reference->versioned()) {
+    return object_reference;
   }
   return nullptr;
 }
@@ -69,7 +70,7 @@ RecordingThread::RecordingThread(
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       transaction_level_(0),
       committing_transaction_(false),
-      current_peer_object_(nullptr) {
+      current_object_reference_(nullptr) {
   GetMinTransactionId(&current_transaction_id_);
   GetMinTransactionId(&rejected_transaction_id_);
 }
@@ -83,11 +84,12 @@ void RecordingThread::RunProgram(UnversionedLocalObject* local_object,
                                  bool linger) {
   CHECK(return_value != nullptr);
 
-  PeerObject* const peer_object = CreateUnversionedPeerObject(local_object, "");
+  ObjectReference* const object_reference = CreateUnversionedObject(
+      local_object, "");
 
   for (;;) {
     Value return_value_temp;
-    if (CallMethod(peer_object, method_name, vector<Value>(),
+    if (CallMethod(object_reference, method_name, vector<Value>(),
                    &return_value_temp)) {
       if (!linger) {
         *return_value = return_value_temp;
@@ -150,9 +152,11 @@ bool RecordingThread::BeginTransaction() {
     return false;
   }
 
-  if (current_peer_object_ != nullptr && current_peer_object_->versioned()) {
-    modified_objects_[current_peer_object_] = current_live_object_;
-    AddTransactionEvent(new BeginTransactionPendingEvent(current_peer_object_));
+  if (current_object_reference_ != nullptr &&
+      current_object_reference_->versioned()) {
+    modified_objects_[current_object_reference_] = current_live_object_;
+    AddTransactionEvent(
+        new BeginTransactionPendingEvent(current_object_reference_));
   }
 
   ++transaction_level_;
@@ -167,9 +171,11 @@ bool RecordingThread::EndTransaction() {
     return false;
   }
 
-  if (current_peer_object_ != nullptr && current_peer_object_->versioned()) {
-    modified_objects_[current_peer_object_] = current_live_object_;
-    AddTransactionEvent(new EndTransactionPendingEvent(current_peer_object_));
+  if (current_object_reference_ != nullptr &&
+      current_object_reference_->versioned()) {
+    modified_objects_[current_object_reference_] = current_live_object_;
+    AddTransactionEvent(
+        new EndTransactionPendingEvent(current_object_reference_));
   }
 
   --transaction_level_;
@@ -181,40 +187,42 @@ bool RecordingThread::EndTransaction() {
   return true;
 }
 
-PeerObject* RecordingThread::CreateVersionedPeerObject(
+ObjectReference* RecordingThread::CreateVersionedObject(
     VersionedLocalObject* initial_version, const string& name) {
   // Take ownership of *initial_version.
   shared_ptr<const LiveObject> new_live_object(
       new VersionedLiveObject(initial_version));
 
-  PeerObjectImpl* peer_object = nullptr;
+  ObjectReferenceImpl* object_reference = nullptr;
 
   if (name.empty()) {
     if (transaction_store_->delay_object_binding()) {
-      peer_object = transaction_store_->CreateUnboundPeerObject(true);
+      object_reference = transaction_store_->CreateUnboundObjectReference(true);
 
       NewObject new_object;
       new_object.live_object = new_live_object;
       new_object.object_is_named = false;
 
-      CHECK(new_objects_.emplace(peer_object, new_object).second);
+      CHECK(new_objects_.emplace(object_reference, new_object).second);
     } else {
-      peer_object = transaction_store_->CreateBoundPeerObject("", true);
+      object_reference = transaction_store_->CreateBoundObjectReference("",
+                                                                        true);
 
       AddTransactionEvent(
           new ObjectCreationPendingEvent(
-              GetPeerObjectForEvent(current_peer_object_), peer_object,
-              new_live_object));
+              GetObjectReferenceForEvent(current_object_reference_),
+              object_reference, new_live_object));
     }
   } else {
-    peer_object = transaction_store_->CreateBoundPeerObject(name, true);
+    object_reference = transaction_store_->CreateBoundObjectReference(name,
+                                                                      true);
 
     NewObject new_object;
     new_object.live_object = new_live_object;
     new_object.object_is_named = true;
 
-    const pair<unordered_map<PeerObjectImpl*, NewObject>::iterator, bool>
-        insert_result = new_objects_.emplace(peer_object, new_object);
+    const pair<unordered_map<ObjectReferenceImpl*, NewObject>::iterator, bool>
+        insert_result = new_objects_.emplace(object_reference, new_object);
 
     if (insert_result.second) {
       // The named object has not yet been created in this thread.
@@ -223,14 +231,14 @@ PeerObject* RecordingThread::CreateVersionedPeerObject(
       // effect, send a GET_OBJECT message to remote peers so that the content
       // of the named object can eventually be synchronized with other peers.
       const shared_ptr<const LiveObject> existing_live_object =
-          transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
+          transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
                                                            GetSequencePoint(),
                                                            false);
 
       if (existing_live_object.get() != nullptr) {
         // The named object was already known to this peer. Remove the map entry
         // that was just added.
-        const unordered_map<PeerObjectImpl*, NewObject>::iterator
+        const unordered_map<ObjectReferenceImpl*, NewObject>::iterator
             new_object_it = insert_result.first;
         CHECK(new_object_it != new_objects_.end());
 
@@ -239,34 +247,34 @@ PeerObject* RecordingThread::CreateVersionedPeerObject(
     }
   }
 
-  CHECK(peer_object != nullptr);
-  return peer_object;
+  CHECK(object_reference != nullptr);
+  return object_reference;
 }
 
-PeerObject* RecordingThread::CreateUnversionedPeerObject(
+ObjectReference* RecordingThread::CreateUnversionedObject(
     UnversionedLocalObject* initial_version, const string& name) {
   // Take ownership of *initial_version.
   shared_ptr<LiveObject> new_live_object(
       new UnversionedLiveObject(initial_version));
 
-  PeerObjectImpl* const peer_object = transaction_store_->CreateBoundPeerObject(
-      name, false);
+  ObjectReferenceImpl* const object_reference =
+      transaction_store_->CreateBoundObjectReference(name, false);
 
   // TODO(dss): RecordingThread should not call methods on SharedObject. This is
   // the responsibility of TransactionStore.
-  SharedObject* const shared_object = peer_object->shared_object();
+  SharedObject* const shared_object = object_reference->shared_object();
   CHECK(shared_object != nullptr);
   shared_object->CreateUnversionedObjectContent(new_live_object);
 
-  CHECK(peer_object != nullptr);
-  return peer_object;
+  CHECK(object_reference != nullptr);
+  return object_reference;
 }
 
-bool RecordingThread::CallMethod(PeerObject* peer_object,
+bool RecordingThread::CallMethod(ObjectReference* object_reference,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
-  CHECK(peer_object != nullptr);
+  CHECK(object_reference != nullptr);
   CHECK(!method_name.empty());
   CHECK(return_value != nullptr);
 
@@ -280,43 +288,48 @@ bool RecordingThread::CallMethod(PeerObject* peer_object,
   TransactionId method_call_transaction_id;
   method_call_transaction_id.CopyFrom(current_transaction_id_);
 
-  PeerObjectImpl* const caller_peer_object = current_peer_object_;
-  PeerObjectImpl* const callee_peer_object = static_cast<PeerObjectImpl*>(
-      peer_object);
+  ObjectReferenceImpl* const caller_object_reference =
+      current_object_reference_;
+  ObjectReferenceImpl* const callee_object_reference =
+      static_cast<ObjectReferenceImpl*>(object_reference);
 
   // Record the METHOD_CALL event.
   {
-    unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>> live_objects;
-    unordered_set<PeerObjectImpl*> new_peer_objects;
+    unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>
+        live_objects;
+    unordered_set<ObjectReferenceImpl*> new_object_references;
 
-    CheckIfPeerObjectIsNew(caller_peer_object, &live_objects,
-                           &new_peer_objects);
-    CheckIfPeerObjectIsNew(callee_peer_object, &live_objects,
-                           &new_peer_objects);
+    CheckIfObjectIsNew(caller_object_reference, &live_objects,
+                       &new_object_references);
+    CheckIfObjectIsNew(callee_object_reference, &live_objects,
+                       &new_object_references);
 
     for (const Value& parameter : parameters) {
-      CheckIfValueIsNew(parameter, &live_objects, &new_peer_objects);
+      CheckIfValueIsNew(parameter, &live_objects, &new_object_references);
     }
 
-    if (caller_peer_object != nullptr && caller_peer_object->versioned()) {
-      modified_objects_[caller_peer_object] = current_live_object_;
+    if (caller_object_reference != nullptr &&
+        caller_object_reference->versioned()) {
+      modified_objects_[caller_object_reference] = current_live_object_;
     }
 
-    if ((caller_peer_object != nullptr && caller_peer_object->versioned()) ||
-        callee_peer_object->versioned()) {
+    if ((caller_object_reference != nullptr &&
+         caller_object_reference->versioned()) ||
+        callee_object_reference->versioned()) {
       AddTransactionEvent(
-          new MethodCallPendingEvent(live_objects, new_peer_objects,
-                                     GetPeerObjectForEvent(caller_peer_object),
-                                     GetPeerObjectForEvent(callee_peer_object),
-                                     method_name, parameters));
+          new MethodCallPendingEvent(
+              live_objects, new_object_references,
+              GetObjectReferenceForEvent(caller_object_reference),
+              GetObjectReferenceForEvent(callee_object_reference),
+              method_name, parameters));
     }
   }
 
   // Repeatedly try to call the method until either 1) the method succeeds, or
   // 2) a rewind action is requested.
   shared_ptr<LiveObject> callee_live_object;
-  if (!CallMethodHelper(method_call_transaction_id, caller_peer_object,
-                        callee_peer_object, method_name, parameters,
+  if (!CallMethodHelper(method_call_transaction_id, caller_object_reference,
+                        callee_object_reference, method_name, parameters,
                         &callee_live_object, return_value)) {
     // The current method is being rewound.
 
@@ -334,39 +347,42 @@ bool RecordingThread::CallMethod(PeerObject* peer_object,
 
   // Record the METHOD_RETURN event.
   {
-    unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>> live_objects;
-    unordered_set<PeerObjectImpl*> new_peer_objects;
+    unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>
+        live_objects;
+    unordered_set<ObjectReferenceImpl*> new_object_references;
 
-    CheckIfValueIsNew(*return_value, &live_objects, &new_peer_objects);
+    CheckIfValueIsNew(*return_value, &live_objects, &new_object_references);
 
-    if (callee_peer_object->versioned()) {
-      modified_objects_[callee_peer_object] = callee_live_object;
+    if (callee_object_reference->versioned()) {
+      modified_objects_[callee_object_reference] = callee_live_object;
     }
 
-    if ((caller_peer_object != nullptr && caller_peer_object->versioned()) ||
-        callee_peer_object->versioned()) {
+    if ((caller_object_reference != nullptr &&
+         caller_object_reference->versioned()) ||
+        callee_object_reference->versioned()) {
       AddTransactionEvent(
           new MethodReturnPendingEvent(
-              live_objects, new_peer_objects,
-              GetPeerObjectForEvent(callee_peer_object),
-              GetPeerObjectForEvent(caller_peer_object), *return_value));
+              live_objects, new_object_references,
+              GetObjectReferenceForEvent(callee_object_reference),
+              GetObjectReferenceForEvent(caller_object_reference),
+              *return_value));
     }
   }
 
   return true;
 }
 
-bool RecordingThread::ObjectsAreEquivalent(const PeerObject* a,
-                                           const PeerObject* b) const {
-  return transaction_store_->ObjectsAreEquivalent(
-      static_cast<const PeerObjectImpl*>(a),
-      static_cast<const PeerObjectImpl*>(b));
+bool RecordingThread::ObjectsAreIdentical(const ObjectReference* a,
+                                          const ObjectReference* b) const {
+  return transaction_store_->ObjectsAreIdentical(
+      static_cast<const ObjectReferenceImpl*>(a),
+      static_cast<const ObjectReferenceImpl*>(b));
 }
 
 bool RecordingThread::CallMethodHelper(
     const TransactionId& method_call_transaction_id,
-    PeerObjectImpl* caller_peer_object,
-    PeerObjectImpl* callee_peer_object,
+    ObjectReferenceImpl* caller_object_reference,
+    ObjectReferenceImpl* callee_object_reference,
     const string& method_name,
     const vector<Value>& parameters,
     shared_ptr<LiveObject>* callee_live_object,
@@ -379,16 +395,17 @@ bool RecordingThread::CallMethodHelper(
 
     const shared_ptr<LiveObject> caller_live_object = current_live_object_;
     const shared_ptr<LiveObject> callee_live_object_temp = GetLiveObject(
-        callee_peer_object);
+        callee_object_reference);
 
-    current_peer_object_ = callee_peer_object;
+    current_object_reference_ = callee_object_reference;
     current_live_object_ = callee_live_object_temp;
 
-    callee_live_object_temp->InvokeMethod(this, callee_peer_object, method_name,
-                                          parameters, return_value);
+    callee_live_object_temp->InvokeMethod(this, callee_object_reference,
+                                          method_name, parameters,
+                                          return_value);
 
     current_live_object_ = caller_live_object;
-    current_peer_object_ = caller_peer_object;
+    current_object_reference_ = caller_object_reference;
 
     {
       MutexLock lock(&rejected_transaction_id_mu_);
@@ -433,18 +450,18 @@ bool RecordingThread::WaitForBlockingThreads_Locked(
 }
 
 shared_ptr<LiveObject> RecordingThread::GetLiveObject(
-    PeerObjectImpl* peer_object) {
-  CHECK(peer_object != nullptr);
-  // If the peer object was in new_objects_, it already should have been moved
-  // to modified_objects_ by RecordingThread::CheckIfPeerObjectIsNew.
-  CHECK(new_objects_.find(peer_object) == new_objects_.end());
+    ObjectReferenceImpl* object_reference) {
+  CHECK(object_reference != nullptr);
+  // If the object was in new_objects_, it already should have been moved to
+  // modified_objects_ by RecordingThread::CheckIfObjectIsNew.
+  CHECK(new_objects_.find(object_reference) == new_objects_.end());
 
-  if (peer_object->versioned()) {
-    shared_ptr<LiveObject>& live_object = modified_objects_[peer_object];
+  if (object_reference->versioned()) {
+    shared_ptr<LiveObject>& live_object = modified_objects_[object_reference];
 
     if (live_object.get() == nullptr) {
       const shared_ptr<const LiveObject> existing_live_object =
-          transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
+          transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
                                                            GetSequencePoint(),
                                                            true);
       live_object = existing_live_object->Clone();
@@ -453,7 +470,7 @@ shared_ptr<LiveObject> RecordingThread::GetLiveObject(
     return live_object;
   } else {
     const shared_ptr<const LiveObject> existing_live_object =
-        transaction_store_->GetLiveObjectAtSequencePoint(peer_object,
+        transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
                                                          GetSequencePoint(),
                                                          true);
     return existing_live_object->Clone();
@@ -477,7 +494,7 @@ void RecordingThread::AddTransactionEvent(PendingEvent* event) {
   events_.emplace_back(event);
 
   if (transaction_level_ == 0 &&
-      !(first_event && event->prev_peer_object() == nullptr)) {
+      !(first_event && event->prev_object_reference() == nullptr)) {
     CommitTransaction();
   }
 }
@@ -494,7 +511,7 @@ void RecordingThread::CommitTransaction() {
 
   while (!events_.empty()) {
     vector<linked_ptr<PendingEvent>> events_to_commit;
-    unordered_map<PeerObjectImpl*, shared_ptr<LiveObject>>
+    unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>
         modified_objects_to_commit;
     events_to_commit.swap(events_);
     modified_objects_to_commit.swap(modified_objects_);
@@ -516,39 +533,42 @@ void RecordingThread::CommitTransaction() {
 
 void RecordingThread::CheckIfValueIsNew(
     const Value& value,
-    unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>* live_objects,
-    unordered_set<PeerObjectImpl*>* new_peer_objects) {
-  if (value.type() == Value::PEER_OBJECT) {
-    CheckIfPeerObjectIsNew(static_cast<PeerObjectImpl*>(value.peer_object()),
-                           live_objects, new_peer_objects);
+    unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>*
+        live_objects,
+    unordered_set<ObjectReferenceImpl*>* new_object_references) {
+  if (value.type() == Value::OBJECT_REFERENCE) {
+    CheckIfObjectIsNew(
+        static_cast<ObjectReferenceImpl*>(value.object_reference()),
+        live_objects, new_object_references);
   }
 }
 
-void RecordingThread::CheckIfPeerObjectIsNew(
-    PeerObjectImpl* peer_object,
-    unordered_map<PeerObjectImpl*, shared_ptr<const LiveObject>>* live_objects,
-    unordered_set<PeerObjectImpl*>* new_peer_objects) {
+void RecordingThread::CheckIfObjectIsNew(
+    ObjectReferenceImpl* object_reference,
+    unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>*
+        live_objects,
+    unordered_set<ObjectReferenceImpl*>* new_object_references) {
   CHECK(live_objects != nullptr);
-  CHECK(new_peer_objects != nullptr);
+  CHECK(new_object_references != nullptr);
 
-  if (peer_object != nullptr && peer_object->versioned()) {
-    const unordered_map<PeerObjectImpl*, NewObject>::iterator it =
-        new_objects_.find(peer_object);
+  if (object_reference != nullptr && object_reference->versioned()) {
+    const unordered_map<ObjectReferenceImpl*, NewObject>::iterator it =
+        new_objects_.find(object_reference);
 
     if (it != new_objects_.end()) {
       const NewObject& new_object = it->second;
       const shared_ptr<const LiveObject>& live_object = new_object.live_object;
 
-      live_objects->emplace(peer_object, live_object);
+      live_objects->emplace(object_reference, live_object);
 
       if (!new_object.object_is_named) {
-        new_peer_objects->insert(peer_object);
+        new_object_references->insert(object_reference);
       }
 
       // Make the object available to other methods in the same transaction.
       // Subsequent transactions will be able to fetch the object from the
       // transaction store.
-      CHECK(modified_objects_.emplace(peer_object,
+      CHECK(modified_objects_.emplace(object_reference,
                                       live_object->Clone()).second);
 
       new_objects_.erase(it);

@@ -33,17 +33,17 @@ using std::vector;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace toy_lang {
 namespace {
 
-bool AddSymbol(PeerObject* symbol_table_object,
+bool AddSymbol(ObjectReference* symbol_table_object,
                Thread* thread,
                const string& name,
                LocalObjectImpl* local_object) {
   return SetVariable(symbol_table_object, thread, name,
-                     thread->CreateVersionedPeerObject(local_object, ""));
+                     thread->CreateVersionedObject(local_object, ""));
 }
 
 #define ADD_SYMBOL(name, local_object) \
@@ -53,8 +53,8 @@ bool AddSymbol(PeerObject* symbol_table_object,
     } \
   } while (false)
 
-bool PopulateSymbolTable(PeerObject* symbol_table_object, Thread* thread,
-                         PeerObject* shared_map_object) {
+bool PopulateSymbolTable(ObjectReference* symbol_table_object, Thread* thread,
+                         ObjectReference* shared_map_object) {
   CHECK(thread != nullptr);
 
   if (!thread->BeginTransaction()) {
@@ -104,7 +104,7 @@ ProgramObject::ProgramObject(const shared_ptr<const Expression>& expression)
 }
 
 void ProgramObject::InvokeMethod(Thread* thread,
-                                 PeerObject* peer_object,
+                                 ObjectReference* object_reference,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
@@ -112,11 +112,11 @@ void ProgramObject::InvokeMethod(Thread* thread,
   CHECK_EQ(method_name, "run");
   CHECK(return_value != nullptr);
 
-  PeerObject* const shared_map_object = thread->CreateVersionedPeerObject(
+  ObjectReference* const shared_map_object = thread->CreateVersionedObject(
       new MapObject(), "shared");
-  PeerObject* const expression_object = thread->CreateVersionedPeerObject(
+  ObjectReference* const expression_object = thread->CreateVersionedObject(
       new ExpressionObject(expression_), "");
-  PeerObject* const symbol_table_object = thread->CreateVersionedPeerObject(
+  ObjectReference* const symbol_table_object = thread->CreateVersionedObject(
       new SymbolTableObject(), "");
 
   if (!PopulateSymbolTable(symbol_table_object, thread, shared_map_object)) {
@@ -124,7 +124,7 @@ void ProgramObject::InvokeMethod(Thread* thread,
   }
 
   vector<Value> eval_parameters(1);
-  eval_parameters[0].set_peer_object(0, symbol_table_object);
+  eval_parameters[0].set_object_reference(0, symbol_table_object);
 
   Value dummy;
   if (!thread->CallMethod(expression_object, "eval", eval_parameters, &dummy)) {

@@ -32,7 +32,7 @@
 namespace floating_temple {
 
 class DeserializationContext;
-class PeerObject;
+class ObjectReference;
 class SerializationContext;
 class Thread;
 
@@ -69,7 +69,7 @@ class NoneObject : public LocalObjectImpl {
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -89,7 +89,7 @@ class BoolObject : public LocalObjectImpl {
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -113,7 +113,7 @@ class IntObject : public LocalObjectImpl {
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -137,7 +137,7 @@ class StringObject : public LocalObjectImpl {
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -161,7 +161,7 @@ class SymbolTableObject : public LocalObjectImpl {
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -176,7 +176,8 @@ class SymbolTableObject : public LocalObjectImpl {
                            SerializationContext* context) const override;
 
  private:
-  typedef std::vector<linked_ptr<std::unordered_map<std::string, PeerObject*>>>
+  typedef std::vector<linked_ptr<std::unordered_map<std::string,
+                                                    ObjectReference*>>>
       ScopeVector;
 
   std::string GetStringForLogging() const;
@@ -195,7 +196,7 @@ class ExpressionObject : public LocalObjectImpl {
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -216,11 +217,11 @@ class ExpressionObject : public LocalObjectImpl {
 
 class ListObject : public LocalObjectImpl {
  public:
-  explicit ListObject(const std::vector<PeerObject*>& items);
+  explicit ListObject(const std::vector<ObjectReference*>& items);
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -234,7 +235,7 @@ class ListObject : public LocalObjectImpl {
                            SerializationContext* context) const override;
 
  private:
-  std::vector<PeerObject*> items_;
+  std::vector<ObjectReference*> items_;
   mutable Mutex items_mu_;
 
   DISALLOW_COPY_AND_ASSIGN(ListObject);
@@ -246,7 +247,7 @@ class MapObject : public LocalObjectImpl {
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -260,7 +261,7 @@ class MapObject : public LocalObjectImpl {
                            SerializationContext* context) const override;
 
  private:
-  std::unordered_map<std::string, PeerObject*> map_;
+  std::unordered_map<std::string, ObjectReference*> map_;
 
   DISALLOW_COPY_AND_ASSIGN(MapObject);
 };
@@ -271,7 +272,7 @@ class RangeIteratorObject : public LocalObjectImpl {
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
@@ -295,15 +296,15 @@ class RangeIteratorObject : public LocalObjectImpl {
 class Function : public LocalObjectImpl {
  public:
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
 
  protected:
-  virtual PeerObject* Call(
-      PeerObject* symbol_table_object, Thread* thread,
-      const std::vector<PeerObject*>& parameters) const = 0;
+  virtual ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const = 0;
 };
 
 class ListFunction : public Function {
@@ -316,8 +317,9 @@ class ListFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ListFunction);
@@ -333,8 +335,9 @@ class SetVariableFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SetVariableFunction);
@@ -350,8 +353,9 @@ class ForFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ForFunction);
@@ -367,8 +371,9 @@ class RangeFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RangeFunction);
@@ -384,8 +389,9 @@ class PrintFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintFunction);
@@ -401,8 +407,9 @@ class AddFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AddFunction);
@@ -418,8 +425,9 @@ class BeginTranFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BeginTranFunction);
@@ -435,8 +443,9 @@ class EndTranFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EndTranFunction);
@@ -452,8 +461,9 @@ class IfFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IfFunction);
@@ -469,8 +479,9 @@ class NotFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotFunction);
@@ -486,8 +497,9 @@ class IsSetFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IsSetFunction);
@@ -503,8 +515,9 @@ class WhileFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WhileFunction);
@@ -520,8 +533,9 @@ class LessThanFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LessThanFunction);
@@ -537,8 +551,9 @@ class LenFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LenFunction);
@@ -554,8 +569,9 @@ class AppendFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppendFunction);
@@ -571,8 +587,9 @@ class GetAtFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GetAtFunction);
@@ -588,8 +605,9 @@ class MapIsSetFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MapIsSetFunction);
@@ -605,8 +623,9 @@ class MapGetFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MapGetFunction);
@@ -622,8 +641,9 @@ class MapSetFunction : public Function {
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
-  PeerObject* Call(PeerObject* symbol_table_object, Thread* thread,
-                   const std::vector<PeerObject*>& parameters) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MapSetFunction);

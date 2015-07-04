@@ -22,7 +22,7 @@
 #include "base/integral_types.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
-#include "include/c++/peer_object.h"
+#include "include/c++/object_reference.h"
 
 using std::string;
 
@@ -52,8 +52,8 @@ Value::Value(const Value& other)
       string_or_bytes_value_ = new string(*other.string_or_bytes_value_);
       break;
 
-    case PEER_OBJECT:
-      peer_object_ = other.peer_object_;
+    case OBJECT_REFERENCE:
+      object_reference_ = other.object_reference_;
       break;
 
     default:
@@ -80,8 +80,8 @@ Value& Value::operator=(const Value& other) {
       *string_or_bytes_value_ = *other.string_or_bytes_value_;
       break;
 
-    case PEER_OBJECT:
-      peer_object_ = other.peer_object_;
+    case OBJECT_REFERENCE:
+      object_reference_ = other.object_reference_;
       break;
 
     default:
@@ -128,9 +128,9 @@ string Value::Dump() const {
       CHECK(string_or_bytes_value_ != nullptr);
       return StringPrintf("\"%s\"", CEscape(*string_or_bytes_value_).c_str());
 
-    case PEER_OBJECT:
-      CHECK(peer_object_ != nullptr);
-      return peer_object_->Dump();
+    case OBJECT_REFERENCE:
+      CHECK(object_reference_ != nullptr);
+      return object_reference_->Dump();
 
     default:
       LOG(FATAL) << "Unexpected value type: " << static_cast<int>(type_);

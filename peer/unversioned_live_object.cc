@@ -21,7 +21,7 @@
 
 #include "base/logging.h"
 #include "include/c++/unversioned_local_object.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 
 using std::shared_ptr;
 using std::string;
@@ -47,16 +47,16 @@ shared_ptr<LiveObject> UnversionedLiveObject::Clone() const {
 }
 
 void UnversionedLiveObject::Serialize(
-    string* data, vector<PeerObjectImpl*>* referenced_peer_objects) const {
+    string* data, vector<ObjectReferenceImpl*>* object_references) const {
   LOG(FATAL) << "UnversionedLiveObject::Serialize should never be called.";
 }
 
 void UnversionedLiveObject::InvokeMethod(Thread* thread,
-                                         PeerObjectImpl* peer_object,
+                                         ObjectReferenceImpl* object_reference,
                                          const string& method_name,
                                          const vector<Value>& parameters,
                                          Value* return_value) {
-  local_object_->InvokeMethod(thread, peer_object, method_name, parameters,
+  local_object_->InvokeMethod(thread, object_reference, method_name, parameters,
                               return_value);
 }
 

@@ -53,7 +53,7 @@ UnversionedObjectContent::~UnversionedObjectContent() {
 shared_ptr<const LiveObject> UnversionedObjectContent::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
-    unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   return live_object_;
 }

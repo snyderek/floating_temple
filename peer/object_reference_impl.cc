@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 
 #include <string>
 
@@ -29,15 +29,15 @@ using std::string;
 namespace floating_temple {
 namespace peer {
 
-PeerObjectImpl::PeerObjectImpl(bool versioned)
+ObjectReferenceImpl::ObjectReferenceImpl(bool versioned)
     : versioned_(versioned),
       shared_object_(nullptr) {
 }
 
-PeerObjectImpl::~PeerObjectImpl() {
+ObjectReferenceImpl::~ObjectReferenceImpl() {
 }
 
-SharedObject* PeerObjectImpl::SetSharedObjectIfUnset(
+SharedObject* ObjectReferenceImpl::SetSharedObjectIfUnset(
     SharedObject* shared_object) {
   CHECK(shared_object != nullptr);
 
@@ -50,7 +50,7 @@ SharedObject* PeerObjectImpl::SetSharedObjectIfUnset(
   return shared_object_;
 }
 
-string PeerObjectImpl::Dump() const {
+string ObjectReferenceImpl::Dump() const {
   MutexLock lock(&shared_object_mu_);
 
   string shared_object_string;
@@ -65,7 +65,7 @@ string PeerObjectImpl::Dump() const {
                       shared_object_string.c_str());
 }
 
-SharedObject* PeerObjectImpl::PrivateGetSharedObject() const {
+SharedObject* ObjectReferenceImpl::PrivateGetSharedObject() const {
   MutexLock lock(&shared_object_mu_);
   return shared_object_;
 }

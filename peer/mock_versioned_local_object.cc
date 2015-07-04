@@ -56,11 +56,11 @@ size_t MockVersionedLocalObject::Serialize(
 }
 
 void MockVersionedLocalObject::InvokeMethod(Thread* thread,
-                                            PeerObject* peer_object,
+                                            ObjectReference* object_reference,
                                             const string& method_name,
                                             const vector<Value>& parameters,
                                             Value* return_value) {
-  core_->InvokeMethod(thread, peer_object, method_name, parameters,
+  core_->InvokeMethod(thread, object_reference, method_name, parameters,
                       return_value);
 }
 

@@ -20,14 +20,14 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace python {
 
 PyAPI_DATA(PyTypeObject) PyProxyObject_Type;
 
-PyObject* PyProxyObject_New(PeerObject* peer_object);
-PeerObject* PyProxyObject_GetPeerObject(PyObject* py_object);
+PyObject* PyProxyObject_New(ObjectReference* object_reference);
+ObjectReference* PyProxyObject_GetObjectReference(PyObject* py_object);
 
 }  // namespace python
 }  // namespace floating_temple

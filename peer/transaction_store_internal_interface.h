@@ -27,7 +27,7 @@ namespace floating_temple {
 namespace peer {
 
 class LiveObject;
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 class PendingEvent;
 class SequencePoint;
 class TransactionId;
@@ -42,22 +42,22 @@ class TransactionStoreInternalInterface {
   virtual SequencePoint* GetCurrentSequencePoint() const = 0;
 
   virtual std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
-      PeerObjectImpl* peer_object, const SequencePoint* sequence_point,
-      bool wait) = 0;
+      ObjectReferenceImpl* object_reference,
+      const SequencePoint* sequence_point, bool wait) = 0;
 
-  virtual PeerObjectImpl* CreateUnboundPeerObject(bool versioned) = 0;
-  virtual PeerObjectImpl* CreateBoundPeerObject(const std::string& name,
-                                                bool versioned) = 0;
+  virtual ObjectReferenceImpl* CreateUnboundObjectReference(bool versioned) = 0;
+  virtual ObjectReferenceImpl* CreateBoundObjectReference(
+      const std::string& name, bool versioned) = 0;
 
   virtual void CreateTransaction(
       const std::vector<linked_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
-      const std::unordered_map<PeerObjectImpl*, std::shared_ptr<LiveObject>>&
-          modified_objects,
+      const std::unordered_map<ObjectReferenceImpl*,
+                               std::shared_ptr<LiveObject>>& modified_objects,
       const SequencePoint* prev_sequence_point) = 0;
 
-  virtual bool ObjectsAreEquivalent(const PeerObjectImpl* a,
-                                    const PeerObjectImpl* b) const = 0;
+  virtual bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
+                                   const ObjectReferenceImpl* b) const = 0;
 };
 
 }  // namespace peer

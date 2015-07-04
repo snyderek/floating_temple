@@ -64,7 +64,7 @@ class TestProgramObject : public UnversionedLocalObject {
   TestProgramObject() {}
 
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override;
@@ -75,7 +75,7 @@ class TestProgramObject : public UnversionedLocalObject {
 };
 
 void TestProgramObject::InvokeMethod(Thread* thread,
-                                     PeerObject* peer_object,
+                                     ObjectReference* object_reference,
                                      const string& method_name,
                                      const vector<Value>& parameters,
                                      Value* return_value) {
@@ -88,10 +88,9 @@ void TestProgramObject::InvokeMethod(Thread* thread,
     return;
   }
 
-  thread->CreateVersionedPeerObject(new FakeVersionedLocalObject(""), "athos");
-  thread->CreateVersionedPeerObject(new FakeVersionedLocalObject(""),
-                                    "porthos");
-  thread->CreateVersionedPeerObject(new FakeVersionedLocalObject(""), "aramis");
+  thread->CreateVersionedObject(new FakeVersionedLocalObject(""), "athos");
+  thread->CreateVersionedObject(new FakeVersionedLocalObject(""), "porthos");
+  thread->CreateVersionedObject(new FakeVersionedLocalObject(""), "aramis");
 
   if (!thread->EndTransaction()) {
     return;

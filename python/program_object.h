@@ -33,7 +33,7 @@ class ProgramObject : public UnversionedLocalObject {
                 PyObject* globals);
 
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;

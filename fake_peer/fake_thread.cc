@@ -21,7 +21,7 @@
 #include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
-#include "fake_peer/fake_peer_object.h"
+#include "fake_peer/fake_object_reference.h"
 #include "include/c++/local_object.h"
 #include "include/c++/unversioned_local_object.h"
 #include "include/c++/versioned_local_object.h"
@@ -36,9 +36,10 @@ FakeThread::FakeThread()
 }
 
 FakeThread::~FakeThread() {
-  for (linked_ptr<PeerObject>& peer_object : peer_objects_) {
-    VLOG(1) << "Deleting peer object " << StringPrintf("%p", peer_object.get());
-    peer_object.reset(nullptr);
+  for (linked_ptr<ObjectReference>& object_reference : object_references_) {
+    VLOG(1) << "Deleting object reference "
+            << StringPrintf("%p", object_reference.get());
+    object_reference.reset(nullptr);
   }
 }
 
@@ -54,60 +55,62 @@ bool FakeThread::EndTransaction() {
   return true;
 }
 
-PeerObject* FakeThread::CreateVersionedPeerObject(
+ObjectReference* FakeThread::CreateVersionedObject(
     VersionedLocalObject* initial_version, const string& name) {
   // TODO(dss): If an object with the given name was already created, return a
-  // pointer to the existing PeerObject instance.
+  // pointer to the existing ObjectReference instance.
 
   // TODO(dss): Implement garbage collection.
 
-  PeerObject* const peer_object = new FakePeerObject(initial_version);
-  VLOG(1) << "New peer object: " << StringPrintf("%p", peer_object);
-  VLOG(1) << "peer_object: " << peer_object->Dump();
-  peer_objects_.emplace_back(peer_object);
-  return peer_object;
+  ObjectReference* const object_reference = new FakeObjectReference(
+      initial_version);
+  VLOG(1) << "New object reference: " << StringPrintf("%p", object_reference);
+  VLOG(1) << "object_reference: " << object_reference->Dump();
+  object_references_.emplace_back(object_reference);
+  return object_reference;
 }
 
-PeerObject* FakeThread::CreateUnversionedPeerObject(
+ObjectReference* FakeThread::CreateUnversionedObject(
     UnversionedLocalObject* initial_version, const string& name) {
   // TODO(dss): If an object with the given name was already created, return a
-  // pointer to the existing PeerObject instance.
+  // pointer to the existing ObjectReference instance.
 
   // TODO(dss): Implement garbage collection.
 
-  PeerObject* const peer_object = new FakePeerObject(initial_version);
-  VLOG(1) << "New peer object: " << StringPrintf("%p", peer_object);
-  VLOG(1) << "peer_object: " << peer_object->Dump();
-  peer_objects_.emplace_back(peer_object);
-  return peer_object;
+  ObjectReference* const object_reference = new FakeObjectReference(
+      initial_version);
+  VLOG(1) << "New object reference: " << StringPrintf("%p", object_reference);
+  VLOG(1) << "object_reference: " << object_reference->Dump();
+  object_references_.emplace_back(object_reference);
+  return object_reference;
 }
 
-bool FakeThread::CallMethod(PeerObject* peer_object,
+bool FakeThread::CallMethod(ObjectReference* object_reference,
                             const string& method_name,
                             const vector<Value>& parameters,
                             Value* return_value) {
-  CHECK(peer_object != nullptr);
+  CHECK(object_reference != nullptr);
   CHECK(!method_name.empty());
   CHECK(return_value != nullptr);
 
-  VLOG(1) << "Calling method on peer object: "
-          << StringPrintf("%p", peer_object);
-  VLOG(1) << "peer_object: " << peer_object->Dump();
+  VLOG(1) << "Calling method on object reference: "
+          << StringPrintf("%p", object_reference);
+  VLOG(1) << "object_reference: " << object_reference->Dump();
 
-  FakePeerObject* const fake_peer_object = static_cast<FakePeerObject*>(
-      peer_object);
-  LocalObject* const local_object = fake_peer_object->local_object();
+  FakeObjectReference* const fake_object_reference =
+      static_cast<FakeObjectReference*>(object_reference);
+  LocalObject* const local_object = fake_object_reference->local_object();
 
   VLOG(1) << "local_object: " << local_object->Dump();
 
-  local_object->InvokeMethod(this, peer_object, method_name, parameters,
+  local_object->InvokeMethod(this, object_reference, method_name, parameters,
                              return_value);
 
   return true;
 }
 
-bool FakeThread::ObjectsAreEquivalent(const PeerObject* a,
-                                      const PeerObject* b) const {
+bool FakeThread::ObjectsAreIdentical(const ObjectReference* a,
+                                     const ObjectReference* b) const {
   CHECK(a != nullptr);
   CHECK(b != nullptr);
 

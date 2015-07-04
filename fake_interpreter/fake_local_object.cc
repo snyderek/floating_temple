@@ -58,7 +58,7 @@ size_t FakeVersionedLocalObject::Serialize(
 }
 
 void FakeVersionedLocalObject::InvokeMethod(Thread* thread,
-                                            PeerObject* peer_object,
+                                            ObjectReference* object_reference,
                                             const string& method_name,
                                             const vector<Value>& parameters,
                                             Value* return_value) {

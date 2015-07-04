@@ -43,7 +43,7 @@ class VersionedLocalObjectImpl : public VersionedLocalObject {
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;

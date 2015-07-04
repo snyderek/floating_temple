@@ -18,13 +18,13 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 class SerializationContext {
  public:
   virtual ~SerializationContext() {}
 
-  virtual int GetIndexForPeerObject(PeerObject* peer_object) = 0;
+  virtual int GetIndexForObjectReference(ObjectReference* object_reference) = 0;
 };
 
 }  // namespace floating_temple

@@ -85,7 +85,7 @@ VersionedObjectContent::~VersionedObjectContent() {
 shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
-    unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   MutexLock lock(&committed_versions_mu_);
 
@@ -110,7 +110,8 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
   for (;;) {
     PlaybackThread playback_thread;
     playback_thread.Start(transaction_store_, shared_object_,
-                          shared_ptr<LiveObject>(nullptr), new_peer_objects);
+                          shared_ptr<LiveObject>(nullptr),
+                          new_object_references);
 
     const bool success = ApplyTransactionsToWorkingVersion_Locked(
         &playback_thread, sequence_point, transactions_to_reject);

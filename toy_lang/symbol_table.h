@@ -20,20 +20,20 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 class Thread;
 
 namespace toy_lang {
 
-bool EnterScope(PeerObject* symbol_table_object, Thread* thread);
-bool LeaveScope(PeerObject* symbol_table_object, Thread* thread);
+bool EnterScope(ObjectReference* symbol_table_object, Thread* thread);
+bool LeaveScope(ObjectReference* symbol_table_object, Thread* thread);
 
-bool IsVariableSet(PeerObject* symbol_table_object, Thread* thread,
+bool IsVariableSet(ObjectReference* symbol_table_object, Thread* thread,
                    const std::string& name, bool* is_set);
-bool GetVariable(PeerObject* symbol_table_object, Thread* thread,
-                 const std::string& name, PeerObject** object);
-bool SetVariable(PeerObject* symbol_table_object, Thread* thread,
-                 const std::string& name, PeerObject* object);
+bool GetVariable(ObjectReference* symbol_table_object, Thread* thread,
+                 const std::string& name, ObjectReference** object);
+bool SetVariable(ObjectReference* symbol_table_object, Thread* thread,
+                 const std::string& name, ObjectReference* object);
 
 }  // namespace toy_lang
 }  // namespace floating_temple

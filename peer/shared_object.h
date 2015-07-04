@@ -39,7 +39,7 @@ namespace peer {
 class CanonicalPeer;
 class CommittedEvent;
 class ObjectContent;
-class PeerObjectImpl;
+class ObjectReferenceImpl;
 class SequencePointImpl;
 class SharedObjectTransaction;
 class TransactionStoreInternalInterface;
@@ -56,21 +56,22 @@ class SharedObject {
       std::unordered_set<const CanonicalPeer*>* interested_peers) const;
   void AddInterestedPeer(const CanonicalPeer* interested_peer);
 
-  bool HasPeerObject(const PeerObjectImpl* peer_object) const;
-  void AddPeerObject(PeerObjectImpl* new_peer_object);
-  PeerObjectImpl* GetOrCreatePeerObject(bool versioned);
+  bool HasObjectReference(const ObjectReferenceImpl* object_reference) const;
+  void AddObjectReference(ObjectReferenceImpl* new_object_reference);
+  ObjectReferenceImpl* GetOrCreateObjectReference(bool versioned);
 
   void CreateUnversionedObjectContent(
       const std::shared_ptr<LiveObject>& live_object);
 
-  // TODO(dss): In the public methods below, 'new_peer_objects' is both an input
-  // parameter and an output parameter. This is confusing. Try to come up with a
-  // more intuitive API.
+  // TODO(dss): In the public methods below, 'new_object_references' is both an
+  // input parameter and an output parameter. This is confusing. Try to come up
+  // with a more intuitive API.
 
   std::shared_ptr<const LiveObject> GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
-      std::unordered_map<SharedObject*, PeerObjectImpl*>* new_peer_objects,
+      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
+          new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject);
 
@@ -108,8 +109,8 @@ class SharedObject {
   std::unordered_set<const CanonicalPeer*> interested_peers_;
   mutable Mutex interested_peers_mu_;
 
-  std::vector<PeerObjectImpl*> peer_objects_;
-  mutable Mutex peer_objects_mu_;
+  std::vector<ObjectReferenceImpl*> object_references_;
+  mutable Mutex object_references_mu_;
 
   std::unique_ptr<ObjectContent> object_content_;
   mutable Mutex object_content_mu_;

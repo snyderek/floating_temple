@@ -22,7 +22,7 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "include/c++/deserialization_context.h"
-#include "include/c++/peer_object.h"
+#include "include/c++/object_reference.h"
 #include "include/c++/serialization_context.h"
 #include "python/interpreter_impl.h"
 #include "python/proto/serialization.pb.h"
@@ -74,10 +74,10 @@ string ListLocalObject::Dump() const {
         }
 
         PyObject* const py_item = PyList_GetItem(py_list, i);
-        PeerObject* const peer_object = interpreter->PyProxyObjectToPeerObject(
-            py_item);
+        ObjectReference* const object_reference =
+            interpreter->PyProxyObjectToObjectReference(py_item);
 
-        StringAppendF(&items_string, " %s", peer_object->Dump().c_str());
+        StringAppendF(&items_string, " %s", object_reference->Dump().c_str());
       }
 
       items_string += " ]";
@@ -106,10 +106,10 @@ ListLocalObject* ListLocalObject::ParseListProto(
     for (int i = 0; i < item_count; ++i) {
       const int object_index = static_cast<int>(
           list_proto.item(i).object_index());
-      PeerObject* const peer_object = context->GetPeerObjectByIndex(
-          object_index);
-      PyObject* const py_item = interpreter->PeerObjectToPyProxyObject(
-          peer_object);
+      ObjectReference* const object_reference =
+          context->GetObjectReferenceByIndex(object_index);
+      PyObject* const py_item = interpreter->ObjectReferenceToPyProxyObject(
+          object_reference);
       CHECK_EQ(PyList_SetItem(py_list, static_cast<Py_ssize_t>(i), py_item), 0);
     }
   }
@@ -133,9 +133,10 @@ void ListLocalObject::PopulateObjectProto(ObjectProto* object_proto,
 
     for (Py_ssize_t i = 0; i < length; ++i) {
       PyObject* const py_item = PyList_GetItem(py_list, i);
-      PeerObject* const peer_object = interpreter->PyProxyObjectToPeerObject(
-          py_item);
-      const int object_index = context->GetIndexForPeerObject(peer_object);
+      ObjectReference* const object_reference =
+          interpreter->PyProxyObjectToObjectReference(py_item);
+      const int object_index = context->GetIndexForObjectReference(
+          object_reference);
       list_proto->add_item()->set_object_index(object_index);
     }
   }

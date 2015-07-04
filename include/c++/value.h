@@ -23,7 +23,7 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 // A Value object stores a value of one of the primitive types supported by the
 // distributed interpreter.
@@ -31,15 +31,15 @@ class PeerObject;
 // There's also a protocol message analog of this class: ValueProto, defined in
 // proto/value_proto.proto. ValueProto is used to transmit values between peers.
 // The primary difference between the two classes is that Value represents an
-// object as a PeerObject pointer, whereas ValueProto represents an object as an
-// object ID.
+// object as an ObjectReference pointer, whereas ValueProto represents an object
+// as an object ID.
 class Value {
  public:
   // When an instance of this class is created, its type is initially set to
   // UNINITIALIZED. However, this is not considered a valid value type. You must
   // explicitly set the type by calling one of the setter methods below.
   enum Type { UNINITIALIZED, EMPTY, DOUBLE, FLOAT, INT64, UINT64, BOOL, STRING,
-              BYTES, PEER_OBJECT };
+              BYTES, OBJECT_REFERENCE };
 
   Value();
   Value(const Value& other);
@@ -62,7 +62,7 @@ class Value {
   bool bool_value() const;
   const std::string& string_value() const;
   const std::string& bytes_value() const;
-  PeerObject* peer_object() const;
+  ObjectReference* object_reference() const;
 
   // These setter methods change the value type and set the associated value (if
   // applicable).
@@ -74,8 +74,8 @@ class Value {
   void set_bool_value(int local_type, bool value);
   void set_string_value(int local_type, const std::string& value);
   void set_bytes_value(int local_type, const std::string& value);
-  // peer_object must not be NULL.
-  void set_peer_object(int local_type, PeerObject* peer_object);
+  // object_reference must not be NULL.
+  void set_object_reference(int local_type, ObjectReference* object_reference);
 
   Value& operator=(const Value& other);
 
@@ -94,7 +94,7 @@ class Value {
     uint64 uint64_value_;
     bool bool_value_;
     std::string* string_or_bytes_value_;  // Owned by this object.
-    PeerObject* peer_object_;  // Not owned by this object.
+    ObjectReference* object_reference_;  // Not owned by this object.
   };
 };
 
@@ -144,9 +144,9 @@ inline const std::string& Value::bytes_value() const {
   return *string_or_bytes_value_;
 }
 
-inline PeerObject* Value::peer_object() const {
-  CHECK_EQ(type_, PEER_OBJECT);
-  return peer_object_;
+inline ObjectReference* Value::object_reference() const {
+  CHECK_EQ(type_, OBJECT_REFERENCE);
+  return object_reference_;
 }
 
 inline void Value::set_empty(int local_type) {
@@ -188,11 +188,12 @@ inline void Value::set_bytes_value(int local_type, const std::string& value) {
   *string_or_bytes_value_ = value;
 }
 
-inline void Value::set_peer_object(int local_type, PeerObject* peer_object) {
-  CHECK(peer_object != nullptr);
+inline void Value::set_object_reference(int local_type,
+                                        ObjectReference* object_reference) {
+  CHECK(object_reference != nullptr);
 
-  ChangeType(local_type, PEER_OBJECT);
-  peer_object_ = peer_object;
+  ChangeType(local_type, OBJECT_REFERENCE);
+  object_reference_ = object_reference;
 }
 
 }  // namespace floating_temple

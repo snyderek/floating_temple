@@ -23,7 +23,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "include/c++/peer_object.h"
+#include "include/c++/object_reference.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
@@ -49,69 +49,70 @@ class MockThread : public Thread {
 
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(EndTransaction, bool());
-  MOCK_METHOD2(CreateVersionedPeerObject,
-               PeerObject*(VersionedLocalObject* initial_version,
-                           const string& name));
-  MOCK_METHOD2(CreateUnversionedPeerObject,
-               PeerObject*(UnversionedLocalObject* initial_version,
-                           const string& name));
+  MOCK_METHOD2(CreateVersionedObject,
+               ObjectReference*(VersionedLocalObject* initial_version,
+                                const string& name));
+  MOCK_METHOD2(CreateUnversionedObject,
+               ObjectReference*(UnversionedLocalObject* initial_version,
+                                const string& name));
   MOCK_METHOD4(CallMethod,
-               bool(PeerObject* peer_object, const string& method_name,
-                    const vector<Value>& parameters, Value* return_value));
-  MOCK_CONST_METHOD2(ObjectsAreEquivalent,
-                     bool(const PeerObject* a, const PeerObject* b));
+               bool(ObjectReference* object_reference,
+                    const string& method_name, const vector<Value>& parameters,
+                    Value* return_value));
+  MOCK_CONST_METHOD2(ObjectsAreIdentical,
+                     bool(const ObjectReference* a, const ObjectReference* b));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockThread);
 };
 
-class MockPeerObject : public PeerObject {
+class MockObjectReference : public ObjectReference {
  public:
-  MockPeerObject() {}
+  MockObjectReference() {}
 
   MOCK_CONST_METHOD0(Dump, string());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockPeerObject);
+  DISALLOW_COPY_AND_ASSIGN(MockObjectReference);
 };
 
 TEST(LocalObjectImplTest, InvokeMethodOnExpressionObject) {
   MockThread thread;
-  MockPeerObject symbol_table_peer_object;
+  MockObjectReference symbol_table_object_reference;
 
   EXPECT_CALL(thread, BeginTransaction())
       .Times(0);
   EXPECT_CALL(thread, EndTransaction())
       .Times(0);
-  EXPECT_CALL(thread, CreateVersionedPeerObject(_, _))
+  EXPECT_CALL(thread, CreateVersionedObject(_, _))
       .Times(0);
-  EXPECT_CALL(thread, CreateUnversionedPeerObject(_, _))
+  EXPECT_CALL(thread, CreateUnversionedObject(_, _))
       .Times(0);
-  EXPECT_CALL(thread, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(thread, ObjectsAreIdentical(_, _))
       .Times(0);
 
-  EXPECT_CALL(symbol_table_peer_object, Dump())
+  EXPECT_CALL(symbol_table_object_reference, Dump())
       .WillRepeatedly(Return(""));
 
   // Simulate Thread::CallMethod returning false. This should cause
   // ExpressionObject::InvokeMethod (called below) to immediately return.
-  EXPECT_CALL(thread, CallMethod(&symbol_table_peer_object, "get", _, _))
+  EXPECT_CALL(thread, CallMethod(&symbol_table_object_reference, "get", _, _))
       .WillRepeatedly(Return(false));
 
   ExpressionObject expression_local_object(
       shared_ptr<const Expression>(new VariableExpression("some_variable")));
 
-  MockPeerObject expression_peer_object;
+  MockObjectReference expression_object_reference;
 
-  EXPECT_CALL(expression_peer_object, Dump())
+  EXPECT_CALL(expression_object_reference, Dump())
       .WillRepeatedly(Return(""));
 
   vector<Value> parameters(1);
-  parameters[0].set_peer_object(0, &symbol_table_peer_object);
+  parameters[0].set_object_reference(0, &symbol_table_object_reference);
 
   Value return_value;
-  expression_local_object.InvokeMethod(&thread, &expression_peer_object, "eval",
-                                       parameters, &return_value);
+  expression_local_object.InvokeMethod(&thread, &expression_object_reference,
+                                       "eval", parameters, &return_value);
 }
 
 }  // namespace

@@ -18,21 +18,21 @@
 #include "luaconf.h"
 
 
-static int ft_defaultpeerobjectsequalhook (const struct PeerObject *po1,
-                                           const struct PeerObject *po2) {
+static int ft_defaultobjectreferencesequalhook
+    (const struct ObjectReference *po1, const struct ObjectReference *po2) {
   assert(po1 != NULL);
   assert(po2 != NULL);
 
   return (po1 == po2) ? 1 : 0;
 }
 
-LUAI_DDEF ft_PeerObjectsEqualHook ft_peerobjectsequalhook =
-    &ft_defaultpeerobjectsequalhook;
+LUAI_DDEF ft_ObjectReferencesEqualHook ft_objectreferencesequalhook =
+    &ft_defaultobjectreferencesequalhook;
 
-LUA_API ft_PeerObjectsEqualHook ft_installpeerobjectsequalhook
-    (ft_PeerObjectsEqualHook hook) {
-  ft_PeerObjectsEqualHook old_hook = ft_peerobjectsequalhook;
-  ft_peerobjectsequalhook = hook;
+LUA_API ft_ObjectReferencesEqualHook ft_installobjectreferencesequalhook
+    (ft_ObjectReferencesEqualHook hook) {
+  ft_ObjectReferencesEqualHook old_hook = ft_objectreferencesequalhook;
+  ft_objectreferencesequalhook = hook;
   return old_hook;
 }
 

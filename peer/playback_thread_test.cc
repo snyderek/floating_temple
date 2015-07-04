@@ -33,7 +33,7 @@
 #include "peer/live_object.h"
 #include "peer/mock_transaction_store.h"
 #include "peer/mock_versioned_local_object.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 #include "peer/proto/uuid.pb.h"
 #include "peer/shared_object.h"
 #include "peer/versioned_live_object.h"
@@ -77,7 +77,7 @@ void TestMethod1(Thread* thread, const vector<Value>& parameters,
   CHECK(return_value != nullptr);
 
   Value sub_return_value;
-  if (!thread->CallMethod(parameters[0].peer_object(), "test_method2",
+  if (!thread->CallMethod(parameters[0].object_reference(), "test_method2",
                           vector<Value>(), &sub_return_value)) {
     return;
   }
@@ -101,13 +101,13 @@ TEST(PlaybackThreadTest, SubMethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   EXPECT_CALL(local_object_core1, Serialize(_))
@@ -127,11 +127,11 @@ TEST(PlaybackThreadTest, SubMethodCallWithoutReturn) {
                                            "test_method2",
                                            vector<CommittedValue>());
 
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
   PlaybackThread playback_thread;
   playback_thread.Start(&transaction_store, &shared_object1, live_object1,
-                        &new_peer_objects);
+                        &new_object_references);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -154,13 +154,13 @@ TEST(PlaybackThreadTest, FlushEvents) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   Value canned_return_value;
@@ -183,11 +183,11 @@ TEST(PlaybackThreadTest, FlushEvents) {
   const MethodReturnCommittedEvent event2(new_shared_objects, nullptr,
                                           expected_return_value);
 
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
   PlaybackThread playback_thread;
   playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_peer_objects);
+                        &new_object_references);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -211,13 +211,13 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   const unordered_set<SharedObject*> new_shared_objects;
@@ -244,11 +244,11 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   const MethodReturnCommittedEvent event4(new_shared_objects, nullptr,
                                           empty_return_value);
 
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
   PlaybackThread playback_thread;
   playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_peer_objects);
+                        &new_object_references);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -261,7 +261,7 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   playback_thread.Stop();
 
   EXPECT_FALSE(playback_thread.conflict_detected());
-  EXPECT_EQ(0u, new_peer_objects.size());
+  EXPECT_EQ(0u, new_object_references.size());
   EXPECT_EQ("snap.crackle.pop.", local_object->s());
 }
 
@@ -276,13 +276,13 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   const unordered_set<SharedObject*> new_shared_objects;
@@ -319,11 +319,11 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   const MethodReturnCommittedEvent event6(new_shared_objects, nullptr,
                                           empty_return_value);
 
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
   PlaybackThread playback_thread;
   playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_peer_objects);
+                        &new_object_references);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -340,7 +340,7 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   playback_thread.Stop();
 
   EXPECT_TRUE(playback_thread.conflict_detected());
-  EXPECT_EQ(0u, new_peer_objects.size());
+  EXPECT_EQ(0u, new_object_references.size());
 }
 
 TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
@@ -356,13 +356,13 @@ TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   Value canned_return_value;
@@ -390,11 +390,11 @@ TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
   const MethodCallCommittedEvent event3(nullptr, "test_method2",
                                         vector<CommittedValue>());
 
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
   PlaybackThread playback_thread;
   playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_peer_objects);
+                        &new_object_references);
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
   playback_thread.QueueEvent(&event3);
@@ -416,13 +416,13 @@ TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   EXPECT_CALL(local_object_core, Serialize(_))
@@ -445,11 +445,11 @@ TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
   const SelfMethodCallCommittedEvent event2(new_shared_objects, "test_method2",
                                             vector<CommittedValue>());
 
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
   PlaybackThread playback_thread;
   playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_peer_objects);
+                        &new_object_references);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -470,7 +470,7 @@ void TestMethod3(Thread* thread, const vector<Value>& parameters,
   }
 
   Value sub_return_value;
-  if (!thread->CallMethod(parameters[0].peer_object(), "test_method4",
+  if (!thread->CallMethod(parameters[0].object_reference(), "test_method4",
                           vector<Value>(), &sub_return_value)) {
     return;
   }
@@ -498,13 +498,13 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   EXPECT_CALL(local_object_core1, Serialize(_))
@@ -534,11 +534,11 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
   const MethodReturnCommittedEvent event6(new_shared_objects, nullptr,
                                           empty_return_value);
 
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
   PlaybackThread playback_thread;
   playback_thread.Start(&transaction_store, &shared_object1, live_object1,
-                        &new_peer_objects);
+                        &new_object_references);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -564,12 +564,12 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
   CHECK_EQ(parameters.size(), 0u);
   CHECK(return_value != nullptr);
 
-  PeerObject* const peer_object = thread->CreateVersionedPeerObject(
+  ObjectReference* const object_reference = thread->CreateVersionedObject(
       new FakeVersionedLocalObject(""), "");
 
   {
     Value sub_return_value;
-    if (!thread->CallMethod(peer_object, "test_method6", vector<Value>(),
+    if (!thread->CallMethod(object_reference, "test_method6", vector<Value>(),
                             &sub_return_value)) {
       return;
     }
@@ -577,7 +577,7 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
 
   {
     Value sub_return_value;
-    if (!thread->CallMethod(peer_object, "test_method7", vector<Value>(),
+    if (!thread->CallMethod(object_reference, "test_method7", vector<Value>(),
                             &sub_return_value)) {
       return;
     }
@@ -600,13 +600,13 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundPeerObject(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundPeerObject(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreEquivalent(_, _))
+  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
   EXPECT_CALL(local_object_core1, Serialize(_))
@@ -638,11 +638,11 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
   const MethodReturnCommittedEvent event6(unordered_set<SharedObject*>(),
                                           nullptr, empty_return_value);
 
-  unordered_map<SharedObject*, PeerObjectImpl*> new_peer_objects;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
   PlaybackThread playback_thread;
   playback_thread.Start(&transaction_store, &shared_object1, live_object1,
-                        &new_peer_objects);
+                        &new_object_references);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -655,9 +655,9 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
 
   EXPECT_FALSE(playback_thread.conflict_detected());
 
-  EXPECT_EQ(1, new_peer_objects.size());
-  EXPECT_FALSE(new_peer_objects.find(&shared_object2) ==
-               new_peer_objects.end());
+  EXPECT_EQ(1, new_object_references.size());
+  EXPECT_FALSE(new_object_references.find(&shared_object2) ==
+               new_object_references.end());
 }
 
 }  // namespace

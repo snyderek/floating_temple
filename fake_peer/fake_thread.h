@@ -25,7 +25,7 @@
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 class FakeThread : public Thread {
  public:
@@ -34,20 +34,20 @@ class FakeThread : public Thread {
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  PeerObject* CreateVersionedPeerObject(VersionedLocalObject* initial_version,
-                                        const std::string& name) override;
-  PeerObject* CreateUnversionedPeerObject(
+  ObjectReference* CreateVersionedObject(VersionedLocalObject* initial_version,
+                                         const std::string& name) override;
+  ObjectReference* CreateUnversionedObject(
       UnversionedLocalObject* initial_version,
       const std::string& name) override;
-  bool CallMethod(PeerObject* peer_object,
+  bool CallMethod(ObjectReference* object_reference,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,
                   Value* return_value) override;
-  bool ObjectsAreEquivalent(const PeerObject* a,
-                            const PeerObject* b) const override;
+  bool ObjectsAreIdentical(const ObjectReference* a,
+                           const ObjectReference* b) const override;
 
  private:
-  std::vector<linked_ptr<PeerObject>> peer_objects_;
+  std::vector<linked_ptr<ObjectReference>> object_references_;
   int transaction_depth_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeThread);

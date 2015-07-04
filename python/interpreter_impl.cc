@@ -62,12 +62,12 @@ void InterpreterImpl::EndTransaction() {
   GetThreadObject()->EndTransaction();
 }
 
-bool InterpreterImpl::CallMethod(PeerObject* peer_object,
+bool InterpreterImpl::CallMethod(ObjectReference* object_reference,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
-  return GetThreadObject()->CallMethod(peer_object, method_name, parameters,
-                                       return_value);
+  return GetThreadObject()->CallMethod(object_reference, method_name,
+                                       parameters, return_value);
 }
 
 Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
@@ -81,15 +81,16 @@ VersionedLocalObject* InterpreterImpl::DeserializeObject(
   return VersionedLocalObjectImpl::Deserialize(buffer, buffer_size, context);
 }
 
-PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
-  CHECK(peer_object != nullptr);
+PyObject* InterpreterImpl::ObjectReferenceToPyProxyObject(
+    ObjectReference* object_reference) {
+  CHECK(object_reference != nullptr);
 
   PyObject* py_new_proxy_object = nullptr;
   PyObject* py_existing_proxy_object = nullptr;
 
   {
     PythonGilLock lock;
-    py_new_proxy_object = PyProxyObject_New(peer_object);
+    py_new_proxy_object = PyProxyObject_New(object_reference);
     CHECK(py_new_proxy_object != nullptr);
     Py_INCREF(py_new_proxy_object);
   }
@@ -97,7 +98,7 @@ PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
   {
     MutexLock lock(&objects_mu_);
 
-    const auto insert_result = proxy_objects_.emplace(peer_object,
+    const auto insert_result = proxy_objects_.emplace(object_reference,
                                                       py_new_proxy_object);
 
     if (insert_result.second) {
@@ -115,43 +116,45 @@ PyObject* InterpreterImpl::PeerObjectToPyProxyObject(PeerObject* peer_object) {
   return py_existing_proxy_object;
 }
 
-PeerObject* InterpreterImpl::PyProxyObjectToPeerObject(PyObject* py_object) {
+ObjectReference* InterpreterImpl::PyProxyObjectToObjectReference(
+    PyObject* py_object) {
   CHECK(py_object != nullptr);
 
   const PyTypeObject* const py_type = Py_TYPE(py_object);
   if (py_type == &PyProxyObject_Type) {
-    return PyProxyObject_GetPeerObject(py_object);
+    return PyProxyObject_GetObjectReference(py_object);
   }
 
-  PeerObject* new_peer_object = nullptr;
+  ObjectReference* new_object_reference = nullptr;
   if (py_type == &PyLong_Type) {
-    new_peer_object = CreateVersionedPeerObject<LongLocalObject>(py_object, "");
+    new_object_reference = CreateVersionedObject<LongLocalObject>(py_object,
+                                                                  "");
   } else if (py_type == &PyUnicode_Type) {
-    new_peer_object = CreateVersionedPeerObject<UnicodeLocalObject>(py_object,
+    new_object_reference = CreateVersionedObject<UnicodeLocalObject>(py_object,
                                                                     "");
   } else {
-    new_peer_object = CreateUnversionedPeerObject<UnserializableLocalObject>(
+    new_object_reference = CreateUnversionedObject<UnserializableLocalObject>(
         py_object, "");
   }
 
-  PeerObject* existing_peer_object = nullptr;
+  ObjectReference* existing_object_reference = nullptr;
 
   {
     MutexLock lock(&objects_mu_);
 
-    const auto insert_result = unserializable_objects_.emplace(py_object,
-                                                               new_peer_object);
+    const auto insert_result = unserializable_objects_.emplace(
+        py_object, new_object_reference);
 
     if (insert_result.second) {
-      CHECK(proxy_objects_.emplace(new_peer_object, py_object).second);
-      return new_peer_object;
+      CHECK(proxy_objects_.emplace(new_object_reference, py_object).second);
+      return new_object_reference;
     }
-    existing_peer_object = insert_result.first->second;
+    existing_object_reference = insert_result.first->second;
   }
 
-  // TODO(dss): Delete new_peer_object.
+  // TODO(dss): [BUG] Delete new_object_reference.
 
-  return existing_peer_object;
+  return existing_object_reference;
 }
 
 // static

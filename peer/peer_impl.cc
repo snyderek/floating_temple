@@ -32,7 +32,7 @@ using std::vector;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace peer {
 

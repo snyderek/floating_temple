@@ -42,7 +42,7 @@ using std::vector;
 
 namespace floating_temple {
 
-class PeerObject;
+class ObjectReference;
 
 namespace python {
 namespace {
@@ -54,9 +54,9 @@ PyObject* WrapPythonObject(PyObject* py_object) {
   }
 
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
-  PeerObject* const peer_object =
-      interpreter->CreateVersionedPeerObject<LocalObjectType>(py_object, "");
-  return interpreter->PeerObjectToPyProxyObject(peer_object);
+  ObjectReference* const object_reference =
+      interpreter->CreateVersionedObject<LocalObjectType>(py_object, "");
+  return interpreter->ObjectReferenceToPyProxyObject(object_reference);
 }
 
 PyObject* WrapPythonDict(PyObject* py_dict_object) {
@@ -77,7 +77,7 @@ ProgramObject::ProgramObject(FILE* fp, const string& source_file_name,
 }
 
 void ProgramObject::InvokeMethod(Thread* thread,
-                                 PeerObject* peer_object,
+                                 ObjectReference* object_reference,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
@@ -93,9 +93,9 @@ void ProgramObject::InvokeMethod(Thread* thread,
     PythonGilLock lock;
 
     // TODO(dss): Add these objects to globals_.
-    thread->CreateVersionedPeerObject(new NoneLocalObject(), "None");
-    thread->CreateVersionedPeerObject(new FalseLocalObject(), "False");
-    thread->CreateVersionedPeerObject(new TrueLocalObject(), "True");
+    thread->CreateVersionedObject(new NoneLocalObject(), "None");
+    thread->CreateVersionedObject(new FalseLocalObject(), "False");
+    thread->CreateVersionedObject(new TrueLocalObject(), "True");
 
     const object_creation_hook_func old_dict_hook = Py_InstallDictCreationHook(
         &WrapPythonDict);

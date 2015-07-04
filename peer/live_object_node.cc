@@ -24,7 +24,7 @@
 #include "base/mutex_lock.h"
 #include "include/c++/value.h"
 #include "include/c++/versioned_local_object.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 #include "peer/serialize_local_object_to_string.h"
 
 using std::string;
@@ -43,15 +43,16 @@ LiveObjectNode::~LiveObjectNode() {
 }
 
 void LiveObjectNode::Serialize(
-    string* data, vector<PeerObjectImpl*>* referenced_peer_objects) const {
-  SerializeLocalObjectToString(local_object_, data, referenced_peer_objects);
+    string* data, vector<ObjectReferenceImpl*>* object_references) const {
+  SerializeLocalObjectToString(local_object_, data, object_references);
 }
 
-LiveObjectNode* LiveObjectNode::InvokeMethod(Thread* thread,
-                                             PeerObjectImpl* peer_object,
-                                             const string& method_name,
-                                             const vector<Value>& parameters,
-                                             Value* return_value) {
+LiveObjectNode* LiveObjectNode::InvokeMethod(
+    Thread* thread,
+    ObjectReferenceImpl* object_reference,
+    const string& method_name,
+    const vector<Value>& parameters,
+    Value* return_value) {
   const int ref_count = GetRefCount();
   CHECK_GE(ref_count, 1);
 
@@ -60,15 +61,15 @@ LiveObjectNode* LiveObjectNode::InvokeMethod(Thread* thread,
   if (ref_count > 1) {
     VersionedLocalObject* const new_local_object = local_object_->Clone();
     VLOG(4) << "Before: " << new_local_object->Dump();
-    new_local_object->InvokeMethod(thread, peer_object, method_name, parameters,
-                                   return_value);
+    new_local_object->InvokeMethod(thread, object_reference, method_name,
+                                   parameters, return_value);
     VLOG(4) << "After: " << new_local_object->Dump();
 
     return new LiveObjectNode(new_local_object);
   } else {
     VLOG(4) << "Before: " << local_object_->Dump();
-    local_object_->InvokeMethod(thread, peer_object, method_name, parameters,
-                                return_value);
+    local_object_->InvokeMethod(thread, object_reference, method_name,
+                                parameters, return_value);
     VLOG(4) << "After: " << local_object_->Dump();
 
     return this;

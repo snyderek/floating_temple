@@ -33,7 +33,7 @@ class ProgramObject : public UnversionedLocalObject {
   explicit ProgramObject(const std::shared_ptr<const Expression>& expression);
 
   void InvokeMethod(Thread* thread,
-                    PeerObject* peer_object,
+                    ObjectReference* object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;

@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "peer/peer_object_impl.h"
+#include "peer/object_reference_impl.h"
 
 using std::vector;
 
@@ -26,18 +26,19 @@ namespace floating_temple {
 namespace peer {
 
 DeserializationContextImpl::DeserializationContextImpl(
-    const vector<PeerObjectImpl*>* peer_objects)
-    : peer_objects_(CHECK_NOTNULL(peer_objects)) {
+    const vector<ObjectReferenceImpl*>* object_references)
+    : object_references_(CHECK_NOTNULL(object_references)) {
 }
 
-PeerObject* DeserializationContextImpl::GetPeerObjectByIndex(int index) {
+ObjectReference* DeserializationContextImpl::GetObjectReferenceByIndex(
+    int index) {
   CHECK_GE(index, 0);
 
-  const vector<PeerObjectImpl*>::size_type vector_index =
-      static_cast<vector<PeerObjectImpl*>::size_type>(index);
-  CHECK_LT(vector_index, peer_objects_->size());
+  const vector<ObjectReferenceImpl*>::size_type vector_index =
+      static_cast<vector<ObjectReferenceImpl*>::size_type>(index);
+  CHECK_LT(vector_index, object_references_->size());
 
-  return (*peer_objects_)[vector_index];
+  return (*object_references_)[vector_index];
 }
 
 }  // namespace peer

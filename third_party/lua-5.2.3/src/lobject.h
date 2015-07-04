@@ -146,7 +146,7 @@ typedef struct lua_TValue TValue;
 #define ttisuserdata(o)		checktag((o), ctb(LUA_TUSERDATA))
 #define ttisthread(o)		checktag((o), ctb(LUA_TTHREAD))
 #define ttisdeadkey(o)		checktag((o), LUA_TDEADKEY)
-#define ttispeerobject(o)	checktag((o), LUA_TPEEROBJECT)
+#define ttisobjectreference(o)	checktag((o), LUA_TOBJECTREFERENCE)
 
 #define ttisequal(o1,o2)	(rttype(o1) == rttype(o2))
 
@@ -386,7 +386,7 @@ typedef struct lua_TValue TValue;
 */
 
 
-struct PeerObject {
+struct ObjectReference {
   union {
     /* Ensure that the struct is large enough. */
     char padding[8];
@@ -402,7 +402,7 @@ union Value {
   int b;           /* booleans */
   lua_CFunction f; /* light C functions */
   numfield         /* numbers */
-  struct PeerObject po; /* Floating Temple objects */
+  struct ObjectReference obj_ref; /* Floating Temple objects */
 };
 
 

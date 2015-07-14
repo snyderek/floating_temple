@@ -17,8 +17,8 @@
 #include <string>
 
 #include "base/logging.h"
-#include "peer/proto/uuid.pb.h"
-#include "peer/uuid_util.h"
+#include "engine/proto/uuid.pb.h"
+#include "engine/uuid_util.h"
 
 using floating_temple::peer::GeneratePredictableUuid;
 using floating_temple::peer::StringToUuid;

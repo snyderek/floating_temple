@@ -19,9 +19,9 @@
 #include <gflags/gflags.h>
 
 #include "base/logging.h"
-#include "peer/proto/transaction_id.pb.h"
-#include "peer/transaction_id_generator.h"
-#include "peer/transaction_id_util.h"
+#include "engine/proto/transaction_id.pb.h"
+#include "engine/transaction_id_generator.h"
+#include "engine/transaction_id_util.h"
 
 using floating_temple::peer::TransactionId;
 using floating_temple::peer::TransactionIdGenerator;

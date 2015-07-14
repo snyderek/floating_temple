@@ -18,7 +18,7 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "peer/proto/peer.pb.h"
+#include "engine/proto/peer.pb.h"
 
 using floating_temple::CEscape;
 using floating_temple::peer::PeerMessage;

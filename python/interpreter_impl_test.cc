@@ -23,7 +23,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "fake_peer/fake_peer.h"
+#include "fake_engine/fake_peer.h"
 #include "include/c++/interpreter.h"
 #include "include/c++/peer.h"
 #include "python/peer_module.h"

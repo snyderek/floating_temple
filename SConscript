@@ -63,6 +63,92 @@ base_lib = ft_env.Library(
       """),
   )
 
+# "engine" subdirectory
+#
+# The core of the distributed interpreter (i.e., the "engine").
+
+engine_lib = ft_env.Library(
+    target = 'engine/engine',
+    source = Split("""
+        engine/canonical_peer.cc
+        engine/canonical_peer_map.cc
+        engine/committed_event.cc
+        engine/committed_value.cc
+        engine/connection_manager.cc
+        engine/convert_value.cc
+        engine/create_network_peer.cc
+        engine/deserialization_context_impl.cc
+        engine/event_queue.cc
+        engine/get_event_proto_type.cc
+        engine/get_peer_message_type.cc
+        engine/live_object_node.cc
+        engine/max_version_map.cc
+        engine/min_version_map.cc
+        engine/object_reference_impl.cc
+        engine/peer_connection.cc
+        engine/peer_exclusion_map.cc
+        engine/peer_id.cc
+        engine/peer_impl.cc
+        engine/pending_event.cc
+        engine/playback_thread.cc
+        engine/recording_thread.cc
+        engine/sequence_point_impl.cc
+        engine/serialization_context_impl.cc
+        engine/serialize_local_object_to_string.cc
+        engine/shared_object.cc
+        engine/shared_object_transaction.cc
+        engine/transaction_id_generator.cc
+        engine/transaction_id_util.cc
+        engine/transaction_sequencer.cc
+        engine/transaction_store.cc
+        engine/unversioned_live_object.cc
+        engine/unversioned_object_content.cc
+        engine/uuid_util.cc
+        engine/value_proto_util.cc
+        engine/versioned_live_object.cc
+        engine/versioned_object_content.cc
+      """),
+  )
+
+engine_testing_lib = ft_env.Library(
+    target = 'engine/engine_testing',
+    source = Split("""
+        engine/make_transaction_id.cc
+        engine/mock_sequence_point.cc
+        engine/mock_transaction_store.cc
+        engine/mock_versioned_local_object.cc
+      """),
+  )
+
+# "engine/proto" subdirectory
+#
+# Protocol message definitions for the distributed interpreter engine.
+
+engine_proto_lib = ft_env.ProtoLibrary(
+    target = 'engine/proto/engine_proto',
+    source = Split("""
+        engine/proto/event.proto
+        engine/proto/peer.proto
+        engine/proto/transaction_id.proto
+        engine/proto/uuid.proto
+        engine/proto/value_proto.proto
+      """),
+  )
+
+# "fake_engine" subdirectory
+#
+# A fake engine implementation for testing.
+
+fake_engine_lib = ft_env.Library(
+    target = 'fake_engine/fake_engine',
+    source = Split("""
+        fake_engine/create_standalone_peer.cc
+        fake_engine/fake_object_reference.cc
+        fake_engine/fake_peer.cc
+        fake_engine/fake_thread.cc
+      """),
+  )
+
 # "fake_interpreter" subdirectory
 #
 # A fake local interpreter implementation for testing.
@@ -72,20 +158,6 @@ fake_interpreter_lib = ft_env.Library(
     source = Split("""
         fake_interpreter/fake_interpreter.cc
         fake_interpreter/fake_local_object.cc
-      """),
-  )
-
-# "fake_peer" subdirectory
-#
-# A fake peer implementation for testing.
-
-fake_peer_lib = ft_env.Library(
-    target = 'fake_peer/fake_peer',
-    source = Split("""
-        fake_peer/create_standalone_peer.cc
-        fake_peer/fake_object_reference.cc
-        fake_peer/fake_peer.cc
-        fake_peer/fake_thread.cc
       """),
   )
 
@@ -109,78 +181,6 @@ lua_lib = lua_env.Library(
         lua/convert_value.cc
         lua/interpreter_impl.cc
         lua/thread_substitution.cc
-      """),
-  )
-
-# "peer" subdirectory
-#
-# The core of the distributed interpreter (i.e., the "peer").
-
-peer_lib = ft_env.Library(
-    target = 'peer/peer',
-    source = Split("""
-        peer/canonical_peer.cc
-        peer/canonical_peer_map.cc
-        peer/committed_event.cc
-        peer/committed_value.cc
-        peer/connection_manager.cc
-        peer/convert_value.cc
-        peer/create_network_peer.cc
-        peer/deserialization_context_impl.cc
-        peer/event_queue.cc
-        peer/get_event_proto_type.cc
-        peer/get_peer_message_type.cc
-        peer/live_object_node.cc
-        peer/max_version_map.cc
-        peer/min_version_map.cc
-        peer/object_reference_impl.cc
-        peer/peer_connection.cc
-        peer/peer_exclusion_map.cc
-        peer/peer_id.cc
-        peer/peer_impl.cc
-        peer/pending_event.cc
-        peer/playback_thread.cc
-        peer/recording_thread.cc
-        peer/sequence_point_impl.cc
-        peer/serialization_context_impl.cc
-        peer/serialize_local_object_to_string.cc
-        peer/shared_object.cc
-        peer/shared_object_transaction.cc
-        peer/transaction_id_generator.cc
-        peer/transaction_id_util.cc
-        peer/transaction_sequencer.cc
-        peer/transaction_store.cc
-        peer/unversioned_live_object.cc
-        peer/unversioned_object_content.cc
-        peer/uuid_util.cc
-        peer/value_proto_util.cc
-        peer/versioned_live_object.cc
-        peer/versioned_object_content.cc
-      """),
-  )
-
-peer_testing_lib = ft_env.Library(
-    target = 'peer/peer_testing',
-    source = Split("""
-        peer/make_transaction_id.cc
-        peer/mock_sequence_point.cc
-        peer/mock_transaction_store.cc
-        peer/mock_versioned_local_object.cc
-      """),
-  )
-
-# "peer/proto" subdirectory
-#
-# Protocol message definitions for the peer.
-
-peer_proto_lib = ft_env.ProtoLibrary(
-    target = 'peer/proto/peer_proto',
-    source = Split("""
-        peer/proto/event.proto
-        peer/proto/peer.proto
-        peer/proto/transaction_id.proto
-        peer/proto/uuid.proto
-        peer/proto/value_proto.proto
       """),
   )
 
@@ -371,7 +371,7 @@ python_env.Depends(python_lib, third_party_python_lib)
 
 # "toy_lang" subdirectory
 #
-# An interpreter for a toy language. This is useful for testing the peer.
+# An interpreter for a toy language. This is useful for testing the engine.
 
 toy_lang_lib = ft_env.Library(
     target = 'toy_lang/toy_lang',
@@ -454,7 +454,7 @@ ft_env.Program(
     source = Split("""
         bin/encode_proto_buf.cc
       """) + [
-        peer_proto_lib,
+        engine_proto_lib,
         base_lib,
       ],
   )
@@ -464,10 +464,10 @@ ft_env.Program(
     source = Split("""
         bin/generate_named_object_id.cc
       """) + [
-        peer_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
       ],
@@ -478,10 +478,10 @@ ft_env.Program(
     source = Split("""
         bin/generate_transaction_ids.cc
       """) + [
-        peer_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
       ],
@@ -496,10 +496,10 @@ bin_floating_python = python_env.Program(
         # if library B depends on library A, then A must appear _after_ B in the
         # list.
         python_lib,
-        peer_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         python_proto_lib,
         util_lib,
         base_lib,
@@ -516,10 +516,10 @@ bin_floating_toy_lang = ft_env.Program(
         # if library B depends on library A, then A must appear _after_ B in the
         # list.
         toy_lang_lib,
-        peer_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         toy_lang_proto_lib,
         util_lib,
         base_lib,
@@ -532,7 +532,7 @@ ft_env.Program(
         bin/toy_lang.cc
       """) + [
         toy_lang_lib,
-        fake_peer_lib,
+        fake_engine_lib,
         value_lib,
         toy_lang_proto_lib,
         base_lib,
@@ -551,16 +551,16 @@ base_string_printf_test = ft_env.Program(
       ],
   )
 
-peer_connection_manager_test = ft_env.Program(
-    target = 'peer/connection_manager_test',
+engine_connection_manager_test = ft_env.Program(
+    target = 'engine/connection_manager_test',
     source = Split("""
-        peer/connection_manager_test.cc
+        engine/connection_manager_test.cc
       """) + [
-        peer_testing_lib,
-        peer_lib,
+        engine_testing_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gmock_lib,
@@ -568,15 +568,15 @@ peer_connection_manager_test = ft_env.Program(
       ],
   )
 
-peer_interval_set_test = ft_env.Program(
-    target = 'peer/interval_set_test',
+engine_interval_set_test = ft_env.Program(
+    target = 'engine/interval_set_test',
     source = Split("""
-        peer/interval_set_test.cc
+        engine/interval_set_test.cc
       """) + [
-        peer_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gmock_lib,
@@ -584,31 +584,31 @@ peer_interval_set_test = ft_env.Program(
       ],
   )
 
-peer_max_version_map_test = ft_env.Program(
-    target = 'peer/max_version_map_test',
+engine_max_version_map_test = ft_env.Program(
+    target = 'engine/max_version_map_test',
     source = Split("""
-        peer/max_version_map_test.cc
+        engine/max_version_map_test.cc
       """) + [
-        peer_testing_lib,
-        peer_lib,
+        engine_testing_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gtest_lib,
       ],
   )
 
-peer_peer_id_test = ft_env.Program(
-    target = 'peer/peer_id_test',
+engine_peer_id_test = ft_env.Program(
+    target = 'engine/peer_id_test',
     source = Split("""
-        peer/peer_id_test.cc
+        engine/peer_id_test.cc
       """) + [
-        peer_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gmock_lib,
@@ -616,17 +616,17 @@ peer_peer_id_test = ft_env.Program(
       ],
   )
 
-peer_playback_thread_test = ft_env.Program(
-    target = 'peer/playback_thread_test',
+engine_playback_thread_test = ft_env.Program(
+    target = 'engine/playback_thread_test',
     source = Split("""
-        peer/playback_thread_test.cc
+        engine/playback_thread_test.cc
       """) + [
-        peer_testing_lib,
-        peer_lib,
+        engine_testing_lib,
+        engine_lib,
         protocol_server_lib,
         fake_interpreter_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gmock_lib,
@@ -634,17 +634,17 @@ peer_playback_thread_test = ft_env.Program(
       ],
   )
 
-peer_recording_thread_test = ft_env.Program(
-    target = 'peer/recording_thread_test',
+engine_recording_thread_test = ft_env.Program(
+    target = 'engine/recording_thread_test',
     source = Split("""
-        peer/recording_thread_test.cc
+        engine/recording_thread_test.cc
       """) + [
-        peer_testing_lib,
-        peer_lib,
+        engine_testing_lib,
+        engine_lib,
         protocol_server_lib,
         fake_interpreter_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gmock_lib,
@@ -652,16 +652,16 @@ peer_recording_thread_test = ft_env.Program(
       ],
   )
 
-peer_toy_lang_integration_test = ft_env.Program(
-    target = 'peer/toy_lang_integration_test',
+engine_toy_lang_integration_test = ft_env.Program(
+    target = 'engine/toy_lang_integration_test',
     source = Split("""
-        peer/toy_lang_integration_test.cc
+        engine/toy_lang_integration_test.cc
       """) + [
         toy_lang_lib,
-        peer_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         toy_lang_proto_lib,
         util_lib,
         base_lib,
@@ -669,17 +669,17 @@ peer_toy_lang_integration_test = ft_env.Program(
       ],
   )
 
-peer_transaction_store_test = ft_env.Program(
-    target = 'peer/transaction_store_test',
+engine_transaction_store_test = ft_env.Program(
+    target = 'engine/transaction_store_test',
     source = Split("""
-        peer/transaction_store_test.cc
+        engine/transaction_store_test.cc
       """) + [
-        peer_testing_lib,
-        peer_lib,
+        engine_testing_lib,
+        engine_lib,
         protocol_server_lib,
         fake_interpreter_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gmock_lib,
@@ -687,32 +687,32 @@ peer_transaction_store_test = ft_env.Program(
       ],
   )
 
-peer_uuid_util_test = ft_env.Program(
-    target = 'peer/uuid_util_test',
+engine_uuid_util_test = ft_env.Program(
+    target = 'engine/uuid_util_test',
     source = Split("""
-        peer/uuid_util_test.cc
+        engine/uuid_util_test.cc
       """) + [
-        peer_lib,
+        engine_lib,
         protocol_server_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gtest_lib,
       ],
   )
 
-peer_shared_object_test = ft_env.Program(
-    target = 'peer/shared_object_test',
+engine_shared_object_test = ft_env.Program(
+    target = 'engine/shared_object_test',
     source = Split("""
-        peer/shared_object_test.cc
+        engine/shared_object_test.cc
       """) + [
-        peer_testing_lib,
-        peer_lib,
+        engine_testing_lib,
+        engine_lib,
         protocol_server_lib,
         fake_interpreter_lib,
         value_lib,
-        peer_proto_lib,
+        engine_proto_lib,
         util_lib,
         base_lib,
         gmock_lib,
@@ -765,7 +765,7 @@ python_interpreter_impl_test = python_env.Program(
         python/interpreter_impl_test.cc
       """) + [
         python_lib,
-        fake_peer_lib,
+        fake_engine_lib,
         value_lib,
         python_proto_lib,
         util_lib,
@@ -842,16 +842,16 @@ util_stl_util_test = ft_env.Program(
 
 cxx_tests = [
     base_string_printf_test,
-    peer_connection_manager_test,
-    peer_interval_set_test,
-    peer_max_version_map_test,
-    peer_peer_id_test,
-    peer_playback_thread_test,
-    peer_recording_thread_test,
-    peer_shared_object_test,
-    peer_toy_lang_integration_test,
-    peer_transaction_store_test,
-    peer_uuid_util_test,
+    engine_connection_manager_test,
+    engine_interval_set_test,
+    engine_max_version_map_test,
+    engine_peer_id_test,
+    engine_playback_thread_test,
+    engine_recording_thread_test,
+    engine_shared_object_test,
+    engine_toy_lang_integration_test,
+    engine_transaction_store_test,
+    engine_uuid_util_test,
     protocol_server_buffer_util_test,
     protocol_server_protocol_connection_impl_test,
     protocol_server_varint_test,
@@ -864,7 +864,7 @@ cxx_tests = [
   ]
 
 sh_tests = [
-    File('peer/toy_lang_integration_test.sh'),
+    File('engine/toy_lang_integration_test.sh'),
     File('python/fib_list_test.sh'),
     File('python/floating_python_test.sh'),
   ]

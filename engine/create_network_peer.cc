@@ -32,7 +32,7 @@ Peer* CreateNetworkPeer(Interpreter* interpreter,
                         const vector<string>& known_peer_ids,
                         int send_receive_thread_count,
                         bool delay_object_binding) {
-  peer::PeerImpl* const peer = new peer::PeerImpl();
+  engine::PeerImpl* const peer = new engine::PeerImpl();
   peer->Start(interpreter, interpreter_type, local_address, peer_port,
               known_peer_ids, send_receive_thread_count, delay_object_binding);
 

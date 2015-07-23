@@ -32,7 +32,7 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 bool PeerExclusionMapsAreEqual(const PeerExclusionMap& a,
                                const PeerExclusionMap& b) {
@@ -134,5 +134,5 @@ string PeerExclusionMap::Dump() const {
   return exclusion_map_string;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

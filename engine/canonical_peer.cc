@@ -22,7 +22,7 @@
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 CanonicalPeer::CanonicalPeer(const string& peer_id)
     : peer_id_(peer_id) {
@@ -32,5 +32,5 @@ CanonicalPeer::CanonicalPeer(const string& peer_id)
 CanonicalPeer::~CanonicalPeer() {
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

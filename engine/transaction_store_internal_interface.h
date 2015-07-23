@@ -24,7 +24,7 @@
 #include "base/linked_ptr.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class LiveObject;
 class ObjectReferenceImpl;
@@ -60,7 +60,7 @@ class TransactionStoreInternalInterface {
                                    const ObjectReferenceImpl* b) const = 0;
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_TRANSACTION_STORE_INTERNAL_INTERFACE_H_

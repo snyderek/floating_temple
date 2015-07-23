@@ -29,7 +29,7 @@ using std::string;
 using testing::InitGoogleTest;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 TEST(UuidTest, GeneratePredictableUuid) {
@@ -74,7 +74,7 @@ TEST(UuidTest, UuidToHyphenatedString) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

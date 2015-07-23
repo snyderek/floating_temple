@@ -25,7 +25,7 @@ using std::isdigit;
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 enum ParseState { PREFIX1, PREFIX2, PREFIX3, ADDRESS_FIRST, ADDRESS_REST,
@@ -118,5 +118,5 @@ bool ParsePeerId(const string& peer_id, string* address, int* port) {
   return true;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

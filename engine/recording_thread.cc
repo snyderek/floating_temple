@@ -52,7 +52,7 @@ namespace floating_temple {
 
 class ObjectReference;
 
-namespace peer {
+namespace engine {
 namespace {
 
 ObjectReferenceImpl* GetObjectReferenceForEvent(
@@ -585,5 +585,5 @@ bool RecordingThread::Rewinding_Locked() const {
   return IsValidTransactionId(rejected_transaction_id_);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

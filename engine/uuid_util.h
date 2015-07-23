@@ -21,7 +21,7 @@
 #include <string>
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class Uuid;
 
@@ -49,15 +49,15 @@ Uuid StringToUuid(const std::string& s);
 
 void UuidToHyphenatedString(const Uuid& uuid, std::string* s);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 namespace std {
 
 // Define a less-than operator for Uuid so that it can be used as a key in
 // std::map.
-bool operator<(const floating_temple::peer::Uuid& a,
-               const floating_temple::peer::Uuid& b);
+bool operator<(const floating_temple::engine::Uuid& a,
+               const floating_temple::engine::Uuid& b);
 
 }  // namespace std
 

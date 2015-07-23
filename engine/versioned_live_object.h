@@ -24,7 +24,7 @@ namespace floating_temple {
 
 class VersionedLocalObject;
 
-namespace peer {
+namespace engine {
 
 class LiveObjectNode;
 
@@ -56,7 +56,7 @@ class VersionedLiveObject : public LiveObject {
   DISALLOW_COPY_AND_ASSIGN(VersionedLiveObject);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_VERSIONED_LIVE_OBJECT_H_

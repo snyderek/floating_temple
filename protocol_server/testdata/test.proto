@@ -16,7 +16,7 @@
 package floating_temple;
 
 // TODO(dss): Rename this protocol message to distinguish it from the
-// TestMessage defined in peer/proto/peer.proto.
+// TestMessage defined in engine/proto/peer.proto.
 message TestMessage {
   required int32 n = 1;
   optional string s = 2;

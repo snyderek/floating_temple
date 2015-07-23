@@ -35,7 +35,7 @@
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 void CreateHelloMessage(
@@ -361,5 +361,5 @@ string PeerConnection::GetRemotePeerIdForLogging() const {
   return StringPrintf("(unknown peer at address %s)", remote_address_.c_str());
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

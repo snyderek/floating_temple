@@ -28,7 +28,7 @@
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 #define ASSIGN_VALUE(enum_const, field_name) \
   case enum_const: \
@@ -156,5 +156,5 @@ void CommittedValue::ChangeType(Type new_type) {
   type_ = new_type;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

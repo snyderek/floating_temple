@@ -16,11 +16,11 @@
 import "engine/proto/uuid.proto";
 import "engine/proto/value_proto.proto";
 
-package floating_temple.peer;
+package floating_temple.engine;
 
 message ObjectCreationEventProto {
   required bytes data = 1;
-  repeated floating_temple.peer.Uuid referenced_object_id = 2;
+  repeated floating_temple.engine.Uuid referenced_object_id = 2;
 }
 
 message SubObjectCreationEventProto {
@@ -37,33 +37,33 @@ message MethodCallEventProto {
   // multiple objects. (E.g., in Python, the rich comparison operations read the
   // state of two different objects.)
   required string method_name = 1;
-  repeated floating_temple.peer.ValueProto parameter = 2;
-  optional floating_temple.peer.Uuid caller_object_id = 3;
+  repeated floating_temple.engine.ValueProto parameter = 2;
+  optional floating_temple.engine.Uuid caller_object_id = 3;
 }
 
 message MethodReturnEventProto {
-  required floating_temple.peer.ValueProto return_value = 1;
-  optional floating_temple.peer.Uuid caller_object_id = 2;
+  required floating_temple.engine.ValueProto return_value = 1;
+  optional floating_temple.engine.Uuid caller_object_id = 2;
 }
 
 message SubMethodCallEventProto {
   required string method_name = 1;
-  repeated floating_temple.peer.ValueProto parameter = 2;
-  required floating_temple.peer.Uuid callee_object_id = 3;
+  repeated floating_temple.engine.ValueProto parameter = 2;
+  required floating_temple.engine.Uuid callee_object_id = 3;
 }
 
 message SubMethodReturnEventProto {
-  required floating_temple.peer.ValueProto return_value = 1;
-  required floating_temple.peer.Uuid callee_object_id = 2;
+  required floating_temple.engine.ValueProto return_value = 1;
+  required floating_temple.engine.Uuid callee_object_id = 2;
 }
 
 message SelfMethodCallEventProto {
   required string method_name = 1;
-  repeated floating_temple.peer.ValueProto parameter = 2;
+  repeated floating_temple.engine.ValueProto parameter = 2;
 }
 
 message SelfMethodReturnEventProto {
-  required floating_temple.peer.ValueProto return_value = 1;
+  required floating_temple.engine.ValueProto return_value = 1;
 }
 
 message EventProto {
@@ -83,19 +83,20 @@ message EventProto {
   }
 
   // Exactly one of the following fields must be set.
-  optional floating_temple.peer.ObjectCreationEventProto object_creation = 1;
-  optional floating_temple.peer.SubObjectCreationEventProto
+  optional floating_temple.engine.ObjectCreationEventProto object_creation = 1;
+  optional floating_temple.engine.SubObjectCreationEventProto
       sub_object_creation = 11;
-  optional floating_temple.peer.BeginTransactionEventProto
+  optional floating_temple.engine.BeginTransactionEventProto
       begin_transaction = 2;
-  optional floating_temple.peer.EndTransactionEventProto end_transaction = 3;
-  optional floating_temple.peer.MethodCallEventProto method_call = 4;
-  optional floating_temple.peer.MethodReturnEventProto method_return = 5;
-  optional floating_temple.peer.SubMethodCallEventProto sub_method_call = 6;
-  optional floating_temple.peer.SubMethodReturnEventProto sub_method_return = 7;
-  optional floating_temple.peer.SelfMethodCallEventProto self_method_call = 8;
-  optional floating_temple.peer.SelfMethodReturnEventProto
+  optional floating_temple.engine.EndTransactionEventProto end_transaction = 3;
+  optional floating_temple.engine.MethodCallEventProto method_call = 4;
+  optional floating_temple.engine.MethodReturnEventProto method_return = 5;
+  optional floating_temple.engine.SubMethodCallEventProto sub_method_call = 6;
+  optional floating_temple.engine.SubMethodReturnEventProto
+      sub_method_return = 7;
+  optional floating_temple.engine.SelfMethodCallEventProto self_method_call = 8;
+  optional floating_temple.engine.SelfMethodReturnEventProto
       self_method_return = 9;
 
-  repeated floating_temple.peer.Uuid new_object_id = 10;
+  repeated floating_temple.engine.Uuid new_object_id = 10;
 }

@@ -27,7 +27,7 @@ namespace floating_temple {
 class LocalObject;
 class Thread;
 
-namespace peer {
+namespace engine {
 
 class ObjectReferenceImpl;
 
@@ -50,7 +50,7 @@ class LiveObject {
   virtual std::string Dump() const = 0;
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_LIVE_OBJECT_H_

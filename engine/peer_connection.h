@@ -33,7 +33,7 @@ namespace floating_temple {
 class ProtocolConnection;
 class StateVariableInternalInterface;
 
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 class CanonicalPeerMap;
@@ -137,7 +137,7 @@ class PeerConnection : public ProtocolConnectionHandler<PeerMessage> {
   DISALLOW_COPY_AND_ASSIGN(PeerConnection);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_PEER_CONNECTION_H_

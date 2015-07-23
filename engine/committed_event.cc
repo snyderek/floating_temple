@@ -35,7 +35,7 @@ using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 CommittedEvent::CommittedEvent(
     const unordered_set<SharedObject*>& new_shared_objects)
@@ -466,5 +466,5 @@ string SelfMethodReturnCommittedEvent::Dump() const {
       DumpNewSharedObjects().c_str(), return_value_.Dump().c_str());
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

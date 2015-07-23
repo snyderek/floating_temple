@@ -28,7 +28,7 @@
 #include "engine/transaction_id_util.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 
@@ -318,7 +318,7 @@ bool operator!=(const VersionMap<CompareFunction>& a,
   return !(a == b);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_VERSION_MAP_H_

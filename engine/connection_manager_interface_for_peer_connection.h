@@ -19,7 +19,7 @@
 #include <string>
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 class PeerConnection;
@@ -40,7 +40,7 @@ class ConnectionManagerInterfaceForPeerConnection {
                                            const PeerMessage& peer_message) = 0;
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_CONNECTION_MANAGER_INTERFACE_FOR_PEER_CONNECTION_H_

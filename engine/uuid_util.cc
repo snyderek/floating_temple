@@ -33,7 +33,7 @@ using std::size_t;
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 uint64 ParseHexUint64(const string& hex) {
@@ -170,14 +170,14 @@ void UuidToHyphenatedString(const Uuid& uuid, string* s) {
   s->assign(data_ptr, data_len - 1);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 namespace std {
 
-bool operator<(const floating_temple::peer::Uuid& a,
-               const floating_temple::peer::Uuid& b) {
-  return floating_temple::peer::CompareUuids(a, b) < 0;
+bool operator<(const floating_temple::engine::Uuid& a,
+               const floating_temple::engine::Uuid& b) {
+  return floating_temple::engine::CompareUuids(a, b) < 0;
 }
 
 }  // namespace std

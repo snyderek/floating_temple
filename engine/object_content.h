@@ -29,7 +29,7 @@
 #include "engine/transaction_id_util.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 class CommittedEvent;
@@ -73,7 +73,7 @@ class ObjectContent {
   virtual std::string Dump() const = 0;
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_OBJECT_CONTENT_H_

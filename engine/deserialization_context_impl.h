@@ -22,7 +22,7 @@
 #include "include/c++/deserialization_context.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class ObjectReferenceImpl;
 
@@ -39,7 +39,7 @@ class DeserializationContextImpl : public DeserializationContext {
   DISALLOW_COPY_AND_ASSIGN(DeserializationContextImpl);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_DESERIALIZATION_CONTEXT_IMPL_H_

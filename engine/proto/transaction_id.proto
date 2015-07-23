@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package floating_temple.peer;
+package floating_temple.engine;
 
 message TransactionId {
   required fixed64 a = 1;

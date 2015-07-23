@@ -17,7 +17,7 @@
 #define ENGINE_CONNECTION_HANDLER_H_
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 class PeerMessage;
@@ -34,7 +34,7 @@ class ConnectionHandler {
                                            const PeerMessage& peer_message) = 0;
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_CONNECTION_HANDLER_H_

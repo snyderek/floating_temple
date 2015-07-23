@@ -72,7 +72,7 @@ using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 const char TransactionStore::kObjectNamespaceUuidString[] =
     "ab2d0b40fe6211e2bf8b000c2949fc67";
@@ -1533,5 +1533,5 @@ void TransactionStore::AddEventToSharedObjectTransactions(
   transaction->AddEvent(event);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

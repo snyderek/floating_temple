@@ -21,7 +21,7 @@
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class MockConnectionHandler : public ConnectionHandler {
  public:
@@ -36,7 +36,7 @@ class MockConnectionHandler : public ConnectionHandler {
   DISALLOW_COPY_AND_ASSIGN(MockConnectionHandler);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_MOCK_CONNECTION_HANDLER_H_

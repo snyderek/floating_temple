@@ -24,7 +24,7 @@
 #include "include/c++/value.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 #define CONVERT_FIELD(enum_const, setter_method, getter_method) \
   case CommittedValue::enum_const: \
@@ -103,5 +103,5 @@ void ConvertCommittedValueToValue(const CommittedValue& in, Value* out) {
 
 #undef CONVERT_FIELD
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

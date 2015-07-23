@@ -37,7 +37,7 @@ using testing::MatcherInterface;
 using testing::Test;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 TEST(PeerIdTest, MakePeerId) {
@@ -144,7 +144,7 @@ TEST(PeerIdTest, ParsePeerId) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

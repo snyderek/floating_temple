@@ -58,7 +58,7 @@ using testing::Test;
 using testing::_;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class ObjectReferenceImpl;
 
@@ -751,7 +751,7 @@ TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

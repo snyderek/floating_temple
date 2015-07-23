@@ -31,7 +31,7 @@ using google::ParseCommandLineFlags;
 using testing::InitGoogleTest;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 TEST(MaxVersionMapTest, AddPeerTransactionId) {
@@ -94,7 +94,7 @@ TEST(MaxVersionMapTest, AddPeerTransactionId) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

@@ -23,7 +23,7 @@
 #include "include/c++/object_reference.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class SharedObject;
 
@@ -52,7 +52,7 @@ class ObjectReferenceImpl : public ObjectReference {
   DISALLOW_COPY_AND_ASSIGN(ObjectReferenceImpl);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_OBJECT_REFERENCE_IMPL_H_

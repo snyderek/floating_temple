@@ -25,7 +25,7 @@ namespace floating_temple {
 
 class UnversionedLocalObject;
 
-namespace peer {
+namespace engine {
 
 class LiveObject;
 class TransactionStoreInternalInterface;
@@ -69,7 +69,7 @@ class UnversionedObjectContent : public ObjectContent {
   DISALLOW_COPY_AND_ASSIGN(UnversionedObjectContent);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_UNVERSIONED_OBJECT_CONTENT_H_

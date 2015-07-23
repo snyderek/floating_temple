@@ -19,11 +19,11 @@
 #include "engine/proto/event.pb.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 EventProto::Type GetEventProtoType(const EventProto& event_proto);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_GET_EVENT_PROTO_TYPE_H_

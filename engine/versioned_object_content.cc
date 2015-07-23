@@ -50,7 +50,7 @@ using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 vector<pair<const CanonicalPeer*, TransactionId>>::const_iterator
@@ -406,5 +406,5 @@ bool VersionedObjectContent::CanUseCachedLiveObject_Locked(
   return true;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

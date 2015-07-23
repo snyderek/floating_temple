@@ -21,7 +21,7 @@
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class MockPeerMessageSender : public PeerMessageSender {
  public:
@@ -37,7 +37,7 @@ class MockPeerMessageSender : public PeerMessageSender {
   DISALLOW_COPY_AND_ASSIGN(MockPeerMessageSender);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_MOCK_PEER_MESSAGE_SENDER_H_

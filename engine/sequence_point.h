@@ -19,7 +19,7 @@
 #include <string>
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class SequencePoint {
  public:
@@ -31,7 +31,7 @@ class SequencePoint {
   virtual std::string Dump() const = 0;
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_SEQUENCE_POINT_H_

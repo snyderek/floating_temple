@@ -31,7 +31,7 @@ namespace floating_temple {
 
 class Interpreter;
 
-namespace peer {
+namespace engine {
 
 class PeerImpl : public Peer {
  public:
@@ -70,7 +70,7 @@ class PeerImpl : public Peer {
   DISALLOW_COPY_AND_ASSIGN(PeerImpl);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_PEER_IMPL_H_

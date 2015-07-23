@@ -26,7 +26,7 @@
 #include "include/c++/value.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class LiveObject;
 class ObjectReferenceImpl;
@@ -157,7 +157,7 @@ class MethodReturnPendingEvent : public PendingEvent {
   DISALLOW_COPY_AND_ASSIGN(MethodReturnPendingEvent);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_PENDING_EVENT_H_

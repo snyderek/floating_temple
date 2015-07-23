@@ -19,7 +19,7 @@
 #include <string>
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class TransactionId;
 
@@ -37,7 +37,7 @@ std::string TransactionIdToString(const TransactionId& transaction_id);
 bool operator<(const TransactionId& a, const TransactionId& b);
 bool operator==(const TransactionId& a, const TransactionId& b);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_TRANSACTION_ID_UTIL_H_

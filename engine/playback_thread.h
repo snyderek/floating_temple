@@ -38,7 +38,7 @@ namespace floating_temple {
 class LocalObject;
 class StateVariableInternalInterface;
 
-namespace peer {
+namespace engine {
 
 class CommittedEvent;
 class LiveObject;
@@ -158,7 +158,7 @@ class PlaybackThread : private Thread {
   DISALLOW_COPY_AND_ASSIGN(PlaybackThread);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_PLAYBACK_THREAD_H_

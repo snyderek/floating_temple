@@ -29,7 +29,7 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 SharedObjectTransaction::SharedObjectTransaction(
     const vector<linked_ptr<CommittedEvent>>& events,
@@ -95,5 +95,5 @@ string SharedObjectTransaction::Dump() const {
                       events_string.c_str(), origin_peer_id_string.c_str());
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

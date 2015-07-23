@@ -30,7 +30,7 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 VersionedLiveObject::VersionedLiveObject(VersionedLocalObject* local_object)
     : node_(new LiveObjectNode(local_object)) {
@@ -94,5 +94,5 @@ LiveObjectNode* VersionedLiveObject::GetNode() const {
   return node_;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

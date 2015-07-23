@@ -18,12 +18,12 @@
 #include "engine/transaction_id_util.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 bool TransactionIdGreaterThanFunction::operator()(
     const TransactionId& a, const TransactionId& b) const {
   return CompareTransactionIds(a, b) > 0;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

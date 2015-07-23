@@ -61,7 +61,7 @@ namespace floating_temple {
 
 class ObjectReference;
 
-namespace peer {
+namespace engine {
 namespace {
 
 MATCHER(IsBeginTransactionPendingEvent, "") {
@@ -381,7 +381,7 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

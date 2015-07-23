@@ -34,7 +34,7 @@ namespace floating_temple {
 
 class ObjectReference;
 
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 class SharedObject;
@@ -108,5 +108,5 @@ void PeerImpl::Stop() {
   state_.ChangeState(STOPPED);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

@@ -19,12 +19,12 @@
 #include "engine/proto/value_proto.pb.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 ValueProto::Type GetValueProtoType(const ValueProto& value);
 bool ValueProtosEqual(const ValueProto& a, const ValueProto& b);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_VALUE_PROTO_UTIL_H_

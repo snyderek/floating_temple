@@ -28,7 +28,7 @@
 #include "engine/transaction_id_util.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 
@@ -72,7 +72,7 @@ class SequencePointImpl : public SequencePoint {
   DISALLOW_COPY_AND_ASSIGN(SequencePointImpl);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_SEQUENCE_POINT_IMPL_H_

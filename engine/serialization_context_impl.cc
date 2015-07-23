@@ -27,7 +27,7 @@ using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 SerializationContextImpl::SerializationContextImpl(
     vector<ObjectReferenceImpl*>* object_references)
@@ -53,5 +53,5 @@ int SerializationContextImpl::GetIndexForObjectReference(
   return insert_result.first->second;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

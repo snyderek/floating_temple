@@ -23,7 +23,7 @@
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 DeserializationContextImpl::DeserializationContextImpl(
     const vector<ObjectReferenceImpl*>* object_references)
@@ -41,5 +41,5 @@ ObjectReference* DeserializationContextImpl::GetObjectReferenceByIndex(
   return (*object_references_)[vector_index];
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

@@ -26,7 +26,7 @@
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 int CompareTransactionIds(const TransactionId& t1, const TransactionId& t2) {
   if (t1.a() != t2.a()) {
@@ -107,5 +107,5 @@ bool operator==(const TransactionId& a, const TransactionId& b) {
   return CompareTransactionIds(a, b) == 0;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

@@ -25,7 +25,7 @@
 #include "engine/uuid_util.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 TransactionIdGenerator::TransactionIdGenerator()
     : last_time_value_(0) {
@@ -56,5 +56,5 @@ void TransactionIdGenerator::Generate(TransactionId* transaction_id) {
   transaction_id->set_c(uuid_.low_word());
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

@@ -34,7 +34,7 @@ using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 PendingEvent::PendingEvent(
     const unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>&
@@ -141,5 +141,5 @@ void MethodReturnPendingEvent::GetMethodReturn(
   *return_value = &return_value_;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

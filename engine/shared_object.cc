@@ -53,7 +53,7 @@ using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 SharedObject::SharedObject(TransactionStoreInternalInterface* transaction_store,
                            const Uuid& object_id)
@@ -304,5 +304,5 @@ string SharedObject::Dump_Locked() const {
       object_references_string.c_str(), versioned_object_string.c_str());
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

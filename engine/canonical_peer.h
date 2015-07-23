@@ -21,7 +21,7 @@
 #include "base/macros.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer {
  public:
@@ -36,7 +36,7 @@ class CanonicalPeer {
   DISALLOW_COPY_AND_ASSIGN(CanonicalPeer);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_CANONICAL_PEER_H_

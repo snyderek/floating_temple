@@ -39,7 +39,7 @@ using testing::InitGoogleTest;
 using testing::Test;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 class ToyLangIntegrationTest : public Test {
@@ -119,7 +119,7 @@ TEST_F(ToyLangIntegrationTest, FibList) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

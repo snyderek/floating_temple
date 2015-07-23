@@ -37,7 +37,7 @@ using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 UnversionedObjectContent::UnversionedObjectContent(
     TransactionStoreInternalInterface* transaction_store,
@@ -88,5 +88,5 @@ string UnversionedObjectContent::Dump() const {
   return StringPrintf("{ \"live_object\": %s }", live_object_->Dump().c_str());
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

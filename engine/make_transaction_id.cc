@@ -19,7 +19,7 @@
 #include "engine/proto/transaction_id.pb.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 TransactionId MakeTransactionId(uint64 a, uint64 b, uint64 c) {
   TransactionId transaction_id;
@@ -30,5 +30,5 @@ TransactionId MakeTransactionId(uint64 a, uint64 b, uint64 c) {
   return transaction_id;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

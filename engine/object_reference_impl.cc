@@ -27,7 +27,7 @@
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 ObjectReferenceImpl::ObjectReferenceImpl(bool versioned)
     : versioned_(versioned),
@@ -70,5 +70,5 @@ SharedObject* ObjectReferenceImpl::PrivateGetSharedObject() const {
   return shared_object_;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

@@ -28,7 +28,7 @@ namespace floating_temple {
 class Thread;
 class VersionedLocalObject;
 
-namespace peer {
+namespace engine {
 
 class ObjectReferenceImpl;
 
@@ -63,7 +63,7 @@ class LiveObjectNode {
   DISALLOW_COPY_AND_ASSIGN(LiveObjectNode);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_LIVE_OBJECT_NODE_H_

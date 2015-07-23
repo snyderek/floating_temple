@@ -21,8 +21,8 @@
 #include "engine/proto/peer.pb.h"
 
 using floating_temple::CEscape;
-using floating_temple::peer::PeerMessage;
-using floating_temple::peer::TestMessage;
+using floating_temple::engine::PeerMessage;
+using floating_temple::engine::TestMessage;
 using google::InitGoogleLogging;
 using std::printf;
 using std::string;

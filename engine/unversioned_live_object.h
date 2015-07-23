@@ -23,7 +23,7 @@ namespace floating_temple {
 
 class UnversionedLocalObject;
 
-namespace peer {
+namespace engine {
 
 class UnversionedLiveObject : public LiveObject {
  public:
@@ -48,7 +48,7 @@ class UnversionedLiveObject : public LiveObject {
   DISALLOW_COPY_AND_ASSIGN(UnversionedLiveObject);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_UNVERSIONED_LIVE_OBJECT_H_

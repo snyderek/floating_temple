@@ -28,7 +28,7 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 UnversionedLiveObject::UnversionedLiveObject(
     UnversionedLocalObject* local_object)
@@ -64,5 +64,5 @@ string UnversionedLiveObject::Dump() const {
   return local_object_->Dump();
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

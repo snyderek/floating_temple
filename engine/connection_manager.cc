@@ -40,7 +40,7 @@ namespace floating_temple {
 
 class ProtocolConnection;
 
-namespace peer {
+namespace engine {
 
 ConnectionManager::ConnectionManager()
     : canonical_peer_map_(nullptr),
@@ -433,5 +433,5 @@ void ConnectionManager::HandleMessageFromRemotePeer(
   connection_handler_->HandleMessageFromRemotePeer(remote_peer, peer_message);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

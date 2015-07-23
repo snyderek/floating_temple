@@ -23,9 +23,9 @@
 #include "engine/transaction_id_generator.h"
 #include "engine/transaction_id_util.h"
 
-using floating_temple::peer::TransactionId;
-using floating_temple::peer::TransactionIdGenerator;
-using floating_temple::peer::TransactionIdToString;
+using floating_temple::engine::TransactionId;
+using floating_temple::engine::TransactionIdGenerator;
+using floating_temple::engine::TransactionIdToString;
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
 using std::printf;

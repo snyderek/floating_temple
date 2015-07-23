@@ -23,7 +23,7 @@
 #include "include/c++/serialization_context.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class ObjectReferenceImpl;
 
@@ -41,7 +41,7 @@ class SerializationContextImpl : public SerializationContext {
   DISALLOW_COPY_AND_ASSIGN(SerializationContextImpl);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_SERIALIZATION_CONTEXT_IMPL_H_

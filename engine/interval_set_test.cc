@@ -31,7 +31,7 @@ using testing::InitGoogleTest;
 using testing::Test;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 namespace {
 
 class IntervalSetTest : public Test {
@@ -92,7 +92,7 @@ TEST_F(IntervalSetTest, SingleIntervalContains) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

@@ -36,7 +36,7 @@ namespace floating_temple {
 
 class UnversionedLocalObject;
 
-namespace peer {
+namespace engine {
 
 class LiveObject;
 class ObjectReferenceImpl;
@@ -142,7 +142,7 @@ class RecordingThread : public Thread {
   DISALLOW_COPY_AND_ASSIGN(RecordingThread);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_RECORDING_THREAD_H_

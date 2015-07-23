@@ -22,7 +22,7 @@
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 MockSequencePoint::MockSequencePoint() {
 }
@@ -35,5 +35,5 @@ string MockSequencePoint::Dump() const {
   return StringPrintf("{ \"mock_sequence_point\": \"%p\" }", this);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

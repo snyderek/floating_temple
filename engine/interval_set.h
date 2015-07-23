@@ -24,7 +24,7 @@
 #include "util/stl_util.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 template<typename T> class IntervalSet;
 template<typename T> bool operator==(const IntervalSet<T>& a,
@@ -120,7 +120,7 @@ bool operator==(const IntervalSet<T>& a, const IntervalSet<T>& b) {
   return a.map_ == b.map_;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_INTERVAL_SET_H_

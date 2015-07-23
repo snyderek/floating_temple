@@ -22,7 +22,7 @@
 #include "engine/sequence_point.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class MockSequencePoint : public SequencePoint {
  public:
@@ -35,7 +35,7 @@ class MockSequencePoint : public SequencePoint {
   DISALLOW_COPY_AND_ASSIGN(MockSequencePoint);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_MOCK_SEQUENCE_POINT_H_

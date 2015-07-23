@@ -17,32 +17,32 @@ import "engine/proto/event.proto";
 import "engine/proto/transaction_id.proto";
 import "engine/proto/uuid.proto";
 
-package floating_temple.peer;
+package floating_temple.engine;
 
 // TODO(dss): Modify the message definitions in this file to support future
 // expansion. For example, every repeated field should be a unique sub-message
 // type.
 
 message ObjectTransactionProto {
-  required floating_temple.peer.Uuid object_id = 1;
-  repeated floating_temple.peer.EventProto event = 2;
+  required floating_temple.engine.Uuid object_id = 1;
+  repeated floating_temple.engine.EventProto event = 2;
 }
 
 message TransactionProto {
-  required floating_temple.peer.TransactionId transaction_id = 1;
-  repeated floating_temple.peer.EventProto event = 3;
+  required floating_temple.engine.TransactionId transaction_id = 1;
+  repeated floating_temple.engine.EventProto event = 3;
   required string origin_peer_id = 4;
 }
 
 message PeerVersion {
   required string peer_id = 1;
-  required floating_temple.peer.TransactionId last_transaction_id = 2;
+  required floating_temple.engine.TransactionId last_transaction_id = 2;
 }
 
 message RejectedPeerProto {
   required string rejected_peer_id = 1;
   // TODO(dss): Make rejected_transaction_id a repeated field.
-  required floating_temple.peer.TransactionId rejected_transaction_id = 2;
+  required floating_temple.engine.TransactionId rejected_transaction_id = 2;
 }
 
 message HelloMessage {
@@ -56,35 +56,35 @@ message GoodbyeMessage {
 // TODO(dss): Consider sending a separate APPLY_TRANSACTION message for each
 // affected object.
 message ApplyTransactionMessage {
-  required floating_temple.peer.TransactionId transaction_id = 1;
-  repeated floating_temple.peer.ObjectTransactionProto object_transaction = 2;
+  required floating_temple.engine.TransactionId transaction_id = 1;
+  repeated floating_temple.engine.ObjectTransactionProto object_transaction = 2;
 }
 
 // TODO(dss): Allow a peer to request only recent transactions from another
 // peer.
 message GetObjectMessage {
-  required floating_temple.peer.Uuid object_id = 1;
+  required floating_temple.engine.Uuid object_id = 1;
 }
 
 message StoreObjectMessage {
-  required floating_temple.peer.Uuid object_id = 1;
-  repeated floating_temple.peer.TransactionProto transaction = 2;
-  repeated floating_temple.peer.PeerVersion peer_version = 3;
+  required floating_temple.engine.Uuid object_id = 1;
+  repeated floating_temple.engine.TransactionProto transaction = 2;
+  repeated floating_temple.engine.PeerVersion peer_version = 3;
   repeated string interested_peer_id = 4;
 }
 
 // TODO(dss): Rename this protocol message to 'RejectTransactionsMessage'.
 // ("Transactions" should be plural.)
 message RejectTransactionMessage {
-  repeated floating_temple.peer.RejectedPeerProto rejected_peer = 1;
-  required floating_temple.peer.TransactionId new_transaction_id = 2;
+  repeated floating_temple.engine.RejectedPeerProto rejected_peer = 1;
+  required floating_temple.engine.TransactionId new_transaction_id = 2;
 }
 
 message InvalidateTransactionsMessage {
   // The range of transactions to be invalidated includes the start ID but not
   // the end ID.
-  required floating_temple.peer.TransactionId start_transaction_id = 1;
-  required floating_temple.peer.TransactionId end_transaction_id = 2;
+  required floating_temple.engine.TransactionId start_transaction_id = 1;
+  required floating_temple.engine.TransactionId end_transaction_id = 2;
 }
 
 message TestMessage {
@@ -114,15 +114,15 @@ message PeerMessage {
   // fewest bits to encode. Therefore, we reserve those numbers for the fields
   // that are used most frequently.
 
-  optional floating_temple.peer.HelloMessage hello_message = 16;
-  optional floating_temple.peer.GoodbyeMessage goodbye_message = 17;
-  optional floating_temple.peer.ApplyTransactionMessage
+  optional floating_temple.engine.HelloMessage hello_message = 16;
+  optional floating_temple.engine.GoodbyeMessage goodbye_message = 17;
+  optional floating_temple.engine.ApplyTransactionMessage
       apply_transaction_message = 1;
-  optional floating_temple.peer.GetObjectMessage get_object_message = 2;
-  optional floating_temple.peer.StoreObjectMessage store_object_message = 3;
-  optional floating_temple.peer.RejectTransactionMessage
+  optional floating_temple.engine.GetObjectMessage get_object_message = 2;
+  optional floating_temple.engine.StoreObjectMessage store_object_message = 3;
+  optional floating_temple.engine.RejectTransactionMessage
       reject_transaction_message = 4;
-  optional floating_temple.peer.InvalidateTransactionsMessage
+  optional floating_temple.engine.InvalidateTransactionsMessage
       invalidate_transactions_message = 5;
-  optional floating_temple.peer.TestMessage test_message = 1001;
+  optional floating_temple.engine.TestMessage test_message = 1001;
 }

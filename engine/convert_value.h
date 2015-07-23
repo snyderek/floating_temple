@@ -20,7 +20,7 @@ namespace floating_temple {
 
 class Value;
 
-namespace peer {
+namespace engine {
 
 class CommittedValue;
 class ValueProto;
@@ -29,7 +29,7 @@ void ConvertCommittedValueToValueProto(const CommittedValue& in,
                                        ValueProto* out);
 void ConvertCommittedValueToValue(const CommittedValue& in, Value* out);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_CONVERT_VALUE_H_

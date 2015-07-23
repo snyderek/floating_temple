@@ -25,7 +25,7 @@
 #include "engine/committed_value.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class LiveObject;
 class SharedObject;
@@ -258,7 +258,7 @@ class SelfMethodReturnCommittedEvent : public CommittedEvent {
   DISALLOW_COPY_AND_ASSIGN(SelfMethodReturnCommittedEvent);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_COMMITTED_EVENT_H_

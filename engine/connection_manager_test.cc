@@ -45,7 +45,7 @@ using testing::InvokeWithoutArgs;
 using testing::_;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 
@@ -210,7 +210,7 @@ TEST(ConnectionManagerTest, SimultaneousConnections) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

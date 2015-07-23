@@ -22,7 +22,7 @@
 #include "engine/uuid_util.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 #define CHECK_FIELD(has_method, enum_const) \
   if (value.has_method()) { \
@@ -90,5 +90,5 @@ bool ValueProtosEqual(const ValueProto& a, const ValueProto& b) {
 
 #undef COMPARE_FIELDS
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

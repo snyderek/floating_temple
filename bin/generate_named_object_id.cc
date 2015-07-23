@@ -20,16 +20,16 @@
 #include "engine/proto/uuid.pb.h"
 #include "engine/uuid_util.h"
 
-using floating_temple::peer::GeneratePredictableUuid;
-using floating_temple::peer::StringToUuid;
-using floating_temple::peer::Uuid;
-using floating_temple::peer::UuidToString;
+using floating_temple::engine::GeneratePredictableUuid;
+using floating_temple::engine::StringToUuid;
+using floating_temple::engine::Uuid;
+using floating_temple::engine::UuidToString;
 using google::InitGoogleLogging;
 using std::printf;
 
 namespace {
 
-// TODO(dss): This definition is copied from peer/transaction_store.cc.
+// TODO(dss): This definition is copied from engine/transaction_store.cc.
 // Consolidate the two definitions.
 const char kObjectNamespaceUuidString[] = "ab2d0b40fe6211e2bf8b000c2949fc67";
 

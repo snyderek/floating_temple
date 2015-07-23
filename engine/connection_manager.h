@@ -32,7 +32,7 @@
 #include "util/state_variable.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 class CanonicalPeerMap;
@@ -118,7 +118,7 @@ class ConnectionManager : public PeerMessageSender,
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_CONNECTION_MANAGER_H_

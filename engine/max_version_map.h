@@ -19,7 +19,7 @@
 #include "engine/version_map.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class TransactionId;
 
@@ -30,7 +30,7 @@ class TransactionIdGreaterThanFunction {
 
 typedef VersionMap<TransactionIdGreaterThanFunction> MaxVersionMap;
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_MAX_VERSION_MAP_H_

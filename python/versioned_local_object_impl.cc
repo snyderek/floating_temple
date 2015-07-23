@@ -258,7 +258,7 @@ void VersionedLocalObjectImpl::InvokeMethod(Thread* thread,
   // TODO(dss): Consider using binary search instead of linear search to find
   // the method given its name.
 
-  // TODO(dss): Fail gracefully if the peer passes the wrong number of
+  // TODO(dss): Fail gracefully if the engine passes the wrong number of
   // parameters, or the wrong types of parameters.
 
   CALL_TP_METHOD1(tp_getattr, char*);

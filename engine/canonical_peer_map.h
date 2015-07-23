@@ -24,7 +24,7 @@
 #include "base/mutex.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 
@@ -44,7 +44,7 @@ class CanonicalPeerMap {
   DISALLOW_COPY_AND_ASSIGN(CanonicalPeerMap);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_CANONICAL_PEER_MAP_H_

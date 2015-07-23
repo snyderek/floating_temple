@@ -54,7 +54,7 @@ using testing::WithArgs;
 using testing::_;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class SharedObject;
 
@@ -661,7 +661,7 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
 }
 
 }  // namespace
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 int main(int argc, char** argv) {

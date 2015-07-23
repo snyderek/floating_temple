@@ -19,12 +19,12 @@
 #include <string>
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 std::string MakePeerId(const std::string& address, int port);
 bool ParsePeerId(const std::string& peer_id, std::string* address, int* port);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_PEER_ID_H_

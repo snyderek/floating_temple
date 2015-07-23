@@ -20,7 +20,7 @@
 #include "util/producer_consumer_queue.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CommittedEvent;
 
@@ -54,7 +54,7 @@ class EventQueue {
   DISALLOW_COPY_AND_ASSIGN(EventQueue);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_EVENT_QUEUE_H_

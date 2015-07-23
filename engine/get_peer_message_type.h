@@ -19,11 +19,11 @@
 #include "engine/proto/peer.pb.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 PeerMessage::Type GetPeerMessageType(const PeerMessage& peer_message);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_GET_PEER_MESSAGE_TYPE_H_

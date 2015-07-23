@@ -23,7 +23,7 @@
 #include "base/macros.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 class CommittedEvent;
@@ -52,7 +52,7 @@ class SharedObjectTransaction {
   DISALLOW_COPY_AND_ASSIGN(SharedObjectTransaction);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_SHARED_OBJECT_TRANSACTION_H_

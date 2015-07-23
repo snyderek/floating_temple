@@ -31,7 +31,7 @@ using std::set;
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 SequencePointImpl::SequencePointImpl() {
 }
@@ -164,5 +164,5 @@ SequencePointImpl::SequencePointImpl(
   peer_exclusion_map_.CopyFrom(peer_exclusion_map);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

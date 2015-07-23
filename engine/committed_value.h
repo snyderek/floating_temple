@@ -22,7 +22,7 @@
 #include "base/logging.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class SharedObject;
 
@@ -178,7 +178,7 @@ inline void CommittedValue::set_shared_object(SharedObject* shared_object) {
   shared_object_ = shared_object;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_COMMITTED_VALUE_H_

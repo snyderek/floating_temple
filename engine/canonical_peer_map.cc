@@ -26,7 +26,7 @@
 using std::string;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 CanonicalPeerMap::CanonicalPeerMap() {
 }
@@ -46,5 +46,5 @@ const CanonicalPeer* CanonicalPeerMap::GetCanonicalPeer(const string& peer_id) {
   return canonical_peer.get();
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

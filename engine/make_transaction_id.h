@@ -20,12 +20,12 @@
 #include "engine/proto/transaction_id.pb.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 // For use in tests.
 TransactionId MakeTransactionId(uint64 a, uint64 b, uint64 c);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_MAKE_TRANSACTION_ID_H_

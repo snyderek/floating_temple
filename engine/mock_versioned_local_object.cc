@@ -29,7 +29,7 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 MockVersionedLocalObject::MockVersionedLocalObject(
     const MockVersionedLocalObjectCore* core)
@@ -68,5 +68,5 @@ string MockVersionedLocalObject::Dump() const {
   return "";
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

@@ -24,7 +24,7 @@ namespace floating_temple {
 class Interpreter;
 class VersionedLocalObject;
 
-namespace peer {
+namespace engine {
 
 class ObjectReferenceImpl;
 
@@ -36,7 +36,7 @@ VersionedLocalObject* DeserializeLocalObjectFromString(
     Interpreter* interpreter, const std::string& data,
     const std::vector<ObjectReferenceImpl*>& object_references);
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_SERIALIZE_LOCAL_OBJECT_TO_STRING_H_

@@ -58,7 +58,7 @@ DEFINE_bool(treat_conflicts_as_fatal_for_debugging, false,
             "transactions on an object");
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 PlaybackThread::PlaybackThread()
     : transaction_store_(nullptr),
@@ -660,5 +660,5 @@ void PlaybackThread::WaitForPausedAndChangeToStopping(
   state_variable->ChangeState_Locked(STOPPING);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

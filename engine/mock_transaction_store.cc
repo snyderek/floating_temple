@@ -30,7 +30,7 @@ using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 MockTransactionStore::MockTransactionStore(
     const MockTransactionStoreCore* core)
@@ -98,5 +98,5 @@ bool MockTransactionStore::ObjectsAreIdentical(
   return core_->ObjectsAreIdentical(a, b);
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

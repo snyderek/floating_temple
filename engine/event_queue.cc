@@ -19,7 +19,7 @@
 #include "util/producer_consumer_queue.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 EventQueue::EventQueue()
     : events_(-1),
@@ -80,5 +80,5 @@ void EventQueue::FetchNext() const {
   }
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

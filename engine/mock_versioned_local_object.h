@@ -30,7 +30,7 @@ class ObjectReference;
 class SerializationContext;
 class Thread;
 
-namespace peer {
+namespace engine {
 
 class MockVersionedLocalObjectCore {
  public:
@@ -68,7 +68,7 @@ class MockVersionedLocalObject : public VersionedLocalObject {
   DISALLOW_COPY_AND_ASSIGN(MockVersionedLocalObject);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_MOCK_LOCAL_OBJECT_H_

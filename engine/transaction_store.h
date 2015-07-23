@@ -43,7 +43,7 @@ namespace floating_temple {
 class Interpreter;
 class Value;
 
-namespace peer {
+namespace engine {
 
 class ApplyTransactionMessage;
 class CanonicalPeer;
@@ -230,7 +230,7 @@ class TransactionStore : public ConnectionHandler,
   DISALLOW_COPY_AND_ASSIGN(TransactionStore);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_TRANSACTION_STORE_H_

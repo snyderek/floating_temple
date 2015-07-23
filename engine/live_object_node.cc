@@ -31,7 +31,7 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 LiveObjectNode::LiveObjectNode(VersionedLocalObject* local_object)
     : local_object_(CHECK_NOTNULL(local_object)),
@@ -98,5 +98,5 @@ int LiveObjectNode::GetRefCount() const {
   return ref_count_;
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

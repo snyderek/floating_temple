@@ -22,7 +22,7 @@
 #include "engine/proto/uuid.pb.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class TransactionId;
 
@@ -40,7 +40,7 @@ class TransactionIdGenerator {
   DISALLOW_COPY_AND_ASSIGN(TransactionIdGenerator);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_TRANSACTION_ID_GENERATOR_H_

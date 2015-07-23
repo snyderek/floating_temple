@@ -35,7 +35,7 @@ using std::map;
 using std::vector;
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 struct TransactionSequencer::Transaction {
   vector<linked_ptr<OutgoingMessage>> outgoing_messages;
@@ -207,5 +207,5 @@ const TransactionId* TransactionSequencer::ExtractTransactionIdFromPeerMessage(
   }
 }
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

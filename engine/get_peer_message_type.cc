@@ -19,7 +19,7 @@
 #include "engine/proto/peer.pb.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 #define CHECK_FIELD(has_method, enum_const) \
   if (peer_message.has_method()) { \
@@ -46,5 +46,5 @@ PeerMessage::Type GetPeerMessageType(const PeerMessage& peer_message) {
 
 #undef CHECK_FIELD
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple

@@ -27,7 +27,7 @@
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class LiveObject;
 class ObjectReferenceImpl;
@@ -96,7 +96,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_MOCK_TRANSACTION_STORE_H_

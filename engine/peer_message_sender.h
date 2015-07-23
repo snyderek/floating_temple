@@ -17,7 +17,7 @@
 #define ENGINE_PEER_MESSAGE_SENDER_H_
 
 namespace floating_temple {
-namespace peer {
+namespace engine {
 
 class CanonicalPeer;
 class PeerMessage;
@@ -43,7 +43,7 @@ class PeerMessageSender {
                                 SendMode send_mode) = 0;
 };
 
-}  // namespace peer
+}  // namespace engine
 }  // namespace floating_temple
 
 #endif  // ENGINE_PEER_MESSAGE_SENDER_H_

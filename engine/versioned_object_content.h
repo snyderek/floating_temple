@@ -64,18 +64,29 @@ class VersionedObjectContent : public ObjectContent {
       const CanonicalPeer* remote_peer,
       const std::map<TransactionId, linked_ptr<SharedObjectTransaction>>&
           transactions,
-      const MaxVersionMap& version_map) override;
+      const MaxVersionMap& version_map,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject) override;
   void InsertTransaction(
-      const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-      const std::vector<linked_ptr<CommittedEvent>>& events) override;
+      const CanonicalPeer* origin_peer,
+      const TransactionId& transaction_id,
+      const std::vector<linked_ptr<CommittedEvent>>& events,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject) override;
   void SetCachedLiveObject(
       const std::shared_ptr<const LiveObject>& cached_live_object,
       const SequencePointImpl& cached_sequence_point) override;
   std::string Dump() const override;
 
  private:
+  std::shared_ptr<const LiveObject> GetWorkingVersion_Locked(
+      const MaxVersionMap& desired_version,
+      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
+          new_object_references,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject);
   bool ApplyTransactionsToWorkingVersion_Locked(
-      PlaybackThread* playback_thread, const SequencePointImpl& sequence_point,
+      PlaybackThread* playback_thread, const MaxVersionMap& desired_version,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject);
 
@@ -92,6 +103,7 @@ class VersionedObjectContent : public ObjectContent {
       committed_versions_;
   MaxVersionMap version_map_;
   std::unordered_set<const CanonicalPeer*> up_to_date_peers_;
+  TransactionId max_requested_transaction_id_;
   std::shared_ptr<const LiveObject> cached_live_object_;
   SequencePointImpl cached_sequence_point_;
   mutable Mutex committed_versions_mu_;

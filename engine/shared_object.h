@@ -84,11 +84,16 @@ class SharedObject {
       const CanonicalPeer* remote_peer,
       const std::map<TransactionId, linked_ptr<SharedObjectTransaction>>&
           transactions,
-      const MaxVersionMap& version_map);
+      const MaxVersionMap& version_map,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject);
 
-  void InsertTransaction(const CanonicalPeer* origin_peer,
-                         const TransactionId& transaction_id,
-                         const std::vector<linked_ptr<CommittedEvent>>& events);
+  void InsertTransaction(
+      const CanonicalPeer* origin_peer,
+      const TransactionId& transaction_id,
+      const std::vector<linked_ptr<CommittedEvent>>& events,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject);
 
   void SetCachedLiveObject(
       const std::shared_ptr<const LiveObject>& cached_live_object,

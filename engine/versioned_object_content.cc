@@ -40,6 +40,7 @@
 #include "engine/shared_object_transaction.h"
 #include "engine/transaction_id_util.h"
 #include "engine/transaction_store_internal_interface.h"
+#include "engine/version_map.h"
 
 using std::map;
 using std::pair;
@@ -77,6 +78,7 @@ VersionedObjectContent::VersionedObjectContent(
     SharedObject* shared_object)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       shared_object_(CHECK_NOTNULL(shared_object)) {
+  GetMinTransactionId(&max_requested_transaction_id_);
 }
 
 VersionedObjectContent::~VersionedObjectContent() {
@@ -107,23 +109,22 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
     return cached_live_object_;
   }
 
-  for (;;) {
-    PlaybackThread playback_thread;
-    playback_thread.Start(transaction_store_, shared_object_,
-                          shared_ptr<LiveObject>(nullptr),
-                          new_object_references);
+  const shared_ptr<const LiveObject> live_object = GetWorkingVersion_Locked(
+      sequence_point.version_map(), new_object_references,
+      transactions_to_reject);
 
-    const bool success = ApplyTransactionsToWorkingVersion_Locked(
-        &playback_thread, sequence_point, transactions_to_reject);
-
-    playback_thread.Stop();
-
-    if (success) {
-      return playback_thread.live_object();
+  if (live_object != nullptr) {
+    for (auto transaction_id_pair :
+             sequence_point.version_map().peer_transaction_ids()) {
+      const TransactionId& transaction_id = transaction_id_pair.second;
+      if (CompareTransactionIds(transaction_id,
+                                max_requested_transaction_id_) > 0) {
+        max_requested_transaction_id_.CopyFrom(transaction_id);
+      }
     }
   }
 
-  return shared_ptr<const LiveObject>(nullptr);
+  return live_object;
 }
 
 void VersionedObjectContent::GetTransactions(
@@ -150,10 +151,15 @@ void VersionedObjectContent::GetTransactions(
 void VersionedObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
     const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
-    const MaxVersionMap& version_map) {
+    const MaxVersionMap& version_map,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(remote_peer != nullptr);
 
+  bool should_replay_transactions = false;
+
   MutexLock lock(&committed_versions_mu_);
+
+  const MaxVersionMap old_version_map(version_map_);
 
   for (const auto& transaction_pair : transactions) {
     const TransactionId& transaction_id = transaction_pair.first;
@@ -166,6 +172,11 @@ void VersionedObjectContent::StoreTransactions(
         committed_versions_[transaction_id];
     if (dest_transaction.get() == nullptr) {
       dest_transaction.reset(src_transaction->Clone());
+
+      if (CompareTransactionIds(transaction_id,
+                                max_requested_transaction_id_) <= 0) {
+        should_replay_transactions = true;
+      }
     }
 
     version_map_.AddPeerTransactionId(src_transaction->origin_peer(),
@@ -177,15 +188,24 @@ void VersionedObjectContent::StoreTransactions(
   version_map_.Swap(&new_version_map);
 
   up_to_date_peers_.insert(remote_peer);
+
+  if (should_replay_transactions) {
+    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
+    GetWorkingVersion_Locked(old_version_map, &new_object_references,
+                             transactions_to_reject);
+  }
 }
 
 void VersionedObjectContent::InsertTransaction(
     const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-    const vector<linked_ptr<CommittedEvent>>& events) {
+    const vector<linked_ptr<CommittedEvent>>& events,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(origin_peer != nullptr);
   CHECK(IsValidTransactionId(transaction_id));
 
   MutexLock lock(&committed_versions_mu_);
+
+  const MaxVersionMap old_version_map(version_map_);
 
   linked_ptr<SharedObjectTransaction>& transaction =
       committed_versions_[transaction_id];
@@ -196,6 +216,13 @@ void VersionedObjectContent::InsertTransaction(
 
   version_map_.AddPeerTransactionId(origin_peer, transaction_id);
   up_to_date_peers_.insert(origin_peer);
+
+  if (CompareTransactionIds(transaction_id,
+                            max_requested_transaction_id_) <= 0) {
+    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
+    GetWorkingVersion_Locked(old_version_map, &new_object_references,
+                             transactions_to_reject);
+  }
 }
 
 void VersionedObjectContent::SetCachedLiveObject(
@@ -268,8 +295,31 @@ string VersionedObjectContent::Dump() const {
       cached_sequence_point_.Dump().c_str());
 }
 
+shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion_Locked(
+    const MaxVersionMap& desired_version,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
+  for (;;) {
+    PlaybackThread playback_thread;
+    playback_thread.Start(transaction_store_, shared_object_,
+                          shared_ptr<LiveObject>(nullptr),
+                          new_object_references);
+
+    const bool success = ApplyTransactionsToWorkingVersion_Locked(
+        &playback_thread, desired_version, transactions_to_reject);
+
+    playback_thread.Stop();
+
+    if (success) {
+      return playback_thread.live_object();
+    }
+  }
+
+  return shared_ptr<const LiveObject>(nullptr);
+}
+
 bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
-    PlaybackThread* playback_thread, const SequencePointImpl& sequence_point,
+    PlaybackThread* playback_thread, const MaxVersionMap& desired_version,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(playback_thread != nullptr);
   CHECK(transactions_to_reject != nullptr);
@@ -282,7 +332,7 @@ bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
     if (!events.empty()) {
       const CanonicalPeer* const origin_peer = transaction.origin_peer();
 
-      if (sequence_point.HasPeerTransactionId(origin_peer, transaction_id) &&
+      if (desired_version.HasPeerTransactionId(origin_peer, transaction_id) &&
           FindTransactionIdInVector(*transactions_to_reject, transaction_id) ==
               transactions_to_reject->end()) {
         for (const linked_ptr<CommittedEvent>& event : events) {

@@ -191,14 +191,18 @@ void SharedObject::GetTransactions(
 void SharedObject::StoreTransactions(
     const CanonicalPeer* remote_peer,
     const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
-    const MaxVersionMap& version_map) {
+    const MaxVersionMap& version_map,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   GetOrCreateObjectContent()->StoreTransactions(remote_peer, transactions,
-                                                version_map);
+                                                version_map,
+                                                transactions_to_reject);
 }
 
 void SharedObject::InsertTransaction(
-    const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-    const vector<linked_ptr<CommittedEvent>>& events) {
+    const CanonicalPeer* origin_peer,
+    const TransactionId& transaction_id,
+    const vector<linked_ptr<CommittedEvent>>& events,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   const vector<linked_ptr<CommittedEvent>>::size_type event_count =
       events.size();
 
@@ -210,7 +214,7 @@ void SharedObject::InsertTransaction(
   }
 
   GetOrCreateObjectContent()->InsertTransaction(origin_peer, transaction_id,
-                                                events);
+                                                events, transactions_to_reject);
 }
 
 void SharedObject::SetCachedLiveObject(

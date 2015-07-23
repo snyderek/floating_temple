@@ -53,10 +53,15 @@ class UnversionedObjectContent : public ObjectContent {
       const CanonicalPeer* remote_peer,
       const std::map<TransactionId, linked_ptr<SharedObjectTransaction>>&
           transactions,
-      const MaxVersionMap& version_map) override;
+      const MaxVersionMap& version_map,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject) override;
   void InsertTransaction(
-      const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-      const std::vector<linked_ptr<CommittedEvent>>& events) override;
+      const CanonicalPeer* origin_peer,
+      const TransactionId& transaction_id,
+      const std::vector<linked_ptr<CommittedEvent>>& events,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject) override;
   void SetCachedLiveObject(
       const std::shared_ptr<const LiveObject>& cached_live_object,
       const SequencePointImpl& cached_sequence_point) override;

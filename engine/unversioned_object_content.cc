@@ -69,13 +69,16 @@ void UnversionedObjectContent::GetTransactions(
 void UnversionedObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
     const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
-    const MaxVersionMap& version_map) {
+    const MaxVersionMap& version_map,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   LOG(FATAL) << "Unversioned objects can not have transactions.";
 }
 
 void UnversionedObjectContent::InsertTransaction(
-    const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-    const vector<linked_ptr<CommittedEvent>>& events) {
+    const CanonicalPeer* origin_peer,
+    const TransactionId& transaction_id,
+    const vector<linked_ptr<CommittedEvent>>& events,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   LOG(FATAL) << "Unversioned objects can not have transactions.";
 }
 

@@ -97,7 +97,9 @@ class SharedObjectTest : public Test {
         new ObjectCreationCommittedEvent(MakeLocalObject(initial_string)),
         &events);
 
-    shared_object_->InsertTransaction(origin_peer, transaction_id, events);
+    // FIXME: Don't pass nullptr for the 'transactions_to_reject' parameter.
+    shared_object_->InsertTransaction(origin_peer, transaction_id, events,
+                                      nullptr);
   }
 
   void InsertAppendTransaction(const CanonicalPeer* origin_peer,
@@ -123,7 +125,8 @@ class SharedObjectTest : public Test {
                                        return_value),
         &events);
 
-    shared_object_->InsertTransaction(origin_peer, transaction_id, events);
+    shared_object_->InsertTransaction(origin_peer, transaction_id, events,
+                                      nullptr);
   }
 
   void InsertAppendGetTransaction(const CanonicalPeer* origin_peer,
@@ -166,7 +169,8 @@ class SharedObjectTest : public Test {
           &events);
     }
 
-    shared_object_->InsertTransaction(origin_peer, transaction_id, events);
+    shared_object_->InsertTransaction(origin_peer, transaction_id, events,
+                                      nullptr);
   }
 
   void AddEventToVector(CommittedEvent* event,
@@ -482,7 +486,8 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
-                                      MakeTransactionId(100, 0, 0), events);
+                                      MakeTransactionId(100, 0, 0), events,
+                                      nullptr);
   }
 
   InsertObjectCreationTransaction(&canonical_peer, MakeTransactionId(50, 0, 0),
@@ -544,7 +549,8 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
-                                      MakeTransactionId(100, 0, 0), events);
+                                      MakeTransactionId(100, 0, 0), events,
+                                      nullptr);
   }
 
   {
@@ -562,7 +568,8 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
-                                      MakeTransactionId(200, 0, 0), events);
+                                      MakeTransactionId(200, 0, 0), events,
+                                      nullptr);
   }
 
   {
@@ -625,7 +632,8 @@ TEST_F(SharedObjectTest, BackingUp) {
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
-                                      MakeTransactionId(100, 0, 0), events);
+                                      MakeTransactionId(100, 0, 0), events,
+                                      nullptr);
   }
 
   {
@@ -650,7 +658,8 @@ TEST_F(SharedObjectTest, BackingUp) {
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
-                                      MakeTransactionId(200, 0, 0), events);
+                                      MakeTransactionId(200, 0, 0), events,
+                                      nullptr);
   }
 
   {
@@ -668,7 +677,8 @@ TEST_F(SharedObjectTest, BackingUp) {
         &events);
 
     shared_object_->InsertTransaction(&canonical_peer,
-                                      MakeTransactionId(300, 0, 0), events);
+                                      MakeTransactionId(300, 0, 0), events,
+                                      nullptr);
   }
 
   {

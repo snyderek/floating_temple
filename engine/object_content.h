@@ -60,11 +60,16 @@ class ObjectContent {
       const CanonicalPeer* remote_peer,
       const std::map<TransactionId, linked_ptr<SharedObjectTransaction>>&
           transactions,
-      const MaxVersionMap& version_map) = 0;
+      const MaxVersionMap& version_map,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject) = 0;
 
   virtual void InsertTransaction(
-      const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
-      const std::vector<linked_ptr<CommittedEvent>>& events) = 0;
+      const CanonicalPeer* origin_peer,
+      const TransactionId& transaction_id,
+      const std::vector<linked_ptr<CommittedEvent>>& events,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject) = 0;
 
   virtual void SetCachedLiveObject(
       const std::shared_ptr<const LiveObject>& cached_live_object,

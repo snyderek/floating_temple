@@ -71,6 +71,7 @@ string DictLocalObject::Dump() const {
         item_found = true;
       }
 
+      // TODO(dss): The Dump method should not create new peer objects.
       ObjectReference* const key_object_reference =
           interpreter->PyProxyObjectToObjectReference(py_key);
       ObjectReference* const value_object_reference =

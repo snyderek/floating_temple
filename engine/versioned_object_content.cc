@@ -152,6 +152,7 @@ void VersionedObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
     const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(remote_peer != nullptr);
 
@@ -197,8 +198,10 @@ void VersionedObjectContent::StoreTransactions(
 }
 
 void VersionedObjectContent::InsertTransaction(
-    const CanonicalPeer* origin_peer, const TransactionId& transaction_id,
+    const CanonicalPeer* origin_peer,
+    const TransactionId& transaction_id,
     const vector<linked_ptr<CommittedEvent>>& events,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(origin_peer != nullptr);
   CHECK(IsValidTransactionId(transaction_id));

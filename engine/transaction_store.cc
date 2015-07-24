@@ -557,9 +557,12 @@ void TransactionStore::HandleStoreObjectMessage(
         canonical_peer_map_->GetCanonicalPeer(peer_id), last_transaction_id);
   }
 
-  vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
+  vector<pair<const CanonicalPeer*, TransactionId>> all_transactions_to_reject;
+
   shared_object->StoreTransactions(remote_peer, transactions, version_map,
-                                   &transactions_to_reject);
+                                   &new_object_references,
+                                   &all_transactions_to_reject);
 
   for (int i = 0; i < store_object_message.interested_peer_id_size(); ++i) {
     const string& interested_peer_id =
@@ -569,14 +572,22 @@ void TransactionStore::HandleStoreObjectMessage(
         canonical_peer_map_->GetCanonicalPeer(interested_peer_id));
   }
 
+  // TODO(dss): The following code is duplicated several places in this file.
+  // Extract it out into a method.
   TransactionId new_transaction_id;
   transaction_sequencer_.ReserveTransaction(&new_transaction_id);
 
-  RejectTransactionsAndSendMessages(transactions_to_reject, new_transaction_id);
+  RejectTransactionsAndSendMessages(all_transactions_to_reject,
+                                    new_transaction_id);
 
   transaction_sequencer_.ReleaseTransaction(new_transaction_id);
 
-  UpdateCurrentSequencePoint(local_peer_, new_transaction_id);
+  CreateNewObjectReferences(new_object_references);
+
+  {
+    MutexLock lock(&current_sequence_point_mu_);
+    IncrementVersionNumber_Locked();
+  }
 }
 
 void TransactionStore::HandleRejectTransactionMessage(
@@ -739,6 +750,7 @@ void TransactionStore::ApplyTransaction(
   // TODO(dss): Make sure that the transaction has a later timestamp than the
   // previous transaction received from the same originating peer.
 
+  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
   vector<pair<const CanonicalPeer*, TransactionId>> all_transactions_to_reject;
 
   for (const auto& transaction_pair : shared_object_transactions) {
@@ -751,6 +763,7 @@ void TransactionStore::ApplyTransaction(
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object->InsertTransaction(origin_peer, transaction_id,
                                      shared_object_transaction->events(),
+                                     &new_object_references,
                                      &transactions_to_reject);
 
     all_transactions_to_reject.insert(all_transactions_to_reject.end(),
@@ -765,6 +778,8 @@ void TransactionStore::ApplyTransaction(
                                     new_transaction_id);
 
   transaction_sequencer_.ReleaseTransaction(new_transaction_id);
+
+  CreateNewObjectReferences(new_object_references);
 
   UpdateCurrentSequencePoint(local_peer_, new_transaction_id);
 }

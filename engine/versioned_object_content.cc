@@ -89,32 +89,12 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
     const SequencePointImpl& sequence_point,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
-  MutexLock lock(&committed_versions_mu_);
-
-  MaxVersionMap effective_version;
-  ComputeEffectiveVersion_Locked(transaction_store_version_map,
-                                 &effective_version);
-
-  if (!VersionMapIsLessThanOrEqual(sequence_point.version_map(),
-                                   effective_version)) {
-    VLOG(1) << "sequence_point.version_map() == "
-            << sequence_point.version_map().Dump();
-    VLOG(1) << "effective_version == " << effective_version.Dump();
-
-    return shared_ptr<const LiveObject>(nullptr);
-  }
-
-  if (CanUseCachedLiveObject_Locked(sequence_point)) {
-    CHECK(cached_live_object_.get() != nullptr);
-    return cached_live_object_;
-  }
-
-  const shared_ptr<const LiveObject> live_object = GetWorkingVersion_Locked(
-      sequence_point.version_map(), new_object_references,
+  const shared_ptr<const LiveObject> live_object = GetWorkingVersionHelper(
+      transaction_store_version_map, sequence_point, new_object_references,
       transactions_to_reject);
 
-  if (live_object != nullptr) {
-    for (auto transaction_id_pair :
+  if (live_object.get() != nullptr) {
+    for (const auto& transaction_id_pair :
              sequence_point.version_map().peer_transaction_ids()) {
       const TransactionId& transaction_id = transaction_id_pair.second;
       if (CompareTransactionIds(transaction_id,
@@ -296,6 +276,38 @@ string VersionedObjectContent::Dump() const {
       committed_versions_string.c_str(), version_map_.Dump().c_str(),
       up_to_date_peers_string.c_str(), cached_live_object_string.c_str(),
       cached_sequence_point_.Dump().c_str());
+}
+
+shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersionHelper(
+    const MaxVersionMap& transaction_store_version_map,
+    const SequencePointImpl& sequence_point,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
+    vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
+  MutexLock lock(&committed_versions_mu_);
+
+  MaxVersionMap effective_version;
+  ComputeEffectiveVersion_Locked(transaction_store_version_map,
+                                 &effective_version);
+
+  if (!VersionMapIsLessThanOrEqual(sequence_point.version_map(),
+                                   effective_version)) {
+    VLOG(1) << "sequence_point.version_map() == "
+            << sequence_point.version_map().Dump();
+    VLOG(1) << "effective_version == " << effective_version.Dump();
+
+    return shared_ptr<const LiveObject>(nullptr);
+  }
+
+  if (CanUseCachedLiveObject_Locked(sequence_point)) {
+    CHECK(cached_live_object_.get() != nullptr);
+    return cached_live_object_;
+  }
+
+  const shared_ptr<const LiveObject> live_object = GetWorkingVersion_Locked(
+      sequence_point.version_map(), new_object_references,
+      transactions_to_reject);
+
+  return live_object;
 }
 
 shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion_Locked(

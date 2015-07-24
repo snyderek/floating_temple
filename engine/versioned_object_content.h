@@ -83,6 +83,13 @@ class VersionedObjectContent : public ObjectContent {
   std::string Dump() const override;
 
  private:
+  std::shared_ptr<const LiveObject> GetWorkingVersionHelper(
+      const MaxVersionMap& transaction_store_version_map,
+      const SequencePointImpl& sequence_point,
+      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
+          new_object_references,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject);
   std::shared_ptr<const LiveObject> GetWorkingVersion_Locked(
       const MaxVersionMap& desired_version,
       std::unordered_map<SharedObject*, ObjectReferenceImpl*>*

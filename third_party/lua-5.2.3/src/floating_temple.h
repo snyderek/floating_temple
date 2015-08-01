@@ -20,8 +20,9 @@ extern "C" {
 
 
 /* This hook function returns non-zero if the objects are equal. */
-typedef int (*ft_ObjectReferencesEqualHook) (const struct ObjectReference *po1,
-                                             const struct ObjectReference *po2);
+typedef int (*ft_ObjectReferencesEqualHook)
+    (const struct ObjectReference *obj_ref1,
+     const struct ObjectReference *obj_ref2);
 LUAI_DDEC ft_ObjectReferencesEqualHook ft_objectreferencesequalhook;
 LUA_API ft_ObjectReferencesEqualHook ft_installobjectreferencesequalhook
     (ft_ObjectReferencesEqualHook hook);

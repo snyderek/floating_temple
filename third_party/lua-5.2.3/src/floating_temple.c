@@ -19,11 +19,12 @@
 
 
 static int ft_defaultobjectreferencesequalhook
-    (const struct ObjectReference *po1, const struct ObjectReference *po2) {
-  assert(po1 != NULL);
-  assert(po2 != NULL);
+    (const struct ObjectReference *obj_ref1,
+     const struct ObjectReference *obj_ref2) {
+  assert(obj_ref1 != NULL);
+  assert(obj_ref2 != NULL);
 
-  return (po1 == po2) ? 1 : 0;
+  return (obj_ref1 == obj_ref2) ? 1 : 0;
 }
 
 LUAI_DDEF ft_ObjectReferencesEqualHook ft_objectreferencesequalhook =

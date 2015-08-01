@@ -1,0 +1,83 @@
+// Floating Temple
+// Copyright 2015 Derek S. Snyder
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package floating_temple.lua;
+
+message NilProto {
+}
+
+message BooleanProto {
+  required bool value = 1;
+}
+
+message NumberProto {
+  required double value = 1;
+}
+
+message StringProto {
+  required bytes value = 1;
+}
+
+message ObjectReferenceProto {
+  required int64 object_index = 1;
+}
+
+message UnserializableProto {
+  required string type_name = 1;
+}
+
+message TValueProto {
+  enum Type {
+    UNKNOWN = 0;
+
+    NIL = 1;
+    BOOLEAN = 2;
+    NUMBER = 3;
+    STRING = 4;
+    OBJECT_REFERENCE = 5;
+    UNSERIALIZABLE = 6;
+  }
+
+  // Exactly one of the following fields must be set.
+  optional floating_temple.lua.NilProto nil = 1;
+  optional floating_temple.lua.BooleanProto boolean = 2;
+  optional floating_temple.lua.NumberProto number = 3;
+  optional floating_temple.lua.StringProto string_value = 4;
+  optional floating_temple.lua.ObjectReferenceProto object_reference = 5;
+  optional floating_temple.lua.UnserializableProto unserializable = 6;
+}
+
+message ArrayElementProto {
+  required floating_temple.lua.TValueProto value = 1;
+}
+
+message ArrayProto {
+  repeated floating_temple.lua.ArrayElementProto element = 1;
+}
+
+message HashtableElementProto {
+  required floating_temple.lua.TValueProto key = 1;
+  required floating_temple.lua.TValueProto value = 2;
+}
+
+message HashtableProto {
+  repeated floating_temple.lua.HashtableElementProto element = 1;
+}
+
+message TableProto {
+  // Neither, one, or both of these fields may be set.
+  optional ArrayProto array = 1;
+  optional HashtableProto hashtable = 2;
+}

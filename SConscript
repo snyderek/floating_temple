@@ -184,6 +184,17 @@ lua_lib = lua_env.Library(
       """),
   )
 
+# "lua/proto" subdirectory
+#
+# Serialization protocol for Lua objects.
+
+lua_proto_lib = ft_env.ProtoLibrary(
+    target = 'lua/proto/lua_proto',
+    source = Split("""
+        lua/proto/serialization.proto
+      """),
+  )
+
 # "protocol_server" subdirectory
 #
 # Code for sending and receiving protocol messages over socket connections.

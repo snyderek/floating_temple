@@ -634,7 +634,11 @@ void luaV_execute (lua_State *L) {
       vmcase(OP_SELF,
         StkId rb = RB(i);
         setobjs2s(L, ra+1, rb);
-        Protect(luaV_gettable(L, rb, RKC(i), ra));
+        Protect(
+          if ((*ft_gettablehook)(L, rb, RKC(i), ra) == 0) {
+            luaV_gettable(L, rb, RKC(i), ra);
+          }
+        )
       )
       vmcase(OP_ADD,
         arith_op(luai_numadd, TM_ADD);

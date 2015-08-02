@@ -1,3 +1,6 @@
+// Please don't add a copyright notice to this file. It contains source code
+// owned by other copyright holders (used under license).
+
 #ifndef BASE_MACROS_H_
 #define BASE_MACROS_H_
 
@@ -7,6 +10,9 @@
 //
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
+//
+// TODO(dss): Use C++11's "= delete" syntax to suppress the creation of default
+// class members.
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)

@@ -34,7 +34,7 @@ class CondVar {
   // Waits for the condition variable to be signaled. This is the default wait
   // operation.
   //
-  // mu must not be NULL.
+  // 'mu' must not be NULL.
   void Wait(Mutex* mu) const;
 
   // Waits for the condition variable to be signaled. The difference between
@@ -42,13 +42,13 @@ class CondVar {
   // flag-configured timeout value and waits indefinitely. Otherwise, the two
   // methods are functionally equivalent.
   //
-  // mu must not be NULL.
+  // 'mu' must not be NULL.
   void WaitPatiently(Mutex* mu) const;
 
-  // The mu and deadline parameters must both be non-NULL.
+  // 'mu' and 'deadline' must both be non-NULL.
   //
   // Returns true if the condition variable was signaled before the deadline.
-  // Returns false if the wait timed out. Crashes if the wait was interrupted by
+  // Returns false if the wait timed out. Crashes if the wait is interrupted by
   // a signal.
   bool TimedWait(Mutex* mu, const timespec* deadline) const;
 

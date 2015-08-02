@@ -18,7 +18,7 @@
 
 namespace floating_temple {
 
-// Returns the numeric value of the given hexadecimal digit, or -1 if the "hex"
+// Returns the numeric value of the given hexadecimal digit, or -1 if the 'hex'
 // parameter is not a valid hexadecimal digit. Valid input characters are [0-9],
 // [A-F], and [a-f].
 int ParseHexDigit(char hex);

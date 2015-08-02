@@ -33,7 +33,7 @@ class Mutex;
 //
 class MutexLock {
  public:
-  // mu must not be NULL.
+  // 'mu' must not be NULL.
   explicit MutexLock(Mutex* mu);
   ~MutexLock();
 

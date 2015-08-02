@@ -24,7 +24,7 @@ namespace floating_temple {
 
 class ThreadSafeCounter {
  public:
-  // initial_value must be non-negative.
+  // 'initial_value' must be non-negative.
   explicit ThreadSafeCounter(int initial_value);
 
   void Decrement();
@@ -32,7 +32,7 @@ class ThreadSafeCounter {
   // Blocks until the counter is zero.
   void WaitForZero() const;
 
-  // timeout_ms must be non-negative.
+  // 'timeout_ms' must be non-negative.
   //
   // Returns true if the counter became zero before the timeout expired (or if
   // the counter was already zero). Returns false if the wait timed out. Crashes

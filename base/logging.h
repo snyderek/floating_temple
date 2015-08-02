@@ -1,3 +1,6 @@
+// Please don't add a copyright notice to this file. It contains source code
+// owned by other copyright holders (used under license).
+
 #ifndef BASE_LOGGING_H_
 #define BASE_LOGGING_H_
 

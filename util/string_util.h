@@ -20,7 +20,6 @@
 
 namespace floating_temple {
 
-bool IsValidString(const char* s);
 char* CreateCharBuffer(const std::string& s);
 
 }  // namespace floating_temple

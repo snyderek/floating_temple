@@ -23,10 +23,6 @@ using std::string;
 
 namespace floating_temple {
 
-bool IsValidString(const char* s) {
-  return s != nullptr && s[0] != '\0';
-}
-
 char* CreateCharBuffer(const string& s) {
   const string::size_type size = s.length() + 1;
   char* const buffer = new char[size];

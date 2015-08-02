@@ -429,7 +429,6 @@ util_lib = ft_env.Library(
         util/comma_separated.cc
         util/dump_context_impl.cc
         util/event_fd.cc
-        util/file_util.cc
         util/math_util.cc
         util/signal_handler.cc
         util/socket_util.cc

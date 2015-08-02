@@ -223,19 +223,16 @@ void DumpContextImpl::End() {
 
   DumpNode* const completed_node = pending_nodes_.top().release();
   pending_nodes_.pop();
-
-  if (pending_nodes_.empty()) {
-    CHECK(root_node_.get() == nullptr);
-    root_node_.reset(completed_node);
-  } else {
-    AddValue(completed_node);
-  }
+  AddValue(completed_node);
 }
 
 void DumpContextImpl::AddValue(DumpNode* node) {
-  // TODO(dss): Allow a value to be added without an enclosing map or list.
-  CHECK(!pending_nodes_.empty());
-  pending_nodes_.top()->AddValue(node);
+  if (pending_nodes_.empty()) {
+    CHECK(root_node_.get() == nullptr);
+    root_node_.reset(node);
+  } else {
+    pending_nodes_.top()->AddValue(node);
+  }
 }
 
 void DumpContextImpl::DumpNode::AddValue(DumpNode* node) {

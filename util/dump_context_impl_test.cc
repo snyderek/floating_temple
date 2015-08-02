@@ -49,6 +49,16 @@ TEST(DumpContextImplTest, AlmostEverything) {
   EXPECT_EQ("{ \"hello\": false, \"good\\tbye\": [ -123, 0, 456 ] }", json);
 }
 
+TEST(DumpContextImplTest, SingleValue) {
+  DumpContextImpl dc;
+  dc.AddString("abc");
+
+  string json;
+  dc.FormatJson(&json);
+
+  EXPECT_EQ("\"abc\"", json);
+}
+
 }  // namespace
 }  // namespace floating_temple
 

@@ -110,6 +110,7 @@ engine_lib = ft_env.Library(
       """),
   )
 
+# Classes that are only used in tests.
 engine_testing_lib = ft_env.Library(
     target = 'engine/engine_testing',
     source = Split("""
@@ -137,7 +138,8 @@ engine_proto_lib = ft_env.ProtoLibrary(
 
 # "fake_engine" subdirectory
 #
-# A fake engine implementation for testing.
+# A fake engine implementation for testing. The fake engine is also used to
+# implement the stand-alone version of the distributed interpreter.
 
 fake_engine_lib = ft_env.Library(
     target = 'fake_engine/fake_engine',
@@ -164,7 +166,7 @@ fake_interpreter_lib = ft_env.Library(
 # "lua" subdirectory
 #
 # Implementation of the local interpreter for the Lua language. Uses the
-# third-party Lua interpreter.
+# third-party Lua interpreter in "third_party/lua-5.2.3".
 
 lua_env = ft_env.Clone()
 lua_env.Append(
@@ -209,7 +211,9 @@ protocol_server_lib = ft_env.Library(
       """),
   )
 
-# "proto/testdata" subdirectory
+# "protocol_server/testdata" subdirectory
+#
+# Protocol messages used in tests of the protocol server.
 
 protocol_server_test_proto_lib = ft_env.ProtoLibrary(
     target = 'protocol_server/testdata/protocol_server_test_proto',
@@ -221,7 +225,7 @@ protocol_server_test_proto_lib = ft_env.ProtoLibrary(
 # "python" subdirectory
 #
 # Implementation of the local interpreter for the Python language. Uses the
-# third-party Python interpreter.
+# third-party Python interpreter in "third_party/Python-3.4.2".
 
 python_env = ft_env.Clone()
 python_env.Append(
@@ -367,8 +371,8 @@ third_party_lua_env.Program(
       ],
   )
 
-# TODO(dss): Call 'make' on the third-party Python sub-project if any of its
-# source files change. Currently, the sub-project will only be remade if the
+# TODO(dss): Call 'make' on the third-party Python subproject if any of its
+# source files change. Currently, the subproject will only be remade if the
 # targets listed below are missing.
 third_party_python_lib = base_env.ConfigureAndMake(
     target = Split("""
@@ -504,7 +508,7 @@ bin_floating_python = python_env.Program(
         bin/floating_python.cc
       """) + [
         # These libraries must be listed in reverse-dependency order. That is,
-        # if library B depends on library A, then A must appear _after_ B in the
+        # if library B depends on library A, then A must appear *after* B in the
         # list.
         python_lib,
         engine_lib,
@@ -524,7 +528,7 @@ bin_floating_toy_lang = ft_env.Program(
         bin/floating_toy_lang.cc
       """) + [
         # These libraries must be listed in reverse-dependency order. That is,
-        # if library B depends on library A, then A must appear _after_ B in the
+        # if library B depends on library A, then A must appear *after* B in the
         # list.
         toy_lang_lib,
         engine_lib,
@@ -883,7 +887,13 @@ sh_tests = [
 all_tests = cxx_tests + sh_tests
 
 check_alias = ft_env.Alias('check', all_tests, run_tests)
+
+# Add dependencies for the shell tests. This is kind of a kludge, but it works
+# because I always run tests by typing "scons check".
 ft_env.Depends(check_alias,
                [bin_floating_python, bin_floating_toy_lang,
                 bin_get_unused_port_for_testing])
+
+# Always run tests if the "check" target is specified, even if the tests haven't
+# changed.
 ft_env.AlwaysBuild(check_alias)

@@ -21,6 +21,7 @@
 
 namespace floating_temple {
 
+// A thread-safe boolean variable.
 class BoolVariable {
  public:
   explicit BoolVariable(bool initial_value);

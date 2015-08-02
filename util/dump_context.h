@@ -22,10 +22,18 @@
 
 namespace floating_temple {
 
+// An interface that eases the task of dumping the contents of a C++ object, for
+// debugging purposes.
+//
+// The convention is that each dump-able class has a 'Dump' method that accepts
+// a DumpContext pointer as a parameter. The Dump method calls various methods
+// on the DumpContext object to output structured data.
 class DumpContext {
  public:
   virtual ~DumpContext() {}
 
+  // Each of these methods outputs a single value. To output multiple values,
+  // first call BeginList or BeginMap.
   virtual void AddNull() = 0;
   virtual void AddBool(bool b) = 0;
   virtual void AddInt(int n) = 0;
@@ -38,8 +46,16 @@ class DumpContext {
   virtual void AddString(const std::string& s) = 0;
   virtual void AddPointer(const void* p) = 0;
 
+  // Begins a list of values. Subsequent calls to the AddXxx methods will add
+  // elements to the list. A list may also include nested lists and maps.
   virtual void BeginList() = 0;
+
+  // Begins a map. Subsequent pairs of calls to the AddXxx methods will add
+  // key/value pairs to the map. A nested list or map may be used as a map
+  // value.
   virtual void BeginMap() = 0;
+
+  // Terminates the most recent list or map.
   virtual void End() = 0;
 };
 

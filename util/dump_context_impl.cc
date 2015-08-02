@@ -233,6 +233,7 @@ void DumpContextImpl::End() {
 }
 
 void DumpContextImpl::AddValue(DumpNode* node) {
+  // TODO(dss): Allow a value to be added without an enclosing map or list.
   CHECK(!pending_nodes_.empty());
   pending_nodes_.top()->AddValue(node);
 }

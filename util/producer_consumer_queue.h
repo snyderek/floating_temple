@@ -32,7 +32,8 @@ namespace floating_temple {
 template<typename T>
 class ProducerConsumerQueue {
  public:
-  // If max_size is -1, the queue size will be unlimited.
+  // If 'max_size' is -1, the queue size will be unlimited. Otherwise,
+  // 'max_size' must be positive.
   explicit ProducerConsumerQueue(int max_size);
   ~ProducerConsumerQueue();
 
@@ -62,7 +63,7 @@ class ProducerConsumerQueue {
   //      block until the queue is not empty or Drain() is called. It will
   //      succeed if the queue is not empty.
   //
-  // item must not be NULL. If the method succeeds, the removed item will be
+  // 'item' must not be NULL. If the method succeeds, the removed item will be
   // assigned to *item. If the method fails, *item will be left unchanged.
   //
   // Returns true if an item was successfully removed from the queue.
@@ -73,7 +74,7 @@ class ProducerConsumerQueue {
   void Drain();
 
  private:
-  // Returns true if the queue is full. mu_ must be locked.
+  // Returns true if the queue is full. 'mu_' must be locked.
   bool QueueFull_Locked() const;
 
   const int max_size_;

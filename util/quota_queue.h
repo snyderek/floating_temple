@@ -32,7 +32,8 @@ namespace floating_temple {
 template<typename T>
 class QuotaQueue {
  public:
-  // If max_size is -1, the queue size will be unlimited.
+  // If 'max_size' is -1, the queue size will be unlimited. Otherwise,
+  // 'max_size' must be positive.
   explicit QuotaQueue(int max_size);
   ~QuotaQueue();
 

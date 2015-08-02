@@ -21,6 +21,10 @@
 
 namespace floating_temple {
 
+// Parses a comma-separated string into substrings and stores the substrings in
+// the given vector. The comma characters themselves are not considered part of
+// the substrings. White space characters are not trimmed. Zero-length
+// substrings are ignored.
 void ParseCommaSeparatedList(const std::string& in,
                              std::vector<std::string>* out);
 

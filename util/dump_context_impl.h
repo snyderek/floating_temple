@@ -30,6 +30,8 @@ class DumpContextImpl : public DumpContext {
   DumpContextImpl();
   ~DumpContextImpl() override;
 
+  // Formats the values written to this dump context as JSON text and stores it
+  // in *output.
   void FormatJson(std::string* output) const;
 
   void AddNull() override;
@@ -59,7 +61,12 @@ class DumpContextImpl : public DumpContext {
 
   void AddValue(DumpNode* node);
 
+  // List and map nodes that have been started but haven't been terminated yet.
+  // The node at the top of the stack is the one that's currently being
+  // populated.
   std::stack<std::unique_ptr<DumpNode>> pending_nodes_;
+
+  // The root of the tree of completed nodes.
   std::unique_ptr<DumpNode> root_node_;
 
   DISALLOW_COPY_AND_ASSIGN(DumpContextImpl);

@@ -18,6 +18,8 @@
 
 namespace floating_temple {
 
+// Returns true if 'n' is a power of two: 1, 2, 4, 8, 16, 32, etc.
+// 0 is not a power of two.
 bool IsPowerOfTwo(unsigned n);
 
 }  // namespace floating_temple

@@ -27,15 +27,6 @@ def get_protoc_command(source, target, env, for_signature):
   return ('%s --proto_path=%s --cpp_out=%s %s' %
           (str(env['PROTOC']), source_dir, build_dir, proto_file))
 
-def get_aggregate_library_command(source, target, env, for_signature):
-  return (('%s -o %s %s -shared -Wl,--whole-archive %s ' +
-           '-Wl,--no-whole-archive %s') %
-          (str(env['CXX']),
-           str(target[0]),
-           ' '.join([str(flag) for flag in env['LINKFLAGS']]),
-           ' '.join([str(f) for f in source]),
-           ' '.join(['-l' + str(lib) for lib in env['LIBS']])))
-
 def run_command(args, cwd):
   print 'Running command %s in directory %s ...' % (repr(' '.join(args)),
                                                     repr(cwd))
@@ -173,7 +164,6 @@ base_env = Environment(
 
     BUILDERS = {
         'Protoc' : Builder(generator = get_protoc_command),
-        'AggregateLibrary' : Builder(generator = get_aggregate_library_command),
         'ConfigureAndMake' : Builder(action = configure_and_make),
       },
   )

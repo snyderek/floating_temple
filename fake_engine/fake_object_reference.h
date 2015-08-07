@@ -33,7 +33,7 @@ class FakeObjectReference : public ObjectReference {
 
   LocalObject* local_object() { return local_object_.get(); }
 
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   const std::unique_ptr<LocalObject> local_object_;

@@ -16,8 +16,6 @@
 #ifndef ENGINE_MOCK_SEQUENCE_POINT_H_
 #define ENGINE_MOCK_SEQUENCE_POINT_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "engine/sequence_point.h"
 
@@ -29,7 +27,7 @@ class MockSequencePoint : public SequencePoint {
   MockSequencePoint();
 
   SequencePoint* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSequencePoint);

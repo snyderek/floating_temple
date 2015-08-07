@@ -22,8 +22,7 @@
 #include "base/logging.h"
 #include "python/proto/serialization.pb.h"
 #include "python/versioned_local_object_impl.h"
-
-using std::string;
+#include "util/dump_context.h"
 
 namespace floating_temple {
 namespace python {
@@ -36,8 +35,13 @@ VersionedLocalObject* FalseLocalObject::Clone() const {
   return new FalseLocalObject();
 }
 
-string FalseLocalObject::Dump() const {
-  return "{ \"type\": \"FalseLocalObject\" }";
+void FalseLocalObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("FalseLocalObject");
+  dc->End();
 }
 
 void FalseLocalObject::PopulateObjectProto(

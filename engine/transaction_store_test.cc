@@ -37,6 +37,7 @@
 #include "include/c++/versioned_local_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
+#include "util/dump_context.h"
 
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
@@ -68,7 +69,7 @@ class TestProgramObject : public UnversionedLocalObject {
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override;
-  string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestProgramObject);
@@ -99,8 +100,13 @@ void TestProgramObject::InvokeMethod(Thread* thread,
   return_value->set_empty(0);
 }
 
-string TestProgramObject::Dump() const {
-  return "{ \"type\": \"TestProgramObject\" }";
+void TestProgramObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("TestProgramObject");
+  dc->End();
 }
 
 TEST(TransactionStoreTest,

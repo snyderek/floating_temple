@@ -80,7 +80,7 @@ class VersionedObjectContent : public ObjectContent {
   void SetCachedLiveObject(
       const std::shared_ptr<const LiveObject>& cached_live_object,
       const SequencePointImpl& cached_sequence_point) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   std::shared_ptr<const LiveObject> GetWorkingVersionHelper(

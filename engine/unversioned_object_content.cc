@@ -23,16 +23,15 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "engine/live_object.h"
 #include "engine/max_version_map.h"
 #include "engine/transaction_id_util.h"
 #include "engine/unversioned_live_object.h"
+#include "util/dump_context.h"
 
 using std::map;
 using std::pair;
 using std::shared_ptr;
-using std::string;
 using std::unordered_map;
 using std::vector;
 
@@ -89,8 +88,13 @@ void UnversionedObjectContent::SetCachedLiveObject(
     const SequencePointImpl& cached_sequence_point) {
 }
 
-string UnversionedObjectContent::Dump() const {
-  return StringPrintf("{ \"live_object\": %s }", live_object_->Dump().c_str());
+void UnversionedObjectContent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("live_object");
+  live_object_->Dump(dc);
+  dc->End();
 }
 
 }  // namespace engine

@@ -18,9 +18,9 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "include/c++/deserialization_context.h"
 #include "include/c++/object_reference.h"
 #include "include/c++/serialization_context.h"
@@ -28,8 +28,9 @@
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
 #include "python/versioned_local_object_impl.h"
+#include "util/dump_context.h"
 
-using std::string;
+using std::vector;
 
 namespace floating_temple {
 namespace python {
@@ -52,40 +53,42 @@ VersionedLocalObject* ListLocalObject::Clone() const {
   return new ListLocalObject(new_py_list);
 }
 
-string ListLocalObject::Dump() const {
+void ListLocalObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
   PyObject* const py_list = py_object();
 
-  string items_string;
+  vector<const ObjectReference*> object_references;
   {
     PythonGilLock lock;
 
     const Py_ssize_t length = PyList_Size(py_list);
     CHECK_GE(length, 0);
+    object_references.reserve(
+        static_cast<vector<ObjectReference*>::size_type>(length));
 
-    if (length == 0) {
-      items_string = "[]";
-    } else {
-      items_string = "[";
-
-      for (Py_ssize_t i = 0; i < length; ++i) {
-        if (i > 0) {
-          items_string += ",";
-        }
-
-        PyObject* const py_item = PyList_GetItem(py_list, i);
-        ObjectReference* const object_reference =
-            interpreter->PyProxyObjectToObjectReference(py_item);
-
-        StringAppendF(&items_string, " %s", object_reference->Dump().c_str());
-      }
-
-      items_string += " ]";
+    for (Py_ssize_t i = 0; i < length; ++i) {
+      PyObject* const py_item = PyList_GetItem(py_list, i);
+      const ObjectReference* const object_reference =
+          interpreter->PyProxyObjectToObjectReference(py_item);
+      object_references.push_back(object_reference);
     }
   }
 
-  return StringPrintf("{ \"type\": \"ListLocalObject\", \"items\": %s }",
-                      items_string.c_str());
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("ListLocalObject");
+
+  dc->AddString("items");
+  dc->BeginList();
+  for (const ObjectReference* const object_reference : object_references) {
+    object_reference->Dump(dc);
+  }
+  dc->End();
+
+  dc->End();
 }
 
 // static

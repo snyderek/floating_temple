@@ -18,7 +18,6 @@
 
 #include <map>
 #include <memory>
-#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -29,6 +28,9 @@
 #include "engine/transaction_id_util.h"
 
 namespace floating_temple {
+
+class DumpContext;
+
 namespace engine {
 
 class CanonicalPeer;
@@ -79,7 +81,7 @@ class ObjectContent {
       const std::shared_ptr<const LiveObject>& cached_live_object,
       const SequencePointImpl& cached_sequence_point) = 0;
 
-  virtual std::string Dump() const = 0;
+  virtual void Dump(DumpContext* dc) const = 0;
 };
 
 }  // namespace engine

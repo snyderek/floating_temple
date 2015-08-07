@@ -28,7 +28,7 @@ class UnserializableLocalObject : public UnversionedLocalObjectImpl {
  public:
   explicit UnserializableLocalObject(PyObject* py_object);
 
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UnserializableLocalObject);

@@ -22,8 +22,8 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "include/c++/value.h"
+#include "util/dump_context.h"
 
 using std::memcpy;
 using std::size_t;
@@ -86,8 +86,9 @@ void FakeVersionedLocalObject::InvokeMethod(Thread* thread,
   }
 }
 
-string FakeVersionedLocalObject::Dump() const {
-  return StringPrintf("\"%s\"", CEscape(s_).c_str());
+void FakeVersionedLocalObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+  dc->AddString(s_);
 }
 
 }  // namespace floating_temple

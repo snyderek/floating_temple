@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/escape.h"
@@ -40,7 +41,9 @@
 #include "toy_lang/program_object.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
+#include "util/dump_context.h"
 
+using std::pair;
 using std::printf;
 using std::shared_ptr;
 using std::size_t;
@@ -195,8 +198,13 @@ void NoneObject::InvokeMethod(Thread* thread,
   LOG(FATAL) << "Unsupported method: \"" << CEscape(method_name) << "\"";
 }
 
-string NoneObject::Dump() const {
-  return "{ \"type\": \"NoneObject\" }";
+void NoneObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("NoneObject");
+  dc->End();
 }
 
 void NoneObject::PopulateObjectProto(ObjectProto* object_proto,
@@ -234,9 +242,18 @@ void BoolObject::InvokeMethod(Thread* thread,
   }
 }
 
-string BoolObject::Dump() const {
-  return StringPrintf("{ \"type\": \"BoolObject\", \"b\": %s }",
-                      b_ ? "true" : "false");
+void BoolObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("BoolObject");
+
+  dc->AddString("b");
+  dc->AddBool(b_);
+
+  dc->End();
 }
 
 // static
@@ -275,8 +292,18 @@ void IntObject::InvokeMethod(Thread* thread,
   }
 }
 
-string IntObject::Dump() const {
-  return StringPrintf("{ \"type\": \"IntObject\", \"n\": %" PRId64 " }", n_);
+void IntObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("IntObject");
+
+  dc->AddString("n");
+  dc->AddInt64(n_);
+
+  dc->End();
 }
 
 // static
@@ -312,9 +339,18 @@ void StringObject::InvokeMethod(Thread* thread,
   }
 }
 
-string StringObject::Dump() const {
-  return StringPrintf("{ \"type\": \"StringObject\", \"s\": \"%s\" }",
-                      CEscape(s_.c_str()).c_str());
+void StringObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("StringObject");
+
+  dc->AddString("s");
+  dc->AddString(s_);
+
+  dc->End();
 }
 
 // static
@@ -452,48 +488,38 @@ void SymbolTableObject::InvokeMethod(Thread* thread,
   }
 }
 
-string SymbolTableObject::Dump() const {
-  string scopes_string;
+void SymbolTableObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  ScopeVector scopes_temp;
   {
     MutexLock lock(&scopes_mu_);
 
-    if (scopes_.empty()) {
-      scopes_string = "[]";
-    } else {
-      scopes_string = "[";
-
-      for (ScopeVector::const_iterator it = scopes_.begin();
-           it != scopes_.end(); ++it) {
-        if (it != scopes_.begin()) {
-          scopes_string += ",";
-        }
-
-        const unordered_map<string, ObjectReference*>& symbol_map = **it;
-
-        if (symbol_map.empty()) {
-          scopes_string += " {}";
-        } else {
-          scopes_string += " {";
-          for (unordered_map<string, ObjectReference*>::const_iterator it2 =
-                   symbol_map.begin();
-               it2 != symbol_map.end(); ++it2) {
-            if (it2 != symbol_map.begin()) {
-              scopes_string += ",";
-            }
-
-            StringAppendF(&scopes_string, " \"%s\": %s",
-                          CEscape(it2->first).c_str(),
-                          it2->second->Dump().c_str());
-          }
-          scopes_string += " }";
-        }
-      }
-      scopes_string += " ]";
+    scopes_temp.reserve(scopes_.size());
+    for (const auto& symbol_map : scopes_) {
+      scopes_temp.emplace_back(
+          new unordered_map<string, ObjectReference*>(*symbol_map));
     }
   }
 
-  return StringPrintf("{ \"type\": \"SymbolTableObject\", \"scopes\": %s }",
-                      scopes_string.c_str());
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("SymbolTableObject");
+
+  dc->AddString("scopes");
+  dc->BeginList();
+  for (const auto& symbol_map : scopes_temp) {
+    dc->BeginMap();
+    for (const pair<string, ObjectReference*>& map_pair : *symbol_map) {
+      dc->AddString(map_pair.first);
+      map_pair.second->Dump(dc);
+    }
+    dc->End();
+  }
+  dc->End();
+
+  dc->End();
 }
 
 // static
@@ -619,9 +645,14 @@ void ExpressionObject::InvokeMethod(Thread* thread,
   }
 }
 
-string ExpressionObject::Dump() const {
+void ExpressionObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
   // TODO(dss): Dump the contents of the expression.
-  return "{ \"type\": \"ExpressionObject\" }";
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("ExpressionObject");
+  dc->End();
 }
 
 // static
@@ -708,26 +739,28 @@ void ListObject::InvokeMethod(Thread* thread,
   }
 }
 
-string ListObject::Dump() const {
-  string items_string;
+void ListObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  vector<ObjectReference*> items_temp;
   {
     MutexLock lock(&items_mu_);
-
-    if (items_.empty()) {
-      items_string = "[]";
-    } else {
-      items_string = "[";
-      for (vector<ObjectReference*>::const_iterator it = items_.begin();
-           it != items_.end(); ++it) {
-        // TODO(dss): Insert commas between the list items.
-        StringAppendF(&items_string, " %s", (*it)->Dump().c_str());
-      }
-      items_string += " ]";
-    }
+    items_temp = items_;
   }
 
-  return StringPrintf("{ \"type\": \"ListObject\", \"items\": %s }",
-                      items_string.c_str());
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("ListObject");
+
+  dc->AddString("items");
+  dc->BeginList();
+  for (const ObjectReference* const peer_object : items_temp) {
+    peer_object->Dump(dc);
+  }
+  dc->End();
+
+  dc->End();
 }
 
 // static
@@ -804,28 +837,23 @@ void MapObject::InvokeMethod(Thread* thread,
   }
 }
 
-string MapObject::Dump() const {
-  string map_string;
+void MapObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
 
-  if (map_.empty()) {
-    map_string = "{}";
-  } else {
-    map_string = "{";
-    for (unordered_map<string, ObjectReference*>::const_iterator it =
-             map_.begin();
-         it != map_.end(); ++it) {
-      if (it != map_.begin()) {
-        map_string += ",";
-      }
+  dc->BeginMap();
 
-      StringAppendF(&map_string, " \"%s\": %s", CEscape(it->first).c_str(),
-                    it->second->Dump().c_str());
-    }
-    map_string += " }";
+  dc->AddString("type");
+  dc->AddString("MapObject");
+
+  dc->AddString("map");
+  dc->BeginMap();
+  for (const pair<string, ObjectReference*>& map_pair : map_) {
+    dc->AddString(map_pair.first);
+    map_pair.second->Dump(dc);
   }
+  dc->End();
 
-  return StringPrintf("{ \"type\": \"MapObject\", \"map\": %s }",
-                      map_string.c_str());
+  dc->End();
 }
 
 // static
@@ -909,17 +937,25 @@ void RangeIteratorObject::InvokeMethod(Thread* thread,
   }
 }
 
-string RangeIteratorObject::Dump() const {
+void RangeIteratorObject::Dump(DumpContext* dc) const {
   int64 i_temp = 0;
   {
     MutexLock lock(&i_mu_);
     i_temp = i_;
   }
 
-  return StringPrintf(
-      "{ \"type\": \"RangeIteratorObject\", \"limit\": %" PRId64 ", "
-      "\"i\": %" PRId64 " }",
-      limit_, i_temp);
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("RangeIteratorObject");
+
+  dc->AddString("limit");
+  dc->AddInt64(limit_);
+
+  dc->AddString("i");
+  dc->AddInt64(i_temp);
+
+  dc->End();
 }
 
 // static
@@ -996,8 +1032,13 @@ VersionedLocalObject* ListFunction::Clone() const {
   return new ListFunction();
 }
 
-string ListFunction::Dump() const {
-  return "{ \"type\": \"ListFunction\" }";
+void ListFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("ListFunction");
+  dc->End();
 }
 
 void ListFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1021,8 +1062,13 @@ VersionedLocalObject* SetVariableFunction::Clone() const {
   return new SetVariableFunction();
 }
 
-string SetVariableFunction::Dump() const {
-  return "{ \"type\": \"SetVariableFunction\" }";
+void SetVariableFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("SetVariableFunction");
+  dc->End();
 }
 
 void SetVariableFunction::PopulateObjectProto(
@@ -1059,8 +1105,13 @@ VersionedLocalObject* ForFunction::Clone() const {
   return new ForFunction();
 }
 
-string ForFunction::Dump() const {
-  return "{ \"type\": \"ForFunction\" }";
+void ForFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("ForFunction");
+  dc->End();
 }
 
 void ForFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1132,8 +1183,13 @@ VersionedLocalObject* RangeFunction::Clone() const {
   return new RangeFunction();
 }
 
-string RangeFunction::Dump() const {
-  return "{ \"type\": \"RangeFunction\" }";
+void RangeFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("RangeFunction");
+  dc->End();
 }
 
 void RangeFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1163,8 +1219,13 @@ VersionedLocalObject* PrintFunction::Clone() const {
   return new PrintFunction();
 }
 
-string PrintFunction::Dump() const {
-  return "{ \"type\": \"PrintFunction\" }";
+void PrintFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("PrintFunction");
+  dc->End();
 }
 
 void PrintFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1203,8 +1264,13 @@ VersionedLocalObject* AddFunction::Clone() const {
   return new AddFunction();
 }
 
-string AddFunction::Dump() const {
-  return "{ \"type\": \"AddFunction\" }";
+void AddFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("AddFunction");
+  dc->End();
 }
 
 void AddFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1239,8 +1305,13 @@ VersionedLocalObject* BeginTranFunction::Clone() const {
   return new BeginTranFunction();
 }
 
-string BeginTranFunction::Dump() const {
-  return "{ \"type\": \"BeginTranFunction\" }";
+void BeginTranFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("BeginTranFunction");
+  dc->End();
 }
 
 void BeginTranFunction::PopulateObjectProto(
@@ -1268,8 +1339,13 @@ VersionedLocalObject* EndTranFunction::Clone() const {
   return new EndTranFunction();
 }
 
-string EndTranFunction::Dump() const {
-  return "{ \"type\": \"EndTranFunction\" }";
+void EndTranFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("EndTranFunction");
+  dc->End();
 }
 
 void EndTranFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1297,8 +1373,13 @@ VersionedLocalObject* IfFunction::Clone() const {
   return new IfFunction();
 }
 
-string IfFunction::Dump() const {
-  return "{ \"type\": \"IfFunction\" }";
+void IfFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("IfFunction");
+  dc->End();
 }
 
 void IfFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1349,8 +1430,13 @@ VersionedLocalObject* NotFunction::Clone() const {
   return new NotFunction();
 }
 
-string NotFunction::Dump() const {
-  return "{ \"type\": \"NotFunction\" }";
+void NotFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("NotFunction");
+  dc->End();
 }
 
 void NotFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1381,8 +1467,13 @@ VersionedLocalObject* IsSetFunction::Clone() const {
   return new IsSetFunction();
 }
 
-string IsSetFunction::Dump() const {
-  return "{ \"type\": \"IsSetFunction\" }";
+void IsSetFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("IsSetFunction");
+  dc->End();
 }
 
 void IsSetFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1418,8 +1509,13 @@ VersionedLocalObject* WhileFunction::Clone() const {
   return new WhileFunction();
 }
 
-string WhileFunction::Dump() const {
-  return "{ \"type\": \"WhileFunction\" }";
+void WhileFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("WhileFunction");
+  dc->End();
 }
 
 void WhileFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1480,8 +1576,13 @@ VersionedLocalObject* LessThanFunction::Clone() const {
   return new LessThanFunction();
 }
 
-string LessThanFunction::Dump() const {
-  return "{ \"type\": \"LessThanFunction\" }";
+void LessThanFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("LessThanFunction");
+  dc->End();
 }
 
 void LessThanFunction::PopulateObjectProto(
@@ -1518,8 +1619,13 @@ VersionedLocalObject* LenFunction::Clone() const {
   return new LenFunction();
 }
 
-string LenFunction::Dump() const {
-  return "{ \"type\": \"LenFunction\" }";
+void LenFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("LenFunction");
+  dc->End();
 }
 
 void LenFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1548,8 +1654,13 @@ VersionedLocalObject* AppendFunction::Clone() const {
   return new AppendFunction();
 }
 
-string AppendFunction::Dump() const {
-  return "{ \"type\": \"AppendFunction\" }";
+void AppendFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("AppendFunction");
+  dc->End();
 }
 
 void AppendFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1584,8 +1695,13 @@ VersionedLocalObject* GetAtFunction::Clone() const {
   return new GetAtFunction();
 }
 
-string GetAtFunction::Dump() const {
-  return "{ \"type\": \"GetAtFunction\" }";
+void GetAtFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("GetAtFunction");
+  dc->End();
 }
 
 void GetAtFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1622,8 +1738,13 @@ VersionedLocalObject* MapIsSetFunction::Clone() const {
   return new MapIsSetFunction();
 }
 
-string MapIsSetFunction::Dump() const {
-  return "{ \"type\": \"MapIsSetFunction\" }";
+void MapIsSetFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("MapIsSetFunction");
+  dc->End();
 }
 
 void MapIsSetFunction::PopulateObjectProto(
@@ -1660,8 +1781,13 @@ VersionedLocalObject* MapGetFunction::Clone() const {
   return new MapGetFunction();
 }
 
-string MapGetFunction::Dump() const {
-  return "{ \"type\": \"MapGetFunction\" }";
+void MapGetFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("MapGetFunction");
+  dc->End();
 }
 
 void MapGetFunction::PopulateObjectProto(ObjectProto* object_proto,
@@ -1698,8 +1824,13 @@ VersionedLocalObject* MapSetFunction::Clone() const {
   return new MapSetFunction();
 }
 
-string MapSetFunction::Dump() const {
-  return "{ \"type\": \"MapSetFunction\" }";
+void MapSetFunction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("MapSetFunction");
+  dc->End();
 }
 
 void MapSetFunction::PopulateObjectProto(ObjectProto* object_proto,

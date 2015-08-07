@@ -44,7 +44,7 @@ class FakeVersionedLocalObject : public VersionedLocalObject {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   std::string s_;

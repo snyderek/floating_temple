@@ -22,11 +22,11 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "engine/committed_value.h"
 #include "engine/live_object.h"
 #include "engine/shared_object.h"
 #include "engine/uuid_util.h"
+#include "util/dump_context.h"
 #include "util/stl_util.h"
 
 using std::shared_ptr;
@@ -117,24 +117,14 @@ string CommittedEvent::GetTypeString(Type event_type) {
 
 #undef CHECK_EVENT_TYPE
 
-string CommittedEvent::DumpNewSharedObjects() const {
-  if (new_shared_objects_.empty()) {
-    return "[]";
+void CommittedEvent::DumpNewSharedObjects(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginList();
+  for (const SharedObject* const shared_object : new_shared_objects_) {
+    dc->AddString(UuidToString(shared_object->object_id()));
   }
-
-  string s = "[";
-  for (unordered_set<SharedObject*>::const_iterator it =
-           new_shared_objects_.begin();
-       it != new_shared_objects_.end(); ++it) {
-    if (it != new_shared_objects_.begin()) {
-      s += ',';
-    }
-
-    StringAppendF(&s, " \"%s\"", UuidToString((*it)->object_id()).c_str());
-  }
-  s += " ]";
-
-  return s;
+  dc->End();
 }
 
 ObjectCreationCommittedEvent::ObjectCreationCommittedEvent(
@@ -154,11 +144,21 @@ CommittedEvent* ObjectCreationCommittedEvent::Clone() const {
   return new ObjectCreationCommittedEvent(live_object_);
 }
 
-string ObjectCreationCommittedEvent::Dump() const {
-  return StringPrintf(
-      "{ \"type\": \"OBJECT_CREATION\", \"new_shared_objects\": %s, "
-      "\"live_object\": %s }",
-      DumpNewSharedObjects().c_str(), live_object_->Dump().c_str());
+void ObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("OBJECT_CREATION");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->AddString("live_object");
+  live_object_->Dump(dc);
+
+  dc->End();
 }
 
 SubObjectCreationCommittedEvent::SubObjectCreationCommittedEvent(
@@ -169,15 +169,21 @@ SubObjectCreationCommittedEvent::SubObjectCreationCommittedEvent(
 }
 
 CommittedEvent* SubObjectCreationCommittedEvent::Clone() const {
-  CHECK_EQ(new_shared_objects().size(), 1u);
   return new SubObjectCreationCommittedEvent(GetNewSharedObject());
 }
 
-string SubObjectCreationCommittedEvent::Dump() const {
-  CHECK_EQ(new_shared_objects().size(), 1u);
-  return StringPrintf(
-      "{ \"type\": \"SUB_OBJECT_CREATION\", \"new_shared_object\": \"%s\" }",
-      UuidToString(GetNewSharedObject()->object_id()).c_str());
+void SubObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("SUB_OBJECT_CREATION");
+
+  dc->AddString("new_shared_object");
+  dc->AddString(UuidToString(GetNewSharedObject()->object_id()));
+
+  dc->End();
 }
 
 SharedObject* SubObjectCreationCommittedEvent::GetNewSharedObject() const {
@@ -193,10 +199,18 @@ CommittedEvent* BeginTransactionCommittedEvent::Clone() const {
   return new BeginTransactionCommittedEvent();
 }
 
-string BeginTransactionCommittedEvent::Dump() const {
-  return StringPrintf(
-      "{ \"type\": \"BEGIN_TRANSACTION\", \"new_shared_objects\": %s }",
-      DumpNewSharedObjects().c_str());
+void BeginTransactionCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("BEGIN_TRANSACTION");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->End();
 }
 
 EndTransactionCommittedEvent::EndTransactionCommittedEvent()
@@ -207,10 +221,18 @@ CommittedEvent* EndTransactionCommittedEvent::Clone() const {
   return new EndTransactionCommittedEvent();
 }
 
-string EndTransactionCommittedEvent::Dump() const {
-  return StringPrintf(
-      "{ \"type\": \"END_TRANSACTION\", \"new_shared_objects\": %s }",
-      DumpNewSharedObjects().c_str());
+void EndTransactionCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("END_TRANSACTION");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->End();
 }
 
 MethodCallCommittedEvent::MethodCallCommittedEvent(
@@ -239,36 +261,35 @@ CommittedEvent* MethodCallCommittedEvent::Clone() const {
   return new MethodCallCommittedEvent(caller_, method_name_, parameters_);
 }
 
-string MethodCallCommittedEvent::Dump() const {
-  string caller_string;
+void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("METHOD_CALL");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->AddString("caller");
   if (caller_== nullptr) {
-    caller_string = "null";
+    dc->AddNull();
   } else {
-    SStringPrintf(&caller_string, "\"%s\"",
-                  UuidToString(caller_->object_id()).c_str());
+    dc->AddString(UuidToString(caller_->object_id()));
   }
 
-  string parameters_string;
-  if (parameters_.empty()) {
-    parameters_string = "[]";
-  } else {
-    parameters_string = "[";
-    for (vector<CommittedValue>::const_iterator it = parameters_.begin();
-         it != parameters_.end(); ++it) {
-      if (it != parameters_.begin()) {
-        parameters_string += ",";
-      }
+  dc->AddString("method_name");
+  dc->AddString(method_name_);
 
-      StringAppendF(&parameters_string, " %s", it->Dump().c_str());
-    }
-    parameters_string += " ]";
+  dc->AddString("parameters");
+  dc->BeginList();
+  for (const CommittedValue& parameter : parameters_) {
+    parameter.Dump(dc);
   }
+  dc->End();
 
-  return StringPrintf(
-      "{ \"type\": \"METHOD_CALL\", \"new_shared_objects\": %s, "
-      "\"caller\": %s, \"method_name\": \"%s\", \"parameters\": %s }",
-      DumpNewSharedObjects().c_str(), caller_string.c_str(),
-      CEscape(method_name_).c_str(), parameters_string.c_str());
+  dc->End();
 }
 
 MethodReturnCommittedEvent::MethodReturnCommittedEvent(
@@ -294,20 +315,28 @@ CommittedEvent* MethodReturnCommittedEvent::Clone() const {
                                         return_value_);
 }
 
-string MethodReturnCommittedEvent::Dump() const {
-  string caller_string;
+void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("METHOD_RETURN");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->AddString("caller");
   if (caller_== nullptr) {
-    caller_string = "null";
+    dc->AddNull();
   } else {
-    SStringPrintf(&caller_string, "\"%s\"",
-                  UuidToString(caller_->object_id()).c_str());
+    dc->AddString(UuidToString(caller_->object_id()));
   }
 
-  return StringPrintf(
-      "{ \"type\": \"METHOD_RETURN\", \"new_shared_objects\": %s, "
-      "\"caller\": %s, \"return_value\": %s }",
-      DumpNewSharedObjects().c_str(), caller_string.c_str(),
-      return_value_.Dump().c_str());
+  dc->AddString("return_value");
+  return_value_.Dump(dc);
+
+  dc->End();
 }
 
 SubMethodCallCommittedEvent::SubMethodCallCommittedEvent(
@@ -339,29 +368,31 @@ CommittedEvent* SubMethodCallCommittedEvent::Clone() const {
                                          method_name_, parameters_);
 }
 
-string SubMethodCallCommittedEvent::Dump() const {
-  string parameters_string;
-  if (parameters_.empty()) {
-    parameters_string = "[]";
-  } else {
-    parameters_string = "[";
-    for (vector<CommittedValue>::const_iterator it = parameters_.begin();
-         it != parameters_.end(); ++it) {
-      if (it != parameters_.begin()) {
-        parameters_string += ",";
-      }
+void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
 
-      StringAppendF(&parameters_string, " %s", it->Dump().c_str());
-    }
-    parameters_string += " ]";
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("SUB_METHOD_CALL");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->AddString("callee");
+  dc->AddString(UuidToString(callee_->object_id()));
+
+  dc->AddString("method_name");
+  dc->AddString(method_name_);
+
+  dc->AddString("parameters");
+  dc->BeginList();
+  for (const CommittedValue& parameter : parameters_) {
+    parameter.Dump(dc);
   }
+  dc->End();
 
-  return StringPrintf(
-      "{ \"type\": \"SUB_METHOD_CALL\", \"new_shared_objects\": %s, "
-      "\"callee\": \"%s\", \"method_name\": \"%s\", \"parameters\": %s }",
-      DumpNewSharedObjects().c_str(),
-      UuidToString(callee_->object_id()).c_str(), CEscape(method_name_).c_str(),
-      parameters_string.c_str());
+  dc->End();
 }
 
 SubMethodReturnCommittedEvent::SubMethodReturnCommittedEvent(
@@ -384,12 +415,24 @@ CommittedEvent* SubMethodReturnCommittedEvent::Clone() const {
   return new SubMethodReturnCommittedEvent(callee_, return_value_);
 }
 
-string SubMethodReturnCommittedEvent::Dump() const {
-  return StringPrintf(
-      "{ \"type\": \"SUB_METHOD_RETURN\", \"new_shared_objects\": %s, "
-      "\"callee\": \"%s\", \"return_value\": %s }",
-      DumpNewSharedObjects().c_str(),
-      UuidToString(callee_->object_id()).c_str(), return_value_.Dump().c_str());
+void SubMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("SUB_METHOD_RETURN");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->AddString("callee");
+  dc->AddString(UuidToString(callee_->object_id()));
+
+  dc->AddString("return_value");
+  return_value_.Dump(dc);
+
+  dc->End();
 }
 
 SelfMethodCallCommittedEvent::SelfMethodCallCommittedEvent(
@@ -417,28 +460,28 @@ CommittedEvent* SelfMethodCallCommittedEvent::Clone() const {
                                           parameters_);
 }
 
-string SelfMethodCallCommittedEvent::Dump() const {
-  string parameters_string;
-  if (parameters_.empty()) {
-    parameters_string = "[]";
-  } else {
-    parameters_string = "[";
-    for (vector<CommittedValue>::const_iterator it = parameters_.begin();
-         it != parameters_.end(); ++it) {
-      if (it != parameters_.begin()) {
-        parameters_string += ",";
-      }
+void SelfMethodCallCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
 
-      StringAppendF(&parameters_string, " %s", it->Dump().c_str());
-    }
-    parameters_string += " ]";
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("SELF_METHOD_CALL");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->AddString("method_name");
+  dc->AddString(method_name_);
+
+  dc->AddString("parameters");
+  dc->BeginList();
+  for (const CommittedValue& parameter : parameters_) {
+    parameter.Dump(dc);
   }
+  dc->End();
 
-  return StringPrintf(
-      "{ \"type\": \"SELF_METHOD_CALL\", \"new_shared_objects\": %s, "
-      "\"method_name\": \"%s\", \"parameters\": %s }",
-      DumpNewSharedObjects().c_str(), CEscape(method_name_).c_str(),
-      parameters_string.c_str());
+  dc->End();
 }
 
 SelfMethodReturnCommittedEvent::SelfMethodReturnCommittedEvent(
@@ -459,11 +502,21 @@ CommittedEvent* SelfMethodReturnCommittedEvent::Clone() const {
                                             return_value_);
 }
 
-string SelfMethodReturnCommittedEvent::Dump() const {
-  return StringPrintf(
-      "{ \"type\": \"SELF_METHOD_RETURN\", \"new_shared_objects\": %s, "
-      "\"return_value\": %s }",
-      DumpNewSharedObjects().c_str(), return_value_.Dump().c_str());
+void SelfMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("SELF_METHOD_RETURN");
+
+  dc->AddString("new_shared_objects");
+  DumpNewSharedObjects(dc);
+
+  dc->AddString("return_value");
+  return_value_.Dump(dc);
+
+  dc->End();
 }
 
 }  // namespace engine

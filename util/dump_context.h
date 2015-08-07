@@ -45,6 +45,7 @@ class DumpContext {
   virtual void AddDouble(double d) = 0;
   virtual void AddString(const std::string& s) = 0;
   virtual void AddPointer(const void* p) = 0;
+  // TODO(dss): Add AddUuid and AddTransactionId methods.
 
   // Begins a list of values. Subsequent calls to the AddXxx methods will add
   // elements to the list. A list may also include nested lists and maps.

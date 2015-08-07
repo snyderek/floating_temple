@@ -18,9 +18,10 @@
 #include "third_party/Python-3.4.2/Include/Python.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "include/c++/deserialization_context.h"
 #include "include/c++/object_reference.h"
 #include "include/c++/serialization_context.h"
@@ -29,8 +30,10 @@
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
 #include "python/versioned_local_object_impl.h"
+#include "util/dump_context.h"
 
-using std::string;
+using std::pair;
+using std::vector;
 
 namespace floating_temple {
 namespace python {
@@ -50,13 +53,13 @@ VersionedLocalObject* DictLocalObject::Clone() const {
   return new DictLocalObject(new_py_dict);
 }
 
-string DictLocalObject::Dump() const {
+void DictLocalObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
   PyObject* const py_dict = py_object();
 
-  string items_string = "{";
-  bool item_found = false;
-
+  vector<pair<const ObjectReference*, const ObjectReference*>> map_pairs;
   {
     Py_ssize_t pos = 0;
     PyObject* py_key = nullptr;
@@ -65,32 +68,30 @@ string DictLocalObject::Dump() const {
     PythonGilLock lock;
 
     while (PyDict_Next(py_dict, &pos, &py_key, &py_value) != 0) {
-      if (item_found) {
-        items_string += ",";
-      } else {
-        item_found = true;
-      }
-
       // TODO(dss): The Dump method should not create new peer objects.
       ObjectReference* const key_object_reference =
           interpreter->PyProxyObjectToObjectReference(py_key);
       ObjectReference* const value_object_reference =
           interpreter->PyProxyObjectToObjectReference(py_value);
 
-      StringAppendF(&items_string, " %s: %s",
-                    key_object_reference->Dump().c_str(),
-                    value_object_reference->Dump().c_str());
+      map_pairs.emplace_back(key_object_reference, value_object_reference);
     }
   }
 
-  if (item_found) {
-    items_string += " }";
-  } else {
-    items_string = "{}";
-  }
+  dc->BeginMap();
 
-  return StringPrintf("{ \"type\": \"DictLocalObject\", \"items\": %s }",
-                      items_string.c_str());
+  dc->AddString("type");
+  dc->AddString("DictLocalObject");
+
+  dc->AddString("items");
+  dc->BeginList();
+  for (const auto& map_pair : map_pairs) {
+    map_pair.first->Dump(dc);
+    map_pair.second->Dump(dc);
+  }
+  dc->End();
+
+  dc->End();
 }
 
 // static

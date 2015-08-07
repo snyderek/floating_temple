@@ -17,7 +17,6 @@
 #define ENGINE_PEER_EXCLUSION_MAP_H_
 
 #include <map>
-#include <string>
 
 #include "base/macros.h"
 #include "engine/interval_set.h"
@@ -25,6 +24,9 @@
 #include "engine/transaction_id_util.h"
 
 namespace floating_temple {
+
+class DumpContext;
+
 namespace engine {
 
 class CanonicalPeer;
@@ -49,7 +51,7 @@ class PeerExclusionMap {
   void CopyFrom(const PeerExclusionMap& other);
   void Swap(PeerExclusionMap* other);
 
-  std::string Dump() const;
+  void Dump(DumpContext* dc) const;
 
  private:
   std::map<const CanonicalPeer*, IntervalSet<TransactionId>> map_;

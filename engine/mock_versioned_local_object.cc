@@ -22,6 +22,7 @@
 
 #include "base/logging.h"
 #include "include/c++/value.h"
+#include "util/dump_context.h"
 
 using std::memcpy;
 using std::size_t;
@@ -64,8 +65,13 @@ void MockVersionedLocalObject::InvokeMethod(Thread* thread,
                       return_value);
 }
 
-string MockVersionedLocalObject::Dump() const {
-  return "";
+void MockVersionedLocalObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("MockVersionedLocalObject");
+  dc->End();
 }
 
 }  // namespace engine

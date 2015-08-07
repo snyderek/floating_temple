@@ -33,7 +33,7 @@ class LongLocalObject : public VersionedLocalObjectImpl {
   explicit LongLocalObject(PyObject* py_long_object);
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static LongLocalObject* ParseLongProto(const LongProto& long_proto);
 

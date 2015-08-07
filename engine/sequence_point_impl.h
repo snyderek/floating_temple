@@ -18,7 +18,6 @@
 
 #include <map>
 #include <set>
-#include <string>
 
 #include "base/macros.h"
 #include "engine/max_version_map.h"
@@ -56,7 +55,7 @@ class SequencePointImpl : public SequencePoint {
   void CopyFrom(const SequencePointImpl& other);
 
   SequencePoint* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   SequencePointImpl(

@@ -21,11 +21,10 @@
 #include "base/escape.h"
 #include "base/linked_ptr.h"
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "engine/canonical_peer.h"
 #include "engine/committed_event.h"
+#include "util/dump_context.h"
 
-using std::string;
 using std::vector;
 
 namespace floating_temple {
@@ -62,37 +61,26 @@ SharedObjectTransaction* SharedObjectTransaction::Clone() const {
   return new SharedObjectTransaction(events_, origin_peer_);
 }
 
-string SharedObjectTransaction::Dump() const {
-  string events_string;
+void SharedObjectTransaction::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
 
-  if (events_.empty()) {
-    events_string = "[]";
-  } else {
-    events_string = "[";
+  dc->BeginMap();
 
-    for (vector<linked_ptr<CommittedEvent>>::const_iterator it =
-             events_.begin();
-         it != events_.end(); ++it) {
-      if (it != events_.begin()) {
-        events_string += ",";
-      }
-
-      StringAppendF(&events_string, " %s", (*it)->Dump().c_str());
-    }
-
-    events_string += " ]";
+  dc->AddString("events");
+  dc->BeginList();
+  for (const linked_ptr<CommittedEvent>& event : events_) {
+    event->Dump(dc);
   }
+  dc->End();
 
-  string origin_peer_id_string;
+  dc->AddString("origin_peer");
   if (origin_peer_ == nullptr) {
-    origin_peer_id_string = "null";
+    dc->AddNull();
   } else {
-    SStringPrintf(&origin_peer_id_string, "\"%s\"",
-                  CEscape(origin_peer_->peer_id()).c_str());
+    dc->AddString(origin_peer_->peer_id());
   }
 
-  return StringPrintf("{ \"events\": %s, \"origin_peer\": %s }",
-                      events_string.c_str(), origin_peer_id_string.c_str());
+  dc->End();
 }
 
 }  // namespace engine

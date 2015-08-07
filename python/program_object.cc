@@ -34,6 +34,7 @@
 #include "python/python_scoped_ptr.h"
 #include "python/thread_substitution.h"
 #include "python/true_local_object.h"
+#include "util/dump_context.h"
 
 using std::FILE;
 using std::rewind;
@@ -113,8 +114,13 @@ void ProgramObject::InvokeMethod(Thread* thread,
   return_value->set_empty(LOCAL_TYPE_PYOBJECT);
 }
 
-string ProgramObject::Dump() const {
-  return "{ \"type\": \"ProgramObject\" }";
+void ProgramObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("ProgramObject");
+  dc->End();
 }
 
 }  // namespace python

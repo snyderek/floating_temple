@@ -22,6 +22,9 @@
 #include "base/logging.h"
 
 namespace floating_temple {
+
+class DumpContext;
+
 namespace engine {
 
 class SharedObject;
@@ -62,7 +65,7 @@ class CommittedValue {
 
   CommittedValue& operator=(const CommittedValue& other);
 
-  std::string Dump() const;
+  void Dump(DumpContext* dc) const;
 
  private:
   void ChangeType(Type new_type);

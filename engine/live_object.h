@@ -24,6 +24,7 @@
 
 namespace floating_temple {
 
+class DumpContext;
 class LocalObject;
 class Thread;
 
@@ -47,7 +48,7 @@ class LiveObject {
                             const std::vector<Value>& parameters,
                             Value* return_value) = 0;
 
-  virtual std::string Dump() const = 0;
+  virtual void Dump(DumpContext* dc) const = 0;
 };
 
 }  // namespace engine

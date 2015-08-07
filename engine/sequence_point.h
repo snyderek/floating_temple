@@ -16,9 +16,10 @@
 #ifndef ENGINE_SEQUENCE_POINT_H_
 #define ENGINE_SEQUENCE_POINT_H_
 
-#include <string>
-
 namespace floating_temple {
+
+class DumpContext;
+
 namespace engine {
 
 class SequencePoint {
@@ -28,7 +29,7 @@ class SequencePoint {
   // The caller must take ownership of the returned SequencePoint instance.
   virtual SequencePoint* Clone() const = 0;
 
-  virtual std::string Dump() const = 0;
+  virtual void Dump(DumpContext* dc) const = 0;
 };
 
 }  // namespace engine

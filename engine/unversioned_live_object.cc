@@ -60,8 +60,8 @@ void UnversionedLiveObject::InvokeMethod(Thread* thread,
                               return_value);
 }
 
-string UnversionedLiveObject::Dump() const {
-  return local_object_->Dump();
+void UnversionedLiveObject::Dump(DumpContext* dc) const {
+  local_object_->Dump(dc);
 }
 
 }  // namespace engine

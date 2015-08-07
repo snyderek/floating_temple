@@ -25,6 +25,7 @@
 
 namespace floating_temple {
 
+class DumpContext;
 class Thread;
 class VersionedLocalObject;
 
@@ -47,7 +48,7 @@ class LiveObjectNode {
                                const std::string& method_name,
                                const std::vector<Value>& parameters,
                                Value* return_value);
-  std::string Dump() const;
+  void Dump(DumpContext* dc) const;
 
   void IncrementRefCount();
   bool DecrementRefCount();

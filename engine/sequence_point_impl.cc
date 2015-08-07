@@ -18,17 +18,19 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
-#include "base/string_printf.h"
+#include "base/logging.h"
 #include "engine/canonical_peer.h"
 #include "engine/max_version_map.h"
 #include "engine/peer_exclusion_map.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/transaction_id_util.h"
+#include "util/dump_context.h"
 
 using std::map;
+using std::pair;
 using std::set;
-using std::string;
 
 namespace floating_temple {
 namespace engine {
@@ -101,58 +103,34 @@ SequencePoint* SequencePointImpl::Clone() const {
                                rejected_peers_);
 }
 
-string SequencePointImpl::Dump() const {
-  string rejected_peers_string;
+void SequencePointImpl::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
 
-  if (rejected_peers_.empty()) {
-    rejected_peers_string = "{}";
-  } else {
-    rejected_peers_string = "{";
+  dc->BeginMap();
 
-    for (map<const CanonicalPeer*, set<TransactionId>>::const_iterator it1 =
-             rejected_peers_.begin();
-         it1 != rejected_peers_.end(); ++it1) {
-      const CanonicalPeer* const canonical_peer = it1->first;
-      const set<TransactionId>& rejected_transactions = it1->second;
+  dc->AddString("version_map");
+  version_map_.Dump(dc);
 
-      if (it1 != rejected_peers_.begin()) {
-        rejected_peers_string += ",";
-      }
+  dc->AddString("peer_exclusion_map");
+  peer_exclusion_map_.Dump(dc);
 
-      string rejected_transactions_string;
+  dc->AddString("rejected_peers");
+  dc->BeginMap();
+  for (const pair<const CanonicalPeer*, set<TransactionId>>& map_pair :
+           rejected_peers_) {
+    const CanonicalPeer* const canonical_peer = map_pair.first;
+    const set<TransactionId>& rejected_transactions = map_pair.second;
 
-      if (rejected_transactions.empty()) {
-        rejected_transactions_string = "[]";
-      } else {
-        rejected_transactions_string = "[";
-
-        for (set<TransactionId>::const_iterator it2 =
-                 rejected_transactions.begin();
-             it2 != rejected_transactions.end(); ++it2) {
-          if (it2 != rejected_transactions.begin()) {
-            rejected_transactions_string += ",";
-          }
-
-          StringAppendF(&rejected_transactions_string, " \"%s\"",
-                        TransactionIdToString(*it2).c_str());
-        }
-
-        rejected_transactions_string += " ]";
-      }
-
-      StringAppendF(&rejected_peers_string, " \"%s\": %s",
-                    CEscape(canonical_peer->peer_id()).c_str(),
-                    rejected_transactions_string.c_str());
+    dc->AddString(canonical_peer->peer_id());
+    dc->BeginList();
+    for (const TransactionId& transaction_id : rejected_transactions) {
+      dc->AddString(TransactionIdToString(transaction_id));
     }
-
-    rejected_peers_string += " }";
+    dc->End();
   }
+  dc->End();
 
-  return StringPrintf(
-      "{ \"version_map\": %s, \"peer_exclusion_map\": %s, "
-      "\"rejected_peers\": %s }",
-      version_map_.Dump().c_str(), peer_exclusion_map_.Dump().c_str(),
-      rejected_peers_string.c_str());
+  dc->End();
 }
 
 SequencePointImpl::SequencePointImpl(

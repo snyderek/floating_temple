@@ -549,6 +549,7 @@ ft_env.Program(
         fake_engine_lib,
         value_lib,
         toy_lang_proto_lib,
+        util_lib,
         base_lib,
       ],
   )

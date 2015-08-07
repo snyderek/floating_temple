@@ -80,8 +80,8 @@ void VersionedLiveObject::InvokeMethod(Thread* thread,
   }
 }
 
-string VersionedLiveObject::Dump() const {
-  return GetNode()->Dump();
+void VersionedLiveObject::Dump(DumpContext* dc) const {
+  GetNode()->Dump(dc);
 }
 
 VersionedLiveObject::VersionedLiveObject(LiveObjectNode* node)

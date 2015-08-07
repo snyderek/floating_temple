@@ -17,9 +17,8 @@
 
 #include <string>
 
-#include "base/string_printf.h"
-
-using std::string;
+#include "base/logging.h"
+#include "util/dump_context.h"
 
 namespace floating_temple {
 namespace engine {
@@ -31,8 +30,13 @@ SequencePoint* MockSequencePoint::Clone() const {
   return new MockSequencePoint();
 }
 
-string MockSequencePoint::Dump() const {
-  return StringPrintf("{ \"mock_sequence_point\": \"%p\" }", this);
+void MockSequencePoint::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("mock_sequence_point");
+  dc->AddPointer(this);
+  dc->End();
 }
 
 }  // namespace engine

@@ -34,7 +34,7 @@ class DictLocalObject : public VersionedLocalObjectImpl {
   explicit DictLocalObject(PyObject* py_dict_object);
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static DictLocalObject* ParseDictProto(const MappingProto& dict_proto,
                                          DeserializationContext* context);

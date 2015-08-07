@@ -26,6 +26,7 @@
 #include "toy_lang/local_object_impl.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
+#include "util/dump_context.h"
 
 using std::shared_ptr;
 using std::string;
@@ -134,8 +135,13 @@ void ProgramObject::InvokeMethod(Thread* thread,
   return_value->set_empty(0);
 }
 
-string ProgramObject::Dump() const {
-  return "{ \"type\": \"ProgramObject\" }";
+void ProgramObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("ProgramObject");
+  dc->End();
 }
 
 }  // namespace toy_lang

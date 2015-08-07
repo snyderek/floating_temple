@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "include/c++/local_object.h"
+#include "util/dump_context.h"
 
 using std::string;
 
@@ -34,8 +35,13 @@ FakeObjectReference::~FakeObjectReference() {
   VLOG(1) << "Deleting fake object reference " << StringPrintf("%p", this);
 }
 
-string FakeObjectReference::Dump() const {
-  return StringPrintf("{ \"local_object\": \"%p\" }", local_object_.get());
+void FakeObjectReference::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("local_object");
+  dc->AddPointer(local_object_.get());
+  dc->End();
 }
 
 }  // namespace floating_temple

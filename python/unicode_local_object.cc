@@ -21,10 +21,10 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
 #include "python/versioned_local_object_impl.h"
+#include "util/dump_context.h"
 
 using std::string;
 
@@ -54,12 +54,21 @@ VersionedLocalObject* UnicodeLocalObject::Clone() const {
   return new UnicodeLocalObject(py_object());
 }
 
-string UnicodeLocalObject::Dump() const {
+void UnicodeLocalObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
   string utf8_string;
   GetUtf8String(py_object(), &utf8_string);
 
-  return StringPrintf("{ \"type\": \"UnicodeLocalObject\", \"value\": \"%s\" }",
-                      CEscape(utf8_string).c_str());
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("UnicodeLocalObject");
+
+  dc->AddString("value");
+  dc->AddString(utf8_string);
+
+  dc->End();
 }
 
 // static

@@ -34,7 +34,7 @@ class ListLocalObject : public VersionedLocalObjectImpl {
   explicit ListLocalObject(PyObject* py_list_object);
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static ListLocalObject* ParseListProto(const SequenceProto& list_proto,
                                          DeserializationContext* context);

@@ -73,7 +73,7 @@ class NoneObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -93,7 +93,7 @@ class BoolObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static BoolObject* ParseBoolProto(const BoolProto& bool_proto);
 
@@ -117,7 +117,7 @@ class IntObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static IntObject* ParseIntProto(const IntProto& int_proto);
 
@@ -141,7 +141,7 @@ class StringObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static StringObject* ParseStringProto(const StringProto& string_proto);
 
@@ -165,7 +165,7 @@ class SymbolTableObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static SymbolTableObject* ParseSymbolTableProto(
       const SymbolTableProto& symbol_table_proto,
@@ -200,7 +200,7 @@ class ExpressionObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static ExpressionObject* ParseExpressionProto(
       const ExpressionProto& expression_proto);
@@ -225,7 +225,7 @@ class ListObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static ListObject* ParseListProto(const ListProto& list_proto,
                                     DeserializationContext* context);
@@ -251,7 +251,7 @@ class MapObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static MapObject* ParseMapProto(const MapProto& map_proto,
                                   DeserializationContext* context);
@@ -261,6 +261,7 @@ class MapObject : public LocalObjectImpl {
                            SerializationContext* context) const override;
 
  private:
+  // TODO(dss): Should this map be protected by a mutex?
   std::unordered_map<std::string, ObjectReference*> map_;
 
   DISALLOW_COPY_AND_ASSIGN(MapObject);
@@ -276,7 +277,7 @@ class RangeIteratorObject : public LocalObjectImpl {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
   static RangeIteratorObject* ParseRangeIteratorProto(
       const RangeIteratorProto& range_iterator_proto);
@@ -312,7 +313,7 @@ class ListFunction : public Function {
   ListFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -330,7 +331,7 @@ class SetVariableFunction : public Function {
   SetVariableFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -348,7 +349,7 @@ class ForFunction : public Function {
   ForFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -366,7 +367,7 @@ class RangeFunction : public Function {
   RangeFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -384,7 +385,7 @@ class PrintFunction : public Function {
   PrintFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -402,7 +403,7 @@ class AddFunction : public Function {
   AddFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -420,7 +421,7 @@ class BeginTranFunction : public Function {
   BeginTranFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -438,7 +439,7 @@ class EndTranFunction : public Function {
   EndTranFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -456,7 +457,7 @@ class IfFunction : public Function {
   IfFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -474,7 +475,7 @@ class NotFunction : public Function {
   NotFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -492,7 +493,7 @@ class IsSetFunction : public Function {
   IsSetFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -510,7 +511,7 @@ class WhileFunction : public Function {
   WhileFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -528,7 +529,7 @@ class LessThanFunction : public Function {
   LessThanFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -546,7 +547,7 @@ class LenFunction : public Function {
   LenFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -564,7 +565,7 @@ class AppendFunction : public Function {
   AppendFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -582,7 +583,7 @@ class GetAtFunction : public Function {
   GetAtFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -600,7 +601,7 @@ class MapIsSetFunction : public Function {
   MapIsSetFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -618,7 +619,7 @@ class MapGetFunction : public Function {
   MapGetFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -636,7 +637,7 @@ class MapSetFunction : public Function {
   MapSetFunction();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,

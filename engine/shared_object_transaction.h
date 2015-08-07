@@ -16,13 +16,15 @@
 #ifndef ENGINE_SHARED_OBJECT_TRANSACTION_H_
 #define ENGINE_SHARED_OBJECT_TRANSACTION_H_
 
-#include <string>
 #include <vector>
 
 #include "base/linked_ptr.h"
 #include "base/macros.h"
 
 namespace floating_temple {
+
+class DumpContext;
+
 namespace engine {
 
 class CanonicalPeer;
@@ -43,7 +45,7 @@ class SharedObjectTransaction {
 
   SharedObjectTransaction* Clone() const;
 
-  std::string Dump() const;
+  void Dump(DumpContext* dc) const;
 
  private:
   std::vector<linked_ptr<CommittedEvent>> events_;

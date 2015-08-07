@@ -35,6 +35,7 @@ using google::ParseCommandLineFlags;
 using std::shared_ptr;
 using std::string;
 using std::vector;
+using testing::AnyNumber;
 using testing::InitGoogleMock;
 using testing::Return;
 using testing::_;
@@ -70,7 +71,7 @@ class MockObjectReference : public ObjectReference {
  public:
   MockObjectReference() {}
 
-  MOCK_CONST_METHOD0(Dump, string());
+  MOCK_CONST_METHOD1(Dump, void(DumpContext* dc));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockObjectReference);
@@ -91,8 +92,8 @@ TEST(LocalObjectImplTest, InvokeMethodOnExpressionObject) {
   EXPECT_CALL(thread, ObjectsAreIdentical(_, _))
       .Times(0);
 
-  EXPECT_CALL(symbol_table_object_reference, Dump())
-      .WillRepeatedly(Return(""));
+  EXPECT_CALL(symbol_table_object_reference, Dump(_))
+      .Times(AnyNumber());
 
   // Simulate Thread::CallMethod returning false. This should cause
   // ExpressionObject::InvokeMethod (called below) to immediately return.
@@ -104,8 +105,8 @@ TEST(LocalObjectImplTest, InvokeMethodOnExpressionObject) {
 
   MockObjectReference expression_object_reference;
 
-  EXPECT_CALL(expression_object_reference, Dump())
-      .WillRepeatedly(Return(""));
+  EXPECT_CALL(expression_object_reference, Dump(_))
+      .Times(AnyNumber());
 
   vector<Value> parameters(1);
   parameters[0].set_object_reference(0, &symbol_table_object_reference);

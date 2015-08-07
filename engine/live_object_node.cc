@@ -26,6 +26,8 @@
 #include "engine/serialize_local_object_to_string.h"
 #include "include/c++/value.h"
 #include "include/c++/versioned_local_object.h"
+#include "util/dump_context.h"
+#include "util/dump_context_impl.h"
 
 using std::string;
 using std::vector;
@@ -60,24 +62,24 @@ LiveObjectNode* LiveObjectNode::InvokeMethod(
 
   if (ref_count > 1) {
     VersionedLocalObject* const new_local_object = local_object_->Clone();
-    VLOG(4) << "Before: " << new_local_object->Dump();
+    VLOG(4) << "Before: " << GetJsonString(*new_local_object);
     new_local_object->InvokeMethod(thread, object_reference, method_name,
                                    parameters, return_value);
-    VLOG(4) << "After: " << new_local_object->Dump();
+    VLOG(4) << "After: " << GetJsonString(*new_local_object);
 
     return new LiveObjectNode(new_local_object);
   } else {
-    VLOG(4) << "Before: " << local_object_->Dump();
+    VLOG(4) << "Before: " << GetJsonString(*local_object_);
     local_object_->InvokeMethod(thread, object_reference, method_name,
                                 parameters, return_value);
-    VLOG(4) << "After: " << local_object_->Dump();
+    VLOG(4) << "After: " << GetJsonString(*local_object_);
 
     return this;
   }
 }
 
-string LiveObjectNode::Dump() const {
-  return local_object_->Dump();
+void LiveObjectNode::Dump(DumpContext* dc) const {
+  local_object_->Dump(dc);
 }
 
 void LiveObjectNode::IncrementRefCount() {

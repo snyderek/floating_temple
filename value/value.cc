@@ -21,8 +21,8 @@
 #include "base/escape.h"
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "include/c++/object_reference.h"
+#include "util/dump_context.h"
 
 using std::string;
 
@@ -93,50 +93,55 @@ Value& Value::operator=(const Value& other) {
 
 #undef ASSIGN_VALUE
 
-string Value::Dump() const {
+void Value::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
   // TODO(dss): Don't use strings to represent non-string types, because it's
   // ambiguous. For example, '"EMPTY"' could be either an EMPTY value or a
   // STRING value.
   switch (type_) {
     case UNINITIALIZED:
-      return "\"UNINITIALIZED\"";
+      dc->AddString("UNINITIALIZED");
+      break;
 
     case EMPTY:
-      return "\"EMPTY\"";
+      dc->AddString("EMPTY");
+      break;
 
     case DOUBLE:
-      return StringPrintf("%f", double_value_);
+      dc->AddDouble(double_value_);
+      break;
 
     case FLOAT:
-      return StringPrintf("%f", static_cast<double>(float_value_));
+      dc->AddFloat(float_value_);
+      break;
 
     case INT64:
-      return StringPrintf("%" PRId64, int64_value_);
+      dc->AddInt64(int64_value_);
+      break;
 
     case UINT64:
-      return StringPrintf("%" PRIu64, uint64_value_);
+      dc->AddUint64(uint64_value_);
+      break;
 
     case BOOL:
-      if (bool_value_) {
-        return "true";
-      } else {
-        return "false";
-      }
+      dc->AddBool(bool_value_);
+      break;
 
     case STRING:
     case BYTES:
       CHECK(string_or_bytes_value_ != nullptr);
-      return StringPrintf("\"%s\"", CEscape(*string_or_bytes_value_).c_str());
+      dc->AddString(*string_or_bytes_value_);
+      break;
 
     case OBJECT_REFERENCE:
       CHECK(object_reference_ != nullptr);
-      return object_reference_->Dump();
+      object_reference_->Dump(dc);
+      break;
 
     default:
       LOG(FATAL) << "Unexpected value type: " << static_cast<int>(type_);
   }
-
-  return "";
 }
 
 void Value::ChangeType(int local_type, Type new_type) {

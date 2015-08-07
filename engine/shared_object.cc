@@ -28,7 +28,6 @@
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
-#include "base/string_printf.h"
 #include "engine/canonical_peer.h"
 #include "engine/committed_event.h"
 #include "engine/live_object.h"
@@ -43,11 +42,12 @@
 #include "engine/unversioned_object_content.h"
 #include "engine/uuid_util.h"
 #include "engine/versioned_object_content.h"
+#include "util/dump_context.h"
+#include "util/dump_context_impl.h"
 
 using std::map;
 using std::pair;
 using std::shared_ptr;
-using std::string;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -212,7 +212,7 @@ void SharedObject::InsertTransaction(
   if (VLOG_IS_ON(2)) {
     for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
          ++i) {
-      VLOG(2) << "Event " << i << ": " << events[i]->Dump();
+      VLOG(2) << "Event " << i << ": " << GetJsonString(*events[i]);
     }
   }
 
@@ -234,12 +234,12 @@ void SharedObject::SetCachedLiveObject(
                                            cached_sequence_point);
 }
 
-string SharedObject::Dump() const {
+void SharedObject::Dump(DumpContext* dc) const {
   MutexLock lock1(&interested_peers_mu_);
   MutexLock lock2(&object_references_mu_);
   MutexLock lock3(&object_content_mu_);
 
-  return Dump_Locked();
+  Dump_Locked(dc);
 }
 
 ObjectContent* SharedObject::GetObjectContent() {
@@ -258,58 +258,37 @@ ObjectContent* SharedObject::GetOrCreateObjectContent() {
 }
 
 // TODO(dss): Inline this method into SharedObject::Dump.
-string SharedObject::Dump_Locked() const {
-  string interested_peer_ids_string;
-  if (interested_peers_.empty()) {
-    interested_peer_ids_string = "[]";
-  } else {
-    interested_peer_ids_string = "[";
+void SharedObject::Dump_Locked(DumpContext* dc) const {
+  CHECK(dc != nullptr);
 
-    for (unordered_set<const CanonicalPeer*>::const_iterator it =
-             interested_peers_.begin();
-         it != interested_peers_.end(); ++it) {
-      if (it != interested_peers_.begin()) {
-        interested_peer_ids_string += ",";
-      }
+  dc->BeginMap();
 
-      StringAppendF(&interested_peer_ids_string, " \"%s\"",
-                    CEscape((*it)->peer_id()).c_str());
-    }
+  dc->AddString("object_id");
+  dc->AddString(UuidToString(object_id_));
 
-    interested_peer_ids_string += " ]";
+  dc->AddString("interested_peers");
+  dc->BeginList();
+  for (const CanonicalPeer* const canonical_peer : interested_peers_) {
+    dc->AddString(canonical_peer->peer_id());
   }
+  dc->End();
 
-  string object_references_string;
-  if (object_references_.empty()) {
-    object_references_string = "[]";
-  } else {
-    object_references_string = "[";
-
-    for (vector<ObjectReferenceImpl*>::const_iterator it =
-             object_references_.begin();
-         it != object_references_.end(); ++it) {
-      if (it != object_references_.begin()) {
-        object_references_string += ",";
-      }
-
-      StringAppendF(&object_references_string, " \"%p\"", *it);
-    }
-
-    object_references_string += " ]";
+  dc->AddString("object_references");
+  dc->BeginList();
+  for (const ObjectReferenceImpl* const object_reference : object_references_) {
+    dc->AddPointer(object_reference);
   }
+  dc->End();
 
-  string versioned_object_string;
+  // TODO(dss): Change this string to "object_content".
+  dc->AddString("versioned_object");
   if (object_content_ == nullptr) {
-    versioned_object_string = "null";
+    dc->AddNull();
   } else {
-    versioned_object_string = object_content_->Dump();
+    object_content_->Dump(dc);
   }
 
-  return StringPrintf(
-      "{ \"object_id\": \"%s\", \"interested_peers\": %s, "
-      "\"object_references\": %s, \"versioned_object\": %s }",
-      UuidToString(object_id_).c_str(), interested_peer_ids_string.c_str(),
-      object_references_string.c_str(), versioned_object_string.c_str());
+  dc->End();
 }
 
 }  // namespace engine

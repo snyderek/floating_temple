@@ -30,7 +30,7 @@ class FalseLocalObject : public VersionedLocalObjectImpl {
   FalseLocalObject();
 
   VersionedLocalObject* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,

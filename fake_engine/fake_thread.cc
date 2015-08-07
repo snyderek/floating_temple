@@ -25,6 +25,7 @@
 #include "include/c++/local_object.h"
 #include "include/c++/unversioned_local_object.h"
 #include "include/c++/versioned_local_object.h"
+#include "util/dump_context_impl.h"
 
 using std::string;
 using std::vector;
@@ -65,7 +66,7 @@ ObjectReference* FakeThread::CreateVersionedObject(
   ObjectReference* const object_reference = new FakeObjectReference(
       initial_version);
   VLOG(1) << "New object reference: " << StringPrintf("%p", object_reference);
-  VLOG(1) << "object_reference: " << object_reference->Dump();
+  VLOG(1) << "object_reference: " << GetJsonString(*object_reference);
   object_references_.emplace_back(object_reference);
   return object_reference;
 }
@@ -80,7 +81,7 @@ ObjectReference* FakeThread::CreateUnversionedObject(
   ObjectReference* const object_reference = new FakeObjectReference(
       initial_version);
   VLOG(1) << "New object reference: " << StringPrintf("%p", object_reference);
-  VLOG(1) << "object_reference: " << object_reference->Dump();
+  VLOG(1) << "object_reference: " << GetJsonString(*object_reference);
   object_references_.emplace_back(object_reference);
   return object_reference;
 }
@@ -95,13 +96,13 @@ bool FakeThread::CallMethod(ObjectReference* object_reference,
 
   VLOG(1) << "Calling method on object reference: "
           << StringPrintf("%p", object_reference);
-  VLOG(1) << "object_reference: " << object_reference->Dump();
+  VLOG(1) << "object_reference: " << GetJsonString(*object_reference);
 
   FakeObjectReference* const fake_object_reference =
       static_cast<FakeObjectReference*>(object_reference);
   LocalObject* const local_object = fake_object_reference->local_object();
 
-  VLOG(1) << "local_object: " << local_object->Dump();
+  VLOG(1) << "local_object: " << GetJsonString(*local_object);
 
   local_object->InvokeMethod(this, object_reference, method_name, parameters,
                              return_value);

@@ -16,16 +16,15 @@
 #ifndef ENGINE_VERSION_MAP_H_
 #define ENGINE_VERSION_MAP_H_
 
-#include <string>
 #include <unordered_map>
 #include <utility>
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "engine/canonical_peer.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/transaction_id_util.h"
+#include "util/dump_context.h"
 
 namespace floating_temple {
 namespace engine {
@@ -59,7 +58,7 @@ class VersionMap {
   void CopyFrom(const VersionMap<CompareFunction>& other);
   void Swap(VersionMap<CompareFunction>* other);
 
-  std::string Dump() const;
+  void Dump(DumpContext* dc) const;
 
   VersionMap<CompareFunction>& operator=(
       const VersionMap<CompareFunction>& other);
@@ -180,30 +179,16 @@ void VersionMap<CompareFunction>::Swap(VersionMap<CompareFunction>* other) {
 }
 
 template<class CompareFunction>
-std::string VersionMap<CompareFunction>::Dump() const {
-  std::string peer_transaction_ids_string;
+void VersionMap<CompareFunction>::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
 
-  if (peer_transaction_ids_.empty()) {
-    peer_transaction_ids_string = "{}";
-  } else {
-    peer_transaction_ids_string = "{";
-
-    for (std::unordered_map<const CanonicalPeer*, TransactionId>::const_iterator
-             it = peer_transaction_ids_.begin();
-         it != peer_transaction_ids_.end(); ++it) {
-      if (it != peer_transaction_ids_.begin()) {
-        peer_transaction_ids_string += ",";
-      }
-
-      StringAppendF(&peer_transaction_ids_string, " \"%s\": \"%s\"",
-                    CEscape(it->first->peer_id()).c_str(),
-                    TransactionIdToString(it->second).c_str());
-    }
-
-    peer_transaction_ids_string += " }";
+  dc->BeginMap();
+  for (const std::pair<const CanonicalPeer*, TransactionId>&
+           peer_transaction_id : peer_transaction_ids_) {
+    dc->AddString(peer_transaction_id.first->peer_id());
+    dc->AddString(TransactionIdToString(peer_transaction_id.second));
   }
-
-  return peer_transaction_ids_string;
+  dc->End();
 }
 
 template<class CompareFunction>

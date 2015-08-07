@@ -25,6 +25,9 @@
 #include "engine/committed_value.h"
 
 namespace floating_temple {
+
+class DumpContext;
+
 namespace engine {
 
 class LiveObject;
@@ -73,12 +76,12 @@ class CommittedEvent {
 
   virtual CommittedEvent* Clone() const = 0;
 
-  virtual std::string Dump() const = 0;
+  virtual void Dump(DumpContext* dc) const = 0;
 
   static std::string GetTypeString(Type event_type);
 
  protected:
-  std::string DumpNewSharedObjects() const;
+  void DumpNewSharedObjects(DumpContext* dc) const;
 
  private:
   const std::unordered_set<SharedObject*> new_shared_objects_;
@@ -93,7 +96,7 @@ class ObjectCreationCommittedEvent : public CommittedEvent {
   void GetObjectCreation(
       std::shared_ptr<const LiveObject>* live_object) const override;
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   const std::shared_ptr<const LiveObject> live_object_;
@@ -107,7 +110,7 @@ class SubObjectCreationCommittedEvent : public CommittedEvent {
 
   Type type() const override { return SUB_OBJECT_CREATION; }
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* GetNewSharedObject() const;
@@ -121,7 +124,7 @@ class BeginTransactionCommittedEvent : public CommittedEvent {
 
   Type type() const override { return BEGIN_TRANSACTION; }
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BeginTransactionCommittedEvent);
@@ -133,7 +136,7 @@ class EndTransactionCommittedEvent : public CommittedEvent {
 
   Type type() const override { return END_TRANSACTION; }
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EndTransactionCommittedEvent);
@@ -149,7 +152,7 @@ class MethodCallCommittedEvent : public CommittedEvent {
       SharedObject** caller, const std::string** method_name,
       const std::vector<CommittedValue>** parameters) const override;
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* const caller_;
@@ -170,7 +173,7 @@ class MethodReturnCommittedEvent : public CommittedEvent {
   void GetMethodReturn(SharedObject** caller,
                        const CommittedValue** return_value) const override;
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* const caller_;
@@ -192,7 +195,7 @@ class SubMethodCallCommittedEvent : public CommittedEvent {
       SharedObject** callee, const std::string** method_name,
       const std::vector<CommittedValue>** parameters) const override;
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* const callee_;
@@ -211,7 +214,7 @@ class SubMethodReturnCommittedEvent : public CommittedEvent {
   void GetSubMethodReturn(SharedObject** callee,
                           const CommittedValue** return_value) const override;
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* const callee_;
@@ -232,7 +235,7 @@ class SelfMethodCallCommittedEvent : public CommittedEvent {
       const std::string** method_name,
       const std::vector<CommittedValue>** parameters) const override;
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   const std::string method_name_;
@@ -250,7 +253,7 @@ class SelfMethodReturnCommittedEvent : public CommittedEvent {
   Type type() const override { return SELF_METHOD_RETURN; }
   void GetSelfMethodReturn(const CommittedValue** return_value) const override;
   CommittedEvent* Clone() const override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   const CommittedValue return_value_;

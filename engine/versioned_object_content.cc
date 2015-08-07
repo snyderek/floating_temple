@@ -28,7 +28,6 @@
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
-#include "base/string_printf.h"
 #include "engine/canonical_peer.h"
 #include "engine/committed_event.h"
 #include "engine/live_object.h"
@@ -41,11 +40,12 @@
 #include "engine/transaction_id_util.h"
 #include "engine/transaction_store_internal_interface.h"
 #include "engine/version_map.h"
+#include "util/dump_context.h"
+#include "util/dump_context_impl.h"
 
 using std::map;
 using std::pair;
 using std::shared_ptr;
-using std::string;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -218,64 +218,42 @@ void VersionedObjectContent::SetCachedLiveObject(
   cached_sequence_point_.CopyFrom(cached_sequence_point);
 }
 
-string VersionedObjectContent::Dump() const {
+void VersionedObjectContent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
   MutexLock lock(&committed_versions_mu_);
 
-  string committed_versions_string;
-  if (committed_versions_.empty()) {
-    committed_versions_string = "{}";
-  } else {
-    committed_versions_string = "{";
+  dc->BeginMap();
 
-    for (map<TransactionId, linked_ptr<SharedObjectTransaction>>::const_iterator
-             it = committed_versions_.begin();
-         it != committed_versions_.end(); ++it) {
-      if (it != committed_versions_.begin()) {
-        committed_versions_string += ",";
-      }
-
-      StringAppendF(&committed_versions_string, " \"%s\": %s",
-                    TransactionIdToString(it->first).c_str(),
-                    it->second->Dump().c_str());
-    }
-
-    committed_versions_string += " }";
+  dc->AddString("committed_versions");
+  dc->BeginMap();
+  for (const auto& transaction_pair : committed_versions_) {
+    dc->AddString(TransactionIdToString(transaction_pair.first));
+    transaction_pair.second->Dump(dc);
   }
+  dc->End();
 
-  string up_to_date_peers_string;
-  if (up_to_date_peers_.empty()) {
-    up_to_date_peers_string = "[]";
-  } else {
-    up_to_date_peers_string = "[";
+  dc->AddString("version_map");
+  version_map_.Dump(dc);
 
-    for (unordered_set<const CanonicalPeer*>::const_iterator it =
-             up_to_date_peers_.begin();
-         it != up_to_date_peers_.end(); ++it) {
-      if (it != up_to_date_peers_.begin()) {
-        up_to_date_peers_string += ",";
-      }
-
-      StringAppendF(&up_to_date_peers_string, " \"%s\"",
-                    CEscape((*it)->peer_id()).c_str());
-    }
-
-    up_to_date_peers_string += " ]";
+  dc->AddString("up_to_date_peers");
+  dc->BeginList();
+  for (const CanonicalPeer* const canonical_peer : up_to_date_peers_) {
+    dc->AddString(canonical_peer->peer_id());
   }
+  dc->End();
 
-  string cached_live_object_string;
+  dc->AddString("cached_live_object");
   if (cached_live_object_.get() == nullptr) {
-    cached_live_object_string = "null";
+    dc->AddNull();
   } else {
-    cached_live_object_string = cached_live_object_->Dump();
+    cached_live_object_->Dump(dc);
   }
 
-  return StringPrintf(
-      "{ \"committed_versions\": %s, \"version_map\": %s, "
-      "\"up_to_date_peers\": %s, \"cached_live_object\": %s, "
-      "\"cached_sequence_point\": %s }",
-      committed_versions_string.c_str(), version_map_.Dump().c_str(),
-      up_to_date_peers_string.c_str(), cached_live_object_string.c_str(),
-      cached_sequence_point_.Dump().c_str());
+  dc->AddString("cached_sequence_point");
+  cached_sequence_point_.Dump(dc);
+
+  dc->End();
 }
 
 shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersionHelper(
@@ -292,8 +270,8 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersionHelper(
   if (!VersionMapIsLessThanOrEqual(sequence_point.version_map(),
                                    effective_version)) {
     VLOG(1) << "sequence_point.version_map() == "
-            << sequence_point.version_map().Dump();
-    VLOG(1) << "effective_version == " << effective_version.Dump();
+            << GetJsonString(sequence_point.version_map());
+    VLOG(1) << "effective_version == " << GetJsonString(effective_version);
 
     return shared_ptr<const LiveObject>(nullptr);
   }

@@ -18,7 +18,6 @@
 
 #include <map>
 #include <memory>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -34,6 +33,9 @@
 #include "engine/transaction_id_util.h"
 
 namespace floating_temple {
+
+class DumpContext;
+
 namespace engine {
 
 class CanonicalPeer;
@@ -103,14 +105,14 @@ class SharedObject {
       const std::shared_ptr<const LiveObject>& cached_live_object,
       const SequencePointImpl& cached_sequence_point);
 
-  std::string Dump() const;
+  void Dump(DumpContext* dc) const;
 
  private:
   ObjectContent* GetObjectContent();
   // TODO(dss): Consider renaming this method to CreateVersionedObjectContent.
   ObjectContent* GetOrCreateObjectContent();
 
-  std::string Dump_Locked() const;
+  void Dump_Locked(DumpContext* dc) const;
 
   TransactionStoreInternalInterface* const transaction_store_;
   const Uuid object_id_;

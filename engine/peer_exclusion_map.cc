@@ -16,19 +16,19 @@
 #include "engine/peer_exclusion_map.h"
 
 #include <map>
-#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "engine/canonical_peer.h"
 #include "engine/interval_set.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/transaction_id_util.h"
+#include "util/dump_context.h"
 
 using std::map;
-using std::string;
+using std::pair;
 using std::vector;
 
 namespace floating_temple {
@@ -76,62 +76,35 @@ void PeerExclusionMap::Swap(PeerExclusionMap* other) {
   map_.swap(other->map_);
 }
 
-string PeerExclusionMap::Dump() const {
-  string exclusion_map_string;
+void PeerExclusionMap::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
 
-  if (map_.empty()) {
-    exclusion_map_string = "{}";
-  } else {
-    exclusion_map_string = "{";
+  dc->BeginMap();
 
-    for (map<const CanonicalPeer*, IntervalSet<TransactionId>>::const_iterator
-             it1 = map_.begin();
-         it1 != map_.end(); ++it1) {
-      const CanonicalPeer* const canonical_peer = it1->first;
-      const IntervalSet<TransactionId>& interval_set = it1->second;
+  for (const pair<const CanonicalPeer*, IntervalSet<TransactionId>>& map_pair :
+           map_) {
+    const CanonicalPeer* const canonical_peer = map_pair.first;
+    const IntervalSet<TransactionId>& interval_set = map_pair.second;
 
-      if (it1 != map_.begin()) {
-        exclusion_map_string += ",";
-      }
+    dc->AddString(canonical_peer->peer_id());
 
-      vector<TransactionId> end_points;
-      interval_set.GetEndPoints(&end_points);
+    vector<TransactionId> end_points;
+    interval_set.GetEndPoints(&end_points);
 
-      string interval_set_string;
-
-      if (end_points.empty()) {
-        interval_set_string = "[]";
-      } else {
-        interval_set_string = "[";
-
-        for (vector<TransactionId>::const_iterator it2 = end_points.begin();
-             it2 != end_points.end(); ++it2) {
-          if (it2 != end_points.begin()) {
-            interval_set_string += ",";
-          }
-
-          StringAppendF(&interval_set_string, " [ \"%s\", ",
-                        TransactionIdToString(*it2).c_str());
-
-          ++it2;
-          CHECK(it2 != end_points.end());
-
-          StringAppendF(&interval_set_string, "\"%s\" ]",
-                        TransactionIdToString(*it2).c_str());
-        }
-
-        interval_set_string += " ]";
-      }
-
-      StringAppendF(&exclusion_map_string, " \"%s\": %s",
-                    CEscape(canonical_peer->peer_id()).c_str(),
-                    interval_set_string.c_str());
+    dc->BeginList();
+    for (vector<TransactionId>::const_iterator it = end_points.begin();
+         it != end_points.end(); ++it) {
+      dc->BeginList();
+      dc->AddString(TransactionIdToString(*it));
+      ++it;
+      CHECK(it != end_points.end());
+      dc->AddString(TransactionIdToString(*it));
+      dc->End();
     }
-
-    exclusion_map_string += " }";
+    dc->End();
   }
 
-  return exclusion_map_string;
+  dc->End();
 }
 
 }  // namespace engine

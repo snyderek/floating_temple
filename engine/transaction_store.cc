@@ -61,6 +61,7 @@
 #include "engine/value_proto_util.h"
 #include "engine/versioned_live_object.h"
 #include "include/c++/value.h"
+#include "util/dump_context_impl.h"
 
 using std::map;
 using std::pair;
@@ -688,8 +689,9 @@ TransactionStore::GetLiveObjectAtSequencePoint_Helper(
     *current_version_number = version_number_;
   }
 
-  VLOG(4) << "Transaction store version: " << current_version_map.Dump();
-  VLOG(4) << "Sequence point: " << sequence_point_impl.Dump();
+  VLOG(4) << "Transaction store version: "
+          << GetJsonString(current_version_map);
+  VLOG(4) << "Sequence point: " << GetJsonString(sequence_point_impl);
 
   vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
   const shared_ptr<const LiveObject> live_object =

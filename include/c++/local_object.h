@@ -23,6 +23,7 @@
 
 namespace floating_temple {
 
+class DumpContext;
 class ObjectReference;
 class Thread;
 
@@ -55,7 +56,7 @@ class LocalObject {
                             const std::vector<Value>& parameters,
                             Value* return_value) = 0;
 
-  virtual std::string Dump() const = 0;
+  virtual void Dump(DumpContext* dc) const = 0;
 };
 
 }  // namespace floating_temple

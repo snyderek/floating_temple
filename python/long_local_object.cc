@@ -22,10 +22,10 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "python/proto/serialization.pb.h"
 #include "python/python_gil_lock.h"
 #include "python/versioned_local_object_impl.h"
+#include "util/dump_context.h"
 
 using std::size_t;
 using std::string;
@@ -48,21 +48,27 @@ VersionedLocalObject* LongLocalObject::Clone() const {
   return new LongLocalObject(py_object());
 }
 
-string LongLocalObject::Dump() const {
+void LongLocalObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
   int overflow = 0;
   const PY_LONG_LONG value = GetLongLongValue(&overflow);
 
-  string value_string;
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("LongLocalObject");
+
+  dc->AddString("value");
   if (overflow < 0) {
-    value_string = "\"(less than PY_LLONG_MIN)\"";
+    dc->AddString("(less than PY_LLONG_MIN)");
   } else if (overflow > 0) {
-    value_string = "\"(greater than PY_LLONG_MAX)\"";
+    dc->AddString("(greater than PY_LLONG_MAX)");
   } else {
-    SStringPrintf(&value_string, "%lld", value);
+    dc->AddLongLong(value);
   }
 
-  return StringPrintf("{ \"type\": \"LongLocalObject\", \"value\": %s }",
-                      value_string.c_str());
+  dc->End();
 }
 
 // static

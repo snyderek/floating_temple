@@ -37,7 +37,7 @@ class ProgramObject : public UnversionedLocalObject {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   const std::shared_ptr<const Expression> expression_;

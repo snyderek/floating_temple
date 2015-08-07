@@ -72,6 +72,14 @@ class DumpContextImpl : public DumpContext {
   DISALLOW_COPY_AND_ASSIGN(DumpContextImpl);
 };
 
+template<class T> std::string GetJsonString(const T& t) {
+  DumpContextImpl dc;
+  t.Dump(&dc);
+  std::string json;
+  dc.FormatJson(&json);
+  return json;
+}
+
 }  // namespace floating_temple
 
 #endif  // UTIL_DUMP_CONTEXT_IMPL_H_

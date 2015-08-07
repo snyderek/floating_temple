@@ -21,8 +21,7 @@
 
 #include "base/logging.h"
 #include "python/unversioned_local_object_impl.h"
-
-using std::string;
+#include "util/dump_context.h"
 
 namespace floating_temple {
 namespace python {
@@ -31,8 +30,13 @@ UnserializableLocalObject::UnserializableLocalObject(PyObject* py_object)
     : UnversionedLocalObjectImpl(CHECK_NOTNULL(py_object)) {
 }
 
-string UnserializableLocalObject::Dump() const {
-  return "{ \"type\": \"UnserializableLocalObject\" }";
+void UnserializableLocalObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("UnserializableLocalObject");
+  dc->End();
 }
 
 }  // namespace python

@@ -23,6 +23,7 @@
 
 namespace floating_temple {
 
+class DumpContext;
 class ObjectReference;
 
 // A Value object stores a value of one of the primitive types supported by the
@@ -79,7 +80,7 @@ class Value {
 
   Value& operator=(const Value& other);
 
-  std::string Dump() const;
+  void Dump(DumpContext* dc) const;
 
  private:
   void ChangeType(int local_type, Type new_type);

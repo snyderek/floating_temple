@@ -16,15 +16,15 @@
 #ifndef INCLUDE_CPP_OBJECT_REFERENCE_H_
 #define INCLUDE_CPP_OBJECT_REFERENCE_H_
 
-#include <string>
-
 namespace floating_temple {
+
+class DumpContext;
 
 class ObjectReference {
  public:
   virtual ~ObjectReference() {}
 
-  virtual std::string Dump() const = 0;
+  virtual void Dump(DumpContext* dc) const = 0;
 };
 
 }  // namespace floating_temple

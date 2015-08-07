@@ -43,7 +43,7 @@ class VersionedLiveObject : public LiveObject {
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;
-  std::string Dump() const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   explicit VersionedLiveObject(LiveObjectNode* node);

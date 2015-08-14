@@ -29,7 +29,6 @@ LUAI_FUNC const TValue *luaH_get (Table *t, const TValue *key);
 LUAI_FUNC TValue *luaH_newkey (lua_State *L, Table *t, const TValue *key);
 LUAI_FUNC TValue *luaH_set (lua_State *L, Table *t, const TValue *key);
 LUAI_FUNC Table *luaH_new (lua_State *L);
-LUAI_FUNC Table *luaH_new_nogc (lua_State *L);
 LUAI_FUNC void luaH_resize (lua_State *L, Table *t, int nasize, int nhsize);
 LUAI_FUNC void luaH_resizearray (lua_State *L, Table *t, int nasize);
 LUAI_FUNC void luaH_free (lua_State *L, Table *t);
@@ -41,6 +40,10 @@ LUAI_FUNC int luaH_getn (Table *t);
 LUAI_FUNC Node *luaH_mainposition (const Table *t, const TValue *key);
 LUAI_FUNC int luaH_isdummy (Node *n);
 #endif
+
+
+// Make this object accessible for Floating Temple.
+extern const Node dummynode_;
 
 
 #endif

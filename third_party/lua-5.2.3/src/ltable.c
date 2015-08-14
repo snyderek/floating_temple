@@ -68,7 +68,7 @@
 
 #define isdummy(n)		((n) == dummynode)
 
-static const Node dummynode_ = {
+const Node dummynode_ = {
   {NILCONSTANT},  /* value */
   {{NILCONSTANT, NULL}}  /* key */
 };
@@ -365,25 +365,14 @@ static void rehash (lua_State *L, Table *t, const TValue *ek) {
 */
 
 
-static Table *luaH_new_helper (lua_State *L, GCObject **list) {
-  Table *t = &luaC_newobj(L, LUA_TTABLE, sizeof(Table), list, 0)->h;
+Table *luaH_new (lua_State *L) {
+  Table *t = &luaC_newobj(L, LUA_TTABLE, sizeof(Table), NULL, 0)->h;
   t->metatable = NULL;
   t->flags = cast_byte(~0);
   t->array = NULL;
   t->sizearray = 0;
   setnodevector(L, t, 0);
   return t;
-}
-
-
-Table *luaH_new (lua_State *L) {
-  return luaH_new_helper(L, NULL);
-}
-
-
-Table *luaH_new_nogc (lua_State *L) {
-  GCObject *list = NULL;
-  return luaH_new_helper(L, &list);
 }
 
 

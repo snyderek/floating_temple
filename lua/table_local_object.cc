@@ -24,6 +24,7 @@
 #include "include/c++/value.h"
 #include "lua/convert_value.h"
 #include "third_party/lua-5.2.3/src/lgc.h"
+#include "third_party/lua-5.2.3/src/llimits.h"
 #include "third_party/lua-5.2.3/src/lobject.h"
 #include "third_party/lua-5.2.3/src/lopcodes.h"
 #include "third_party/lua-5.2.3/src/lstate.h"
@@ -40,8 +41,20 @@ namespace lua {
 
 TableLocalObject::TableLocalObject(lua_State* lua_state)
     : lua_state_(CHECK_NOTNULL(lua_state)) {
-  Table* const table = luaH_new_nogc(lua_state);
-  CHECK(table != nullptr);
+  // This code is mostly copy-pasted from the luaH_new function in
+  // "third_party/lua-5.2.3/src/ltable.c".
+  GCObject* gc_list = nullptr;
+  Table* const table =
+      &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
+
+  table->flags = static_cast<lu_byte>(~0);
+  table->lsizenode = static_cast<lu_byte>(~0);
+  table->metatable = nullptr;
+  table->array = nullptr;
+  table->node = const_cast<Node*>(&dummynode_);
+  table->lastfree = gnode(table, 0);
+  table->sizearray = 0;
+
   sethvalue(lua_state, &lua_table_, table);
 }
 

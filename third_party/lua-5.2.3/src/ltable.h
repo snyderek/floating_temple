@@ -42,8 +42,8 @@ LUAI_FUNC int luaH_isdummy (Node *n);
 #endif
 
 
-// Make this object accessible for Floating Temple.
-extern const Node dummynode_;
+// Make the dummy node accessible to Floating Temple.
+const Node *luaH_getdummynode (void);
 
 
 #endif

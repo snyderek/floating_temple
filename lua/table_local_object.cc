@@ -47,12 +47,16 @@ TableLocalObject::TableLocalObject(lua_State* lua_state)
   Table* const table =
       &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
 
+  Node* const node = const_cast<Node*>(luaH_getdummynode());
+
   table->flags = static_cast<lu_byte>(~0);
   table->lsizenode = static_cast<lu_byte>(~0);
+  // TODO(dss): Support metatables.
   table->metatable = nullptr;
   table->array = nullptr;
-  table->node = const_cast<Node*>(&dummynode_);
-  table->lastfree = gnode(table, 0);
+  table->node = node;
+  table->lastfree = node;
+  table->gclist = nullptr;
   table->sizearray = 0;
 
   sethvalue(lua_state, &lua_table_, table);

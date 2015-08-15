@@ -68,7 +68,7 @@
 
 #define isdummy(n)		((n) == dummynode)
 
-const Node dummynode_ = {
+static const Node dummynode_ = {
   {NILCONSTANT},  /* value */
   {{NILCONSTANT, NULL}}  /* key */
 };
@@ -586,3 +586,8 @@ Node *luaH_mainposition (const Table *t, const TValue *key) {
 int luaH_isdummy (Node *n) { return isdummy(n); }
 
 #endif
+
+
+const Node *luaH_getdummynode (void) {
+  return &dummynode_;
+}

@@ -25,6 +25,7 @@
 #include "lua/convert_value.h"
 #include "third_party/lua-5.2.3/src/lgc.h"
 #include "third_party/lua-5.2.3/src/llimits.h"
+#include "third_party/lua-5.2.3/src/lmem.h"
 #include "third_party/lua-5.2.3/src/lobject.h"
 #include "third_party/lua-5.2.3/src/lopcodes.h"
 #include "third_party/lua-5.2.3/src/lstate.h"
@@ -38,6 +39,13 @@ using std::vector;
 
 namespace floating_temple {
 namespace lua {
+namespace {
+
+int GetTableNodeIndex(const Table* table, const Node* node) {
+  return node - table->node;
+}
+
+}  // namespace
 
 TableLocalObject::TableLocalObject(lua_State* lua_state)
     : lua_state_(CHECK_NOTNULL(lua_state)) {
@@ -131,8 +139,56 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 }
 
 VersionedLocalObject* TableLocalObject::Clone() const {
-  // TODO(dss): Implement this.
-  return nullptr;
+  const Table* const old_table = hvalue(&lua_table_);
+
+  GCObject* gc_list = nullptr;
+  Table* const new_table =
+      &luaC_newobj(lua_state_, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
+
+  const lu_byte lsizenode = old_table->lsizenode;
+  const int sizearray = old_table->sizearray;
+
+  new_table->flags = old_table->flags;
+  new_table->lsizenode = lsizenode;
+  new_table->metatable = nullptr;
+
+  if (old_table->array == nullptr) {
+    new_table->array = nullptr;
+  } else {
+    new_table->array = luaM_newvector(lua_state_, sizearray, TValue);
+    for (int i = 0; i < sizearray; ++i) {
+      setobj2t(&lua_state_, &new_table->array[i], &old_table->array[i]);
+    }
+  }
+
+  const Node* const dummy_node = luaH_getdummynode();
+
+  if (old_table->node == dummy_node) {
+    Node* const node = const_cast<Node*>(dummy_node);
+    new_table->node = node;
+    new_table->lastfree = node;
+  } else {
+    const int size = twoto(static_cast<int>(lsizenode));
+    new_table->node = luaM_newvector(lua_state_, size, Node);
+
+    for (int i = 0; i < size; ++i) {
+      const Node* const old_node = gnode(old_table, i);
+      Node* const new_node = gnode(new_table, i);
+
+      gnext(new_node) = gnode(new_table,
+                              GetTableNodeIndex(old_table, gnext(old_node)));
+      setobj2t(&lua_state_, gkey(new_node), gkey(old_node));
+      setobj2t(&lua_state_, gval(new_node), gval(old_node));
+    }
+
+    new_table->lastfree = gnode(
+        new_table, GetTableNodeIndex(old_table, old_table->lastfree));
+  }
+
+  new_table->gclist = nullptr;
+  new_table->sizearray = sizearray;
+
+  return new TableLocalObject(lua_state_, new_table);
 }
 
 size_t TableLocalObject::Serialize(void* buffer, size_t buffer_size,
@@ -145,6 +201,12 @@ void TableLocalObject::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   // TODO(dss): Implement this.
+}
+
+TableLocalObject::TableLocalObject(lua_State* lua_state, Table* table)
+    : lua_state_(CHECK_NOTNULL(lua_state)) {
+  CHECK(table != nullptr);
+  sethvalue(lua_state, &lua_table_, table);
 }
 
 }  // namespace lua

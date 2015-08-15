@@ -40,6 +40,8 @@ class TableLocalObject : public VersionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
+  TableLocalObject(lua_State* lua_state, Table* table);
+
   lua_State* const lua_state_;
   TValue lua_table_;
 

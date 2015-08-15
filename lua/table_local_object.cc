@@ -16,6 +16,7 @@
 #include "lua/table_local_object.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,7 @@
 #include "base/logging.h"
 #include "include/c++/value.h"
 #include "lua/convert_value.h"
+#include "lua/proto/serialization.pb.h"
 #include "third_party/lua-5.2.3/src/lgc.h"
 #include "third_party/lua-5.2.3/src/llimits.h"
 #include "third_party/lua-5.2.3/src/lmem.h"
@@ -48,7 +50,8 @@ int GetTableNodeIndex(const Table* table, const Node* node) {
 }  // namespace
 
 TableLocalObject::TableLocalObject(lua_State* lua_state)
-    : lua_state_(CHECK_NOTNULL(lua_state)) {
+    : lua_state_(CHECK_NOTNULL(lua_state)),
+      lua_table_(new TValue()) {
   // This code is mostly copy-pasted from the luaH_new function in
   // "third_party/lua-5.2.3/src/ltable.c".
   GCObject* gc_list = nullptr;
@@ -67,11 +70,11 @@ TableLocalObject::TableLocalObject(lua_State* lua_state)
   table->gclist = nullptr;
   table->sizearray = 0;
 
-  sethvalue(lua_state, &lua_table_, table);
+  sethvalue(lua_state, lua_table_.get(), table);
 }
 
 TableLocalObject::~TableLocalObject() {
-  luaH_free(lua_state_, hvalue(&lua_table_));
+  luaH_free(lua_state_, hvalue(lua_table_.get()));
 }
 
 void TableLocalObject::InvokeMethod(Thread* thread,
@@ -90,7 +93,7 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     ValueToLuaValue(parameters[0], &lua_key);
 
     TValue lua_value;
-    luaV_gettable(lua_state_, &lua_table_, &lua_key, &lua_value);
+    luaV_gettable(lua_state_, lua_table_.get(), &lua_key, &lua_value);
 
     LuaValueToValue(&lua_value, return_value);
   } else if (method_name == "settable") {
@@ -102,14 +105,14 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     TValue lua_value;
     ValueToLuaValue(parameters[1], &lua_value);
 
-    luaV_settable(lua_state_, &lua_table_, &lua_key, &lua_value);
+    luaV_settable(lua_state_, lua_table_.get(), &lua_key, &lua_value);
 
     return_value->set_empty(LUA_TNIL);
   } else if (method_name == "len") {
     CHECK_EQ(parameters.size(), 0u);
 
     TValue lua_length;
-    luaV_objlen(lua_state_, &lua_length, &lua_table_);
+    luaV_objlen(lua_state_, &lua_length, lua_table_.get());
 
     LuaValueToValue(&lua_length, return_value);
   } else if (method_name == "setlist") {
@@ -120,13 +123,14 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 
     // This code is mostly copy-pasted from the luaV_execute function in
     // "third_party/lua-5.2.3/src/lvm.c".
-    Table* const h = hvalue(&lua_table_);
+    Table* const h = hvalue(lua_table_.get());
     int last = ((c - 1) * LFIELDS_PER_FLUSH) + n;
     if (last > h->sizearray) {
       luaH_resizearray(lua_state_, h, last);
     }
     for (; n > 0; n--) {
-      TValue* const val = &lua_table_ + n;
+      // TODO(dss): [BUG] lua_table_ is not an array.
+      TValue* const val = lua_table_.get() + n;
       luaH_setint(lua_state_, h, last--, val);
       luaC_barrierback(lua_state_, obj2gco(h), val);
     }
@@ -139,7 +143,7 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 }
 
 VersionedLocalObject* TableLocalObject::Clone() const {
-  const Table* const old_table = hvalue(&lua_table_);
+  const Table* const old_table = hvalue(lua_table_.get());
 
   GCObject* gc_list = nullptr;
   Table* const new_table =
@@ -193,8 +197,57 @@ VersionedLocalObject* TableLocalObject::Clone() const {
 
 size_t TableLocalObject::Serialize(void* buffer, size_t buffer_size,
                                    SerializationContext* context) const {
-  // TODO(dss): Implement this.
-  return 0;
+  const Table* const table = hvalue(lua_table_.get());
+  TableProto table_proto;
+
+  // Store the array part of the table in the protocol buffer.
+  if (table->array != nullptr) {
+    const int sizearray = table->sizearray;
+    ArrayProto* const array_proto = table_proto.mutable_array();
+
+    for (int i = 0; i < sizearray; ++i) {
+      TValueProto* const tvalue_proto =
+          array_proto->add_element()->mutable_value();
+      LuaValueToValueProto(&table->array[i], tvalue_proto, context);
+    }
+  }
+
+  // Store the hashtable part of the table in the protocol buffer.
+  if (table->node != luaH_getdummynode()) {
+    const int size = twoto(static_cast<int>(table->lsizenode));
+    HashtableProto* const hashtable_proto = table_proto.mutable_hashtable();
+
+    hashtable_proto->set_size(size);
+
+    for (int i = 0; i < size; ++i) {
+      const Node* const node = &table->node[i];
+      const TValue* const lua_key = gkey(node);
+      const TValue* const lua_value = gval(node);
+
+      if (!ttisnil(lua_key) || !ttisnil(lua_value)) {
+        const Node* const next_node = gnext(node);
+        HashtableNodeProto* const node_proto = hashtable_proto->add_node();
+
+        node_proto->set_index(i);
+        if (next_node != nullptr) {
+          node_proto->set_next_index(GetTableNodeIndex(table, next_node));
+        }
+        LuaValueToValueProto(lua_key, node_proto->mutable_key(), context);
+        LuaValueToValueProto(lua_value, node_proto->mutable_value(), context);
+      }
+    }
+
+    hashtable_proto->set_last_free_index(GetTableNodeIndex(table,
+                                                           table->lastfree));
+  }
+
+  // Serialize the protocol buffer to the output buffer.
+  const size_t byte_size = static_cast<size_t>(table_proto.ByteSize());
+  if (byte_size <= buffer_size) {
+    table_proto.SerializeWithCachedSizesToArray(static_cast<uint8*>(buffer));
+  }
+
+  return byte_size;
 }
 
 void TableLocalObject::Dump(DumpContext* dc) const {
@@ -204,9 +257,10 @@ void TableLocalObject::Dump(DumpContext* dc) const {
 }
 
 TableLocalObject::TableLocalObject(lua_State* lua_state, Table* table)
-    : lua_state_(CHECK_NOTNULL(lua_state)) {
+    : lua_state_(CHECK_NOTNULL(lua_state)),
+      lua_table_(new TValue()) {
   CHECK(table != nullptr);
-  sethvalue(lua_state, &lua_table_, table);
+  sethvalue(lua_state, lua_table_.get(), table);
 }
 
 }  // namespace lua

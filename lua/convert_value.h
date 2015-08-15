@@ -13,16 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "third_party/lua-5.2.3/src/lobject.h"
+struct lua_TValue;
 
 namespace floating_temple {
 
+class SerializationContext;
 class Value;
 
 namespace lua {
 
-void LuaValueToValue(const TValue* lua_value, Value* value);
-void ValueToLuaValue(const Value& value, TValue* lua_value);
+class TValueProto;
+
+void LuaValueToValue(const lua_TValue* lua_value, Value* value);
+void ValueToLuaValue(const Value& value, lua_TValue* lua_value);
+
+void LuaValueToValueProto(const lua_TValue* lua_value, TValueProto* value_proto,
+                          SerializationContext* context);
 
 }  // namespace lua
 }  // namespace floating_temple

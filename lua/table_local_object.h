@@ -16,10 +16,14 @@
 #ifndef LUA_TABLE_LOCAL_OBJECT_H_
 #define LUA_TABLE_LOCAL_OBJECT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "include/c++/versioned_local_object.h"
-#include "third_party/lua-5.2.3/src/lobject.h"
-#include "third_party/lua-5.2.3/src/lua.h"
+
+struct Table;
+struct lua_State;
+struct lua_TValue;
 
 namespace floating_temple {
 namespace lua {
@@ -43,7 +47,7 @@ class TableLocalObject : public VersionedLocalObject {
   TableLocalObject(lua_State* lua_state, Table* table);
 
   lua_State* const lua_state_;
-  TValue lua_table_;
+  const std::unique_ptr<lua_TValue> lua_table_;
 
   DISALLOW_COPY_AND_ASSIGN(TableLocalObject);
 };

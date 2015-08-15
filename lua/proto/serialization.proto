@@ -67,13 +67,18 @@ message ArrayProto {
   repeated floating_temple.lua.ArrayElementProto element = 1;
 }
 
-message HashtableElementProto {
-  required floating_temple.lua.TValueProto key = 1;
-  required floating_temple.lua.TValueProto value = 2;
+message HashtableNodeProto {
+  required int64 index = 1;
+  optional int64 next_index = 2;
+
+  required floating_temple.lua.TValueProto key = 3;
+  required floating_temple.lua.TValueProto value = 4;
 }
 
 message HashtableProto {
-  repeated floating_temple.lua.HashtableElementProto element = 1;
+  required int64 size = 1;
+  repeated floating_temple.lua.HashtableNodeProto node = 2;
+  required int64 last_free_index = 3;
 }
 
 message TableProto {

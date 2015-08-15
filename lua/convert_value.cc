@@ -17,9 +17,12 @@
 
 #include <string>
 
+#include "base/integral_types.h"
 #include "base/logging.h"
+#include "include/c++/serialization_context.h"
 #include "include/c++/value.h"
 #include "lua/interpreter_impl.h"
+#include "lua/proto/serialization.pb.h"
 #include "third_party/lua-5.2.3/src/lobject.h"
 #include "third_party/lua-5.2.3/src/lstring.h"
 #include "third_party/lua-5.2.3/src/lua.h"
@@ -101,6 +104,50 @@ void ValueToLuaValue(const Value& value, TValue* lua_value) {
           &val_(lua_value).obj_ref) =
           value.object_reference();
       settt_(lua_value, lua_type);
+      break;
+    }
+
+    default:
+      LOG(FATAL) << "Unexpected lua value type: " << lua_type;
+  }
+}
+
+void LuaValueToValueProto(const TValue* lua_value, TValueProto* value_proto,
+                          SerializationContext* context) {
+  CHECK(lua_value != nullptr);
+  CHECK(value_proto != nullptr);
+  CHECK(context != nullptr);
+
+  const int lua_type = ttypenv(lua_value);
+
+  switch (lua_type) {
+    case LUA_TNIL:
+      value_proto->mutable_nil();
+      break;
+
+    case LUA_TBOOLEAN:
+      value_proto->mutable_boolean()->set_value(bvalue(lua_value) != 0);
+      break;
+
+    case LUA_TNUMBER:
+      value_proto->mutable_number()->set_value(nvalue(lua_value));
+      break;
+
+    case LUA_TSTRING: {
+      const TString* const lua_string = rawtsvalue(lua_value);
+      value_proto->mutable_string_value()->set_value(
+          getstr(lua_string), static_cast<int>(lua_string->tsv.len));
+      break;
+    }
+
+    case LUA_TOBJECTREFERENCE: {
+      ObjectReference* const object_reference =
+          *reinterpret_cast<floating_temple::ObjectReference* const*>(
+              &val_(lua_value).obj_ref);
+      const int object_index = context->GetIndexForObjectReference(
+          object_reference);
+      value_proto->mutable_object_reference()->set_object_index(
+          static_cast<int64>(object_index));
       break;
     }
 

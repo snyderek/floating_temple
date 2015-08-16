@@ -19,6 +19,7 @@
 
 #include "base/logging.h"
 #include "include/c++/thread.h"
+#include "lua/table_local_object.h"
 #include "third_party/lua-5.2.3/src/lua.h"
 
 using std::size_t;
@@ -71,8 +72,8 @@ Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
 
 VersionedLocalObject* InterpreterImpl::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  // TODO(dss): Implement this.
-  return nullptr;
+  return TableLocalObject::Deserialize(lua_state_, buffer, buffer_size,
+                                       context);
 }
 
 // static

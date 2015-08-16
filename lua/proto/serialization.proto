@@ -47,6 +47,7 @@ message TValueProto {
     NUMBER = 3;
     STRING = 4;
     OBJECT_REFERENCE = 5;
+    // TODO(dss): Remove the UNSERIALIZABLE value type.
     UNSERIALIZABLE = 6;
   }
 

@@ -19,8 +19,10 @@
 
 #include "base/integral_types.h"
 #include "base/logging.h"
+#include "include/c++/deserialization_context.h"
 #include "include/c++/serialization_context.h"
 #include "include/c++/value.h"
+#include "lua/get_serialized_lua_value_type.h"
 #include "lua/interpreter_impl.h"
 #include "lua/proto/serialization.pb.h"
 #include "third_party/lua-5.2.3/src/lobject.h"
@@ -64,6 +66,7 @@ void LuaValueToValue(const TValue* lua_value, Value* value) {
     case LUA_TOBJECTREFERENCE:
       value->set_object_reference(
           lua_type,
+          // TODO(dss): Why is the namespace required here?
           *reinterpret_cast<floating_temple::ObjectReference* const*>(
               &val_(lua_value).obj_ref));
       break;
@@ -99,13 +102,12 @@ void ValueToLuaValue(const Value& value, TValue* lua_value) {
       break;
     }
 
-    case LUA_TOBJECTREFERENCE: {
+    case LUA_TOBJECTREFERENCE:
       *reinterpret_cast<floating_temple::ObjectReference**>(
           &val_(lua_value).obj_ref) =
           value.object_reference();
       settt_(lua_value, lua_type);
       break;
-    }
 
     default:
       LOG(FATAL) << "Unexpected lua value type: " << lua_type;
@@ -150,6 +152,47 @@ void LuaValueToValueProto(const TValue* lua_value, TValueProto* value_proto,
           static_cast<int64>(object_index));
       break;
     }
+
+    default:
+      LOG(FATAL) << "Unexpected lua value type: " << lua_type;
+  }
+}
+
+void ValueProtoToLuaValue(const TValueProto& value_proto, TValue* lua_value,
+                          DeserializationContext* context) {
+  CHECK(lua_value != nullptr);
+  CHECK(context != nullptr);
+
+  lua_State* const lua_state = InterpreterImpl::instance()->GetLuaState();
+  const TValueProto::Type lua_type = GetSerializedLuaValueType(value_proto);
+
+  switch (lua_type) {
+    case TValueProto::NIL:
+      setnilvalue(lua_value);
+      break;
+
+    case TValueProto::BOOLEAN:
+      setbvalue(lua_value, value_proto.boolean().value() ? 1 : 0);
+      break;
+
+    case TValueProto::NUMBER:
+      setnvalue(lua_value, value_proto.number().value());
+      break;
+
+    case TValueProto::STRING: {
+      const string& s = value_proto.string_value().value();
+      TString* const lua_string = luaS_newlstr(lua_state, s.data(), s.length());
+      setsvalue(lua_state, lua_value, lua_string);
+      break;
+    }
+
+    case TValueProto::OBJECT_REFERENCE:
+      *reinterpret_cast<floating_temple::ObjectReference**>(
+          &val_(lua_value).obj_ref) =
+          context->GetObjectReferenceByIndex(
+              value_proto.object_reference().object_index());
+      settt_(lua_value, lua_type);
+      break;
 
     default:
       LOG(FATAL) << "Unexpected lua value type: " << lua_type;

@@ -34,6 +34,7 @@
 #include "third_party/lua-5.2.3/src/ltable.h"
 #include "third_party/lua-5.2.3/src/lua.h"
 #include "third_party/lua-5.2.3/src/lvm.h"
+#include "util/math_util.h"
 
 using std::size_t;
 using std::string;
@@ -254,6 +255,106 @@ void TableLocalObject::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   // TODO(dss): Implement this.
+}
+
+// static
+TableLocalObject* TableLocalObject::Deserialize(
+    lua_State* lua_state,
+    const void* buffer,
+    size_t buffer_size,
+    DeserializationContext* context) {
+  CHECK(lua_state != nullptr);
+  CHECK(buffer != nullptr);
+
+  // Parse the protocol buffer from the input buffer.
+  TableProto table_proto;
+  CHECK(table_proto.ParseFromArray(buffer, buffer_size));
+
+  // Allocate the Table struct.
+  GCObject* gc_list = nullptr;
+  Table* const table =
+      &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
+
+  table->flags = static_cast<lu_byte>(~0);
+  table->metatable = nullptr;
+
+  // Read the array part of the table from the protocol buffer.
+  if (table_proto.has_array()) {
+    const ArrayProto& array_proto = table_proto.array();
+    const int sizearray = array_proto.element_size();
+
+    table->array = luaM_newvector(lua_state, sizearray, TValue);
+
+    for (int i = 0; i < sizearray; ++i) {
+      const ArrayElementProto& element_proto = array_proto.element(i);
+      ValueProtoToLuaValue(element_proto.value(), &table->array[i], context);
+    }
+
+    table->sizearray = sizearray;
+  } else {
+    table->array = nullptr;
+    table->sizearray = 0;
+  }
+
+  // Read the hashtable part of the table from the protocol buffer.
+  if (table_proto.has_hashtable()) {
+    const HashtableProto& hashtable_proto = table_proto.hashtable();
+
+    const int size = hashtable_proto.size();
+    CHECK(IsPowerOfTwo(static_cast<unsigned>(size)))
+        << size << " is not a power of two.";
+
+    table->lsizenode = static_cast<lu_byte>(
+        luaO_ceillog2(static_cast<unsigned>(size)));
+    table->node = luaM_newvector(lua_state, size, Node);
+
+    const int node_count = hashtable_proto.node_size();
+    int prev_node_index = 0;
+
+    for (int i = 0; i < node_count; ++i) {
+      const HashtableNodeProto& node_proto = hashtable_proto.node(i);
+      const int node_index = node_proto.index();
+
+      // Initialize unused hashtable nodes.
+      for (int j = prev_node_index + 1; j < node_index; ++j) {
+        Node* const node = gnode(table, j);
+        gnext(node) = nullptr;
+        setnilvalue(gkey(node));
+        setnilvalue(gval(node));
+      }
+
+      Node* const node = gnode(table, node_index);
+
+      if (node_proto.has_next_index()) {
+        gnext(node) = gnode(table, node_proto.next_index());
+      } else {
+        gnext(node) = nullptr;
+      }
+      ValueProtoToLuaValue(node_proto.key(), gkey(node), context);
+      ValueProtoToLuaValue(node_proto.value(), gval(node), context);
+
+      prev_node_index = node_index;
+    }
+
+    // Initialize unused hashtable nodes.
+    for (int j = prev_node_index + 1; j < size; ++j) {
+      Node* const node = gnode(table, j);
+      gnext(node) = nullptr;
+      setnilvalue(gkey(node));
+      setnilvalue(gval(node));
+    }
+
+    table->lastfree = gnode(table, hashtable_proto.last_free_index());
+  } else {
+    table->lsizenode = static_cast<lu_byte>(~0);
+    Node* const node = const_cast<Node*>(luaH_getdummynode());
+    table->node = node;
+    table->lastfree = node;
+  }
+
+  table->gclist = nullptr;
+
+  return new TableLocalObject(lua_state, table);
 }
 
 TableLocalObject::TableLocalObject(lua_State* lua_state, Table* table)

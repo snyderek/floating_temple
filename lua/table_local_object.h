@@ -16,6 +16,7 @@
 #ifndef LUA_TABLE_LOCAL_OBJECT_H_
 #define LUA_TABLE_LOCAL_OBJECT_H_
 
+#include <cstddef>
 #include <memory>
 
 #include "base/macros.h"
@@ -26,6 +27,9 @@ struct lua_State;
 struct lua_TValue;
 
 namespace floating_temple {
+
+class DeserializationContext;
+
 namespace lua {
 
 class TableLocalObject : public VersionedLocalObject {
@@ -42,6 +46,11 @@ class TableLocalObject : public VersionedLocalObject {
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
   void Dump(DumpContext* dc) const override;
+
+  static TableLocalObject* Deserialize(lua_State* lua_state,
+                                       const void* buffer,
+                                       std::size_t buffer_size,
+                                       DeserializationContext* context);
 
  private:
   TableLocalObject(lua_State* lua_state, Table* table);

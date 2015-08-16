@@ -181,6 +181,7 @@ lua_lib = lua_env.Library(
     target = 'lua/lua',
     source = Split("""
         lua/convert_value.cc
+        lua/get_serialized_lua_value_type.cc
         lua/interpreter_impl.cc
         lua/table_local_object.cc
         lua/thread_substitution.cc

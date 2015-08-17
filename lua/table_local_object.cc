@@ -91,7 +91,7 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     CHECK_EQ(parameters.size(), 1u);
 
     TValue lua_key;
-    ValueToLuaValue(parameters[0], &lua_key);
+    ValueToLuaValue(lua_state_, parameters[0], &lua_key);
 
     TValue lua_value;
     luaV_gettable(lua_state_, lua_table_.get(), &lua_key, &lua_value);
@@ -101,10 +101,10 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     CHECK_EQ(parameters.size(), 2u);
 
     TValue lua_key;
-    ValueToLuaValue(parameters[0], &lua_key);
+    ValueToLuaValue(lua_state_, parameters[0], &lua_key);
 
     TValue lua_value;
-    ValueToLuaValue(parameters[1], &lua_value);
+    ValueToLuaValue(lua_state_, parameters[1], &lua_value);
 
     luaV_settable(lua_state_, lua_table_.get(), &lua_key, &lua_value);
 
@@ -287,7 +287,8 @@ TableLocalObject* TableLocalObject::Deserialize(
 
     for (int i = 0; i < sizearray; ++i) {
       const ArrayElementProto& element_proto = array_proto.element(i);
-      ValueProtoToLuaValue(element_proto.value(), &table->array[i], context);
+      ValueProtoToLuaValue(lua_state, element_proto.value(), &table->array[i],
+                           context);
     }
 
     table->sizearray = sizearray;
@@ -330,8 +331,8 @@ TableLocalObject* TableLocalObject::Deserialize(
       } else {
         gnext(node) = nullptr;
       }
-      ValueProtoToLuaValue(node_proto.key(), gkey(node), context);
-      ValueProtoToLuaValue(node_proto.value(), gval(node), context);
+      ValueProtoToLuaValue(lua_state, node_proto.key(), gkey(node), context);
+      ValueProtoToLuaValue(lua_state, node_proto.value(), gval(node), context);
 
       prev_node_index = node_index;
     }

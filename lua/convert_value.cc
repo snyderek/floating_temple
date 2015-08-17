@@ -23,7 +23,6 @@
 #include "include/c++/serialization_context.h"
 #include "include/c++/value.h"
 #include "lua/get_serialized_lua_value_type.h"
-#include "lua/interpreter_impl.h"
 #include "lua/proto/serialization.pb.h"
 #include "third_party/lua-5.2.3/src/lobject.h"
 #include "third_party/lua-5.2.3/src/lstring.h"
@@ -76,10 +75,11 @@ void LuaValueToValue(const TValue* lua_value, Value* value) {
   }
 }
 
-void ValueToLuaValue(const Value& value, TValue* lua_value) {
+void ValueToLuaValue(lua_State* lua_state, const Value& value,
+                     TValue* lua_value) {
+  CHECK(lua_state != nullptr);
   CHECK(lua_value != nullptr);
 
-  lua_State* const lua_state = InterpreterImpl::instance()->GetLuaState();
   const int lua_type = value.local_type();
 
   switch (lua_type) {
@@ -158,12 +158,14 @@ void LuaValueToValueProto(const TValue* lua_value, TValueProto* value_proto,
   }
 }
 
-void ValueProtoToLuaValue(const TValueProto& value_proto, TValue* lua_value,
+void ValueProtoToLuaValue(lua_State* lua_state,
+                          const TValueProto& value_proto,
+                          TValue* lua_value,
                           DeserializationContext* context) {
+  CHECK(lua_state != nullptr);
   CHECK(lua_value != nullptr);
   CHECK(context != nullptr);
 
-  lua_State* const lua_state = InterpreterImpl::instance()->GetLuaState();
   const TValueProto::Type lua_type = GetSerializedLuaValueType(value_proto);
 
   switch (lua_type) {

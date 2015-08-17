@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+struct lua_State;
 struct lua_TValue;
 
 namespace floating_temple {
@@ -25,15 +26,15 @@ namespace lua {
 
 class TValueProto;
 
-// TODO(dss): Add the lua_State pointer as a parameter to functions that require
-// it.
-
 void LuaValueToValue(const lua_TValue* lua_value, Value* value);
-void ValueToLuaValue(const Value& value, lua_TValue* lua_value);
+void ValueToLuaValue(lua_State* lua_state, const Value& value,
+                     lua_TValue* lua_value);
 
 void LuaValueToValueProto(const lua_TValue* lua_value, TValueProto* value_proto,
                           SerializationContext* context);
-void ValueProtoToLuaValue(const TValueProto& value_proto, lua_TValue* lua_value,
+void ValueProtoToLuaValue(lua_State* lua_state,
+                          const TValueProto& value_proto,
+                          lua_TValue* lua_value,
                           DeserializationContext* context);
 
 }  // namespace lua

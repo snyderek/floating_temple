@@ -13,27 +13,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "toy_lang/interpreter_impl.h"
+#ifndef TOY_LANG_ZOO_RANGE_FUNCTION_H_
+#define TOY_LANG_ZOO_RANGE_FUNCTION_H_
 
-#include <cstddef>
-
-#include "toy_lang/zoo/local_object_impl.h"
-
-using std::size_t;
+#include "base/macros.h"
+#include "toy_lang/zoo/function.h"
 
 namespace floating_temple {
 namespace toy_lang {
 
-InterpreterImpl::InterpreterImpl() {
-}
+class RangeFunction : public Function {
+ public:
+  RangeFunction();
 
-InterpreterImpl::~InterpreterImpl() {
-}
+  VersionedLocalObject* Clone() const override;
+  void Dump(DumpContext* dc) const override;
 
-VersionedLocalObject* InterpreterImpl::DeserializeObject(
-    const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  return LocalObjectImpl::Deserialize(buffer, buffer_size, context);
-}
+ protected:
+  void PopulateObjectProto(ObjectProto* object_proto,
+                           SerializationContext* context) const override;
+  ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RangeFunction);
+};
 
 }  // namespace toy_lang
 }  // namespace floating_temple
+
+#endif  // TOY_LANG_ZOO_RANGE_FUNCTION_H_

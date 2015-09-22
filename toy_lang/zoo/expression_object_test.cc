@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "toy_lang/local_object_impl.h"
+#include "toy_lang/zoo/expression_object.h"
 
 #include <memory>
 #include <string>
@@ -77,7 +77,7 @@ class MockObjectReference : public ObjectReference {
   DISALLOW_COPY_AND_ASSIGN(MockObjectReference);
 };
 
-TEST(LocalObjectImplTest, InvokeMethodOnExpressionObject) {
+TEST(ExpressionObjectTest, InvokeMethodOnExpressionObject) {
   MockThread thread;
   MockObjectReference symbol_table_object_reference;
 

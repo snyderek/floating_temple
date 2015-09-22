@@ -13,27 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "toy_lang/interpreter_impl.h"
+#ifndef TOY_LANG_ZOO_NONE_OBJECT_H_
+#define TOY_LANG_ZOO_NONE_OBJECT_H_
 
-#include <cstddef>
-
+#include "base/macros.h"
 #include "toy_lang/zoo/local_object_impl.h"
-
-using std::size_t;
 
 namespace floating_temple {
 namespace toy_lang {
 
-InterpreterImpl::InterpreterImpl() {
-}
+class NoneObject : public LocalObjectImpl {
+ public:
+  NoneObject();
 
-InterpreterImpl::~InterpreterImpl() {
-}
+  VersionedLocalObject* Clone() const override;
+  void InvokeMethod(Thread* thread,
+                    ObjectReference* object_reference,
+                    const std::string& method_name,
+                    const std::vector<Value>& parameters,
+                    Value* return_value) override;
+  void Dump(DumpContext* dc) const override;
 
-VersionedLocalObject* InterpreterImpl::DeserializeObject(
-    const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  return LocalObjectImpl::Deserialize(buffer, buffer_size, context);
-}
+ protected:
+  void PopulateObjectProto(ObjectProto* object_proto,
+                           SerializationContext* context) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoneObject);
+};
 
 }  // namespace toy_lang
 }  // namespace floating_temple
+
+#endif  // TOY_LANG_ZOO_NONE_OBJECT_H_

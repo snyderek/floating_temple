@@ -398,12 +398,42 @@ toy_lang_lib = ft_env.Library(
         toy_lang/get_serialized_object_type.cc
         toy_lang/interpreter_impl.cc
         toy_lang/lexer.cc
-        toy_lang/local_object_impl.cc
         toy_lang/parser.cc
         toy_lang/program_object.cc
         toy_lang/run_toy_lang_program.cc
         toy_lang/symbol_table.cc
         toy_lang/token.cc
+        toy_lang/zoo/add_function.cc
+        toy_lang/zoo/append_function.cc
+        toy_lang/zoo/begin_tran_function.cc
+        toy_lang/zoo/bool_object.cc
+        toy_lang/zoo/end_tran_function.cc
+        toy_lang/zoo/expression_object.cc
+        toy_lang/zoo/expression_object_test.cc
+        toy_lang/zoo/for_function.cc
+        toy_lang/zoo/function.cc
+        toy_lang/zoo/get_at_function.cc
+        toy_lang/zoo/if_function.cc
+        toy_lang/zoo/int_object.cc
+        toy_lang/zoo/is_set_function.cc
+        toy_lang/zoo/len_function.cc
+        toy_lang/zoo/less_than_function.cc
+        toy_lang/zoo/list_function.cc
+        toy_lang/zoo/list_object.cc
+        toy_lang/zoo/local_object_impl.cc
+        toy_lang/zoo/map_get_function.cc
+        toy_lang/zoo/map_is_set_function.cc
+        toy_lang/zoo/map_object.cc
+        toy_lang/zoo/map_set_function.cc
+        toy_lang/zoo/none_object.cc
+        toy_lang/zoo/not_function.cc
+        toy_lang/zoo/print_function.cc
+        toy_lang/zoo/range_function.cc
+        toy_lang/zoo/range_iterator_object.cc
+        toy_lang/zoo/set_variable_function.cc
+        toy_lang/zoo/string_object.cc
+        toy_lang/zoo/symbol_table_object.cc
+        toy_lang/zoo/while_function.cc
       """),
   )
 
@@ -821,10 +851,10 @@ toy_lang_lexer_test = ft_env.Program(
       ],
   )
 
-toy_lang_local_object_impl_test = ft_env.Program(
-    target = 'toy_lang/local_object_impl_test',
+toy_lang_zoo_expression_object_test = ft_env.Program(
+    target = 'toy_lang/zoo/expression_object_test',
     source = Split("""
-        toy_lang/local_object_impl_test.cc
+        toy_lang/zoo/expression_object_test.cc
       """) + [
         toy_lang_lib,
         value_lib,
@@ -875,7 +905,7 @@ cxx_tests = [
     python_interpreter_impl_test,
     python_long_local_object_test,
     toy_lang_lexer_test,
-    toy_lang_local_object_impl_test,
+    toy_lang_zoo_expression_object_test,
     util_dump_context_impl_test,
     util_stl_util_test,
   ]

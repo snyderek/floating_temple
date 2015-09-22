@@ -13,27 +13,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "toy_lang/interpreter_impl.h"
+#ifndef TOY_LANG_ZOO_FUNCTION_H_
+#define TOY_LANG_ZOO_FUNCTION_H_
 
-#include <cstddef>
+#include <vector>
 
 #include "toy_lang/zoo/local_object_impl.h"
 
-using std::size_t;
-
 namespace floating_temple {
+
+class ObjectReference;
+class Thread;
+
 namespace toy_lang {
 
-InterpreterImpl::InterpreterImpl() {
-}
+class Function : public LocalObjectImpl {
+ public:
+  void InvokeMethod(Thread* thread,
+                    ObjectReference* object_reference,
+                    const std::string& method_name,
+                    const std::vector<Value>& parameters,
+                    Value* return_value) override;
 
-InterpreterImpl::~InterpreterImpl() {
-}
-
-VersionedLocalObject* InterpreterImpl::DeserializeObject(
-    const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  return LocalObjectImpl::Deserialize(buffer, buffer_size, context);
-}
+ protected:
+  virtual ObjectReference* Call(
+      ObjectReference* symbol_table_object, Thread* thread,
+      const std::vector<ObjectReference*>& parameters) const = 0;
+};
 
 }  // namespace toy_lang
 }  // namespace floating_temple
+
+#endif  // TOY_LANG_ZOO_FUNCTION_H_

@@ -28,9 +28,12 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/get_serialized_expression_type.h"
-#include "toy_lang/local_object_impl.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
+#include "toy_lang/zoo/expression_object.h"
+#include "toy_lang/zoo/int_object.h"
+#include "toy_lang/zoo/list_object.h"
+#include "toy_lang/zoo/string_object.h"
 
 using std::string;
 using std::vector;

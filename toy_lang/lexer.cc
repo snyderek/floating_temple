@@ -17,22 +17,25 @@
 
 #include <cctype>
 #include <cerrno>
+#include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <queue>
 #include <string>
 
+#include "base/escape.h"
+#include "base/integral_types.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "toy_lang/token.h"
 
 using std::FILE;
-using std::atoll;
 using std::fgetc;
 using std::isdigit;
 using std::isgraph;
 using std::isspace;
 using std::string;
+using std::strtoll;
 
 namespace floating_temple {
 namespace toy_lang {
@@ -252,9 +255,26 @@ void Lexer::FetchTokens() const {
 }
 
 void Lexer::YieldIntLiteral(State new_state) const {
+  CHECK(!attribute_.empty());
+
+  char* endptr = nullptr;
+  errno = 0;
+  const long long n = strtoll(attribute_.c_str(), &endptr, 10);
+  if (n == LLONG_MIN && errno == ERANGE) {
+    LOG(FATAL) << "Underflow in integer literal: \"" << CEscape(attribute_)
+               << "\"";
+  }
+  if (n == LLONG_MAX && errno == ERANGE) {
+    LOG(FATAL) << "Overflow in integer literal: \"" << CEscape(attribute_)
+               << "\"";
+  }
+  if (*endptr != '\0') {
+    LOG(FATAL) << "Integer literal is invalid: \"" << CEscape(attribute_)
+               << "\"";
+  }
+
   tokens_.push(Token());
-  // TODO(dss): Check for integer overflow.
-  Token::CreateIntLiteral(&tokens_.back(), atoll(attribute_.c_str()));
+  Token::CreateIntLiteral(&tokens_.back(), static_cast<int64>(n));
   ChangeState(new_state);
 }
 

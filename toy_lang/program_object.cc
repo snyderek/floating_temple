@@ -95,14 +95,14 @@ bool PopulateSymbolTable(ObjectReference* symbol_table_object, Thread* thread,
   ADD_SYMBOL("for", new ForFunction());
   ADD_SYMBOL("range", new RangeFunction());
   ADD_SYMBOL("print", new PrintFunction());
-  ADD_SYMBOL("+", new AddFunction());
+  ADD_SYMBOL("add", new AddFunction());
   ADD_SYMBOL("begin_tran", new BeginTranFunction());
   ADD_SYMBOL("end_tran", new EndTranFunction());
   ADD_SYMBOL("if", new IfFunction());
   ADD_SYMBOL("not", new NotFunction());
   ADD_SYMBOL("is_set", new IsSetFunction());
   ADD_SYMBOL("while", new WhileFunction());
-  ADD_SYMBOL("<", new LessThanFunction());
+  ADD_SYMBOL("lt", new LessThanFunction());
   ADD_SYMBOL("len", new LenFunction());
   ADD_SYMBOL("append", new AppendFunction());
   ADD_SYMBOL("get_at", new GetAtFunction());

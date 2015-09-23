@@ -40,7 +40,6 @@ class Lexer {
   enum State {
     START,
     COMMENT,
-    MINUS_SIGN,
     INT_LITERAL,
     STRING_LITERAL,
     IDENTIFIER,

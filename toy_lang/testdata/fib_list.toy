@@ -11,9 +11,9 @@
   ]})
   (end_tran)
 
-  (while {(< (len lst) 20)} {[
+  (while {(lt (len lst) 20)} {[
     (begin_tran)
-    (append lst (+ (get_at lst -2) (get_at lst -1)))
+    (append lst (add (get_at lst -2) (get_at lst -1)))
     (end_tran)
 
     (begin_tran)

@@ -8,6 +8,6 @@
     (print a)
     (set "temp" a)
     (set "a" b)
-    (set "b" (+ b temp))
+    (set "b" (add b temp))
   ]})
 ]

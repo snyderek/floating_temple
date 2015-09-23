@@ -31,8 +31,8 @@
 
 using std::FILE;
 using std::fgetc;
+using std::isalpha;
 using std::isdigit;
-using std::isgraph;
 using std::isspace;
 using std::string;
 using std::strtoll;
@@ -43,6 +43,10 @@ namespace {
 
 string Hex(int n) {
   return StringPrintf("%02X", n);
+}
+
+bool IsIdentifierChar(char c) {
+  return isalpha(static_cast<int>(c)) != 0 || c == '_';
 }
 
 }  // namespace
@@ -111,9 +115,6 @@ void Lexer::FetchTokens() const {
           YieldBeginExpression(START);
         } else if (char_c == ')') {
           YieldEndExpression(END_OF_EXPRESSION);
-        } else if (char_c == '-') {
-          ChangeState(MINUS_SIGN);
-          attribute_ += '-';
         } else if (char_c == '[') {
           YieldBeginList(START);
         } else if (char_c == ']') {
@@ -123,10 +124,10 @@ void Lexer::FetchTokens() const {
         } else if (char_c == '}') {
           YieldEndBlock(END_OF_EXPRESSION);
         } else if (isspace(c)) {
-        } else if (isdigit(c)) {
+        } else if (char_c == '+' || char_c == '-' || isdigit(c)) {
           ChangeState(INT_LITERAL);
           attribute_ += char_c;
-        } else if (isgraph(c)) {
+        } else if (IsIdentifierChar(char_c)) {
           ChangeState(IDENTIFIER);
           attribute_ += char_c;
         } else {
@@ -139,36 +140,6 @@ void Lexer::FetchTokens() const {
           ChangeState(END_OF_FILE);
         } else if (char_c == '\n' || char_c == '\r') {
           ChangeState(START);
-        }
-        break;
-
-      case MINUS_SIGN:
-        if (c == EOF) {
-          YieldIdentifier(END_OF_FILE);
-        } else if (char_c == '#') {
-          YieldIdentifier(COMMENT);
-        } else if (char_c == ')') {
-          YieldIdentifier(END_OF_EXPRESSION);
-          YieldEndExpression(END_OF_EXPRESSION);
-        } else if (char_c == ']') {
-          YieldIdentifier(END_OF_EXPRESSION);
-          YieldEndList(END_OF_EXPRESSION);
-        } else if (char_c == '}') {
-          YieldIdentifier(END_OF_EXPRESSION);
-          YieldEndBlock(END_OF_EXPRESSION);
-        } else if (isspace(c)) {
-          YieldIdentifier(START);
-        } else if (isdigit(c)) {
-          ChangeState(INT_LITERAL);
-          attribute_ += '-';
-          attribute_ += char_c;
-        } else if (isgraph(c) && char_c != '"' && char_c != '(' &&
-                   char_c != '[' && char_c != '{') {
-          ChangeState(IDENTIFIER);
-          attribute_ += '-';
-          attribute_ += char_c;
-        } else {
-          LOG(FATAL) << "Unexpected character: '\\x" << Hex(c) << "'";
         }
         break;
 
@@ -222,9 +193,8 @@ void Lexer::FetchTokens() const {
           YieldEndBlock(END_OF_EXPRESSION);
         } else if (isspace(c)) {
           YieldIdentifier(START);
-        } else if (isgraph(c) && char_c != '"' && char_c != '(' &&
-                   char_c != '[' && char_c != '{') {
-          attribute_+= char_c;
+        } else if (IsIdentifierChar(char_c)) {
+          attribute_ += char_c;
         } else {
           LOG(FATAL) << "Unexpected character: '\\x" << Hex(c) << "'";
         }

@@ -73,42 +73,6 @@ TEST(LexerTest, NegativeIntegerLiteral) {
   EXPECT_FALSE(lexer.HasNextToken());
 }
 
-TEST(LexerTest, Hyphen) {
-  MemFile mem_file("-");
-  Lexer lexer(mem_file.fp());
-
-  Token token;
-  lexer.GetNextToken(&token);
-  EXPECT_EQ(Token::IDENTIFIER, token.type());
-  EXPECT_EQ("-", token.identifier());
-
-  EXPECT_FALSE(lexer.HasNextToken());
-}
-
-TEST(LexerTest, DoubleHyphen) {
-  MemFile mem_file("--");
-  Lexer lexer(mem_file.fp());
-
-  Token token;
-  lexer.GetNextToken(&token);
-  EXPECT_EQ(Token::IDENTIFIER, token.type());
-  EXPECT_EQ("--", token.identifier());
-
-  EXPECT_FALSE(lexer.HasNextToken());
-}
-
-TEST(LexerTest, HyphenFollowedByComment) {
-  MemFile mem_file("-#");
-  Lexer lexer(mem_file.fp());
-
-  Token token;
-  lexer.GetNextToken(&token);
-  EXPECT_EQ(Token::IDENTIFIER, token.type());
-  EXPECT_EQ("-", token.identifier());
-
-  EXPECT_FALSE(lexer.HasNextToken());
-}
-
 }  // namespace
 }  // namespace toy_lang
 }  // namespace floating_temple

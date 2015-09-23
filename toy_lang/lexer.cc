@@ -53,7 +53,8 @@ bool IsIdentifierChar(char c) {
 
 Lexer::Lexer(FILE* fp)
     : fp_(CHECK_NOTNULL(fp)),
-      state_(START) {
+      state_(START),
+      line_number_(1) {
 }
 
 Lexer::~Lexer() {
@@ -103,6 +104,10 @@ void Lexer::FetchTokens() const {
 
     const char char_c = static_cast<char>(static_cast<unsigned char>(c));
 
+    if (char_c == '\n') {
+      ++line_number_;
+    }
+
     switch (state_) {
       case START:
         if (c == EOF) {
@@ -131,14 +136,15 @@ void Lexer::FetchTokens() const {
           ChangeState(IDENTIFIER);
           attribute_ += char_c;
         } else {
-          LOG(FATAL) << "Unexpected character: '\\x" << Hex(c) << "'";
+          LOG(FATAL) << "Line " << line_number_ << ": Unexpected character: "
+                     << "'\\x" << Hex(c) << "'";
         }
         break;
 
       case COMMENT:
         if (c == EOF) {
           ChangeState(END_OF_FILE);
-        } else if (char_c == '\n' || char_c == '\r') {
+        } else if (char_c == '\n') {
           ChangeState(START);
         }
         break;
@@ -162,7 +168,8 @@ void Lexer::FetchTokens() const {
         } else if (isdigit(c)) {
           attribute_ += char_c;
         } else {
-          LOG(FATAL) << "Unexpected character: '\\x" << Hex(c) << "'";
+          LOG(FATAL) << "Line " << line_number_ << ": Unexpected character: "
+                     << "'\\x" << Hex(c) << "'";
         }
         break;
 
@@ -196,7 +203,8 @@ void Lexer::FetchTokens() const {
         } else if (IsIdentifierChar(char_c)) {
           attribute_ += char_c;
         } else {
-          LOG(FATAL) << "Unexpected character: '\\x" << Hex(c) << "'";
+          LOG(FATAL) << "Line " << line_number_ << ": Unexpected character: "
+                     << "'\\x" << Hex(c) << "'";
         }
         break;
 
@@ -214,7 +222,8 @@ void Lexer::FetchTokens() const {
         } else if (isspace(c)) {
           ChangeState(START);
         } else {
-          LOG(FATAL) << "Unexpected character: '\\x" << Hex(c) << "'";
+          LOG(FATAL) << "Line " << line_number_ << ": Unexpected character: "
+                     << "'\\x" << Hex(c) << "'";
         }
         break;
 
@@ -231,16 +240,16 @@ void Lexer::YieldIntLiteral(State new_state) const {
   errno = 0;
   const long long n = strtoll(attribute_.c_str(), &endptr, 10);
   if (n == LLONG_MIN && errno == ERANGE) {
-    LOG(FATAL) << "Underflow in integer literal: \"" << CEscape(attribute_)
-               << "\"";
+    LOG(FATAL) << "Line " << line_number_ << ": Underflow in integer literal: "
+               << "\"" << CEscape(attribute_) << "\"";
   }
   if (n == LLONG_MAX && errno == ERANGE) {
-    LOG(FATAL) << "Overflow in integer literal: \"" << CEscape(attribute_)
-               << "\"";
+    LOG(FATAL) << "Line " << line_number_ << ": Overflow in integer literal: "
+               << "\"" << CEscape(attribute_) << "\"";
   }
   if (*endptr != '\0') {
-    LOG(FATAL) << "Integer literal is invalid: \"" << CEscape(attribute_)
-               << "\"";
+    LOG(FATAL) << "Line " << line_number_ << ": Integer literal is invalid: "
+               << "\"" << CEscape(attribute_) << "\"";
   }
 
   tokens_.push(Token());

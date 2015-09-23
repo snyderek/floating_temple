@@ -65,6 +65,7 @@ class Lexer {
   mutable std::queue<Token> tokens_;
   mutable State state_;
   mutable std::string attribute_;
+  mutable int line_number_;
 
   DISALLOW_COPY_AND_ASSIGN(Lexer);
 };

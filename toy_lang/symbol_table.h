@@ -17,23 +17,42 @@
 #define TOY_LANG_SYMBOL_TABLE_H_
 
 #include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "base/linked_ptr.h"
+#include "base/macros.h"
 
 namespace floating_temple {
 
+class DumpContext;
 class ObjectReference;
-class Thread;
 
 namespace toy_lang {
 
-bool EnterScope(ObjectReference* symbol_table_object, Thread* thread);
-bool LeaveScope(ObjectReference* symbol_table_object, Thread* thread);
+// This class is thread-compatible.
+class SymbolTable {
+ public:
+  SymbolTable();
 
-bool IsVariableSet(ObjectReference* symbol_table_object, Thread* thread,
-                   const std::string& name, bool* is_set);
-bool GetVariable(ObjectReference* symbol_table_object, Thread* thread,
-                 const std::string& name, ObjectReference** object);
-bool SetVariable(ObjectReference* symbol_table_object, Thread* thread,
-                 const std::string& name, ObjectReference* object);
+  void EnterScope();
+  void LeaveScope();
+
+  bool IsVariableSet(const std::string& name);
+  ObjectReference* GetVariable(const std::string& name);
+  void SetVariable(const std::string& name, ObjectReference* object);
+
+  void Dump(DumpContext* dc) const;
+
+ private:
+  typedef std::vector<linked_ptr<std::unordered_map<std::string,
+                                                    ObjectReference*>>>
+      ScopeVector;
+
+  ScopeVector scopes_;
+
+  DISALLOW_COPY_AND_ASSIGN(SymbolTableObject);
+};
 
 }  // namespace toy_lang
 }  // namespace floating_temple

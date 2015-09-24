@@ -47,6 +47,7 @@
 #include "toy_lang/zoo/range_iterator_object.h"
 #include "toy_lang/zoo/set_variable_function.h"
 #include "toy_lang/zoo/string_object.h"
+#include "toy_lang/zoo/symbol_table_object.h"
 #include "toy_lang/zoo/while_function.h"
 
 using std::size_t;

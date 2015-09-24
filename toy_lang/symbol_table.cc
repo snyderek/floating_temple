@@ -16,94 +16,91 @@
 #include "toy_lang/symbol_table.h"
 
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/escape.h"
 #include "base/logging.h"
 #include "include/c++/object_reference.h"
-#include "util/dump_context.h"
+#include "include/c++/thread.h"
+#include "include/c++/value.h"
 
-using std::pair;
 using std::string;
-using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {
 namespace toy_lang {
 
-void SymbolTable::EnterScope() {
-  scopes_.emplace_back(new unordered_map<string, ObjectReference*>());
+bool EnterScope(ObjectReference* symbol_table_object, Thread* thread) {
+  CHECK(thread != nullptr);
+
+  Value dummy;
+  return thread->CallMethod(symbol_table_object, "enter_scope", vector<Value>(),
+                            &dummy);
 }
 
-void SymbolTable::LeaveScope() {
-  CHECK(!scopes_.empty());
-  scopes_.pop_back();
+bool LeaveScope(ObjectReference* symbol_table_object, Thread* thread) {
+  CHECK(thread != nullptr);
+
+  Value dummy;
+  return thread->CallMethod(symbol_table_object, "leave_scope", vector<Value>(),
+                            &dummy);
 }
 
-bool SymbolTable::IsVariableSet(const string& name) {
+bool IsVariableSet(ObjectReference* symbol_table_object, Thread* thread,
+                   const string& name, bool* is_set) {
+  CHECK(thread != nullptr);
+  CHECK(is_set != nullptr);
+
   VLOG(1) << "Symbol table: Is set \"" << CEscape(name) << "\"";
 
-  for (ScopeVector::const_reverse_iterator it = scopes_.rbegin();
-       it != scopes_.rend(); ++it) {
-    const unordered_map<string, ObjectReference*>& symbol_map = **it;
+  vector<Value> params(1);
+  params[0].set_string_value(0, name);
 
-    if (symbol_map.find(name) != symbol_map.end()) {
-      return true;
-    }
+  Value is_set_value;
+  if (!thread->CallMethod(symbol_table_object, "is_set", params,
+                          &is_set_value)) {
+    return false;
   }
 
-  return false;
+  *is_set = is_set_value.bool_value();
+  return true;
 }
 
-ObjectReference* SymbolTable::GetVariable(const string& name) {
+bool GetVariable(ObjectReference* symbol_table_object, Thread* thread,
+                 const string& name, ObjectReference** object) {
+  CHECK(thread != nullptr);
+  CHECK(object != nullptr);
+
   VLOG(1) << "Symbol table: Get \"" << CEscape(name) << "\"";
 
-  for (ScopeVector::const_reverse_iterator it = scopes_.rbegin();
-       it != scopes_.rend(); ++it) {
-    const unordered_map<string, ObjectReference*>& symbol_map = **it;
+  vector<Value> params(1);
+  params[0].set_string_value(0, name);
 
-    const unordered_map<string, ObjectReference*>::const_iterator it2 =
-        symbol_map.find(name);
-    if (it2 != symbol_map.end()) {
-      return it2->second;
-    }
+  Value object_value;
+  if (!thread->CallMethod(symbol_table_object, "get", params, &object_value)) {
+    return false;
   }
 
-  LOG(FATAL) << "Symbol not found: \"" << CEscape(name) << "\"";
+  *object = object_value.object_reference();
+  return true;
 }
 
-void SymbolTable::SetVariable(const string& name, ObjectReference* object) {
+bool SetVariable(ObjectReference* symbol_table_object, Thread* thread,
+                 const string& name, ObjectReference* object) {
+  CHECK(thread != nullptr);
+
   VLOG(1) << "Symbol table: Set \"" << CEscape(name) << "\"";
 
-  for (ScopeVector::reverse_iterator it = scopes_.rbegin();
-       it != scopes_.rend(); ++it) {
-    unordered_map<string, ObjectReference*>* const symbol_map = it->get();
+  vector<Value> params(2);
+  params[0].set_string_value(0, name);
+  params[1].set_object_reference(0, object);
 
-    const unordered_map<string, ObjectReference*>::iterator it2 =
-        symbol_map->find(name);
-    if (it2 != symbol_map->end()) {
-      it2->second = object;
-      return;
-    }
+  Value dummy;
+  if (!thread->CallMethod(symbol_table_object, "set", params, &dummy)) {
+    return false;
   }
 
-  (*scopes_.back())[name] = object;
-}
-
-void SymbolTable::Dump(DumpContext* dc) const {
-  CHECK(dc != nullptr);
-
-  dc->BeginList();
-  for (const auto& symbol_map : scopes_) {
-    dc->BeginMap();
-    for (const pair<string, ObjectReference*>& map_pair : *symbol_map) {
-      dc->AddString(map_pair.first);
-      map_pair.second->Dump(dc);
-    }
-    dc->End();
-  }
-  dc->End();
+  return true;
 }
 
 }  // namespace toy_lang

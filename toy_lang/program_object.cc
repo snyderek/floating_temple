@@ -34,6 +34,7 @@
 #include "toy_lang/zoo/for_function.h"
 #include "toy_lang/zoo/get_at_function.h"
 #include "toy_lang/zoo/if_function.h"
+#include "toy_lang/zoo/is_set_function.h"
 #include "toy_lang/zoo/len_function.h"
 #include "toy_lang/zoo/less_than_function.h"
 #include "toy_lang/zoo/list_function.h"
@@ -43,6 +44,8 @@
 #include "toy_lang/zoo/map_set_function.h"
 #include "toy_lang/zoo/not_function.h"
 #include "toy_lang/zoo/print_function.h"
+#include "toy_lang/zoo/set_variable_function.h"
+#include "toy_lang/zoo/symbol_table_object.h"
 #include "toy_lang/zoo/range_function.h"
 #include "toy_lang/zoo/while_function.h"
 #include "util/dump_context.h"
@@ -88,6 +91,7 @@ bool PopulateSymbolTable(ObjectReference* symbol_table_object, Thread* thread,
   ADD_SYMBOL("false", new BoolObject(false));
   ADD_SYMBOL("true", new BoolObject(true));
   ADD_SYMBOL("list", new ListFunction());
+  ADD_SYMBOL("set", new SetVariableFunction());
   ADD_SYMBOL("for", new ForFunction());
   ADD_SYMBOL("range", new RangeFunction());
   ADD_SYMBOL("print", new PrintFunction());
@@ -96,6 +100,7 @@ bool PopulateSymbolTable(ObjectReference* symbol_table_object, Thread* thread,
   ADD_SYMBOL("end_tran", new EndTranFunction());
   ADD_SYMBOL("if", new IfFunction());
   ADD_SYMBOL("not", new NotFunction());
+  ADD_SYMBOL("is_set", new IsSetFunction());
   ADD_SYMBOL("while", new WhileFunction());
   ADD_SYMBOL("lt", new LessThanFunction());
   ADD_SYMBOL("len", new LenFunction());
@@ -134,6 +139,8 @@ void ProgramObject::InvokeMethod(Thread* thread,
       new MapObject(), "shared");
   ObjectReference* const expression_object = thread->CreateVersionedObject(
       new ExpressionObject(expression_), "");
+  ObjectReference* const symbol_table_object = thread->CreateVersionedObject(
+      new SymbolTableObject(), "");
 
   if (!PopulateSymbolTable(symbol_table_object, thread, shared_map_object)) {
     return;

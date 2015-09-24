@@ -1,13 +1,13 @@
 # Fibonacci sequence
 
 [
-  (def 'a (var 0))
-  (def 'b (var 1))
+  (set "a" 0)
+  (set "b" 1)
 
-  (for 'i (range 20) {[
-    (print (get a))
-    (def 'temp (get a))
-    (set a (get b))
-    (set b (add (get b) temp))
+  (for "i" (range 20) {[
+    (print a)
+    (set "temp" a)
+    (set "a" b)
+    (set "b" (add b temp))
   ]})
 ]

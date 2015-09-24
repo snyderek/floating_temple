@@ -44,9 +44,9 @@
 #include "toy_lang/zoo/map_set_function.h"
 #include "toy_lang/zoo/not_function.h"
 #include "toy_lang/zoo/print_function.h"
+#include "toy_lang/zoo/range_function.h"
 #include "toy_lang/zoo/set_variable_function.h"
 #include "toy_lang/zoo/symbol_table_object.h"
-#include "toy_lang/zoo/range_function.h"
 #include "toy_lang/zoo/while_function.h"
 #include "util/dump_context.h"
 

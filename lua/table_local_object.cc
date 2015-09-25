@@ -117,10 +117,10 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 
     LuaValueToValue(&lua_length, return_value);
   } else if (method_name == "setlist") {
-    CHECK_EQ(parameters.size(), 2u);
+    CHECK_GE(parameters.size(), 1u);
 
-    int n = static_cast<int>(parameters[0].int64_value());
-    const int c = static_cast<int>(parameters[1].int64_value());
+    int n = static_cast<int>(parameters.size() - 1u);
+    const int c = static_cast<int>(parameters[0].int64_value());
 
     // This code is mostly copy-pasted from the luaV_execute function in
     // "third_party/lua-5.2.3/src/lvm.c".
@@ -130,10 +130,11 @@ void TableLocalObject::InvokeMethod(Thread* thread,
       luaH_resizearray(lua_state_, h, last);
     }
     for (; n > 0; n--) {
-      // TODO(dss): [BUG] lua_table_ is not an array.
-      TValue* const val = lua_table_.get() + n;
-      luaH_setint(lua_state_, h, last--, val);
-      luaC_barrierback(lua_state_, obj2gco(h), val);
+      TValue lua_value;
+      ValueToLuaValue(lua_state_, parameters[n], &lua_value);
+
+      luaH_setint(lua_state_, h, last--, &lua_value);
+      luaC_barrierback(lua_state_, obj2gco(h), &lua_value);
     }
 
     return_value->set_empty(LUA_TNIL);

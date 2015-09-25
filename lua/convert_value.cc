@@ -65,9 +65,7 @@ void LuaValueToValue(const TValue* lua_value, Value* value) {
     case LUA_TOBJECTREFERENCE:
       value->set_object_reference(
           lua_type,
-          // TODO(dss): Why is the namespace required here?
-          *reinterpret_cast<floating_temple::ObjectReference* const*>(
-              &val_(lua_value).obj_ref));
+          *reinterpret_cast<ObjectReference* const*>(&val_(lua_value).obj_ref));
       break;
 
     default:
@@ -103,8 +101,7 @@ void ValueToLuaValue(lua_State* lua_state, const Value& value,
     }
 
     case LUA_TOBJECTREFERENCE:
-      *reinterpret_cast<floating_temple::ObjectReference**>(
-          &val_(lua_value).obj_ref) =
+      *reinterpret_cast<ObjectReference**>(&val_(lua_value).obj_ref) =
           value.object_reference();
       settt_(lua_value, lua_type);
       break;
@@ -144,8 +141,7 @@ void LuaValueToValueProto(const TValue* lua_value, TValueProto* value_proto,
 
     case LUA_TOBJECTREFERENCE: {
       ObjectReference* const object_reference =
-          *reinterpret_cast<floating_temple::ObjectReference* const*>(
-              &val_(lua_value).obj_ref);
+          *reinterpret_cast<ObjectReference* const*>(&val_(lua_value).obj_ref);
       const int object_index = context->GetIndexForObjectReference(
           object_reference);
       value_proto->mutable_object_reference()->set_object_index(
@@ -189,8 +185,7 @@ void ValueProtoToLuaValue(lua_State* lua_state,
     }
 
     case TValueProto::OBJECT_REFERENCE:
-      *reinterpret_cast<floating_temple::ObjectReference**>(
-          &val_(lua_value).obj_ref) =
+      *reinterpret_cast<ObjectReference**>(&val_(lua_value).obj_ref) =
           context->GetObjectReferenceByIndex(
               value_proto.object_reference().object_index());
       settt_(lua_value, lua_type);

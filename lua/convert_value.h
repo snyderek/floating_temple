@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef LUA_CONVERT_VALUE_H_
+#define LUA_CONVERT_VALUE_H_
+
 struct lua_State;
 struct lua_TValue;
 
@@ -39,3 +42,5 @@ void ValueProtoToLuaValue(lua_State* lua_state,
 
 }  // namespace lua
 }  // namespace floating_temple
+
+#endif  // LUA_CONVERT_VALUE_H_

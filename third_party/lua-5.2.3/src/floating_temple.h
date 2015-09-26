@@ -19,10 +19,10 @@ extern "C" {
 #include "luaconf.h"
 
 
-/* This hook function returns non-zero if the objects are equal. */
-typedef int (*ft_ObjectReferencesEqualHook)
-    (const struct ObjectReference *obj_ref1,
-     const struct ObjectReference *obj_ref2);
+/* This hook function returns non-zero if the Floating Temple objects are equal.
+ */
+typedef int (*ft_ObjectReferencesEqualHook) (const void *ft_obj1,
+                                             const void *ft_obj2);
 LUAI_DDEC ft_ObjectReferencesEqualHook ft_objectreferencesequalhook;
 LUA_API ft_ObjectReferencesEqualHook ft_installobjectreferencesequalhook
     (ft_ObjectReferencesEqualHook hook);

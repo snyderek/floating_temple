@@ -62,10 +62,9 @@ void LuaValueToValue(const TValue* lua_value, Value* value) {
       break;
     }
 
-    case LUA_TOBJECTREFERENCE:
+    case LUA_TFLOATINGTEMPLEOBJECT:
       value->set_object_reference(
-          lua_type,
-          *reinterpret_cast<ObjectReference* const*>(&val_(lua_value).obj_ref));
+          lua_type, static_cast<ObjectReference*>(val_(lua_value).ft_obj));
       break;
 
     default:
@@ -100,9 +99,8 @@ void ValueToLuaValue(lua_State* lua_state, const Value& value,
       break;
     }
 
-    case LUA_TOBJECTREFERENCE:
-      *reinterpret_cast<ObjectReference**>(&val_(lua_value).obj_ref) =
-          value.object_reference();
+    case LUA_TFLOATINGTEMPLEOBJECT:
+      val_(lua_value).ft_obj = value.object_reference();
       settt_(lua_value, lua_type);
       break;
 
@@ -139,9 +137,9 @@ void LuaValueToValueProto(const TValue* lua_value, TValueProto* value_proto,
       break;
     }
 
-    case LUA_TOBJECTREFERENCE: {
+    case LUA_TFLOATINGTEMPLEOBJECT: {
       ObjectReference* const object_reference =
-          *reinterpret_cast<ObjectReference* const*>(&val_(lua_value).obj_ref);
+          static_cast<ObjectReference*>(val_(lua_value).ft_obj);
       const int object_index = context->GetIndexForObjectReference(
           object_reference);
       value_proto->mutable_object_reference()->set_object_index(
@@ -185,9 +183,8 @@ void ValueProtoToLuaValue(lua_State* lua_state,
     }
 
     case TValueProto::OBJECT_REFERENCE:
-      *reinterpret_cast<ObjectReference**>(&val_(lua_value).obj_ref) =
-          context->GetObjectReferenceByIndex(
-              value_proto.object_reference().object_index());
+      val_(lua_value).ft_obj = context->GetObjectReferenceByIndex(
+          value_proto.object_reference().object_index());
       settt_(lua_value, lua_type);
       break;
 

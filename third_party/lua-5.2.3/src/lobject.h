@@ -146,7 +146,7 @@ typedef struct lua_TValue TValue;
 #define ttisuserdata(o)		checktag((o), ctb(LUA_TUSERDATA))
 #define ttisthread(o)		checktag((o), ctb(LUA_TTHREAD))
 #define ttisdeadkey(o)		checktag((o), LUA_TDEADKEY)
-#define ttisobjectreference(o)	checktag((o), LUA_TOBJECTREFERENCE)
+#define ttisfloatingtemplateobject(o) checktag((o), LUA_TFLOATINGTEMPLEOBJECT)
 
 #define ttisequal(o1,o2)	(rttype(o1) == rttype(o2))
 
@@ -386,23 +386,13 @@ typedef struct lua_TValue TValue;
 */
 
 
-struct ObjectReference {
-  union {
-    /* Ensure that the struct is large enough. */
-    char padding[8];
-    /* Ensure that the struct is properly aligned. */
-    void* alignment;
-  };
-};
-
-
 union Value {
   GCObject *gc;    /* collectable objects */
   void *p;         /* light userdata */
   int b;           /* booleans */
   lua_CFunction f; /* light C functions */
   numfield         /* numbers */
-  struct ObjectReference obj_ref; /* Floating Temple objects */
+  void *ft_obj;    /* Floating Temple objects */
 };
 
 

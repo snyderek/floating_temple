@@ -18,13 +18,12 @@
 #include "luaconf.h"
 
 
-static int ft_defaultobjectreferencesequalhook
-    (const struct ObjectReference *obj_ref1,
-     const struct ObjectReference *obj_ref2) {
-  assert(obj_ref1 != NULL);
-  assert(obj_ref2 != NULL);
+static int ft_defaultobjectreferencesequalhook (const void *ft_obj1,
+                                                const void *ft_obj2) {
+  assert(ft_obj1 != NULL);
+  assert(ft_obj2 != NULL);
 
-  return (obj_ref1 == obj_ref2) ? 1 : 0;
+  return (ft_obj1 == ft_obj2) ? 1 : 0;
 }
 
 LUAI_DDEF ft_ObjectReferencesEqualHook ft_objectreferencesequalhook =

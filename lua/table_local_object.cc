@@ -27,6 +27,7 @@
 #include "lua/convert_value.h"
 #include "lua/interpreter_impl.h"
 #include "lua/proto/serialization.pb.h"
+#include "lua/thread_substitution.h"
 #include "third_party/lua-5.2.3/src/lgc.h"
 #include "third_party/lua-5.2.3/src/llimits.h"
 #include "third_party/lua-5.2.3/src/lmem.h"
@@ -158,7 +159,7 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 
   lua_State* const lua_state = interpreter_->GetLuaState();
 
-  // TODO(dss): Call InterpreterImpl::SetThreadObject.
+  ThreadSubstitution thread_substitution(interpreter_, thread);
 
   InterpreterImpl::LongJumpTarget long_jump_target;
   interpreter_->SetLongJumpTarget(&long_jump_target);

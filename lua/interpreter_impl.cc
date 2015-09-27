@@ -44,11 +44,7 @@ InterpreterImpl::~InterpreterImpl() {
 }
 
 lua_State* InterpreterImpl::GetLuaState() {
-  if (lua_state_ == nullptr) {
-    lua_state_ = luaL_newstate();
-    CHECK(lua_state_ != nullptr);
-  }
-  return lua_state_;
+  return PrivateGetLuaState();
 }
 
 void InterpreterImpl::BeginTransaction() {
@@ -81,14 +77,22 @@ void InterpreterImpl::SetLongJumpTarget(LongJumpTarget* target) {
 
 VersionedLocalObject* InterpreterImpl::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  return TableLocalObject::Deserialize(lua_state_, buffer, buffer_size,
-                                       context);
+  return TableLocalObject::Deserialize(PrivateGetLuaState(), buffer,
+                                       buffer_size, context);
 }
 
 // static
 InterpreterImpl* InterpreterImpl::instance() {
   CHECK(instance_ != nullptr);
   return instance_;
+}
+
+lua_State* InterpreterImpl::PrivateGetLuaState() {
+  if (lua_state_ == nullptr) {
+    lua_state_ = luaL_newstate();
+    CHECK(lua_state_ != nullptr);
+  }
+  return lua_state_;
 }
 
 Thread* InterpreterImpl::PrivateGetThreadObject() {

@@ -57,6 +57,7 @@ class InterpreterImpl : public Interpreter {
   static InterpreterImpl* instance();
 
  private:
+  lua_State* PrivateGetLuaState();
   Thread* PrivateGetThreadObject();
 
   static __thread lua_State* lua_state_;

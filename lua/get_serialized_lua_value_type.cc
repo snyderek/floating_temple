@@ -35,7 +35,6 @@ TValueProto::Type GetSerializedLuaValueType(const TValueProto& value_proto) {
   CHECK_FIELD(number, NUMBER);
   CHECK_FIELD(string_value, STRING);
   CHECK_FIELD(object_reference, OBJECT_REFERENCE);
-  CHECK_FIELD(unserializable, UNSERIALIZABLE);
 
   CHECK_NE(type, TValueProto::UNKNOWN);
 

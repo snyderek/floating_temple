@@ -34,10 +34,6 @@ message ObjectReferenceProto {
   required int64 object_index = 1;
 }
 
-message UnserializableProto {
-  required string type_name = 1;
-}
-
 message TValueProto {
   enum Type {
     UNKNOWN = 0;
@@ -47,8 +43,6 @@ message TValueProto {
     NUMBER = 3;
     STRING = 4;
     OBJECT_REFERENCE = 5;
-    // TODO(dss): Remove the UNSERIALIZABLE value type.
-    UNSERIALIZABLE = 6;
   }
 
   // Exactly one of the following fields must be set.
@@ -57,7 +51,6 @@ message TValueProto {
   optional floating_temple.lua.NumberProto number = 3;
   optional floating_temple.lua.StringProto string_value = 4;
   optional floating_temple.lua.ObjectReferenceProto object_reference = 5;
-  optional floating_temple.lua.UnserializableProto unserializable = 6;
 }
 
 message ArrayElementProto {

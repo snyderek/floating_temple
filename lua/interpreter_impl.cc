@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "lua/table_local_object.h"
+#include "third_party/lua-5.2.3/src/lauxlib.h"
 #include "third_party/lua-5.2.3/src/lua.h"
 
 using std::size_t;
@@ -27,13 +28,13 @@ using std::size_t;
 namespace floating_temple {
 namespace lua {
 
+__thread lua_State* InterpreterImpl::lua_state_ = nullptr;
 __thread Thread* InterpreterImpl::thread_object_ = nullptr;
 __thread InterpreterImpl::LongJumpTarget* InterpreterImpl::long_jump_target_ =
     nullptr;
 InterpreterImpl* InterpreterImpl::instance_ = nullptr;
 
-InterpreterImpl::InterpreterImpl()
-    : lua_state_(nullptr) {
+InterpreterImpl::InterpreterImpl() {
   CHECK(instance_ == nullptr);
   instance_ = this;
 }
@@ -42,16 +43,12 @@ InterpreterImpl::~InterpreterImpl() {
   instance_ = nullptr;
 }
 
-lua_State* InterpreterImpl::GetLuaState() const {
-  CHECK(lua_state_ != nullptr);
+lua_State* InterpreterImpl::GetLuaState() {
+  if (lua_state_ == nullptr) {
+    lua_state_ = luaL_newstate();
+    CHECK(lua_state_ != nullptr);
+  }
   return lua_state_;
-}
-
-void InterpreterImpl::SetLuaState(lua_State* lua_state) {
-  CHECK(lua_state_ == nullptr);
-  CHECK(lua_state != nullptr);
-
-  lua_state_ = lua_state;
 }
 
 void InterpreterImpl::BeginTransaction() {

@@ -38,9 +38,7 @@ class InterpreterImpl : public Interpreter {
   InterpreterImpl();
   ~InterpreterImpl() override;
 
-  // TODO(dss): Consider removing the GetLuaState method.
-  lua_State* GetLuaState() const;
-  void SetLuaState(lua_State* lua_state);
+  lua_State* GetLuaState();
 
   void BeginTransaction();
   void EndTransaction();
@@ -61,8 +59,7 @@ class InterpreterImpl : public Interpreter {
  private:
   Thread* PrivateGetThreadObject();
 
-  // TODO(dss): The Lua state should be per-thread.
-  lua_State* lua_state_;
+  static __thread lua_State* lua_state_;
   static __thread Thread* thread_object_;
   static __thread LongJumpTarget* long_jump_target_;
   static InterpreterImpl* instance_;

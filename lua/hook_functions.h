@@ -16,9 +16,8 @@
 #ifndef LUA_HOOK_FUNCTIONS_H_
 #define LUA_HOOK_FUNCTIONS_H_
 
-// TODO(dss): Forward-declare Lua types instead of including these headers here.
-#include "third_party/lua-5.2.3/src/lobject.h"
-#include "third_party/lua-5.2.3/src/lua.h"
+struct lua_State;
+struct lua_TValue;
 
 namespace floating_temple {
 namespace lua {
@@ -29,13 +28,15 @@ int AreObjectsEqual(const void* ft_obj1, const void* ft_obj2);
 // Each of these functions returns non-zero if it performed the requested
 // operation. If a function returns zero, the caller should fall back to the
 // default behavior of the stock Lua interpreter.
-int CreateTable(lua_State* lua_state, StkId obj, int b, int c);
-int CallMethod_GetTable(lua_State* lua_state, const TValue* table,
-                        const TValue* key, StkId val);
-int CallMethod_SetTable(lua_State* lua_state, const TValue* table,
-                        const TValue* key, const TValue* val);
-int CallMethod_ObjLen(lua_State* lua_state, StkId ra, const TValue* rb);
-int CallMethod_SetList(lua_State* lua_state, const TValue* ra, int n, int c);
+int CreateTable(lua_State* lua_state, lua_TValue* obj, int b, int c);
+int CallMethod_GetTable(lua_State* lua_state, const lua_TValue* table,
+                        const lua_TValue* key, lua_TValue* val);
+int CallMethod_SetTable(lua_State* lua_state, const lua_TValue* table,
+                        const lua_TValue* key, const lua_TValue* val);
+int CallMethod_ObjLen(lua_State* lua_state, lua_TValue* ra,
+                      const lua_TValue* rb);
+int CallMethod_SetList(lua_State* lua_state, const lua_TValue* ra, int n,
+                       int c);
 
 }  // namespace lua
 }  // namespace floating_temple

@@ -20,7 +20,8 @@
 
 #include "base/macros.h"
 #include "include/c++/interpreter.h"
-#include "third_party/lua-5.2.3/src/lua.h"
+
+struct lua_State;
 
 namespace floating_temple {
 

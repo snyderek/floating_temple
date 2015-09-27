@@ -71,7 +71,7 @@ FT_DEFINE_HOOK_FUNC(ft_installobjlenhook, ft_ObjLenHook, ft_objlenhook,
                     ft_defaultobjlenhook)
 
 FT_DEFINE_HOOK_FUNC(ft_installsetlisthook, ft_SetListHook, ft_setlisthook,
-                    (lua_State *L, const TValue *table, int n, int c),
+                    (lua_State *L, const TValue *ra, int n, int c),
                     ft_defaultsetlisthook)
 
 

@@ -34,7 +34,7 @@ namespace lua {
 
 class TableLocalObject : public VersionedLocalObject {
  public:
-  explicit TableLocalObject(lua_State* lua_state);
+  TableLocalObject(lua_State* lua_state, int b, int c);
   ~TableLocalObject() override;
 
   void InvokeMethod(Thread* thread,

@@ -50,7 +50,7 @@ int GetTableNodeIndex(const Table* table, const Node* node) {
 
 }  // namespace
 
-TableLocalObject::TableLocalObject(lua_State* lua_state)
+TableLocalObject::TableLocalObject(lua_State* lua_state, int b, int c)
     : lua_state_(CHECK_NOTNULL(lua_state)),
       lua_table_(new TValue()) {
   // This code is mostly copy-pasted from the luaH_new function in
@@ -72,6 +72,10 @@ TableLocalObject::TableLocalObject(lua_State* lua_state)
   table->sizearray = 0;
 
   sethvalue(lua_state, lua_table_.get(), table);
+
+  if (b != 0 || c != 0) {
+    luaH_resize(lua_state, table, luaO_fb2int(b), luaO_fb2int(c));
+  }
 }
 
 TableLocalObject::~TableLocalObject() {

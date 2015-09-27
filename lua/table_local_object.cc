@@ -15,6 +15,7 @@
 
 #include "lua/table_local_object.h"
 
+#include <csetjmp>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -24,6 +25,7 @@
 #include "base/logging.h"
 #include "include/c++/value.h"
 #include "lua/convert_value.h"
+#include "lua/interpreter_impl.h"
 #include "lua/proto/serialization.pb.h"
 #include "third_party/lua-5.2.3/src/lgc.h"
 #include "third_party/lua-5.2.3/src/llimits.h"
@@ -36,8 +38,10 @@
 #include "third_party/lua-5.2.3/src/lvm.h"
 #include "util/math_util.h"
 
+using std::jmp_buf;
 using std::size_t;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace floating_temple {
@@ -46,6 +50,65 @@ namespace {
 
 int GetTableNodeIndex(const Table* table, const Node* node) {
   return node - table->node;
+}
+
+// Since the following functions call setjmp(), they must not execute any
+// destructors, either explicitly or implicitly.
+
+bool InvokeMethod_GetTable(jmp_buf env, lua_State* lua_state,
+                           const TValue* lua_table, TValue* lua_key,
+                           TValue* lua_value) {
+  if (setjmp(env) != 0) {
+    return false;
+  }
+
+  luaV_gettable(lua_state, lua_table, lua_key, lua_value);
+  return true;
+}
+
+bool InvokeMethod_SetTable(jmp_buf env, lua_State* lua_state,
+                           const TValue* lua_table, TValue* lua_key,
+                           TValue* lua_value) {
+  if (setjmp(env) != 0) {
+    return false;
+  }
+
+  luaV_settable(lua_state, lua_table, lua_key, lua_value);
+  return true;
+}
+
+bool InvokeMethod_Len(jmp_buf env, lua_State* lua_state, TValue* lua_length,
+                      const TValue* lua_table) {
+  if (setjmp(env) != 0) {
+    return false;
+  }
+
+  luaV_objlen(lua_state, lua_length, lua_table);
+  return true;
+}
+
+bool InvokeMethod_SetList(jmp_buf env, lua_State* lua_state, TValue* lua_table,
+                          int n, int c, TValue* lua_values) {
+  if (setjmp(env) != 0) {
+    return false;
+  }
+
+  // This code is mostly copy-pasted from the luaV_execute function in
+  // "third_party/lua-5.2.3/src/lvm.c".
+  Table* const h = hvalue(lua_table);
+  int last = ((c - 1) * LFIELDS_PER_FLUSH) + n;
+
+  if (last > h->sizearray) {
+    luaH_resizearray(lua_state, h, last);
+  }
+
+  for (; n > 0; n--) {
+    TValue* const lua_value = &lua_values[n - 1];
+    luaH_setint(lua_state, h, last--, lua_value);
+    luaC_barrierback(lua_state, obj2gco(h), lua_value);
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -89,6 +152,11 @@ void TableLocalObject::InvokeMethod(Thread* thread,
                                     Value* return_value) {
   CHECK(return_value != nullptr);
 
+  // TODO(dss): Call InterpreterImpl::SetThreadObject.
+
+  InterpreterImpl::LongJumpTarget long_jump_target;
+  InterpreterImpl::instance()->SetLongJumpTarget(&long_jump_target);
+
   if (method_name == "gettable") {
     // TODO(dss): Fail gracefully if a remote peer sends a method with the wrong
     // number of parameters.
@@ -98,7 +166,10 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     ValueToLuaValue(lua_state_, parameters[0], &lua_key);
 
     TValue lua_value;
-    luaV_gettable(lua_state_, lua_table_.get(), &lua_key, &lua_value);
+    if (!InvokeMethod_GetTable(long_jump_target.env, lua_state_,
+                               lua_table_.get(), &lua_key, &lua_value)) {
+      return;
+    }
 
     LuaValueToValue(&lua_value, return_value);
   } else if (method_name == "settable") {
@@ -110,7 +181,10 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     TValue lua_value;
     ValueToLuaValue(lua_state_, parameters[1], &lua_value);
 
-    luaV_settable(lua_state_, lua_table_.get(), &lua_key, &lua_value);
+    if (!InvokeMethod_SetTable(long_jump_target.env, lua_state_,
+                               lua_table_.get(), &lua_key, &lua_value)) {
+      return;
+    }
 
     return_value->set_empty(LUA_TNIL);
   } else if (method_name == "len") {
@@ -118,27 +192,26 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 
     TValue lua_length;
     luaV_objlen(lua_state_, &lua_length, lua_table_.get());
+    if (!InvokeMethod_Len(long_jump_target.env, lua_state_, &lua_length,
+                          lua_table_.get())) {
+      return;
+    }
 
     LuaValueToValue(&lua_length, return_value);
   } else if (method_name == "setlist") {
     CHECK_GE(parameters.size(), 1u);
 
-    int n = static_cast<int>(parameters.size() - 1u);
+    const int n = static_cast<int>(parameters.size() - 1u);
     const int c = static_cast<int>(parameters[0].int64_value());
 
-    // This code is mostly copy-pasted from the luaV_execute function in
-    // "third_party/lua-5.2.3/src/lvm.c".
-    Table* const h = hvalue(lua_table_.get());
-    int last = ((c - 1) * LFIELDS_PER_FLUSH) + n;
-    if (last > h->sizearray) {
-      luaH_resizearray(lua_state_, h, last);
+    unique_ptr<TValue[]> lua_values(new TValue[n]);
+    for (int i = 1; i <= n; ++i) {
+      ValueToLuaValue(lua_state_, parameters[i], &lua_values[i - 1]);
     }
-    for (; n > 0; n--) {
-      TValue lua_value;
-      ValueToLuaValue(lua_state_, parameters[n], &lua_value);
 
-      luaH_setint(lua_state_, h, last--, &lua_value);
-      luaC_barrierback(lua_state_, obj2gco(h), &lua_value);
+    if (!InvokeMethod_SetList(long_jump_target.env, lua_state_,
+                              lua_table_.get(), n, c, lua_values.get())) {
+      return;
     }
 
     return_value->set_empty(LUA_TNIL);

@@ -16,6 +16,8 @@
 #ifndef LUA_INTERPRETER_IMPL_H_
 #define LUA_INTERPRETER_IMPL_H_
 
+#include <csetjmp>
+
 #include "base/macros.h"
 #include "include/c++/interpreter.h"
 #include "third_party/lua-5.2.3/src/lua.h"
@@ -28,6 +30,10 @@ namespace lua {
 
 class InterpreterImpl : public Interpreter {
  public:
+  struct LongJumpTarget {
+    std::jmp_buf env;
+  };
+
   InterpreterImpl();
   ~InterpreterImpl() override;
 
@@ -41,6 +47,9 @@ class InterpreterImpl : public Interpreter {
   Thread* GetThreadObject();
   Thread* SetThreadObject(Thread* new_thread);
 
+  LongJumpTarget* GetLongJumpTarget();
+  void SetLongJumpTarget(LongJumpTarget* target);
+
   VersionedLocalObject* DeserializeObject(
       const void* buffer, std::size_t buffer_size,
       DeserializationContext* context) override;
@@ -51,8 +60,10 @@ class InterpreterImpl : public Interpreter {
  private:
   Thread* PrivateGetThreadObject();
 
+  // TODO(dss): The Lua state should be per-thread.
   lua_State* lua_state_;
   static __thread Thread* thread_object_;
+  static __thread LongJumpTarget* long_jump_target_;
   static InterpreterImpl* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(InterpreterImpl);

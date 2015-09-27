@@ -16,6 +16,7 @@
 #ifndef LUA_HOOK_FUNCTIONS_H_
 #define LUA_HOOK_FUNCTIONS_H_
 
+// TODO(dss): Forward-declare Lua types instead of including these headers here.
 #include "third_party/lua-5.2.3/src/lobject.h"
 #include "third_party/lua-5.2.3/src/lua.h"
 

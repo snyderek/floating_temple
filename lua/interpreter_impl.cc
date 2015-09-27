@@ -28,6 +28,8 @@ namespace floating_temple {
 namespace lua {
 
 __thread Thread* InterpreterImpl::thread_object_ = nullptr;
+__thread InterpreterImpl::LongJumpTarget* InterpreterImpl::long_jump_target_ =
+    nullptr;
 InterpreterImpl* InterpreterImpl::instance_ = nullptr;
 
 InterpreterImpl::InterpreterImpl()
@@ -68,6 +70,16 @@ Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
   Thread* const old_thread = thread_object_;
   thread_object_ = new_thread;
   return old_thread;
+}
+
+InterpreterImpl::LongJumpTarget* InterpreterImpl::GetLongJumpTarget() {
+  CHECK(long_jump_target_ != nullptr);
+  return long_jump_target_;
+}
+
+void InterpreterImpl::SetLongJumpTarget(LongJumpTarget* target) {
+  CHECK(target != nullptr);
+  long_jump_target_ = target;
 }
 
 VersionedLocalObject* InterpreterImpl::DeserializeObject(

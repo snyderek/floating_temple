@@ -53,7 +53,6 @@ class InterpreterImpl : public Interpreter {
       const void* buffer, std::size_t buffer_size,
       DeserializationContext* context) override;
 
-  // TODO(dss): Consider removing this method.
   static InterpreterImpl* instance();
 
  private:

@@ -32,9 +32,11 @@ class DeserializationContext;
 
 namespace lua {
 
+class InterpreterImpl;
+
 class TableLocalObject : public VersionedLocalObject {
  public:
-  TableLocalObject(lua_State* lua_state, int b, int c);
+  TableLocalObject(InterpreterImpl* interpreter, int b, int c);
   ~TableLocalObject() override;
 
   void InvokeMethod(Thread* thread,
@@ -47,15 +49,15 @@ class TableLocalObject : public VersionedLocalObject {
                         SerializationContext* context) const override;
   void Dump(DumpContext* dc) const override;
 
-  static TableLocalObject* Deserialize(lua_State* lua_state,
+  static TableLocalObject* Deserialize(InterpreterImpl* interpreter,
                                        const void* buffer,
                                        std::size_t buffer_size,
                                        DeserializationContext* context);
 
  private:
-  TableLocalObject(lua_State* lua_state, Table* table);
+  TableLocalObject(InterpreterImpl* interpreter, Table* table);
 
-  lua_State* const lua_state_;
+  InterpreterImpl* const interpreter_;
   const std::unique_ptr<lua_TValue> lua_table_;
 
   DISALLOW_COPY_AND_ASSIGN(TableLocalObject);

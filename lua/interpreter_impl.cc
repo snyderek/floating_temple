@@ -77,8 +77,7 @@ void InterpreterImpl::SetLongJumpTarget(LongJumpTarget* target) {
 
 VersionedLocalObject* InterpreterImpl::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
-  return TableLocalObject::Deserialize(PrivateGetLuaState(), buffer,
-                                       buffer_size, context);
+  return TableLocalObject::Deserialize(this, buffer, buffer_size, context);
 }
 
 // static

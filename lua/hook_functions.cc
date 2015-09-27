@@ -130,10 +130,11 @@ int AreObjectsEqual(const void* ft_obj1, const void* ft_obj2) {
 }
 
 int CreateTable(lua_State* lua_state, TValue* obj, int b, int c) {
-  VersionedLocalObject* const local_object = new TableLocalObject(lua_state, b,
-                                                                  c);
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
+  VersionedLocalObject* const local_object = new TableLocalObject(interpreter,
+                                                                  b, c);
   ObjectReference* const object_reference =
-      GetThreadObject()->CreateVersionedObject(local_object, "");
+      interpreter->GetThreadObject()->CreateVersionedObject(local_object, "");
 
   val_(obj).ft_obj = object_reference;
   settt_(obj, LUA_TTABLE);

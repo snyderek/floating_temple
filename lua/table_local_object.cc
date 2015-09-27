@@ -113,9 +113,13 @@ bool InvokeMethod_SetList(jmp_buf env, lua_State* lua_state, TValue* lua_table,
 
 }  // namespace
 
-TableLocalObject::TableLocalObject(lua_State* lua_state, int b, int c)
-    : lua_state_(CHECK_NOTNULL(lua_state)),
+TableLocalObject::TableLocalObject(InterpreterImpl* interpreter, int b, int c)
+    : interpreter_(CHECK_NOTNULL(interpreter)),
       lua_table_(new TValue()) {
+  // TODO(dss): Don't do real work in the constructor.
+
+  lua_State* const lua_state = interpreter->GetLuaState();
+
   // This code is mostly copy-pasted from the luaH_new function in
   // "third_party/lua-5.2.3/src/ltable.c".
   GCObject* gc_list = nullptr;
@@ -142,7 +146,7 @@ TableLocalObject::TableLocalObject(lua_State* lua_state, int b, int c)
 }
 
 TableLocalObject::~TableLocalObject() {
-  luaH_free(lua_state_, hvalue(lua_table_.get()));
+  luaH_free(interpreter_->GetLuaState(), hvalue(lua_table_.get()));
 }
 
 void TableLocalObject::InvokeMethod(Thread* thread,
@@ -152,10 +156,12 @@ void TableLocalObject::InvokeMethod(Thread* thread,
                                     Value* return_value) {
   CHECK(return_value != nullptr);
 
+  lua_State* const lua_state = interpreter_->GetLuaState();
+
   // TODO(dss): Call InterpreterImpl::SetThreadObject.
 
   InterpreterImpl::LongJumpTarget long_jump_target;
-  InterpreterImpl::instance()->SetLongJumpTarget(&long_jump_target);
+  interpreter_->SetLongJumpTarget(&long_jump_target);
 
   if (method_name == "gettable") {
     // TODO(dss): Fail gracefully if a remote peer sends a method with the wrong
@@ -163,10 +169,10 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     CHECK_EQ(parameters.size(), 1u);
 
     TValue lua_key;
-    ValueToLuaValue(lua_state_, parameters[0], &lua_key);
+    ValueToLuaValue(lua_state, parameters[0], &lua_key);
 
     TValue lua_value;
-    if (!InvokeMethod_GetTable(long_jump_target.env, lua_state_,
+    if (!InvokeMethod_GetTable(long_jump_target.env, lua_state,
                                lua_table_.get(), &lua_key, &lua_value)) {
       return;
     }
@@ -176,12 +182,12 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     CHECK_EQ(parameters.size(), 2u);
 
     TValue lua_key;
-    ValueToLuaValue(lua_state_, parameters[0], &lua_key);
+    ValueToLuaValue(lua_state, parameters[0], &lua_key);
 
     TValue lua_value;
-    ValueToLuaValue(lua_state_, parameters[1], &lua_value);
+    ValueToLuaValue(lua_state, parameters[1], &lua_value);
 
-    if (!InvokeMethod_SetTable(long_jump_target.env, lua_state_,
+    if (!InvokeMethod_SetTable(long_jump_target.env, lua_state,
                                lua_table_.get(), &lua_key, &lua_value)) {
       return;
     }
@@ -191,8 +197,8 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     CHECK_EQ(parameters.size(), 0u);
 
     TValue lua_length;
-    luaV_objlen(lua_state_, &lua_length, lua_table_.get());
-    if (!InvokeMethod_Len(long_jump_target.env, lua_state_, &lua_length,
+    luaV_objlen(lua_state, &lua_length, lua_table_.get());
+    if (!InvokeMethod_Len(long_jump_target.env, lua_state, &lua_length,
                           lua_table_.get())) {
       return;
     }
@@ -206,11 +212,11 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 
     unique_ptr<TValue[]> lua_values(new TValue[n]);
     for (int i = 1; i <= n; ++i) {
-      ValueToLuaValue(lua_state_, parameters[i], &lua_values[i - 1]);
+      ValueToLuaValue(lua_state, parameters[i], &lua_values[i - 1]);
     }
 
-    if (!InvokeMethod_SetList(long_jump_target.env, lua_state_,
-                              lua_table_.get(), n, c, lua_values.get())) {
+    if (!InvokeMethod_SetList(long_jump_target.env, lua_state, lua_table_.get(),
+                              n, c, lua_values.get())) {
       return;
     }
 
@@ -222,11 +228,12 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 }
 
 VersionedLocalObject* TableLocalObject::Clone() const {
+  lua_State* const lua_state = interpreter_->GetLuaState();
   const Table* const old_table = hvalue(lua_table_.get());
 
   GCObject* gc_list = nullptr;
   Table* const new_table =
-      &luaC_newobj(lua_state_, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
+      &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
 
   const lu_byte lsizenode = old_table->lsizenode;
   const int sizearray = old_table->sizearray;
@@ -238,9 +245,9 @@ VersionedLocalObject* TableLocalObject::Clone() const {
   if (old_table->array == nullptr) {
     new_table->array = nullptr;
   } else {
-    new_table->array = luaM_newvector(lua_state_, sizearray, TValue);
+    new_table->array = luaM_newvector(lua_state, sizearray, TValue);
     for (int i = 0; i < sizearray; ++i) {
-      setobj2t(&lua_state_, &new_table->array[i], &old_table->array[i]);
+      setobj2t(&lua_state, &new_table->array[i], &old_table->array[i]);
     }
   }
 
@@ -252,7 +259,7 @@ VersionedLocalObject* TableLocalObject::Clone() const {
     new_table->lastfree = node;
   } else {
     const int size = twoto(static_cast<int>(lsizenode));
-    new_table->node = luaM_newvector(lua_state_, size, Node);
+    new_table->node = luaM_newvector(lua_state, size, Node);
 
     for (int i = 0; i < size; ++i) {
       const Node* const old_node = gnode(old_table, i);
@@ -260,8 +267,8 @@ VersionedLocalObject* TableLocalObject::Clone() const {
 
       gnext(new_node) = gnode(new_table,
                               GetTableNodeIndex(old_table, gnext(old_node)));
-      setobj2t(&lua_state_, gkey(new_node), gkey(old_node));
-      setobj2t(&lua_state_, gval(new_node), gval(old_node));
+      setobj2t(&lua_state, gkey(new_node), gkey(old_node));
+      setobj2t(&lua_state, gval(new_node), gval(old_node));
     }
 
     new_table->lastfree = gnode(
@@ -271,7 +278,7 @@ VersionedLocalObject* TableLocalObject::Clone() const {
   new_table->gclist = nullptr;
   new_table->sizearray = sizearray;
 
-  return new TableLocalObject(lua_state_, new_table);
+  return new TableLocalObject(interpreter_, new_table);
 }
 
 size_t TableLocalObject::Serialize(void* buffer, size_t buffer_size,
@@ -337,12 +344,14 @@ void TableLocalObject::Dump(DumpContext* dc) const {
 
 // static
 TableLocalObject* TableLocalObject::Deserialize(
-    lua_State* lua_state,
+    InterpreterImpl* interpreter,
     const void* buffer,
     size_t buffer_size,
     DeserializationContext* context) {
-  CHECK(lua_state != nullptr);
+  CHECK(interpreter != nullptr);
   CHECK(buffer != nullptr);
+
+  lua_State* const lua_state = interpreter->GetLuaState();
 
   // Parse the protocol buffer from the input buffer.
   TableProto table_proto;
@@ -433,11 +442,11 @@ TableLocalObject* TableLocalObject::Deserialize(
 
   table->gclist = nullptr;
 
-  return new TableLocalObject(lua_state, table);
+  return new TableLocalObject(interpreter, table);
 }
 
-TableLocalObject::TableLocalObject(lua_State* lua_state, Table* table)
-    : lua_state_(CHECK_NOTNULL(lua_state)),
+TableLocalObject::TableLocalObject(InterpreterImpl* interpreter, Table* table)
+    : interpreter_(CHECK_NOTNULL(interpreter)),
       lua_table_(new TValue()) {
   CHECK(table != nullptr);
   sethvalue(lua_state, lua_table_.get(), table);

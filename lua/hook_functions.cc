@@ -48,7 +48,7 @@ InterpreterImpl::LongJumpTarget* GetLongJumpTarget() {
 }
 
 bool CallMethodHelper_GetTable(lua_State* lua_state, const TValue* table,
-                               const TValue* key, StkId val) {
+                               const TValue* key, TValue* val) {
   ObjectReference* const table_object_reference = static_cast<ObjectReference*>(
       val_(table).ft_obj);
 
@@ -84,7 +84,8 @@ bool CallMethodHelper_SetTable(lua_State* lua_state, const TValue* table,
   return true;
 }
 
-bool CallMethodHelper_ObjLen(lua_State* lua_state, StkId ra, const TValue* rb) {
+bool CallMethodHelper_ObjLen(lua_State* lua_state, TValue* ra,
+                             const TValue* rb) {
   ObjectReference* const table_object_reference = static_cast<ObjectReference*>(
       val_(rb).ft_obj);
 
@@ -128,7 +129,7 @@ int AreObjectsEqual(const void* ft_obj1, const void* ft_obj2) {
       static_cast<const ObjectReference*>(ft_obj2)) ? 1 : 0;
 }
 
-int CreateTable(lua_State* lua_state, StkId obj, int b, int c) {
+int CreateTable(lua_State* lua_state, TValue* obj, int b, int c) {
   VersionedLocalObject* const local_object = new TableLocalObject(lua_state, b,
                                                                   c);
   ObjectReference* const object_reference =
@@ -144,7 +145,7 @@ int CreateTable(lua_State* lua_state, StkId obj, int b, int c) {
 // objects that have destructors.
 
 int CallMethod_GetTable(lua_State* lua_state, const TValue* table,
-                        const TValue* key, StkId val) {
+                        const TValue* key, TValue* val) {
   if (!ttisfloatingtemplateobject(table)) {
     return 0;
   }
@@ -169,7 +170,7 @@ int CallMethod_SetTable(lua_State* lua_state, const TValue* table,
   return 1;
 }
 
-int CallMethod_ObjLen(lua_State* lua_state, StkId ra, const TValue* rb) {
+int CallMethod_ObjLen(lua_State* lua_state, TValue* ra, const TValue* rb) {
   if (!ttisfloatingtemplateobject(rb)) {
     return 0;
   }

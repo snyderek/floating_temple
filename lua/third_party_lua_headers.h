@@ -29,6 +29,7 @@ extern "C" {
 #include "third_party/lua-5.2.3/src/lstate.h"
 #include "third_party/lua-5.2.3/src/lstring.h"
 #include "third_party/lua-5.2.3/src/ltable.h"
+#include "third_party/lua-5.2.3/src/lualib.h"
 #include "third_party/lua-5.2.3/src/lvm.h"
 
 }

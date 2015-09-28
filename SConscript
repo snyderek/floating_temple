@@ -175,6 +175,8 @@ lua_env.Append(
     CPPPATH = Split("""
         third_party/lua-5.2.3/src
       """),
+
+    LIBS = Split('dl m readline'),
   )
 
 lua_lib = lua_env.Library(
@@ -184,6 +186,8 @@ lua_lib = lua_env.Library(
         lua/get_serialized_lua_value_type.cc
         lua/hook_functions.cc
         lua/interpreter_impl.cc
+        lua/program_object.cc
+        lua/run_lua_program.cc
         lua/table_local_object.cc
         lua/thread_substitution.cc
       """),
@@ -531,6 +535,26 @@ ft_env.Program(
         engine_proto_lib,
         util_lib,
         base_lib,
+      ],
+  )
+
+bin_floating_lua = lua_env.Program(
+    target = 'bin/floating_lua',
+    source = Split("""
+        bin/floating_lua.cc
+      """) + [
+        # These libraries must be listed in reverse-dependency order. That is,
+        # if library B depends on library A, then A must appear *after* B in the
+        # list.
+        lua_lib,
+        engine_lib,
+        protocol_server_lib,
+        value_lib,
+        engine_proto_lib,
+        lua_proto_lib,
+        util_lib,
+        base_lib,
+        third_party_lua_lib,
       ],
   )
 

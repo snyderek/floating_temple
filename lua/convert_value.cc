@@ -24,9 +24,7 @@
 #include "include/c++/value.h"
 #include "lua/get_serialized_lua_value_type.h"
 #include "lua/proto/serialization.pb.h"
-#include "third_party/lua-5.2.3/src/lobject.h"
-#include "third_party/lua-5.2.3/src/lstring.h"
-#include "third_party/lua-5.2.3/src/lua.h"
+#include "lua/third_party_lua_headers.h"
 
 using std::string;
 

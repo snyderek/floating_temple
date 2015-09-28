@@ -27,16 +27,8 @@
 #include "lua/convert_value.h"
 #include "lua/interpreter_impl.h"
 #include "lua/proto/serialization.pb.h"
+#include "lua/third_party_lua_headers.h"
 #include "lua/thread_substitution.h"
-#include "third_party/lua-5.2.3/src/lgc.h"
-#include "third_party/lua-5.2.3/src/llimits.h"
-#include "third_party/lua-5.2.3/src/lmem.h"
-#include "third_party/lua-5.2.3/src/lobject.h"
-#include "third_party/lua-5.2.3/src/lopcodes.h"
-#include "third_party/lua-5.2.3/src/lstate.h"
-#include "third_party/lua-5.2.3/src/ltable.h"
-#include "third_party/lua-5.2.3/src/lua.h"
-#include "third_party/lua-5.2.3/src/lvm.h"
 #include "util/math_util.h"
 
 using std::jmp_buf;

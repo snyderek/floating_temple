@@ -20,8 +20,7 @@
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "lua/table_local_object.h"
-#include "third_party/lua-5.2.3/src/lauxlib.h"
-#include "third_party/lua-5.2.3/src/lua.h"
+#include "lua/third_party_lua_headers.h"
 
 using std::size_t;
 

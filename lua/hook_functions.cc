@@ -26,8 +26,7 @@
 #include "lua/convert_value.h"
 #include "lua/interpreter_impl.h"
 #include "lua/table_local_object.h"
-#include "third_party/lua-5.2.3/src/lobject.h"
-#include "third_party/lua-5.2.3/src/lua.h"
+#include "lua/third_party_lua_headers.h"
 
 using std::longjmp;
 using std::vector;

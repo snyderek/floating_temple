@@ -77,12 +77,12 @@ LUA_API ft_ObjectReferencesEqualHook ft_installobjectreferencesequalhook
 
 
 FT_DEFINE_HOOK_FUNC(ft_installnewtablehook, ft_NewTableHook, ft_newtablehook,
-                    (lua_State *L, StkId obj, int b, int c),
+                    (lua_State *L, TValue *obj, int b, int c),
                     ft_defaultnewtablehook)
 
 FT_DEFINE_HOOK_FUNC(ft_installgettablehook, ft_GetTableHook, ft_gettablehook,
                     (lua_State *L, const TValue *table, const TValue *key,
-                     StkId val),
+                     TValue *val),
                     ft_defaultgettablehook)
 
 FT_DEFINE_HOOK_FUNC(ft_installsettablehook, ft_SetTableHook, ft_settablehook,
@@ -91,7 +91,7 @@ FT_DEFINE_HOOK_FUNC(ft_installsettablehook, ft_SetTableHook, ft_settablehook,
                     ft_defaultsettablehook)
 
 FT_DEFINE_HOOK_FUNC(ft_installobjlenhook, ft_ObjLenHook, ft_objlenhook,
-                    (lua_State *L, StkId ra, const TValue *rb),
+                    (lua_State *L, TValue *ra, const TValue *rb),
                     ft_defaultobjlenhook)
 
 FT_DEFINE_HOOK_FUNC(ft_installsetlisthook, ft_SetListHook, ft_setlisthook,

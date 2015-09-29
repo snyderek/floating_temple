@@ -8,11 +8,6 @@
 #define floating_temple_h
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include "lua.h"
 
 #include "lobject.h"
@@ -60,11 +55,6 @@ FT_DECLARE_HOOK_FUNC(ft_installsetlisthook, ft_SetListHook,
 
 
 #undef FT_DECLARE_HOOK_FUNC
-
-
-#ifdef __cplusplus
-}
-#endif
 
 
 #endif

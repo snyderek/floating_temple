@@ -14,7 +14,6 @@
 
 #include "lua.h"
 
-#include "floating_temple.h"
 #include "ldebug.h"
 #include "ldo.h"
 #include "lfunc.h"

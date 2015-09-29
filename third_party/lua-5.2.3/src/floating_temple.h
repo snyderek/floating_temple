@@ -8,10 +8,11 @@
 #define floating_temple_h
 
 
-#include "lua.h"
-
-#include "lobject.h"
 #include "luaconf.h"
+
+
+struct lua_State;
+struct lua_TValue;
 
 
 /* This hook function returns non-zero if the Floating Temple objects are equal.
@@ -33,25 +34,29 @@ LUA_API ft_ObjectReferencesEqualHook ft_installobjectreferencesequalhook
 
 FT_DECLARE_HOOK_FUNC(ft_installnewtablehook, ft_NewTableHook,
                      ft_newtablehook,
-                     (lua_State *L, StkId obj, int b, int c))
+                     (struct lua_State *L, struct lua_TValue *obj,
+                      int b, int c))
 
 FT_DECLARE_HOOK_FUNC(ft_installgettablehook, ft_GetTableHook,
                      ft_gettablehook,
-                     (lua_State *L, const TValue *table, const TValue *key,
-                      StkId val))
+                     (struct lua_State *L, const struct lua_TValue *table,
+                      const struct lua_TValue *key, struct lua_TValue *val))
 
 FT_DECLARE_HOOK_FUNC(ft_installsettablehook, ft_SetTableHook,
                      ft_settablehook,
-                     (lua_State *L, const TValue *table, const TValue *key,
-                      const TValue* val))
+                     (struct lua_State *L, const struct lua_TValue *table,
+                      const struct lua_TValue *key,
+                      const struct lua_TValue* val))
 
 FT_DECLARE_HOOK_FUNC(ft_installobjlenhook, ft_ObjLenHook,
                      ft_objlenhook,
-                     (lua_State *L, StkId ra, const TValue *rb))
+                     (struct lua_State *L, struct lua_TValue *ra,
+                      const struct lua_TValue *rb))
 
 FT_DECLARE_HOOK_FUNC(ft_installsetlisthook, ft_SetListHook,
                      ft_setlisthook,
-                     (lua_State *L, const TValue *ra, int n, int c))
+                     (struct lua_State *L, const struct lua_TValue *ra, int n,
+                      int c))
 
 
 #undef FT_DECLARE_HOOK_FUNC

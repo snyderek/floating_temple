@@ -112,6 +112,8 @@ typedef LUA_UNSIGNED lua_Unsigned;
 
 
 
+#include "floating_temple.h"
+
 /*
 ** generic extra include file
 */

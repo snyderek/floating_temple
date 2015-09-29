@@ -63,9 +63,6 @@ void RunLuaProgram(InterpreterImpl* interpreter, Peer* peer,
   Value return_value;
   peer->RunProgram(new ProgramObject(), "run", &return_value, linger);
   CHECK_EQ(return_value.type(), Value::EMPTY);
-
-  // Clean up the Lua interpreter state.
-  lua_close(lua_state);
 }
 
 }  // namespace lua

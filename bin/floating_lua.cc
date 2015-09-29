@@ -85,6 +85,7 @@ int main(int argc, char* argv[]) {
 
   // Start the local interpreter.
   InterpreterImpl interpreter;
+  interpreter.Init();
 
   // Start the peer.
   LOG(WARNING) << "Starting peer...";

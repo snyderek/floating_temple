@@ -38,6 +38,8 @@ class InterpreterImpl : public Interpreter {
   InterpreterImpl();
   ~InterpreterImpl() override;
 
+  void Init();
+
   lua_State* GetLuaState();
 
   void BeginTransaction();
@@ -59,6 +61,7 @@ class InterpreterImpl : public Interpreter {
   lua_State* PrivateGetLuaState();
   Thread* PrivateGetThreadObject();
 
+  lua_State* main_thread_lua_state_;
   static __thread lua_State* lua_state_;
   static __thread Thread* thread_object_;
   static __thread LongJumpTarget* long_jump_target_;

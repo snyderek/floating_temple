@@ -33,13 +33,25 @@ __thread InterpreterImpl::LongJumpTarget* InterpreterImpl::long_jump_target_ =
     nullptr;
 InterpreterImpl* InterpreterImpl::instance_ = nullptr;
 
-InterpreterImpl::InterpreterImpl() {
+InterpreterImpl::InterpreterImpl()
+    : main_thread_lua_state_(nullptr) {
   CHECK(instance_ == nullptr);
   instance_ = this;
 }
 
 InterpreterImpl::~InterpreterImpl() {
+  lua_close(main_thread_lua_state_);
   instance_ = nullptr;
+}
+
+void InterpreterImpl::Init() {
+  CHECK(main_thread_lua_state_ == nullptr)
+      << "InterpreterImpl::Init was already called.";
+  CHECK(lua_state_ = nullptr);
+
+  main_thread_lua_state_ = luaL_newstate();
+  CHECK(main_thread_lua_state_ != nullptr);
+  lua_state_ = main_thread_lua_state_;
 }
 
 lua_State* InterpreterImpl::GetLuaState() {
@@ -87,7 +99,7 @@ InterpreterImpl* InterpreterImpl::instance() {
 
 lua_State* InterpreterImpl::PrivateGetLuaState() {
   if (lua_state_ == nullptr) {
-    lua_state_ = luaL_newstate();
+    lua_state_ = lua_newthread(main_thread_lua_state_);
     CHECK(lua_state_ != nullptr);
   }
   return lua_state_;

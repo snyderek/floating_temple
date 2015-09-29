@@ -158,8 +158,7 @@ disable_builtin_alloc = Split("""
     -fno-builtin-realloc
   """)
 
-# TODO(dss): Is the -fPIC flag still needed?
-common_flags = ['-pthread', '-fPIC']
+common_flags = ['-pthread']
 if use_tcmalloc:
   common_flags += disable_builtin_alloc
 

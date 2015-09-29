@@ -15,6 +15,19 @@ struct lua_State;
 struct lua_TValue;
 
 
+#define lua_lock(L) ((*ft_lockhook)())
+#define lua_unlock(L) ((*ft_unlockhook)())
+
+
+typedef void (*ft_LockHook) (void);
+LUAI_DDEC ft_LockHook ft_lockhook;
+LUA_API ft_LockHook ft_installlockhook (ft_LockHook hook);
+
+typedef void (*ft_UnlockHook) (void);
+LUAI_DDEC ft_UnlockHook ft_unlockhook;
+LUA_API ft_UnlockHook ft_installunlockhook (ft_UnlockHook hook);
+
+
 /* This hook function returns non-zero if the Floating Temple objects are equal.
  */
 typedef int (*ft_ObjectReferencesEqualHook) (const void *ft_obj1,

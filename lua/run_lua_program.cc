@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
+#include "lua/hook_functions.h"
 #include "lua/interpreter_impl.h"
 #include "lua/program_object.h"
 #include "lua/third_party_lua_headers.h"
@@ -33,6 +34,23 @@ void RunLuaProgram(InterpreterImpl* interpreter, Peer* peer,
                    const string& source_file_name, bool linger) {
   CHECK(interpreter != nullptr);
   CHECK(peer != nullptr);
+
+  // Install the Floating Temple hooks in the Lua interpreter.
+  const ft_LockHook old_lock_hook = ft_installlockhook(&LockInterpreter);
+  const ft_UnlockHook old_unlock_hook = ft_installunlockhook(
+      &UnlockInterpreter);
+  const ft_ObjectReferencesEqualHook old_object_references_equal_hook =
+      ft_installobjectreferencesequalhook(&AreObjectsEqual);
+  const ft_NewTableHook old_new_table_hook = ft_installnewtablehook(
+      &CreateTable);
+  const ft_GetTableHook old_get_table_hook = ft_installgettablehook(
+      &CallMethod_GetTable);
+  const ft_SetTableHook old_set_table_hook = ft_installsettablehook(
+      &CallMethod_SetTable);
+  const ft_ObjLenHook old_obj_len_hook = ft_installobjlenhook(
+      &CallMethod_ObjLen);
+  const ft_SetListHook old_set_list_hook = ft_installsetlisthook(
+      &CallMethod_SetList);
 
   lua_State* const lua_state = interpreter->GetLuaState();
 
@@ -63,6 +81,16 @@ void RunLuaProgram(InterpreterImpl* interpreter, Peer* peer,
   Value return_value;
   peer->RunProgram(new ProgramObject(), "run", &return_value, linger);
   CHECK_EQ(return_value.type(), Value::EMPTY);
+
+  // Remove the Floating Temple hooks.
+  ft_installlockhook(old_lock_hook);
+  ft_installunlockhook(old_unlock_hook);
+  ft_installobjectreferencesequalhook(old_object_references_equal_hook);
+  ft_installnewtablehook(old_new_table_hook);
+  ft_installgettablehook(old_get_table_hook);
+  ft_installsettablehook(old_set_table_hook);
+  ft_installobjlenhook(old_obj_len_hook);
+  ft_installsetlisthook(old_set_list_hook);
 }
 
 }  // namespace lua

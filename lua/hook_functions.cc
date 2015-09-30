@@ -122,6 +122,14 @@ bool CallMethodHelper_SetList(lua_State* lua_state, const TValue* ra, int n,
 
 }  // namespace
 
+void LockInterpreter() {
+  InterpreterImpl::instance()->Lock();
+}
+
+void UnlockInterpreter() {
+  InterpreterImpl::instance()->Unlock();
+}
+
 int AreObjectsEqual(const void* ft_obj1, const void* ft_obj2) {
   return GetThreadObject()->ObjectsAreIdentical(
       static_cast<const ObjectReference*>(ft_obj1),

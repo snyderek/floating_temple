@@ -18,6 +18,7 @@
 #include <cstddef>
 
 #include "base/logging.h"
+#include "base/mutex.h"
 #include "include/c++/thread.h"
 #include "lua/table_local_object.h"
 #include "lua/third_party_lua_headers.h"

@@ -19,6 +19,7 @@
 #include <csetjmp>
 
 #include "base/macros.h"
+#include "base/mutex.h"
 #include "include/c++/interpreter.h"
 
 struct lua_State;
@@ -55,6 +56,9 @@ class InterpreterImpl : public Interpreter {
       const void* buffer, std::size_t buffer_size,
       DeserializationContext* context) override;
 
+  void Lock();
+  void Unlock();
+
   static InterpreterImpl* instance();
 
  private:
@@ -65,10 +69,21 @@ class InterpreterImpl : public Interpreter {
   static __thread lua_State* lua_state_;
   static __thread Thread* thread_object_;
   static __thread LongJumpTarget* long_jump_target_;
+
+  Mutex global_lock_;
+
   static InterpreterImpl* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(InterpreterImpl);
 };
+
+inline void InterpreterImpl::Lock() {
+  global_lock_.Lock();
+}
+
+inline void InterpreterImpl::Unlock() {
+  global_lock_.Unlock();
+}
 
 }  // namespace lua
 }  // namespace floating_temple

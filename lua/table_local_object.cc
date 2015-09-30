@@ -106,12 +106,21 @@ bool InvokeMethod_SetList(jmp_buf env, lua_State* lua_state, TValue* lua_table,
 
 }  // namespace
 
-TableLocalObject::TableLocalObject(InterpreterImpl* interpreter, int b, int c)
-    : interpreter_(CHECK_NOTNULL(interpreter)),
-      lua_table_(new TValue()) {
-  // TODO(dss): Don't do real work in the constructor.
+TableLocalObject::TableLocalObject(InterpreterImpl* interpreter)
+    : interpreter_(CHECK_NOTNULL(interpreter)) {
+}
 
-  lua_State* const lua_state = interpreter->GetLuaState();
+TableLocalObject::~TableLocalObject() {
+  if (lua_table_.get() != nullptr) {
+    luaH_free(interpreter_->GetLuaState(), hvalue(lua_table_.get()));
+  }
+}
+
+void TableLocalObject::Init(int b, int c) {
+  CHECK(lua_table_.get() == nullptr)
+      << "TableLocalObject::Init has already been called.";
+
+  lua_State* const lua_state = interpreter_->GetLuaState();
 
   // This code is mostly copy-pasted from the luaH_new function in
   // "third_party/lua-5.2.3/src/ltable.c".
@@ -131,6 +140,7 @@ TableLocalObject::TableLocalObject(InterpreterImpl* interpreter, int b, int c)
   table->gclist = nullptr;
   table->sizearray = 0;
 
+  lua_table_.reset(new TValue());
   sethvalue(lua_state, lua_table_.get(), table);
 
   if (b != 0 || c != 0) {
@@ -138,15 +148,13 @@ TableLocalObject::TableLocalObject(InterpreterImpl* interpreter, int b, int c)
   }
 }
 
-TableLocalObject::~TableLocalObject() {
-  luaH_free(interpreter_->GetLuaState(), hvalue(lua_table_.get()));
-}
-
 void TableLocalObject::InvokeMethod(Thread* thread,
                                     ObjectReference* object_reference,
                                     const string& method_name,
                                     const vector<Value>& parameters,
                                     Value* return_value) {
+  CHECK(lua_table_.get() != nullptr)
+      << "TableLocalObject::Init has not been called.";
   CHECK(return_value != nullptr);
 
   lua_State* const lua_state = interpreter_->GetLuaState();
@@ -221,6 +229,9 @@ void TableLocalObject::InvokeMethod(Thread* thread,
 }
 
 VersionedLocalObject* TableLocalObject::Clone() const {
+  CHECK(lua_table_.get() != nullptr)
+      << "TableLocalObject::Init has not been called.";
+
   lua_State* const lua_state = interpreter_->GetLuaState();
   const Table* const old_table = hvalue(lua_table_.get());
 
@@ -271,11 +282,17 @@ VersionedLocalObject* TableLocalObject::Clone() const {
   new_table->gclist = nullptr;
   new_table->sizearray = sizearray;
 
-  return new TableLocalObject(interpreter_, new_table);
+  TableLocalObject* const new_local_object = new TableLocalObject(interpreter_);
+  new_local_object->Init(new_table);
+
+  return new_local_object;
 }
 
 size_t TableLocalObject::Serialize(void* buffer, size_t buffer_size,
                                    SerializationContext* context) const {
+  CHECK(lua_table_.get() != nullptr)
+      << "TableLocalObject::Init has not been called.";
+
   const Table* const table = hvalue(lua_table_.get());
   TableProto table_proto;
 
@@ -435,13 +452,23 @@ TableLocalObject* TableLocalObject::Deserialize(
 
   table->gclist = nullptr;
 
-  return new TableLocalObject(interpreter, table);
+  TableLocalObject* const new_local_object = new TableLocalObject(interpreter);
+  new_local_object->Init(table);
+
+  return new_local_object;
 }
 
-TableLocalObject::TableLocalObject(InterpreterImpl* interpreter, Table* table)
-    : interpreter_(CHECK_NOTNULL(interpreter)),
-      lua_table_(new TValue()) {
+void TableLocalObject::Init(Table* table) {
+  CHECK(lua_table_.get() == nullptr)
+      << "TableLocalObject::Init has already been called.";
   CHECK(table != nullptr);
+
+  lua_State* const lua_state = interpreter_->GetLuaState();
+  // Suppress an "unused variable" warning if the sethvalue macro below doesn't
+  // use lua_state.
+  UNUSED(lua_state);
+
+  lua_table_.reset(new TValue());
   sethvalue(lua_state, lua_table_.get(), table);
 }
 

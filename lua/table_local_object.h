@@ -36,8 +36,10 @@ class InterpreterImpl;
 
 class TableLocalObject : public VersionedLocalObject {
  public:
-  TableLocalObject(InterpreterImpl* interpreter, int b, int c);
+  explicit TableLocalObject(InterpreterImpl* interpreter);
   ~TableLocalObject() override;
+
+  void Init(int b, int c);
 
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
@@ -55,10 +57,10 @@ class TableLocalObject : public VersionedLocalObject {
                                        DeserializationContext* context);
 
  private:
-  TableLocalObject(InterpreterImpl* interpreter, Table* table);
+  void Init(Table* table);
 
   InterpreterImpl* const interpreter_;
-  const std::unique_ptr<lua_TValue> lua_table_;
+  std::unique_ptr<lua_TValue> lua_table_;
 
   DISALLOW_COPY_AND_ASSIGN(TableLocalObject);
 };

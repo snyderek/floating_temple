@@ -33,7 +33,7 @@ class Thread;
 // version of a particular object in the local interpreter. It's possible for
 // multiple LocalObject objects to refer to the same local interpreter object.
 //
-// Subclasses of this class are thread-safe.
+// Derived classes must be thread-safe.
 class LocalObject {
  public:
   virtual ~LocalObject() {}

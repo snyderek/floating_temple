@@ -26,18 +26,35 @@ class VersionedLocalObject;
 // This interface is implemented by the local interpreter. It represents the
 // local interpreter itself.
 //
-// Subclasses of this class are thread-safe.
+// The (human) implementer of a local interpreter is responsible for designing
+// the serialization protocol for that interpreter's objects. From the point of
+// view of the Floating Temple engine, a serialized object is just an opaque
+// sequence of bytes of known length. The engine doesn't even know the type of a
+// serialized object, and so the local interpreter is responsible for encoding
+// that information within the serialization protocol.
+//
+// Derived classes must be thread-safe.
+//
+// TODO(dss): Consider relaxing the thread safety requirement for this class.
 class Interpreter {
  public:
   virtual ~Interpreter() {}
 
   // Deserializes an object and creates it in the local interpreter.
   //
-  // buffer points to a buffer that contains the serialized form of the object.
-  // buffer_size is the size of the buffer in bytes.
+  // 'buffer' points to a buffer that contains the serialized form of the local
+  // object.
   //
-  // Returns a pointer to a newly created VersionedLocalObject object. The
-  // caller must take ownership of this object.
+  // 'buffer_size' is the size of the buffer in bytes.
+  //
+  // 'context' points to a DeserializationContext instance that can be used by
+  // the local interpreter to convert object indexes to object references. This
+  // instance is valid only for the duration of the call to DeserializeObject.
+  // The local interpreter must not take ownership of the DeserializationContext
+  // instance.
+  //
+  // Returns a pointer to a newly created VersionedLocalObject instance. The
+  // caller will take ownership of this instance.
   virtual VersionedLocalObject* DeserializeObject(
       const void* buffer, std::size_t buffer_size,
       DeserializationContext* context) = 0;

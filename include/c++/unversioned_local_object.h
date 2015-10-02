@@ -20,7 +20,7 @@
 
 namespace floating_temple {
 
-// Subclasses of this class are thread-safe.
+// Derived classes must be thread-safe.
 class UnversionedLocalObject : public LocalObject {
 };
 

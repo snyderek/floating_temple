@@ -20,10 +20,21 @@ namespace floating_temple {
 
 class ObjectReference;
 
+// This interface is implemented by the peer. It can be used by the local
+// interpreter to convert object indexes to object references during
+// deserialization of a local object.
+//
+// This class is not thread-safe. It's intended to be used only by the thread
+// that called Interpreter::DeserializeObject.
 class DeserializationContext {
  public:
   virtual ~DeserializationContext() {}
 
+  // Returns the object reference that corresponds to the given object index.
+  // The index must have been created by a previous call to
+  // SerializationContext::GetIndexForObjectReference, possibly on a different
+  // machine. This method may be called repeatedly with the same index, and will
+  // always return the same ObjectReference pointer.
   virtual ObjectReference* GetObjectReferenceByIndex(int index) = 0;
 };
 

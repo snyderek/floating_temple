@@ -24,7 +24,7 @@ namespace floating_temple {
 
 class SerializationContext;
 
-// Subclasses of this class are thread-safe.
+// Derived classes must be thread-safe.
 class VersionedLocalObject : public LocalObject {
  public:
   // Returns a pointer to a new VersionedLocalObject object that is a clone of

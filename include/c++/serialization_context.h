@@ -20,10 +20,23 @@ namespace floating_temple {
 
 class ObjectReference;
 
+// This interface is implemented by the peer. It can be used by the local
+// interpreter to convert object references to object indexes during
+// serialization of a local object. Object indexes are useful because they can
+// be included in the serialized form of a local object. Object references, on
+// the other hand, are only valid within the local process.
+//
+// This class is not thread-safe. It's intended to be used only by the thread
+// that called VersionedLocalObject::Serialize.
 class SerializationContext {
  public:
   virtual ~SerializationContext() {}
 
+  // Returns the object index that corresponds to the given object reference.
+  // This method may be called repeatedly with the same ObjectReference pointer,
+  // and will always return the same object index.
+  //
+  // 'object_reference' must not be NULL.
   virtual int GetIndexForObjectReference(ObjectReference* object_reference) = 0;
 };
 

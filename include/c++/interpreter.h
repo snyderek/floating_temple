@@ -35,7 +35,7 @@ class VersionedLocalObject;
 //
 // Derived classes must be thread-safe.
 //
-// TODO(dss): Consider relaxing the thread safety requirement for this class.
+// TODO(dss): Consider relaxing the thread-safety requirement for this class.
 class Interpreter {
  public:
   virtual ~Interpreter() {}

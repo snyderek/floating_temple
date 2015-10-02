@@ -26,19 +26,25 @@ namespace floating_temple {
 class DumpContext;
 class ObjectReference;
 
-// A Value object stores a value of one of the primitive types supported by the
-// distributed interpreter.
+// A Value instance stores a value of one of the primitive types supported by
+// the distributed interpreter.
 //
 // There's also a protocol message analog of this class: ValueProto, defined in
 // proto/value_proto.proto. ValueProto is used to transmit values between peers.
-// The primary difference between the two classes is that Value represents an
-// object as an ObjectReference pointer, whereas ValueProto represents an object
-// as an object ID.
+// The primary difference between the two classes is that Value represents a
+// shared object as an ObjectReference pointer, whereas ValueProto represents a
+// shared object as an object ID (i.e., a UUID).
+//
+// Perhaps unsurprisingly, this class has value semantics. The copy constructor
+// and assignment operator are defined. Instances of this class are compared by
+// value, not by identity.
+//
+// This class is thread-compatible.
 class Value {
  public:
   // When an instance of this class is created, its type is initially set to
   // UNINITIALIZED. However, this is not considered a valid value type. You must
-  // explicitly set the type by calling one of the setter methods below.
+  // explicitly set the type by calling one of the set_xxx methods below.
   enum Type { UNINITIALIZED, EMPTY, DOUBLE, FLOAT, INT64, UINT64, BOOL, STRING,
               BYTES, OBJECT_REFERENCE };
 
@@ -49,7 +55,7 @@ class Value {
   int local_type() const { return local_type_; }
 
   // Returns the type of value stored in this object.
-  // TODO(dss): Crash if type_ == UNINITIALIZED.
+  // TODO(dss): Crash if type_ == UNINITIALIZED (?)
   Type type() const { return type_; }
 
   // These getter methods return the value stored in the object, depending on

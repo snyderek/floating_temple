@@ -34,6 +34,8 @@ class Thread;
 // multiple LocalObject objects to refer to the same local interpreter object.
 //
 // Derived classes must be thread-safe.
+//
+// TODO(dss): Consider relaxing the thread-safety requirement for this class.
 class LocalObject {
  public:
   virtual ~LocalObject() {}

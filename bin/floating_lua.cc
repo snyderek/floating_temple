@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
   LOG(WARNING) << "Peer started.";
 
   // Run the source file.
-  RunLuaProgram(&interpreter, peer.get(), argv[1], FLAGS_linger);
+  RunLuaProgram(peer.get(), argv[1], FLAGS_linger);
   LOG(WARNING) << "The program has completed successfully";
 
   // Stop the peer.

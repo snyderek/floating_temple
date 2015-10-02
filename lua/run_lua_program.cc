@@ -30,10 +30,10 @@ using std::string;
 namespace floating_temple {
 namespace lua {
 
-void RunLuaProgram(InterpreterImpl* interpreter, Peer* peer,
-                   const string& source_file_name, bool linger) {
-  CHECK(interpreter != nullptr);
+void RunLuaProgram(Peer* peer, const string& source_file_name, bool linger) {
   CHECK(peer != nullptr);
+
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
 
   // Install the Floating Temple hooks in the Lua interpreter.
   const ft_LockHook old_lock_hook = ft_installlockhook(&LockInterpreter);

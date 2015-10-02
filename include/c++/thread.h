@@ -29,7 +29,8 @@ class VersionedLocalObject;
 
 // This interface is implemented by the peer. The local interpreter uses it to
 // perform any operations that require assistance from the peer during the
-// duration of a method call.
+// duration of a method call. The local interpreter should not store a pointer
+// to the Thread instance beyond the duration of the method call.
 class Thread {
  public:
   virtual ~Thread() {}

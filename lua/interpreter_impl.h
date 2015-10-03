@@ -40,6 +40,7 @@ class InterpreterImpl : public Interpreter {
   ~InterpreterImpl() override;
 
   void Init();
+  void Reset();
 
   lua_State* GetLuaState();
 

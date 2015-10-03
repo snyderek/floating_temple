@@ -55,6 +55,19 @@ void InterpreterImpl::Init() {
   lua_state_ = main_thread_lua_state_;
 }
 
+void InterpreterImpl::Reset() {
+  CHECK(main_thread_lua_state_ != nullptr)
+      << "InterpreterImpl::Init has not been called.";
+
+  lua_close(main_thread_lua_state_);
+
+  main_thread_lua_state_ = luaL_newstate();
+  CHECK(main_thread_lua_state_ != nullptr);
+  lua_state_ = main_thread_lua_state_;
+  thread_object_ = nullptr;
+  long_jump_target_ = nullptr;
+}
+
 lua_State* InterpreterImpl::GetLuaState() {
   return PrivateGetLuaState();
 }

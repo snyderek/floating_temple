@@ -16,6 +16,8 @@
 #ifndef LUA_PROGRAM_OBJECT_H_
 #define LUA_PROGRAM_OBJECT_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "include/c++/unversioned_local_object.h"
 
@@ -24,7 +26,9 @@ namespace lua {
 
 class ProgramObject : public UnversionedLocalObject {
  public:
-  ProgramObject();
+  // TODO(dss): Make this constructor accept a file pointer instead of a file
+  // name.
+  explicit ProgramObject(const std::string& source_file_name);
 
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
@@ -34,6 +38,8 @@ class ProgramObject : public UnversionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
+  const std::string source_file_name_;
+
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);
 };
 

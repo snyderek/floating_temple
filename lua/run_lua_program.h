@@ -24,8 +24,7 @@ class Peer;
 
 namespace lua {
 
-void RunLuaProgram(Peer* peer, const std::string& source_file_name,
-                   bool linger);
+int RunLuaProgram(Peer* peer, const std::string& source_file_name, bool linger);
 
 }  // namespace lua
 }  // namespace floating_temple

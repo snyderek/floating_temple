@@ -144,7 +144,7 @@ int CreateTable(lua_State* lua_state, TValue* obj, int b, int c) {
       interpreter->GetThreadObject()->CreateVersionedObject(local_object, "");
 
   val_(obj).ft_obj = object_reference;
-  settt_(obj, LUA_TTABLE);
+  settt_(obj, LUA_TFLOATINGTEMPLEOBJECT);
 
   return 1;
 }

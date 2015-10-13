@@ -15,13 +15,23 @@
 
 #include "lua/run_lua_program.h"
 
+#include <cstddef>
+#include <cstdio>
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
 #include "lua/program_object.h"
 
+using std::FILE;
+using std::fclose;
+using std::feof;
+using std::ferror;
+using std::fopen;
+using std::fread;
+using std::size_t;
 using std::string;
 
 namespace floating_temple {
@@ -29,12 +39,43 @@ namespace floating_temple {
 class UnversionedLocalObject;
 
 namespace lua {
+namespace {
+
+void ReadFileContent(const string& file_name, string* content) {
+  CHECK(!file_name.empty());
+  CHECK(content != nullptr);
+
+  FILE* const fp = fopen(file_name.c_str(), "r");
+  PLOG_IF(FATAL, fp == nullptr) << "fopen";
+
+  bool eof = false;
+  while (!eof) {
+    char buffer[1000];
+    const size_t read_count = fread(buffer, sizeof(buffer[0]),
+                                    ARRAYSIZE(buffer), fp);
+
+    if (read_count < ARRAYSIZE(buffer)) {
+      CHECK_EQ(ferror(fp), 0);
+      CHECK_NE(feof(fp), 0);
+      eof = true;
+    }
+
+    content->append(buffer, read_count);
+  }
+
+  PLOG_IF(FATAL, fclose(fp) != 0) << "fclose";
+}
+
+}  // namespace
 
 int RunLuaProgram(Peer* peer, const string& source_file_name, bool linger) {
   CHECK(peer != nullptr);
 
+  string file_content;
+  ReadFileContent(source_file_name, &file_content);
+
   UnversionedLocalObject* const program_object = new ProgramObject(
-      source_file_name);
+      source_file_name, file_content);
 
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value, linger);

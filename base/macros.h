@@ -29,6 +29,6 @@
 // };
 
 // A macro to compute the number of elements in a statically allocated array.
-#define ARRAYSIZE(a) (sizeof (a) / sizeof (a)[0])
+#define ARRAYSIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 #endif  // BASE_MACROS_H_

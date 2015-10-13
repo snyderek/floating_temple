@@ -32,9 +32,10 @@ using std::vector;
 namespace floating_temple {
 namespace lua {
 
-ProgramObject::ProgramObject(const string& source_file_name)
-    : source_file_name_(source_file_name) {
-  CHECK(!source_file_name.empty());
+ProgramObject::ProgramObject(const string& file_name,
+                             const string& file_content)
+    : file_name_(file_name),
+      file_content_(file_content) {
 }
 
 void ProgramObject::InvokeMethod(Thread* thread,
@@ -50,14 +51,6 @@ void ProgramObject::InvokeMethod(Thread* thread,
   interpreter->Reset();
 
   lua_State* const lua_state = interpreter->GetLuaState();
-
-  const char* argv[2];
-  argv[0] = "floating_lua";
-  argv[1] = source_file_name_.c_str();
-
-  // TODO(dss): Remove the following lines once the variables are being used.
-  UNUSED(lua_state);
-  UNUSED(argv);
 
   // Install the Floating Temple hooks in the Lua interpreter.
   const ft_LockHook old_lock_hook = ft_installlockhook(&LockInterpreter);
@@ -76,7 +69,19 @@ void ProgramObject::InvokeMethod(Thread* thread,
   const ft_SetListHook old_set_list_hook = ft_installsetlisthook(
       &CallMethod_SetList);
 
-  // TODO(dss): Run the source file in the Lua interpreter.
+  // Load the standard Lua libraries. (Temporarily suspend garbage collection
+  // while the libraries are being loaded.)
+  lua_gc(lua_state, LUA_GCSTOP, 0);
+  // TODO(dss): Tell the standard libraries to ignore environment variables.
+  luaL_openlibs(lua_state);
+  lua_gc(lua_state, LUA_GCRESTART, 0);
+
+  // Load the content of the source file into the Lua interpreter.
+  CHECK_EQ(luaL_loadbuffer(lua_state, file_content_.data(),
+                           file_content_.length(), file_name_.c_str()), LUA_OK);
+
+  // Run the Lua program.
+  CHECK_EQ(lua_pcall(lua_state, 0, 0, 0), LUA_OK);
 
   // Remove the Floating Temple hooks.
   ft_installlockhook(old_lock_hook);

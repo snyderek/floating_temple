@@ -24,6 +24,8 @@ class Peer;
 
 namespace lua {
 
+// TODO(dss): Add a function that runs a Lua program from an in-memory file, for
+// testing purposes.
 int RunLuaProgram(Peer* peer, const std::string& source_file_name, bool linger);
 
 }  // namespace lua

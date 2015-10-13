@@ -26,9 +26,7 @@ namespace lua {
 
 class ProgramObject : public UnversionedLocalObject {
  public:
-  // TODO(dss): Make this constructor accept a file pointer instead of a file
-  // name.
-  explicit ProgramObject(const std::string& source_file_name);
+  ProgramObject(const std::string& file_name, const std::string& file_content);
 
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
@@ -38,7 +36,8 @@ class ProgramObject : public UnversionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
-  const std::string source_file_name_;
+  const std::string file_name_;
+  const std::string file_content_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);
 };

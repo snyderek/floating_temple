@@ -21,6 +21,7 @@
 
 #include "base/logging.h"
 #include "include/c++/value.h"
+#include "lua/ft_lib.h"
 #include "lua/hook_functions.h"
 #include "lua/interpreter_impl.h"
 #include "lua/third_party_lua_headers.h"
@@ -76,6 +77,7 @@ void ProgramObject::InvokeMethod(Thread* thread,
   lua_gc(lua_state, LUA_GCSTOP, 0);
   // TODO(dss): Tell the standard libraries to ignore environment variables.
   luaL_openlibs(lua_state);
+  InstallFloatingTempleLib(lua_state);
   lua_gc(lua_state, LUA_GCRESTART, 0);
 
   // Load the content of the source file into the Lua interpreter.

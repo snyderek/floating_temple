@@ -21,6 +21,7 @@ extern "C" {
 #include "third_party/lua-5.2.3/src/lua.h"
 
 #include "third_party/lua-5.2.3/src/floating_temple.h"
+#include "third_party/lua-5.2.3/src/lapi.h"
 #include "third_party/lua-5.2.3/src/lauxlib.h"
 #include "third_party/lua-5.2.3/src/lgc.h"
 #include "third_party/lua-5.2.3/src/llimits.h"

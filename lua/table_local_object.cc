@@ -29,6 +29,7 @@
 #include "lua/proto/serialization.pb.h"
 #include "lua/third_party_lua_headers.h"
 #include "lua/thread_substitution.h"
+#include "util/dump_context.h"
 #include "util/math_util.h"
 
 using std::jmp_buf;
@@ -349,7 +350,12 @@ size_t TableLocalObject::Serialize(void* buffer, size_t buffer_size,
 void TableLocalObject::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
-  // TODO(dss): Implement this.
+  // TODO(dss): Consider adding more detail to the dump output (e.g., number of
+  // keys in the table).
+  dc->BeginMap();
+  dc->AddString("type");
+  dc->AddString("TableLocalObject");
+  dc->End();
 }
 
 // static

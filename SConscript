@@ -417,7 +417,6 @@ toy_lang_lib = ft_env.Library(
         toy_lang/zoo/bool_object.cc
         toy_lang/zoo/end_tran_function.cc
         toy_lang/zoo/expression_object.cc
-        toy_lang/zoo/expression_object_test.cc
         toy_lang/zoo/for_function.cc
         toy_lang/zoo/function.cc
         toy_lang/zoo/get_at_function.cc

@@ -24,6 +24,7 @@
 #include "lua/hook_functions.h"
 #include "lua/interpreter_impl.h"
 #include "lua/third_party_lua_headers.h"
+#include "lua/thread_substitution.h"
 #include "util/dump_context.h"
 
 using std::string;
@@ -43,7 +44,6 @@ void ProgramObject::InvokeMethod(Thread* thread,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
-  CHECK(thread != nullptr);
   CHECK_EQ(method_name, "run");
   CHECK(return_value != nullptr);
 
@@ -51,6 +51,8 @@ void ProgramObject::InvokeMethod(Thread* thread,
   interpreter->Reset();
 
   lua_State* const lua_state = interpreter->GetLuaState();
+
+  ThreadSubstitution thread_substitution(interpreter, thread);
 
   // Install the Floating Temple hooks in the Lua interpreter.
   const ft_LockHook old_lock_hook = ft_installlockhook(&LockInterpreter);

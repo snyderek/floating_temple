@@ -48,7 +48,7 @@ InterpreterImpl::~InterpreterImpl() {
 void InterpreterImpl::Init() {
   CHECK(main_thread_lua_state_ == nullptr)
       << "InterpreterImpl::Init was already called.";
-  CHECK(lua_state_ = nullptr);
+  CHECK(lua_state_ == nullptr);
 
   main_thread_lua_state_ = luaL_newstate();
   CHECK(main_thread_lua_state_ != nullptr);

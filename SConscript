@@ -309,7 +309,9 @@ gtest_lib = gmock_env.Library(
   )
 
 third_party_lua_env = Environment(
-    CFLAGS = Split('-O2 -Wall -DLUA_COMPAT_ALL -DLUA_USE_LINUX'),
+    # TODO(dss): Use different optimization flags when compiling in release
+    # mode.
+    CFLAGS = Split('-g -O0 -Wall -DLUA_COMPAT_ALL -DLUA_USE_LINUX'),
     LINKFLAGS = Split('-Wl,-E'),
 
     CPPPATH = Split("""

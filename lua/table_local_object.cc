@@ -131,7 +131,7 @@ void TableLocalObject::Init(int b, int c) {
   Node* const node = const_cast<Node*>(luaH_getdummynode());
 
   table->flags = static_cast<lu_byte>(~0);
-  table->lsizenode = static_cast<lu_byte>(~0);
+  table->lsizenode = static_cast<lu_byte>(0);
   // TODO(dss): Support metatables.
   table->metatable = nullptr;
   table->array = nullptr;

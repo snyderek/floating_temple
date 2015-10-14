@@ -794,6 +794,22 @@ engine_shared_object_test = ft_env.Program(
       ],
   )
 
+lua_table_local_object_test = ft_env.Program(
+    target = 'lua/table_local_object_test',
+    source = Split("""
+        lua/table_local_object_test.cc
+      """) + [
+        lua_lib,
+        value_lib,
+        lua_proto_lib,
+        util_lib,
+        base_lib,
+        third_party_lua_lib,
+        gmock_lib,
+        gtest_lib,
+      ],
+  )
+
 protocol_server_buffer_util_test = ft_env.Program(
     target = 'protocol_server/buffer_util_test',
     source = Split("""
@@ -926,6 +942,7 @@ cxx_tests = [
     engine_toy_lang_integration_test,
     engine_transaction_store_test,
     engine_uuid_util_test,
+    lua_table_local_object_test,
     protocol_server_buffer_util_test,
     protocol_server_protocol_connection_impl_test,
     protocol_server_varint_test,

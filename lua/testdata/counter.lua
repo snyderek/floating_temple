@@ -12,4 +12,5 @@ end
 shared["num"] = num
 end_tran()
 
-print("My unique number is", num)
+print("======================", "My unique number is", num,
+      "======================")

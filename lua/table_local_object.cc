@@ -453,7 +453,7 @@ TableLocalObject* TableLocalObject::Deserialize(
 
     table->lastfree = gnode(table, hashtable_proto.last_free_index());
   } else {
-    table->lsizenode = static_cast<lu_byte>(~0);
+    table->lsizenode = static_cast<lu_byte>(0);
     Node* const node = const_cast<Node*>(luaH_getdummynode());
     table->node = node;
     table->lastfree = node;

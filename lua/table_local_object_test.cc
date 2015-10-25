@@ -36,12 +36,14 @@ using std::string;
 using std::vector;
 using testing::AnyNumber;
 using testing::InitGoogleMock;
+using testing::Test;
 using testing::_;
 
 namespace floating_temple {
 namespace lua {
 namespace {
 
+// TODO(dss): Move the MockThread class declaration to its own header file.
 class MockThread : public Thread {
  public:
   MockThread() {}
@@ -65,6 +67,8 @@ class MockThread : public Thread {
   DISALLOW_COPY_AND_ASSIGN(MockThread);
 };
 
+// TODO(dss): Move the MockObjectReference class declaration to its own header
+// file.
 class MockObjectReference : public ObjectReference {
  public:
   MockObjectReference() {}
@@ -75,10 +79,28 @@ class MockObjectReference : public ObjectReference {
   DISALLOW_COPY_AND_ASSIGN(MockObjectReference);
 };
 
-TEST(TableLocalObjectTest, SetTableAndGetTable) {
-  InterpreterImpl interpreter;
-  interpreter.Init();
+class TableLocalObjectTest : public Test {
+ protected:
+  static void SetUpTestCase() {
+    interpreter_ = new InterpreterImpl();
+    interpreter_->Init();
+  }
 
+  static void TearDownTestCase() {
+    delete interpreter_;
+    interpreter_ = nullptr;
+  }
+
+  void SetUp() override {
+    interpreter_->Reset();
+  }
+
+  static InterpreterImpl* interpreter_;
+};
+
+InterpreterImpl* TableLocalObjectTest::interpreter_ = nullptr;
+
+TEST_F(TableLocalObjectTest, SetTableAndGetTable) {
   MockThread thread;
 
   EXPECT_CALL(thread, BeginTransaction())
@@ -94,7 +116,7 @@ TEST(TableLocalObjectTest, SetTableAndGetTable) {
   EXPECT_CALL(thread, ObjectsAreIdentical(_, _))
       .Times(0);
 
-  TableLocalObject table_local_object(&interpreter);
+  TableLocalObject table_local_object(interpreter_);
   table_local_object.Init(0, 0);
 
   MockObjectReference table_object_reference;
@@ -126,6 +148,45 @@ TEST(TableLocalObjectTest, SetTableAndGetTable) {
     EXPECT_EQ(Value::DOUBLE, return_value.type());
     EXPECT_EQ(LUA_TNUMBER, return_value.local_type());
     ASSERT_DOUBLE_EQ(123.45, return_value.double_value());
+  }
+}
+
+TEST_F(TableLocalObjectTest, CloneEmptyTable) {
+  MockThread thread;
+
+  EXPECT_CALL(thread, BeginTransaction())
+      .Times(0);
+  EXPECT_CALL(thread, EndTransaction())
+      .Times(0);
+  EXPECT_CALL(thread, CreateVersionedObject(_, _))
+      .Times(0);
+  EXPECT_CALL(thread, CreateUnversionedObject(_, _))
+      .Times(0);
+  EXPECT_CALL(thread, CallMethod(_, _, _, _))
+      .Times(0);
+  EXPECT_CALL(thread, ObjectsAreIdentical(_, _))
+      .Times(0);
+
+  TableLocalObject table_local_object1(interpreter_);
+  table_local_object1.Init(0, 0);
+
+  VersionedLocalObject* const table_local_object2 = table_local_object1.Clone();
+
+  MockObjectReference table_object_reference;
+
+  EXPECT_CALL(table_object_reference, Dump(_))
+      .Times(AnyNumber());
+
+  {
+    vector<Value> parameters(1);
+    parameters[0].set_string_value(LUA_TSTRING, "abc");
+
+    Value return_value;
+    table_local_object2->InvokeMethod(&thread, &table_object_reference,
+                                      "gettable", parameters, &return_value);
+
+    EXPECT_EQ(Value::EMPTY, return_value.type());
+    EXPECT_EQ(LUA_TNIL, return_value.local_type());
   }
 }
 

@@ -236,6 +236,9 @@ VersionedLocalObject* TableLocalObject::Clone() const {
   lua_State* const lua_state = interpreter_->GetLuaState();
   const Table* const old_table = hvalue(lua_table_.get());
 
+  // TODO(dss): Move the code to clone a table into the third-party Lua source
+  // code tree.
+
   GCObject* gc_list = nullptr;
   Table* const new_table =
       &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;

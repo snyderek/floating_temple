@@ -89,22 +89,10 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
     const SequencePointImpl& sequence_point,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
-  const shared_ptr<const LiveObject> live_object = GetWorkingVersionHelper(
+  // TODO(dss): Inline the GetWorkingVersionHelper method.
+  return GetWorkingVersionHelper(
       transaction_store_version_map, sequence_point, new_object_references,
       transactions_to_reject);
-
-  if (live_object.get() != nullptr) {
-    for (const auto& transaction_id_pair :
-             sequence_point.version_map().peer_transaction_ids()) {
-      const TransactionId& transaction_id = transaction_id_pair.second;
-      if (CompareTransactionIds(transaction_id,
-                                max_requested_transaction_id_) > 0) {
-        max_requested_transaction_id_.CopyFrom(transaction_id);
-      }
-    }
-  }
-
-  return live_object;
 }
 
 void VersionedObjectContent::GetTransactions(
@@ -206,6 +194,10 @@ void VersionedObjectContent::InsertTransaction(
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     GetWorkingVersion_Locked(version_map_, &new_object_references,
                              transactions_to_reject);
+  } else {
+    if (transaction_is_local) {
+      max_requested_transaction_id_.CopyFrom(transaction_id);
+    }
   }
 }
 

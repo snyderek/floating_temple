@@ -23,6 +23,8 @@
 #include "include/c++/serialization_context.h"
 #include "include/c++/value.h"
 #include "lua/get_serialized_lua_value_type.h"
+#include "lua/global_lock.h"
+#include "lua/interpreter_impl.h"
 #include "lua/proto/serialization.pb.h"
 #include "lua/third_party_lua_headers.h"
 
@@ -37,6 +39,8 @@ namespace lua {
 void LuaValueToValue(const TValue* lua_value, Value* value) {
   CHECK(lua_value != nullptr);
   CHECK(value != nullptr);
+
+  GlobalLock global_lock(InterpreterImpl::instance());
 
   const int lua_type = ttypenv(lua_value);
 
@@ -76,6 +80,8 @@ void ValueToLuaValue(lua_State* lua_state, const Value& value,
   CHECK(lua_value != nullptr);
 
   const int lua_type = value.local_type();
+
+  GlobalLock global_lock(InterpreterImpl::instance());
 
   switch (lua_type) {
     case LUA_TNIL:

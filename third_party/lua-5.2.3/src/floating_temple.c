@@ -18,30 +18,6 @@
 #include "luaconf.h"
 
 
-static void ft_defaultlockhook (void) {
-}
-
-LUAI_DDEF ft_LockHook ft_lockhook = &ft_defaultlockhook;
-
-LUA_API ft_LockHook ft_installlockhook (ft_LockHook hook) {
-  ft_LockHook old_hook = ft_lockhook;
-  ft_lockhook = hook;
-  return old_hook;
-}
-
-
-static void ft_defaultunlockhook (void) {
-}
-
-LUAI_DDEF ft_UnlockHook ft_unlockhook = &ft_defaultunlockhook;
-
-LUA_API ft_UnlockHook ft_installunlockhook (ft_UnlockHook hook) {
-  ft_UnlockHook old_hook = ft_unlockhook;
-  ft_unlockhook = hook;
-  return old_hook;
-}
-
-
 static int ft_defaultobjectreferencesequalhook (const void *ft_obj1,
                                                 const void *ft_obj2) {
   assert(ft_obj1 != NULL);

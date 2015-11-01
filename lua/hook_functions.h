@@ -22,9 +22,6 @@ struct lua_TValue;
 namespace floating_temple {
 namespace lua {
 
-void LockInterpreter();
-void UnlockInterpreter();
-
 // Returns non-zero if the objects are equal.
 int AreObjectsEqual(const void* ft_obj1, const void* ft_obj2);
 

@@ -19,6 +19,7 @@
 
 #include "base/logging.h"
 #include "include/c++/thread.h"
+#include "lua/global_unlock.h"
 #include "lua/interpreter_impl.h"
 #include "lua/table_local_object.h"
 #include "lua/third_party_lua_headers.h"
@@ -31,12 +32,18 @@ namespace lua {
 namespace {
 
 int BeginTransaction(lua_State* lua_state) {
-  InterpreterImpl::instance()->BeginTransaction();
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
+
+  GlobalUnlock global_unlock(interpreter);
+  interpreter->BeginTransaction();
   return 0;
 }
 
 int EndTransaction(lua_State* lua_state) {
-  InterpreterImpl::instance()->EndTransaction();
+  InterpreterImpl* const interpreter = InterpreterImpl::instance();
+
+  GlobalUnlock global_unlock(interpreter);
+  interpreter->EndTransaction();
   return 0;
 }
 
@@ -51,22 +58,24 @@ LUAMOD_API int OpenFloatingTempleLib(lua_State* lua_state) {
 
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
 
+  ObjectReference* object_reference = nullptr;
+  {
+    GlobalUnlock global_unlock(interpreter);
+
+    // Create the "shared" table, which will be shared with remote peers.
+    TableLocalObject* const local_object = new TableLocalObject(interpreter);
+    local_object->Init(0, 0);
+    object_reference = interpreter->GetThreadObject()->CreateVersionedObject(
+        local_object, "shared");
+  }
+
   // Create the floating_temple library, and register the library functions.
   luaL_newlib(lua_state, ft_funcs);
 
-  // Create the "shared" table, which will be shared with remote peers.
-  TableLocalObject* const local_object = new TableLocalObject(interpreter);
-  local_object->Init(0, 0);
-  ObjectReference* const object_reference =
-      interpreter->GetThreadObject()->CreateVersionedObject(local_object,
-                                                            "shared");
-
   // Push a reference to the shared table onto the stack.
-  lua_lock(lua_state);
   val_(lua_state->top).ft_obj = object_reference;
   settt_(lua_state->top, LUA_TFLOATINGTEMPLEOBJECT);
   api_incr_top(lua_state);
-  lua_unlock(lua_state);
 
   // Within the floating_temple library, set the field name "shared" to point to
   // the shared table.

@@ -24,6 +24,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "lua/convert_value.h"
+#include "lua/global_unlock.h"
 #include "lua/interpreter_impl.h"
 #include "lua/table_local_object.h"
 #include "lua/third_party_lua_headers.h"
@@ -48,6 +49,8 @@ InterpreterImpl::LongJumpTarget* GetLongJumpTarget() {
 
 bool CallMethodHelper_GetTable(lua_State* lua_state, const TValue* table,
                                const TValue* key, TValue* val) {
+  GlobalUnlock global_unlock(InterpreterImpl::instance());
+
   ObjectReference* const table_object_reference = static_cast<ObjectReference*>(
       val_(table).ft_obj);
 
@@ -66,6 +69,8 @@ bool CallMethodHelper_GetTable(lua_State* lua_state, const TValue* table,
 
 bool CallMethodHelper_SetTable(lua_State* lua_state, const TValue* table,
                                const TValue* key, const TValue* val) {
+  GlobalUnlock global_unlock(InterpreterImpl::instance());
+
   ObjectReference* const table_object_reference = static_cast<ObjectReference*>(
       val_(table).ft_obj);
 
@@ -85,6 +90,8 @@ bool CallMethodHelper_SetTable(lua_State* lua_state, const TValue* table,
 
 bool CallMethodHelper_ObjLen(lua_State* lua_state, TValue* ra,
                              const TValue* rb) {
+  GlobalUnlock global_unlock(InterpreterImpl::instance());
+
   ObjectReference* const table_object_reference = static_cast<ObjectReference*>(
       val_(rb).ft_obj);
 
@@ -100,6 +107,8 @@ bool CallMethodHelper_ObjLen(lua_State* lua_state, TValue* ra,
 
 bool CallMethodHelper_SetList(lua_State* lua_state, const TValue* ra, int n,
                               int c) {
+  GlobalUnlock global_unlock(InterpreterImpl::instance());
+
   ObjectReference* const table_object_reference = static_cast<ObjectReference*>(
       val_(ra).ft_obj);
 
@@ -122,15 +131,9 @@ bool CallMethodHelper_SetList(lua_State* lua_state, const TValue* ra, int n,
 
 }  // namespace
 
-void LockInterpreter() {
-  InterpreterImpl::instance()->Lock();
-}
-
-void UnlockInterpreter() {
-  InterpreterImpl::instance()->Unlock();
-}
-
 int AreObjectsEqual(const void* ft_obj1, const void* ft_obj2) {
+  GlobalUnlock global_unlock(InterpreterImpl::instance());
+
   return GetThreadObject()->ObjectsAreIdentical(
       static_cast<const ObjectReference*>(ft_obj1),
       static_cast<const ObjectReference*>(ft_obj2)) ? 1 : 0;

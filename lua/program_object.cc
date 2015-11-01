@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "include/c++/value.h"
 #include "lua/ft_lib.h"
+#include "lua/global_lock.h"
 #include "lua/hook_functions.h"
 #include "lua/interpreter_impl.h"
 #include "lua/third_party_lua_headers.h"
@@ -55,47 +56,47 @@ void ProgramObject::InvokeMethod(Thread* thread,
 
   ThreadSubstitution thread_substitution(interpreter, thread);
 
-  // Install the Floating Temple hooks in the Lua interpreter.
-  const ft_LockHook old_lock_hook = ft_installlockhook(&LockInterpreter);
-  const ft_UnlockHook old_unlock_hook = ft_installunlockhook(
-      &UnlockInterpreter);
-  const ft_ObjectReferencesEqualHook old_object_references_equal_hook =
-      ft_installobjectreferencesequalhook(&AreObjectsEqual);
-  const ft_NewTableHook old_new_table_hook = ft_installnewtablehook(
-      &CreateTable);
-  const ft_GetTableHook old_get_table_hook = ft_installgettablehook(
-      &CallMethod_GetTable);
-  const ft_SetTableHook old_set_table_hook = ft_installsettablehook(
-      &CallMethod_SetTable);
-  const ft_ObjLenHook old_obj_len_hook = ft_installobjlenhook(
-      &CallMethod_ObjLen);
-  const ft_SetListHook old_set_list_hook = ft_installsetlisthook(
-      &CallMethod_SetList);
+  {
+    GlobalLock global_lock(interpreter);
 
-  // Load the standard Lua libraries. (Temporarily suspend garbage collection
-  // while the libraries are being loaded.)
-  lua_gc(lua_state, LUA_GCSTOP, 0);
-  // TODO(dss): Tell the standard libraries to ignore environment variables.
-  luaL_openlibs(lua_state);
-  InstallFloatingTempleLib(lua_state);
-  lua_gc(lua_state, LUA_GCRESTART, 0);
+    // Install the Floating Temple hooks in the Lua interpreter.
+    const ft_ObjectReferencesEqualHook old_object_references_equal_hook =
+        ft_installobjectreferencesequalhook(&AreObjectsEqual);
+    const ft_NewTableHook old_new_table_hook = ft_installnewtablehook(
+        &CreateTable);
+    const ft_GetTableHook old_get_table_hook = ft_installgettablehook(
+        &CallMethod_GetTable);
+    const ft_SetTableHook old_set_table_hook = ft_installsettablehook(
+        &CallMethod_SetTable);
+    const ft_ObjLenHook old_obj_len_hook = ft_installobjlenhook(
+        &CallMethod_ObjLen);
+    const ft_SetListHook old_set_list_hook = ft_installsetlisthook(
+        &CallMethod_SetList);
 
-  // Load the content of the source file into the Lua interpreter.
-  CHECK_EQ(luaL_loadbuffer(lua_state, file_content_.data(),
-                           file_content_.length(), file_name_.c_str()), LUA_OK);
+    // Load the standard Lua libraries. (Temporarily suspend garbage collection
+    // while the libraries are being loaded.)
+    lua_gc(lua_state, LUA_GCSTOP, 0);
+    // TODO(dss): Tell the standard libraries to ignore environment variables.
+    luaL_openlibs(lua_state);
+    InstallFloatingTempleLib(lua_state);
+    lua_gc(lua_state, LUA_GCRESTART, 0);
 
-  // Run the Lua program.
-  CHECK_EQ(lua_pcall(lua_state, 0, 0, 0), LUA_OK);
+    // Load the content of the source file into the Lua interpreter.
+    CHECK_EQ(luaL_loadbuffer(lua_state, file_content_.data(),
+                             file_content_.length(), file_name_.c_str()),
+             LUA_OK);
 
-  // Remove the Floating Temple hooks.
-  ft_installlockhook(old_lock_hook);
-  ft_installunlockhook(old_unlock_hook);
-  ft_installobjectreferencesequalhook(old_object_references_equal_hook);
-  ft_installnewtablehook(old_new_table_hook);
-  ft_installgettablehook(old_get_table_hook);
-  ft_installsettablehook(old_set_table_hook);
-  ft_installobjlenhook(old_obj_len_hook);
-  ft_installsetlisthook(old_set_list_hook);
+    // Run the Lua program.
+    CHECK_EQ(lua_pcall(lua_state, 0, 0, 0), LUA_OK);
+
+    // Remove the Floating Temple hooks.
+    ft_installobjectreferencesequalhook(old_object_references_equal_hook);
+    ft_installnewtablehook(old_new_table_hook);
+    ft_installgettablehook(old_get_table_hook);
+    ft_installsettablehook(old_set_table_hook);
+    ft_installobjlenhook(old_obj_len_hook);
+    ft_installsetlisthook(old_set_list_hook);
+  }
 
   // TODO(dss): Print any error message reported by the Lua interpreter.
 

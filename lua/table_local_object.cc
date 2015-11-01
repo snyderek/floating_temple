@@ -25,6 +25,7 @@
 #include "base/logging.h"
 #include "include/c++/value.h"
 #include "lua/convert_value.h"
+#include "lua/global_lock.h"
 #include "lua/interpreter_impl.h"
 #include "lua/proto/serialization.pb.h"
 #include "lua/third_party_lua_headers.h"
@@ -113,7 +114,10 @@ TableLocalObject::TableLocalObject(InterpreterImpl* interpreter)
 
 TableLocalObject::~TableLocalObject() {
   if (lua_table_.get() != nullptr) {
-    luaH_free(interpreter_->GetLuaState(), hvalue(lua_table_.get()));
+    lua_State* const lua_state = interpreter_->GetLuaState();
+
+    GlobalLock global_lock(interpreter_);
+    luaH_free(lua_state, hvalue(lua_table_.get()));
   }
 }
 
@@ -122,6 +126,8 @@ void TableLocalObject::Init(int b, int c) {
       << "TableLocalObject::Init has already been called.";
 
   lua_State* const lua_state = interpreter_->GetLuaState();
+
+  GlobalLock global_lock(interpreter_);
 
   // This code is mostly copy-pasted from the luaH_new function in
   // "third_party/lua-5.2.3/src/ltable.c".
@@ -174,9 +180,12 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     ValueToLuaValue(lua_state, parameters[0], &lua_key);
 
     TValue lua_value;
-    if (!InvokeMethod_GetTable(long_jump_target.env, lua_state,
-                               lua_table_.get(), &lua_key, &lua_value)) {
-      return;
+    {
+      GlobalLock global_lock(interpreter_);
+      if (!InvokeMethod_GetTable(long_jump_target.env, lua_state,
+                                 lua_table_.get(), &lua_key, &lua_value)) {
+        return;
+      }
     }
 
     LuaValueToValue(&lua_value, return_value);
@@ -189,9 +198,12 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     TValue lua_value;
     ValueToLuaValue(lua_state, parameters[1], &lua_value);
 
-    if (!InvokeMethod_SetTable(long_jump_target.env, lua_state,
-                               lua_table_.get(), &lua_key, &lua_value)) {
-      return;
+    {
+      GlobalLock global_lock(interpreter_);
+      if (!InvokeMethod_SetTable(long_jump_target.env, lua_state,
+                                 lua_table_.get(), &lua_key, &lua_value)) {
+        return;
+      }
     }
 
     return_value->set_empty(LUA_TNIL);
@@ -199,10 +211,12 @@ void TableLocalObject::InvokeMethod(Thread* thread,
     CHECK_EQ(parameters.size(), 0u);
 
     TValue lua_length;
-    luaV_objlen(lua_state, &lua_length, lua_table_.get());
-    if (!InvokeMethod_Len(long_jump_target.env, lua_state, &lua_length,
-                          lua_table_.get())) {
-      return;
+    {
+      GlobalLock global_lock(interpreter_);
+      if (!InvokeMethod_Len(long_jump_target.env, lua_state, &lua_length,
+                            lua_table_.get())) {
+        return;
+      }
     }
 
     LuaValueToValue(&lua_length, return_value);
@@ -217,9 +231,12 @@ void TableLocalObject::InvokeMethod(Thread* thread,
       ValueToLuaValue(lua_state, parameters[i], &lua_values[i - 1]);
     }
 
-    if (!InvokeMethod_SetList(long_jump_target.env, lua_state, lua_table_.get(),
-                              n, c, lua_values.get())) {
-      return;
+    {
+      GlobalLock global_lock(interpreter_);
+      if (!InvokeMethod_SetList(long_jump_target.env, lua_state,
+                                lua_table_.get(), n, c, lua_values.get())) {
+        return;
+      }
     }
 
     return_value->set_empty(LUA_TNIL);
@@ -234,57 +251,63 @@ VersionedLocalObject* TableLocalObject::Clone() const {
       << "TableLocalObject::Init has not been called.";
 
   lua_State* const lua_state = interpreter_->GetLuaState();
-  const Table* const old_table = hvalue(lua_table_.get());
 
-  // TODO(dss): Move the code to clone a table into the third-party Lua source
-  // code tree.
+  Table* new_table = nullptr;
+  {
+    GlobalLock global_lock(interpreter_);
 
-  GCObject* gc_list = nullptr;
-  Table* const new_table =
-      &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
+    const Table* const old_table = hvalue(lua_table_.get());
 
-  const lu_byte lsizenode = old_table->lsizenode;
-  const int sizearray = old_table->sizearray;
+    // TODO(dss): Move the code to clone a table into the third-party Lua source
+    // code tree.
 
-  new_table->flags = old_table->flags;
-  new_table->lsizenode = lsizenode;
-  new_table->metatable = nullptr;
+    GCObject* gc_list = nullptr;
+    new_table =
+        &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
 
-  if (old_table->array == nullptr) {
-    new_table->array = nullptr;
-  } else {
-    new_table->array = luaM_newvector(lua_state, sizearray, TValue);
-    for (int i = 0; i < sizearray; ++i) {
-      setobj2t(&lua_state, &new_table->array[i], &old_table->array[i]);
-    }
-  }
+    const lu_byte lsizenode = old_table->lsizenode;
+    const int sizearray = old_table->sizearray;
 
-  const Node* const dummy_node = luaH_getdummynode();
+    new_table->flags = old_table->flags;
+    new_table->lsizenode = lsizenode;
+    new_table->metatable = nullptr;
 
-  if (old_table->node == dummy_node) {
-    Node* const node = const_cast<Node*>(dummy_node);
-    new_table->node = node;
-    new_table->lastfree = node;
-  } else {
-    const int size = twoto(static_cast<int>(lsizenode));
-    new_table->node = luaM_newvector(lua_state, size, Node);
-
-    for (int i = 0; i < size; ++i) {
-      const Node* const old_node = gnode(old_table, i);
-      Node* const new_node = gnode(new_table, i);
-
-      gnext(new_node) = gnode(new_table,
-                              GetTableNodeIndex(old_table, gnext(old_node)));
-      setobj2t(&lua_state, gkey(new_node), gkey(old_node));
-      setobj2t(&lua_state, gval(new_node), gval(old_node));
+    if (old_table->array == nullptr) {
+      new_table->array = nullptr;
+    } else {
+      new_table->array = luaM_newvector(lua_state, sizearray, TValue);
+      for (int i = 0; i < sizearray; ++i) {
+        setobj2t(&lua_state, &new_table->array[i], &old_table->array[i]);
+      }
     }
 
-    new_table->lastfree = gnode(
-        new_table, GetTableNodeIndex(old_table, old_table->lastfree));
-  }
+    const Node* const dummy_node = luaH_getdummynode();
 
-  new_table->gclist = nullptr;
-  new_table->sizearray = sizearray;
+    if (old_table->node == dummy_node) {
+      Node* const node = const_cast<Node*>(dummy_node);
+      new_table->node = node;
+      new_table->lastfree = node;
+    } else {
+      const int size = twoto(static_cast<int>(lsizenode));
+      new_table->node = luaM_newvector(lua_state, size, Node);
+
+      for (int i = 0; i < size; ++i) {
+        const Node* const old_node = gnode(old_table, i);
+        Node* const new_node = gnode(new_table, i);
+
+        gnext(new_node) = gnode(new_table,
+                                GetTableNodeIndex(old_table, gnext(old_node)));
+        setobj2t(&lua_state, gkey(new_node), gkey(old_node));
+        setobj2t(&lua_state, gval(new_node), gval(old_node));
+      }
+
+      new_table->lastfree = gnode(
+          new_table, GetTableNodeIndex(old_table, old_table->lastfree));
+    }
+
+    new_table->gclist = nullptr;
+    new_table->sizearray = sizearray;
+  }
 
   TableLocalObject* const new_local_object = new TableLocalObject(interpreter_);
   new_local_object->Init(new_table);
@@ -297,48 +320,52 @@ size_t TableLocalObject::Serialize(void* buffer, size_t buffer_size,
   CHECK(lua_table_.get() != nullptr)
       << "TableLocalObject::Init has not been called.";
 
-  const Table* const table = hvalue(lua_table_.get());
   TableProto table_proto;
+  {
+    GlobalLock global_lock(interpreter_);
 
-  // Store the array part of the table in the protocol buffer.
-  if (table->array != nullptr) {
-    const int sizearray = table->sizearray;
-    ArrayProto* const array_proto = table_proto.mutable_array();
+    const Table* const table = hvalue(lua_table_.get());
 
-    for (int i = 0; i < sizearray; ++i) {
-      TValueProto* const tvalue_proto =
-          array_proto->add_element()->mutable_value();
-      LuaValueToValueProto(&table->array[i], tvalue_proto, context);
-    }
-  }
+    // Store the array part of the table in the protocol buffer.
+    if (table->array != nullptr) {
+      const int sizearray = table->sizearray;
+      ArrayProto* const array_proto = table_proto.mutable_array();
 
-  // Store the hashtable part of the table in the protocol buffer.
-  if (table->node != luaH_getdummynode()) {
-    const int size = twoto(static_cast<int>(table->lsizenode));
-    HashtableProto* const hashtable_proto = table_proto.mutable_hashtable();
-
-    hashtable_proto->set_size(size);
-
-    for (int i = 0; i < size; ++i) {
-      const Node* const node = &table->node[i];
-      const TValue* const lua_key = gkey(node);
-      const TValue* const lua_value = gval(node);
-
-      if (!ttisnil(lua_key) || !ttisnil(lua_value)) {
-        const Node* const next_node = gnext(node);
-        HashtableNodeProto* const node_proto = hashtable_proto->add_node();
-
-        node_proto->set_index(i);
-        if (next_node != nullptr) {
-          node_proto->set_next_index(GetTableNodeIndex(table, next_node));
-        }
-        LuaValueToValueProto(lua_key, node_proto->mutable_key(), context);
-        LuaValueToValueProto(lua_value, node_proto->mutable_value(), context);
+      for (int i = 0; i < sizearray; ++i) {
+        TValueProto* const tvalue_proto =
+            array_proto->add_element()->mutable_value();
+        LuaValueToValueProto(&table->array[i], tvalue_proto, context);
       }
     }
 
-    hashtable_proto->set_last_free_index(GetTableNodeIndex(table,
-                                                           table->lastfree));
+    // Store the hashtable part of the table in the protocol buffer.
+    if (table->node != luaH_getdummynode()) {
+      const int size = twoto(static_cast<int>(table->lsizenode));
+      HashtableProto* const hashtable_proto = table_proto.mutable_hashtable();
+
+      hashtable_proto->set_size(size);
+
+      for (int i = 0; i < size; ++i) {
+        const Node* const node = &table->node[i];
+        const TValue* const lua_key = gkey(node);
+        const TValue* const lua_value = gval(node);
+
+        if (!ttisnil(lua_key) || !ttisnil(lua_value)) {
+          const Node* const next_node = gnext(node);
+          HashtableNodeProto* const node_proto = hashtable_proto->add_node();
+
+          node_proto->set_index(i);
+          if (next_node != nullptr) {
+            node_proto->set_next_index(GetTableNodeIndex(table, next_node));
+          }
+          LuaValueToValueProto(lua_key, node_proto->mutable_key(), context);
+          LuaValueToValueProto(lua_value, node_proto->mutable_value(), context);
+        }
+      }
+
+      hashtable_proto->set_last_free_index(GetTableNodeIndex(table,
+                                                             table->lastfree));
+    }
   }
 
   // Serialize the protocol buffer to the output buffer.
@@ -376,90 +403,94 @@ TableLocalObject* TableLocalObject::Deserialize(
   TableProto table_proto;
   CHECK(table_proto.ParseFromArray(buffer, buffer_size));
 
-  // Allocate the Table struct.
-  GCObject* gc_list = nullptr;
-  Table* const table =
-      &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
+  Table* table = nullptr;
+  {
+    GlobalLock global_lock(InterpreterImpl::instance());
 
-  table->flags = static_cast<lu_byte>(~0);
-  table->metatable = nullptr;
+    // Allocate the Table struct.
+    GCObject* gc_list = nullptr;
+    table = &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
 
-  // Read the array part of the table from the protocol buffer.
-  if (table_proto.has_array()) {
-    const ArrayProto& array_proto = table_proto.array();
-    const int sizearray = array_proto.element_size();
+    table->flags = static_cast<lu_byte>(~0);
+    table->metatable = nullptr;
 
-    table->array = luaM_newvector(lua_state, sizearray, TValue);
+    // Read the array part of the table from the protocol buffer.
+    if (table_proto.has_array()) {
+      const ArrayProto& array_proto = table_proto.array();
+      const int sizearray = array_proto.element_size();
 
-    for (int i = 0; i < sizearray; ++i) {
-      const ArrayElementProto& element_proto = array_proto.element(i);
-      ValueProtoToLuaValue(lua_state, element_proto.value(), &table->array[i],
-                           context);
+      table->array = luaM_newvector(lua_state, sizearray, TValue);
+
+      for (int i = 0; i < sizearray; ++i) {
+        const ArrayElementProto& element_proto = array_proto.element(i);
+        ValueProtoToLuaValue(lua_state, element_proto.value(), &table->array[i],
+                             context);
+      }
+
+      table->sizearray = sizearray;
+    } else {
+      table->array = nullptr;
+      table->sizearray = 0;
     }
 
-    table->sizearray = sizearray;
-  } else {
-    table->array = nullptr;
-    table->sizearray = 0;
-  }
+    // Read the hashtable part of the table from the protocol buffer.
+    if (table_proto.has_hashtable()) {
+      const HashtableProto& hashtable_proto = table_proto.hashtable();
 
-  // Read the hashtable part of the table from the protocol buffer.
-  if (table_proto.has_hashtable()) {
-    const HashtableProto& hashtable_proto = table_proto.hashtable();
+      const int size = hashtable_proto.size();
+      CHECK(IsPowerOfTwo(static_cast<unsigned>(size)))
+          << size << " is not a power of two.";
 
-    const int size = hashtable_proto.size();
-    CHECK(IsPowerOfTwo(static_cast<unsigned>(size)))
-        << size << " is not a power of two.";
+      table->lsizenode = static_cast<lu_byte>(
+          luaO_ceillog2(static_cast<unsigned>(size)));
+      table->node = luaM_newvector(lua_state, size, Node);
 
-    table->lsizenode = static_cast<lu_byte>(
-        luaO_ceillog2(static_cast<unsigned>(size)));
-    table->node = luaM_newvector(lua_state, size, Node);
+      const int node_count = hashtable_proto.node_size();
+      int prev_node_index = 0;
 
-    const int node_count = hashtable_proto.node_size();
-    int prev_node_index = 0;
+      for (int i = 0; i < node_count; ++i) {
+        const HashtableNodeProto& node_proto = hashtable_proto.node(i);
+        const int node_index = node_proto.index();
 
-    for (int i = 0; i < node_count; ++i) {
-      const HashtableNodeProto& node_proto = hashtable_proto.node(i);
-      const int node_index = node_proto.index();
+        // Initialize unused hashtable nodes.
+        for (int j = prev_node_index + 1; j < node_index; ++j) {
+          Node* const node = gnode(table, j);
+          gnext(node) = nullptr;
+          setnilvalue(gkey(node));
+          setnilvalue(gval(node));
+        }
+
+        Node* const node = gnode(table, node_index);
+
+        if (node_proto.has_next_index()) {
+          gnext(node) = gnode(table, node_proto.next_index());
+        } else {
+          gnext(node) = nullptr;
+        }
+        ValueProtoToLuaValue(lua_state, node_proto.key(), gkey(node), context);
+        ValueProtoToLuaValue(lua_state, node_proto.value(), gval(node), context);
+
+        prev_node_index = node_index;
+      }
 
       // Initialize unused hashtable nodes.
-      for (int j = prev_node_index + 1; j < node_index; ++j) {
+      for (int j = prev_node_index + 1; j < size; ++j) {
         Node* const node = gnode(table, j);
         gnext(node) = nullptr;
         setnilvalue(gkey(node));
         setnilvalue(gval(node));
       }
 
-      Node* const node = gnode(table, node_index);
-
-      if (node_proto.has_next_index()) {
-        gnext(node) = gnode(table, node_proto.next_index());
-      } else {
-        gnext(node) = nullptr;
-      }
-      ValueProtoToLuaValue(lua_state, node_proto.key(), gkey(node), context);
-      ValueProtoToLuaValue(lua_state, node_proto.value(), gval(node), context);
-
-      prev_node_index = node_index;
+      table->lastfree = gnode(table, hashtable_proto.last_free_index());
+    } else {
+      table->lsizenode = static_cast<lu_byte>(0);
+      Node* const node = const_cast<Node*>(luaH_getdummynode());
+      table->node = node;
+      table->lastfree = node;
     }
 
-    // Initialize unused hashtable nodes.
-    for (int j = prev_node_index + 1; j < size; ++j) {
-      Node* const node = gnode(table, j);
-      gnext(node) = nullptr;
-      setnilvalue(gkey(node));
-      setnilvalue(gval(node));
-    }
-
-    table->lastfree = gnode(table, hashtable_proto.last_free_index());
-  } else {
-    table->lsizenode = static_cast<lu_byte>(0);
-    Node* const node = const_cast<Node*>(luaH_getdummynode());
-    table->node = node;
-    table->lastfree = node;
+    table->gclist = nullptr;
   }
-
-  table->gclist = nullptr;
 
   TableLocalObject* const new_local_object = new TableLocalObject(interpreter);
   new_local_object->Init(table);
@@ -478,6 +509,8 @@ void TableLocalObject::Init(Table* table) {
   UNUSED(lua_state);
 
   lua_table_.reset(new TValue());
+
+  GlobalLock global_lock(interpreter_);
   sethvalue(lua_state, lua_table_.get(), table);
 }
 

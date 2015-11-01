@@ -175,6 +175,9 @@ void VersionedObjectContent::StoreTransactions(
 
   up_to_date_peers_.insert(remote_peer);
 
+  VLOG(1) << "should_replay_transactions == "
+          << (should_replay_transactions ? "true" : "false");
+
   if (should_replay_transactions) {
     // TODO(dss): Use the 'new_object_references' parameter here instead of
     // creating a temporary map?
@@ -216,6 +219,8 @@ void VersionedObjectContent::InsertTransaction(
   } else {
     if (transaction_is_local) {
       max_requested_transaction_id_.CopyFrom(transaction_id);
+      VLOG(1) << "max_requested_transaction_id_ is now "
+              << TransactionIdToString(max_requested_transaction_id_);
     }
   }
 }

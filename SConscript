@@ -185,6 +185,8 @@ lua_lib = lua_env.Library(
         lua/convert_value.cc
         lua/ft_lib.cc
         lua/get_serialized_lua_value_type.cc
+        lua/global_lock.cc
+        lua/global_unlock.cc
         lua/hook_functions.cc
         lua/interpreter_impl.cc
         lua/program_object.cc

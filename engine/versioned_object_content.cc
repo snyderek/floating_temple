@@ -140,8 +140,6 @@ void VersionedObjectContent::StoreTransactions(
 
   MutexLock lock(&committed_versions_mu_);
 
-  const MaxVersionMap old_version_map(version_map_);
-
   for (const auto& transaction_pair : transactions) {
     const TransactionId& transaction_id = transaction_pair.first;
     const linked_ptr<SharedObjectTransaction>& src_transaction =
@@ -171,8 +169,10 @@ void VersionedObjectContent::StoreTransactions(
   up_to_date_peers_.insert(remote_peer);
 
   if (should_replay_transactions) {
+    // TODO(dss): Use the 'new_object_references' parameter here instead of
+    // creating a temporary map?
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-    GetWorkingVersion_Locked(old_version_map, &new_object_references,
+    GetWorkingVersion_Locked(version_map_, &new_object_references,
                              transactions_to_reject);
   }
 }
@@ -189,8 +189,6 @@ void VersionedObjectContent::InsertTransaction(
 
   MutexLock lock(&committed_versions_mu_);
 
-  const MaxVersionMap old_version_map(version_map_);
-
   linked_ptr<SharedObjectTransaction>& transaction =
       committed_versions_[transaction_id];
 
@@ -203,8 +201,10 @@ void VersionedObjectContent::InsertTransaction(
 
   if (CompareTransactionIds(transaction_id,
                             max_requested_transaction_id_) <= 0) {
+    // TODO(dss): Use the 'new_object_references' parameter here instead of
+    // creating a temporary map?
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-    GetWorkingVersion_Locked(old_version_map, &new_object_references,
+    GetWorkingVersion_Locked(version_map_, &new_object_references,
                              transactions_to_reject);
   }
 }

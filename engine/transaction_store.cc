@@ -765,6 +765,7 @@ void TransactionStore::ApplyTransaction(
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object->InsertTransaction(origin_peer, transaction_id,
                                      shared_object_transaction->events(),
+                                     origin_peer == local_peer_,
                                      &new_object_references,
                                      &transactions_to_reject);
 

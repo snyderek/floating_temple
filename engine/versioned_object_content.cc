@@ -181,6 +181,7 @@ void VersionedObjectContent::InsertTransaction(
     const CanonicalPeer* origin_peer,
     const TransactionId& transaction_id,
     const vector<linked_ptr<CommittedEvent>>& events,
+    bool transaction_is_local,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(origin_peer != nullptr);

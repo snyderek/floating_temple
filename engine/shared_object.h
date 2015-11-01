@@ -96,6 +96,7 @@ class SharedObject {
       const CanonicalPeer* origin_peer,
       const TransactionId& transaction_id,
       const std::vector<linked_ptr<CommittedEvent>>& events,
+      bool transaction_is_local,
       std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
           new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*

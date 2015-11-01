@@ -204,6 +204,7 @@ void SharedObject::InsertTransaction(
     const CanonicalPeer* origin_peer,
     const TransactionId& transaction_id,
     const vector<linked_ptr<CommittedEvent>>& events,
+    bool transaction_is_local,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   const vector<linked_ptr<CommittedEvent>>::size_type event_count =
@@ -217,7 +218,8 @@ void SharedObject::InsertTransaction(
   }
 
   GetOrCreateObjectContent()->InsertTransaction(origin_peer, transaction_id,
-                                                events, new_object_references,
+                                                events, transaction_is_local,
+                                                new_object_references,
                                                 transactions_to_reject);
 }
 

@@ -69,7 +69,7 @@ class InterpreterImpl : public Interpreter {
   lua_State* PrivateGetLuaState();
   Thread* PrivateGetThreadObject();
 
-  lua_State* main_thread_lua_state_;
+  lua_State* lua_state_;
   Mutex global_lock_;
   int per_thread_state_version_;
 

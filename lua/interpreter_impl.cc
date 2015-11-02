@@ -30,7 +30,6 @@ namespace lua {
 
 struct InterpreterImpl::PerThreadState {
   int version;
-  lua_State* lua_state;
   Thread* thread_object;
   LongJumpTarget* long_jump_target;
 };
@@ -40,41 +39,36 @@ __thread InterpreterImpl::PerThreadState* InterpreterImpl::per_thread_state_ =
 InterpreterImpl* InterpreterImpl::instance_ = nullptr;
 
 InterpreterImpl::InterpreterImpl()
-    : main_thread_lua_state_(nullptr),
+    : lua_state_(nullptr),
       per_thread_state_version_(1) {
   CHECK(instance_ == nullptr);
   instance_ = this;
 }
 
 InterpreterImpl::~InterpreterImpl() {
-  lua_close(main_thread_lua_state_);
+  lua_close(lua_state_);
   instance_ = nullptr;
 }
 
 void InterpreterImpl::Init() {
-  CHECK(main_thread_lua_state_ == nullptr)
-      << "InterpreterImpl::Init was already called.";
+  CHECK(lua_state_ == nullptr) << "InterpreterImpl::Init was already called.";
 
-  main_thread_lua_state_ = luaL_newstate();
-  CHECK(main_thread_lua_state_ != nullptr);
-
-  GetPerThreadState()->lua_state = main_thread_lua_state_;
+  lua_state_ = luaL_newstate();
+  CHECK(lua_state_ != nullptr);
 }
 
 void InterpreterImpl::ResetForTesting() {
-  CHECK(main_thread_lua_state_ != nullptr)
-      << "InterpreterImpl::Init has not been called.";
+  CHECK(lua_state_ != nullptr) << "InterpreterImpl::Init has not been called.";
 
-  lua_close(main_thread_lua_state_);
-  main_thread_lua_state_ = luaL_newstate();
-  CHECK(main_thread_lua_state_ != nullptr);
+  lua_close(lua_state_);
+  lua_state_ = luaL_newstate();
+  CHECK(lua_state_ != nullptr);
 
   ++per_thread_state_version_;
-  GetPerThreadState()->lua_state = main_thread_lua_state_;
 }
 
 lua_State* InterpreterImpl::GetLuaState() {
-  return PrivateGetLuaState();
+  return lua_state_;
 }
 
 void InterpreterImpl::BeginTransaction() {
@@ -119,8 +113,7 @@ InterpreterImpl* InterpreterImpl::instance() {
 }
 
 InterpreterImpl::PerThreadState* InterpreterImpl::GetPerThreadState() {
-  CHECK(main_thread_lua_state_ != nullptr)
-      << "InterpreterImpl::Init has not been called.";
+  CHECK(lua_state_ != nullptr) << "InterpreterImpl::Init has not been called.";
 
   if (per_thread_state_ == nullptr ||
       per_thread_state_->version != per_thread_state_version_) {
@@ -129,21 +122,11 @@ InterpreterImpl::PerThreadState* InterpreterImpl::GetPerThreadState() {
     }
 
     per_thread_state_->version = per_thread_state_version_;
-    per_thread_state_->lua_state = nullptr;
     per_thread_state_->thread_object = nullptr;
     per_thread_state_->long_jump_target = nullptr;
   }
 
   return per_thread_state_;
-}
-
-lua_State* InterpreterImpl::PrivateGetLuaState() {
-  lua_State** const lua_state = &GetPerThreadState()->lua_state;
-  if (*lua_state == nullptr) {
-    *lua_state = lua_newthread(main_thread_lua_state_);
-    CHECK(*lua_state != nullptr);
-  }
-  return *lua_state;
 }
 
 Thread* InterpreterImpl::PrivateGetThreadObject() {

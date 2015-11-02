@@ -63,15 +63,17 @@ class InterpreterImpl : public Interpreter {
   static InterpreterImpl* instance();
 
  private:
+  struct PerThreadState;
+
+  PerThreadState* GetPerThreadState();
   lua_State* PrivateGetLuaState();
   Thread* PrivateGetThreadObject();
 
   lua_State* main_thread_lua_state_;
-  static __thread lua_State* lua_state_;
-  static __thread Thread* thread_object_;
-  static __thread LongJumpTarget* long_jump_target_;
-
   Mutex global_lock_;
+  int per_thread_state_version_;
+
+  static __thread PerThreadState* per_thread_state_;
 
   static InterpreterImpl* instance_;
 

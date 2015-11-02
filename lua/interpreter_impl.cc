@@ -28,14 +28,20 @@ using std::size_t;
 namespace floating_temple {
 namespace lua {
 
-__thread lua_State* InterpreterImpl::lua_state_ = nullptr;
-__thread Thread* InterpreterImpl::thread_object_ = nullptr;
-__thread InterpreterImpl::LongJumpTarget* InterpreterImpl::long_jump_target_ =
+struct InterpreterImpl::PerThreadState {
+  int version;
+  lua_State* lua_state;
+  Thread* thread_object;
+  InterpreterImpl::LongJumpTarget* long_jump_target;
+};
+
+__thread InterpreterImpl::PerThreadState* InterpreterImpl::per_thread_state_ =
     nullptr;
 InterpreterImpl* InterpreterImpl::instance_ = nullptr;
 
 InterpreterImpl::InterpreterImpl()
-    : main_thread_lua_state_(nullptr) {
+    : main_thread_lua_state_(nullptr),
+      per_thread_state_version_(1) {
   CHECK(instance_ == nullptr);
   instance_ = this;
 }
@@ -48,11 +54,11 @@ InterpreterImpl::~InterpreterImpl() {
 void InterpreterImpl::Init() {
   CHECK(main_thread_lua_state_ == nullptr)
       << "InterpreterImpl::Init was already called.";
-  CHECK(lua_state_ == nullptr);
 
   main_thread_lua_state_ = luaL_newstate();
   CHECK(main_thread_lua_state_ != nullptr);
-  lua_state_ = main_thread_lua_state_;
+
+  GetPerThreadState()->lua_state = main_thread_lua_state_;
 }
 
 void InterpreterImpl::Reset() {
@@ -60,12 +66,11 @@ void InterpreterImpl::Reset() {
       << "InterpreterImpl::Init has not been called.";
 
   lua_close(main_thread_lua_state_);
-
   main_thread_lua_state_ = luaL_newstate();
   CHECK(main_thread_lua_state_ != nullptr);
-  lua_state_ = main_thread_lua_state_;
-  thread_object_ = nullptr;
-  long_jump_target_ = nullptr;
+
+  ++per_thread_state_version_;
+  GetPerThreadState()->lua_state = main_thread_lua_state_;
 }
 
 lua_State* InterpreterImpl::GetLuaState() {
@@ -85,19 +90,21 @@ Thread* InterpreterImpl::GetThreadObject() {
 }
 
 Thread* InterpreterImpl::SetThreadObject(Thread* new_thread) {
-  Thread* const old_thread = thread_object_;
-  thread_object_ = new_thread;
+  Thread** const thread_object = &GetPerThreadState()->thread_object;
+  Thread* const old_thread = *thread_object;
+  *thread_object = new_thread;
   return old_thread;
 }
 
 InterpreterImpl::LongJumpTarget* InterpreterImpl::GetLongJumpTarget() {
-  CHECK(long_jump_target_ != nullptr);
-  return long_jump_target_;
+  LongJumpTarget* const target = GetPerThreadState()->long_jump_target;
+  CHECK(target != nullptr);
+  return target;
 }
 
 void InterpreterImpl::SetLongJumpTarget(LongJumpTarget* target) {
   CHECK(target != nullptr);
-  long_jump_target_ = target;
+  GetPerThreadState()->long_jump_target = target;
 }
 
 VersionedLocalObject* InterpreterImpl::DeserializeObject(
@@ -111,17 +118,38 @@ InterpreterImpl* InterpreterImpl::instance() {
   return instance_;
 }
 
-lua_State* InterpreterImpl::PrivateGetLuaState() {
-  if (lua_state_ == nullptr) {
-    lua_state_ = lua_newthread(main_thread_lua_state_);
-    CHECK(lua_state_ != nullptr);
+InterpreterImpl::PerThreadState* InterpreterImpl::GetPerThreadState() {
+  CHECK(main_thread_lua_state_ != nullptr)
+      << "InterpreterImpl::Init has not been called.";
+
+  if (per_thread_state_ == nullptr ||
+      per_thread_state_->version != per_thread_state_version_) {
+    if (per_thread_state_ == nullptr) {
+      per_thread_state_ = new PerThreadState();
+    }
+
+    per_thread_state_->version = per_thread_state_version_;
+    per_thread_state_->lua_state = nullptr;
+    per_thread_state_->thread_object = nullptr;
+    per_thread_state_->long_jump_target = nullptr;
   }
-  return lua_state_;
+
+  return per_thread_state_;
+}
+
+lua_State* InterpreterImpl::PrivateGetLuaState() {
+  lua_State** const lua_state = &GetPerThreadState()->lua_state;
+  if (*lua_state == nullptr) {
+    *lua_state = lua_newthread(main_thread_lua_state_);
+    CHECK(*lua_state != nullptr);
+  }
+  return *lua_state;
 }
 
 Thread* InterpreterImpl::PrivateGetThreadObject() {
-  CHECK(thread_object_ != nullptr);
-  return thread_object_;
+  Thread* const thread_object = GetPerThreadState()->thread_object;
+  CHECK(thread_object != nullptr);
+  return thread_object;
 }
 
 }  // namespace lua

@@ -23,7 +23,9 @@
 #include "base/macros.h"
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
+#include "lua/hook_functions.h"
 #include "lua/program_object.h"
+#include "lua/third_party_lua_headers.h"
 
 using std::FILE;
 using std::fclose;
@@ -77,8 +79,30 @@ int RunLuaProgram(Peer* peer, const string& source_file_name, bool linger) {
   UnversionedLocalObject* const program_object = new ProgramObject(
       source_file_name, file_content);
 
+  // Install the Floating Temple hooks in the Lua interpreter.
+  const ft_ObjectReferencesEqualHook old_object_references_equal_hook =
+      ft_installobjectreferencesequalhook(&AreObjectsEqual);
+  const ft_NewTableHook old_new_table_hook = ft_installnewtablehook(
+      &CreateTable);
+  const ft_GetTableHook old_get_table_hook = ft_installgettablehook(
+      &CallMethod_GetTable);
+  const ft_SetTableHook old_set_table_hook = ft_installsettablehook(
+      &CallMethod_SetTable);
+  const ft_ObjLenHook old_obj_len_hook = ft_installobjlenhook(
+      &CallMethod_ObjLen);
+  const ft_SetListHook old_set_list_hook = ft_installsetlisthook(
+      &CallMethod_SetList);
+
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value, linger);
+
+  // Remove the Floating Temple hooks.
+  ft_installobjectreferencesequalhook(old_object_references_equal_hook);
+  ft_installnewtablehook(old_new_table_hook);
+  ft_installgettablehook(old_get_table_hook);
+  ft_installsettablehook(old_set_table_hook);
+  ft_installobjlenhook(old_obj_len_hook);
+  ft_installsetlisthook(old_set_list_hook);
 
   return static_cast<int>(return_value.int64_value());
 }

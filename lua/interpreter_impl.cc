@@ -61,7 +61,7 @@ void InterpreterImpl::Init() {
   GetPerThreadState()->lua_state = main_thread_lua_state_;
 }
 
-void InterpreterImpl::Reset() {
+void InterpreterImpl::ResetForTesting() {
   CHECK(main_thread_lua_state_ != nullptr)
       << "InterpreterImpl::Init has not been called.";
 

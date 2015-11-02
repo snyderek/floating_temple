@@ -92,7 +92,7 @@ class TableLocalObjectTest : public Test {
   }
 
   void SetUp() override {
-    interpreter_->Reset();
+    interpreter_->ResetForTesting();
   }
 
   static InterpreterImpl* interpreter_;

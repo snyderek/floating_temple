@@ -232,61 +232,6 @@ protocol_server_test_proto_lib = ft_env.ProtoLibrary(
       """),
   )
 
-# "python" subdirectory
-#
-# Implementation of the local interpreter for the Python language. Uses the
-# third-party Python interpreter in "third_party/Python-3.4.2".
-
-python_env = ft_env.Clone()
-python_env.Append(
-    CPPPATH = Split("""
-        third_party/Python-3.4.2
-        third_party/Python-3.4.2/Include
-      """),
-
-    LIBS = Split('dl util'),
-  )
-
-python_lib = python_env.Library(
-    target = 'python/python',
-    source = Split("""
-        python/call_method.cc
-        python/dict_local_object.cc
-        python/false_local_object.cc
-        python/get_serialized_object_type.cc
-        python/interpreter_impl.cc
-        python/list_local_object.cc
-        python/long_local_object.cc
-        python/make_value.cc
-        python/method_context.cc
-        python/none_local_object.cc
-        python/peer_module.cc
-        python/program_object.cc
-        python/py_proxy_object.cc
-        python/python_gil_lock.cc
-        python/python_scoped_ptr.cc
-        python/run_python_program.cc
-        python/thread_substitution.cc
-        python/true_local_object.cc
-        python/unicode_local_object.cc
-        python/unserializable_local_object.cc
-        python/unversioned_local_object_impl.cc
-        python/versioned_local_object_impl.cc
-      """),
-  )
-
-# "python/proto" subdirectory
-#
-# Serialization protocol for Python objects.
-
-python_proto_lib = ft_env.ProtoLibrary(
-    target = 'python/proto/python_proto',
-    source = Split("""
-        python/proto/local_type.proto
-        python/proto/serialization.proto
-      """),
-  )
-
 # "third_party" subdirectory
 #
 # Code written by other people.
@@ -382,19 +327,6 @@ third_party_lua_env.Program(
         third_party_lua_lib,
       ],
   )
-
-# TODO(dss): Call 'make' on the third-party Python subproject if any of its
-# source files change. Currently, the subproject will only be remade if the
-# targets listed below are missing.
-third_party_python_lib = base_env.ConfigureAndMake(
-    target = Split("""
-        third_party/Python-3.4.2/libpython3.4m.a
-        third_party/Python-3.4.2/pyconfig.h
-      """),
-    source = 'third_party/Python-3.4.2/configure',
-  )
-
-python_env.Depends(python_lib, third_party_python_lib)
 
 # "toy_lang" subdirectory
 #
@@ -559,26 +491,6 @@ bin_floating_lua = lua_env.Program(
         util_lib,
         base_lib,
         third_party_lua_lib,
-      ],
-  )
-
-bin_floating_python = python_env.Program(
-    target = 'bin/floating_python',
-    source = Split("""
-        bin/floating_python.cc
-      """) + [
-        # These libraries must be listed in reverse-dependency order. That is,
-        # if library B depends on library A, then A must appear *after* B in the
-        # list.
-        python_lib,
-        engine_lib,
-        protocol_server_lib,
-        value_lib,
-        engine_proto_lib,
-        python_proto_lib,
-        util_lib,
-        base_lib,
-        third_party_python_lib,
       ],
   )
 
@@ -851,37 +763,6 @@ protocol_server_varint_test = ft_env.Program(
       ],
   )
 
-python_interpreter_impl_test = python_env.Program(
-    target = 'python/interpreter_impl_test',
-    source = Split("""
-        python/interpreter_impl_test.cc
-      """) + [
-        python_lib,
-        fake_engine_lib,
-        value_lib,
-        python_proto_lib,
-        util_lib,
-        base_lib,
-        gtest_lib,
-        third_party_python_lib,
-      ],
-  )
-
-python_long_local_object_test = python_env.Program(
-    target = 'python/long_local_object_test',
-    source = Split("""
-        python/long_local_object_test.cc
-      """) + [
-        python_lib,
-        value_lib,
-        python_proto_lib,
-        util_lib,
-        base_lib,
-        gtest_lib,
-        third_party_python_lib,
-      ],
-  )
-
 toy_lang_lexer_test = ft_env.Program(
     target = 'toy_lang/lexer_test',
     source = Split("""
@@ -948,8 +829,6 @@ cxx_tests = [
     protocol_server_buffer_util_test,
     protocol_server_protocol_connection_impl_test,
     protocol_server_varint_test,
-    python_interpreter_impl_test,
-    python_long_local_object_test,
     toy_lang_lexer_test,
     toy_lang_zoo_expression_object_test,
     util_dump_context_impl_test,
@@ -958,8 +837,6 @@ cxx_tests = [
 
 sh_tests = [
     File('engine/toy_lang_integration_test.sh'),
-    File('python/fib_list_test.sh'),
-    File('python/floating_python_test.sh'),
   ]
 
 all_tests = cxx_tests + sh_tests
@@ -969,8 +846,7 @@ check_alias = ft_env.Alias('check', all_tests, run_tests)
 # Add dependencies for the shell tests. This is kind of a kludge, but it works
 # because I always run tests by typing "scons check".
 ft_env.Depends(check_alias,
-               [bin_floating_python, bin_floating_toy_lang,
-                bin_get_unused_port_for_testing])
+               [bin_floating_toy_lang, bin_get_unused_port_for_testing])
 
 # Always run tests if the "check" target is specified, even if the tests haven't
 # changed.

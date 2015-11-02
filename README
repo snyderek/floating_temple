@@ -7,20 +7,8 @@ Build Instructions - Short Version
 # Install prerequisites. The following command works on Ubuntu 14.04.1 (Trusty
 # Tahr):
 sudo apt-get install binutils coreutils g++ gawk gcc git google-perftools \
-  libbz2-dev libgdbm-dev libgflags-dev libgoogle-glog-dev \
-  libgoogle-perftools-dev liblzma-dev libncurses5-dev libprotobuf-dev \
-  libreadline-gplv2-dev libsqlite3-dev libssl-dev make protobuf-compiler pypy \
-  python-protobuf scons tar tk-dev wget xz-utils zlib1g-dev
-
-# Install Python.
-mkdir -p ~/scratch
-cd ~/scratch
-wget http://www.python.org/ftp/python/3.4.2/Python-3.4.2.tar.xz
-tar xJf Python-3.4.2.tar.xz
-cd Python-3.4.2
-./configure
-make
-sudo make install
+  libgflags-dev libgoogle-glog-dev libgoogle-perftools-dev libprotobuf-dev \
+  make protobuf-compiler scons tar
 
 # Check out the floating_temple source.
 mkdir -p ~/projects

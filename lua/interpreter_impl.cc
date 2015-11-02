@@ -32,7 +32,7 @@ struct InterpreterImpl::PerThreadState {
   int version;
   lua_State* lua_state;
   Thread* thread_object;
-  InterpreterImpl::LongJumpTarget* long_jump_target;
+  LongJumpTarget* long_jump_target;
 };
 
 __thread InterpreterImpl::PerThreadState* InterpreterImpl::per_thread_state_ =

@@ -42,9 +42,7 @@ LUAI_FUNC int luaH_isdummy (Node *n);
 #endif
 
 
-// TODO(dss): Don't use C++-style inline comments in C code.
-
-// Make the dummy node accessible to Floating Temple.
+/* Make the dummy node accessible to Floating Temple. */
 const Node *luaH_getdummynode (void);
 
 

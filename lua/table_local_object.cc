@@ -129,23 +129,8 @@ void TableLocalObject::Init(int b, int c) {
 
   GlobalLock global_lock(interpreter_);
 
-  // This code is mostly copy-pasted from the luaH_new function in
-  // "third_party/lua-5.2.3/src/ltable.c".
-  GCObject* gc_list = nullptr;
-  Table* const table =
-      &luaC_newobj(lua_state, LUA_TTABLE, sizeof (Table), &gc_list, 0)->h;
-
-  Node* const node = const_cast<Node*>(luaH_getdummynode());
-
-  table->flags = static_cast<lu_byte>(~0);
-  table->lsizenode = static_cast<lu_byte>(0);
   // TODO(dss): Support metatables.
-  table->metatable = nullptr;
-  table->array = nullptr;
-  table->node = node;
-  table->lastfree = node;
-  table->gclist = nullptr;
-  table->sizearray = 0;
+  Table* const table = luaH_new_nogc(lua_state);
 
   lua_table_.reset(new TValue());
   sethvalue(lua_state, lua_table_.get(), table);

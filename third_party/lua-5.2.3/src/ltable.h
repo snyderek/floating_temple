@@ -42,6 +42,8 @@ LUAI_FUNC int luaH_isdummy (Node *n);
 #endif
 
 
+LUAI_FUNC Table *luaH_new_nogc (lua_State *L);
+
 /* Make the dummy node accessible to Floating Temple. */
 const Node *luaH_getdummynode (void);
 

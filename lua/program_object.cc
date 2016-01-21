@@ -72,7 +72,8 @@ void ProgramObject::InvokeMethod(Thread* thread,
              LUA_OK);
 
     // Run the Lua program.
-    CHECK_EQ(lua_pcall(lua_state, 0, 0, 0), LUA_OK);
+    CHECK_EQ(lua_pcall(lua_state, 0, 0, 0), LUA_OK)
+        << lua_tostring(lua_state, -1);
 
     lua_close(lua_state);
   }

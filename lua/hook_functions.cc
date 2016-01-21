@@ -141,10 +141,16 @@ int AreObjectsEqual(const void* ft_obj1, const void* ft_obj2) {
 
 int CreateTable(lua_State* lua_state, TValue* obj, int b, int c) {
   InterpreterImpl* const interpreter = InterpreterImpl::instance();
-  TableLocalObject* const local_object = new TableLocalObject(interpreter);
-  local_object->Init(b, c);
-  ObjectReference* const object_reference =
-      interpreter->GetThreadObject()->CreateVersionedObject(local_object, "");
+
+  ObjectReference* object_reference = nullptr;
+  {
+    GlobalUnlock global_unlock(interpreter);
+
+    TableLocalObject* const local_object = new TableLocalObject(interpreter);
+    local_object->Init(b, c);
+    object_reference = interpreter->GetThreadObject()->CreateVersionedObject(
+        local_object, "");
+  }
 
   val_(obj).ft_obj = object_reference;
   settt_(obj, LUA_TFLOATINGTEMPLEOBJECT);

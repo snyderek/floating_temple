@@ -49,6 +49,7 @@ LUALIB_API lua_Unsigned (luaL_optunsigned) (lua_State *L, int numArg,
 
 LUALIB_API void (luaL_checkstack) (lua_State *L, int sz, const char *msg);
 LUALIB_API void (luaL_checktype) (lua_State *L, int narg, int t);
+LUALIB_API void (luaL_checktype2) (lua_State *L, int narg, int t1, int t2);
 LUALIB_API void (luaL_checkany) (lua_State *L, int narg);
 
 LUALIB_API int   (luaL_newmetatable) (lua_State *L, const char *tname);

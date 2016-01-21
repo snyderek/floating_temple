@@ -348,6 +348,13 @@ LUALIB_API void luaL_checktype (lua_State *L, int narg, int t) {
 }
 
 
+LUALIB_API void luaL_checktype2 (lua_State *L, int narg, int t1, int t2) {
+  int type = lua_type(L, narg);
+  if (type != t1 && type != t2)
+    tag_error(L, narg, t1);
+}
+
+
 LUALIB_API void luaL_checkany (lua_State *L, int narg) {
   if (lua_type(L, narg) == LUA_TNONE)
     luaL_argerror(L, narg, "value expected");

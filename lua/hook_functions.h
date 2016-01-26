@@ -37,6 +37,8 @@ int CallMethod_ObjLen(lua_State* lua_state, lua_TValue* ra,
                       const lua_TValue* rb);
 int CallMethod_SetList(lua_State* lua_state, const lua_TValue* ra, int n,
                        int c);
+int CallMethod_TableInsert(lua_State* lua_state, const lua_TValue* table,
+                           int pos, const lua_TValue* value);
 
 }  // namespace lua
 }  // namespace floating_temple

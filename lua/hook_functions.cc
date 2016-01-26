@@ -129,6 +129,27 @@ bool CallMethodHelper_SetList(lua_State* lua_state, const TValue* ra, int n,
   return true;
 }
 
+bool CallMethodHelper_TableInsert(lua_State* lua_state, const TValue* table,
+                                  int pos, const TValue* value) {
+  GlobalUnlock global_unlock(InterpreterImpl::instance());
+
+  ObjectReference* const table_object_reference = static_cast<ObjectReference*>(
+      val_(table).ft_obj);
+
+  vector<Value> parameters(2);
+  parameters[0].set_int64_value(LUA_TNONE, static_cast<int64>(pos));
+  LuaValueToValue(value, &parameters[1]);
+
+  Value return_value;
+  if (!GetThreadObject()->CallMethod(table_object_reference, "table.insert",
+                                     parameters, &return_value)) {
+    return false;
+  }
+
+  CHECK_EQ(return_value.type(), Value::EMPTY);
+  return true;
+}
+
 }  // namespace
 
 int AreObjectsEqual(const void* ft_obj1, const void* ft_obj2) {
@@ -205,6 +226,19 @@ int CallMethod_SetList(lua_State* lua_state, const TValue* ra, int n, int c) {
   }
 
   if (!CallMethodHelper_SetList(lua_state, ra, n, c)) {
+    longjmp(GetLongJumpTarget()->env, 1);
+  }
+
+  return 1;
+}
+
+int CallMethod_TableInsert(lua_State* lua_state, const TValue* table, int pos,
+                           const TValue* value) {
+  if (!ttisfloatingtemplateobject(table)) {
+    return 0;
+  }
+
+  if (!CallMethodHelper_TableInsert(lua_state, table, pos, value)) {
     longjmp(GetLongJumpTarget()->env, 1);
   }
 

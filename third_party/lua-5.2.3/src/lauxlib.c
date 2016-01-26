@@ -5,6 +5,7 @@
 */
 
 
+#include <assert.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -151,6 +152,7 @@ LUALIB_API void luaL_traceback (lua_State *L, lua_State *L1,
 */
 
 LUALIB_API int luaL_argerror (lua_State *L, int narg, const char *extramsg) {
+  assert(0);
   lua_Debug ar;
   if (!lua_getstack(L, 0, &ar))  /* no stack frame? */
     return luaL_error(L, "bad argument #%d (%s)", narg, extramsg);
@@ -345,13 +347,6 @@ LUALIB_API void luaL_checkstack (lua_State *L, int space, const char *msg) {
 LUALIB_API void luaL_checktype (lua_State *L, int narg, int t) {
   if (lua_type(L, narg) != t)
     tag_error(L, narg, t);
-}
-
-
-LUALIB_API void luaL_checktype2 (lua_State *L, int narg, int t1, int t2) {
-  int type = lua_type(L, narg);
-  if (type != t1 && type != t2)
-    tag_error(L, narg, t1);
 }
 
 

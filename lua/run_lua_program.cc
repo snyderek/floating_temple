@@ -92,6 +92,8 @@ int RunLuaProgram(Peer* peer, const string& source_file_name, bool linger) {
       &CallMethod_ObjLen);
   const ft_SetListHook old_set_list_hook = ft_installsetlisthook(
       &CallMethod_SetList);
+  const ft_TableInsertHook old_table_insert_hook = ft_installtableinserthook(
+      &CallMethod_TableInsert);
 
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value, linger);
@@ -103,6 +105,7 @@ int RunLuaProgram(Peer* peer, const string& source_file_name, bool linger) {
   ft_installsettablehook(old_set_table_hook);
   ft_installobjlenhook(old_obj_len_hook);
   ft_installsetlisthook(old_set_list_hook);
+  ft_installtableinserthook(old_table_insert_hook);
 
   return static_cast<int>(return_value.int64_value());
 }

@@ -58,6 +58,11 @@ FT_DECLARE_HOOK_FUNC(ft_installsetlisthook, ft_SetListHook,
                      (struct lua_State *L, const struct lua_TValue *ra, int n,
                       int c))
 
+FT_DECLARE_HOOK_FUNC(ft_installtableinserthook, ft_TableInsertHook,
+                     ft_tableinserthook,
+                     (struct lua_State *L, const struct lua_TValue *table,
+                      int pos, const struct lua_TValue *value))
+
 
 #undef FT_DECLARE_HOOK_FUNC
 

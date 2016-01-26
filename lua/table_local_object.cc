@@ -106,6 +106,46 @@ bool InvokeMethod_SetList(jmp_buf env, lua_State* lua_state, TValue* lua_table,
   return true;
 }
 
+bool InvokeMethod_TableInsert(jmp_buf env, lua_State* lua_state,
+                              const TValue* lua_table, int pos,
+                              TValue* lua_value) {
+  if (setjmp(env) != 0) {
+    return false;
+  }
+
+  TValue lua_length;
+  luaV_objlen(lua_state, &lua_length, lua_table);
+
+  // This code is adapted from the tinsert function in
+  // "third_party/lua-5.2.3/src/ltablib.c".
+
+  // First empty element
+  const int e = static_cast<int>(nvalue(&lua_length)) + 1;
+
+  Table* const table = hvalue(lua_table);
+
+  if (pos == -1) {
+    // Insert the new element at the end.
+    pos = e;
+  } else {
+    // TODO(dss): Fail gracefully if the position is out of bounds. This is
+    // particularly important because another thread might have modified the
+    // length of the table.
+    CHECK(1 <= pos && pos <= e) << "Position " << pos << " is out of bounds";
+
+    // Move up elements.
+    for (int i = e; i > pos; --i) {
+      TValue* const lua_item = const_cast<TValue*>(luaH_getint(table, i - 1));
+      CHECK(lua_item != nullptr);
+      luaH_setint(lua_state, table, i, lua_item);
+    }
+  }
+
+  luaH_setint(lua_state, table, pos, lua_value);  // t[pos] = v
+
+  return true;
+}
+
 }  // namespace
 
 TableLocalObject::TableLocalObject(InterpreterImpl* interpreter)
@@ -220,6 +260,23 @@ void TableLocalObject::InvokeMethod(Thread* thread,
       GlobalLock global_lock(interpreter_);
       if (!InvokeMethod_SetList(long_jump_target.env, lua_state,
                                 lua_table_.get(), n, c, lua_values.get())) {
+        return;
+      }
+    }
+
+    return_value->set_empty(LUA_TNIL);
+  } else if (method_name == "table.insert") {
+    CHECK_EQ(parameters.size(), 2u);
+
+    const int pos = static_cast<int>(parameters[0].int64_value());
+
+    TValue lua_value;
+    ValueToLuaValue(lua_state, parameters[1], &lua_value);
+
+    {
+      GlobalLock global_lock(interpreter_);
+      if (!InvokeMethod_TableInsert(long_jump_target.env, lua_state,
+                                    lua_table_.get(), pos, &lua_value)) {
         return;
       }
     }

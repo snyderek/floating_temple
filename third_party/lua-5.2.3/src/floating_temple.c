@@ -74,5 +74,11 @@ FT_DEFINE_HOOK_FUNC(ft_installsetlisthook, ft_SetListHook, ft_setlisthook,
                     (lua_State *L, const TValue *ra, int n, int c),
                     ft_defaultsetlisthook)
 
+FT_DEFINE_HOOK_FUNC(ft_installtableinserthook, ft_TableInsertHook,
+                    ft_tableinserthook,
+                    (lua_State *L, const TValue *table, int pos,
+                     const TValue *value),
+                    ft_defaulttableinserthook)
+
 
 #undef FT_DEFINE_HOOK_FUNC

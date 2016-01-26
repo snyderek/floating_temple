@@ -13,11 +13,11 @@
 #include "lua.h"
 
 #include "lauxlib.h"
+#include "lstate.h"
 #include "lualib.h"
 
 
-#define aux_getn(L,n) \
-  (luaL_checktype2(L, n, LUA_TTABLE, LUA_TFLOATINGTEMPLEOBJECT), luaL_len(L, n))
+#define aux_getn(L,n)	(luaL_checktype(L, n, LUA_TTABLE), luaL_len(L, n))
 
 
 
@@ -39,7 +39,7 @@ static int maxn (lua_State *L) {
 #endif
 
 
-static int tinsert (lua_State *L) {
+static int tinsert_old (lua_State *L) {
   int e = aux_getn(L, 1) + 1;  /* first empty element */
   int pos;  /* where to insert new element */
   switch (lua_gettop(L)) {
@@ -62,6 +62,31 @@ static int tinsert (lua_State *L) {
     }
   }
   lua_rawseti(L, 1, pos);  /* t[pos] = v */
+  return 0;
+}
+
+
+static int tinsert (lua_State *L) {
+  int pos;  /* where to insert new element */
+  switch (lua_gettop(L)) {
+    case 2: {  /* called with only 2 arguments */
+      pos = -1;
+      break;
+    }
+    case 3: {
+      pos = luaL_checkint(L, 2);  /* 2nd argument is the position */
+      luaL_argcheck(L, 1 <= pos, 2, "position out of bounds");
+      break;
+    }
+    default: {
+      return luaL_error(L, "wrong number of arguments to " LUA_QL("insert"));
+    }
+  }
+
+  if ((*ft_tableinserthook)(L, L->ci->func + 1, pos, L->top - 1) == 0) {
+    return tinsert_old(L);
+  }
+
   return 0;
 }
 

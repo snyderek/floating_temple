@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TOY_LANG_ZOO_APPEND_FUNCTION_H_
-#define TOY_LANG_ZOO_APPEND_FUNCTION_H_
+#ifndef TOY_LANG_ZOO_GET_AT_FUNCTION_H_
+#define TOY_LANG_ZOO_GET_AT_FUNCTION_H_
 
 #include "base/macros.h"
 #include "toy_lang/zoo/function.h"
@@ -22,9 +22,9 @@
 namespace floating_temple {
 namespace toy_lang {
 
-class AppendFunction : public Function {
+class ListGetFunction : public Function {
  public:
-  AppendFunction();
+  ListGetFunction();
 
   VersionedLocalObject* Clone() const override;
   void Dump(DumpContext* dc) const override;
@@ -37,10 +37,10 @@ class AppendFunction : public Function {
       const std::vector<ObjectReference*>& parameters) const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppendFunction);
+  DISALLOW_COPY_AND_ASSIGN(ListGetFunction);
 };
 
 }  // namespace toy_lang
 }  // namespace floating_temple
 
-#endif  // TOY_LANG_ZOO_APPEND_FUNCTION_H_
+#endif  // TOY_LANG_ZOO_GET_AT_FUNCTION_H_

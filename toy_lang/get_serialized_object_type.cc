@@ -53,8 +53,8 @@ ObjectProto::Type GetSerializedObjectType(const ObjectProto& object_proto) {
   CHECK_FIELD(has_while_function, WHILE_FUNCTION);
   CHECK_FIELD(has_less_than_function, LESS_THAN_FUNCTION);
   CHECK_FIELD(has_len_function, LEN_FUNCTION);
-  CHECK_FIELD(has_append_function, APPEND_FUNCTION);
-  CHECK_FIELD(has_get_at_function, GET_AT_FUNCTION);
+  CHECK_FIELD(has_list_append_function, LIST_APPEND_FUNCTION);
+  CHECK_FIELD(has_list_get_function, LIST_GET_FUNCTION);
   CHECK_FIELD(has_map_is_set_function, MAP_IS_SET_FUNCTION);
   CHECK_FIELD(has_map_get_function, MAP_GET_FUNCTION);
   CHECK_FIELD(has_map_set_function, MAP_SET_FUNCTION);

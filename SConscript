@@ -346,20 +346,20 @@ toy_lang_lib = ft_env.Library(
         toy_lang/symbol_table.cc
         toy_lang/token.cc
         toy_lang/zoo/add_function.cc
-        toy_lang/zoo/append_function.cc
         toy_lang/zoo/begin_tran_function.cc
         toy_lang/zoo/bool_object.cc
         toy_lang/zoo/end_tran_function.cc
         toy_lang/zoo/expression_object.cc
         toy_lang/zoo/for_function.cc
         toy_lang/zoo/function.cc
-        toy_lang/zoo/get_at_function.cc
         toy_lang/zoo/if_function.cc
         toy_lang/zoo/int_object.cc
         toy_lang/zoo/is_set_function.cc
         toy_lang/zoo/len_function.cc
         toy_lang/zoo/less_than_function.cc
+        toy_lang/zoo/list_append_function.cc
         toy_lang/zoo/list_function.cc
+        toy_lang/zoo/list_get_function.cc
         toy_lang/zoo/list_object.cc
         toy_lang/zoo/local_object_impl.cc
         toy_lang/zoo/map_get_function.cc

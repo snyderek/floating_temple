@@ -2,18 +2,18 @@
 
 [
   (begin_tran)
-  (if (map_is_set shared "lst") {[
-    (set "lst" (map_get shared "lst"))
+  (if (map.is_set shared "lst") {[
+    (set "lst" (map.get shared "lst"))
   ]}
   {[
     (set "lst" [0 1])
-    (map_set shared "lst" lst)
+    (map.set shared "lst" lst)
   ]})
   (end_tran)
 
   (while {(lt (len lst) 20)} {[
     (begin_tran)
-    (append lst (add (get_at lst -2) (get_at lst -1)))
+    (list.append lst (add (list.get lst -2) (list.get lst -1)))
     (end_tran)
 
     (begin_tran)

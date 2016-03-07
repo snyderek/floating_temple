@@ -145,8 +145,8 @@ message ObjectProto {
     WHILE_FUNCTION = 21;
     LESS_THAN_FUNCTION = 22;
     LEN_FUNCTION = 23;
-    APPEND_FUNCTION = 24;
-    GET_AT_FUNCTION = 25;
+    LIST_APPEND_FUNCTION = 24;
+    LIST_GET_FUNCTION = 25;
     MAP_IS_SET_FUNCTION = 26;
     MAP_GET_FUNCTION = 27;
     MAP_SET_FUNCTION = 28;
@@ -177,8 +177,8 @@ message ObjectProto {
   optional floating_temple.toy_lang.FunctionProto while_function = 21;
   optional floating_temple.toy_lang.FunctionProto less_than_function = 22;
   optional floating_temple.toy_lang.FunctionProto len_function = 23;
-  optional floating_temple.toy_lang.FunctionProto append_function = 24;
-  optional floating_temple.toy_lang.FunctionProto get_at_function = 25;
+  optional floating_temple.toy_lang.FunctionProto list_append_function = 24;
+  optional floating_temple.toy_lang.FunctionProto list_get_function = 25;
   optional floating_temple.toy_lang.FunctionProto map_is_set_function = 26;
   optional floating_temple.toy_lang.FunctionProto map_get_function = 27;
   optional floating_temple.toy_lang.FunctionProto map_set_function = 28;

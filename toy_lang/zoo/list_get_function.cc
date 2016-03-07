@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "toy_lang/zoo/append_function.h"
+#include "toy_lang/zoo/list_get_function.h"
 
 #include <vector>
 
@@ -21,7 +21,6 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -29,45 +28,47 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-AppendFunction::AppendFunction() {
+ListGetFunction::ListGetFunction() {
 }
 
-VersionedLocalObject* AppendFunction::Clone() const {
-  return new AppendFunction();
+VersionedLocalObject* ListGetFunction::Clone() const {
+  return new ListGetFunction();
 }
 
-void AppendFunction::Dump(DumpContext* dc) const {
+void ListGetFunction::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   dc->BeginMap();
   dc->AddString("type");
-  dc->AddString("AppendFunction");
+  dc->AddString("ListGetFunction");
   dc->End();
 }
 
-void AppendFunction::PopulateObjectProto(ObjectProto* object_proto,
-                                         SerializationContext* context) const {
-  object_proto->mutable_append_function();
+void ListGetFunction::PopulateObjectProto(ObjectProto* object_proto,
+                                          SerializationContext* context) const {
+  object_proto->mutable_list_get_function();
 }
 
-ObjectReference* AppendFunction::Call(
+ObjectReference* ListGetFunction::Call(
     ObjectReference* symbol_table_object, Thread* thread,
     const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
-  ObjectReference* const the_list = parameters[0];
-  ObjectReference* const object = parameters[1];
-
-  vector<Value> append_params(1);
-  append_params[0].set_object_reference(0, object);
-
-  Value dummy;
-  if (!thread->CallMethod(the_list, "append", append_params, &dummy)) {
+  Value index;
+  if (!thread->CallMethod(parameters[1], "get_int", vector<Value>(), &index)) {
     return nullptr;
   }
 
-  return thread->CreateVersionedObject(new NoneObject(), "");
+  vector<Value> get_at_params(1);
+  get_at_params[0] = index;
+
+  Value item;
+  if (!thread->CallMethod(parameters[0], "get_at", get_at_params, &item)) {
+    return nullptr;
+  }
+
+  return item.object_reference();
 }
 
 }  // namespace toy_lang

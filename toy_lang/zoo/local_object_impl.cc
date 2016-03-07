@@ -21,20 +21,20 @@
 #include "toy_lang/get_serialized_object_type.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/zoo/add_function.h"
-#include "toy_lang/zoo/append_function.h"
 #include "toy_lang/zoo/begin_tran_function.h"
 #include "toy_lang/zoo/bool_object.h"
 #include "toy_lang/zoo/end_tran_function.h"
 #include "toy_lang/zoo/expression_object.h"
 #include "toy_lang/zoo/for_function.h"
 #include "toy_lang/zoo/function.h"
-#include "toy_lang/zoo/get_at_function.h"
 #include "toy_lang/zoo/if_function.h"
 #include "toy_lang/zoo/int_object.h"
 #include "toy_lang/zoo/is_set_function.h"
 #include "toy_lang/zoo/len_function.h"
 #include "toy_lang/zoo/less_than_function.h"
+#include "toy_lang/zoo/list_append_function.h"
 #include "toy_lang/zoo/list_function.h"
+#include "toy_lang/zoo/list_get_function.h"
 #include "toy_lang/zoo/list_object.h"
 #include "toy_lang/zoo/map_get_function.h"
 #include "toy_lang/zoo/map_is_set_function.h"
@@ -154,11 +154,11 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     case ObjectProto::LEN_FUNCTION:
       return new LenFunction();
 
-    case ObjectProto::APPEND_FUNCTION:
-      return new AppendFunction();
+    case ObjectProto::LIST_APPEND_FUNCTION:
+      return new ListAppendFunction();
 
-    case ObjectProto::GET_AT_FUNCTION:
-      return new GetAtFunction();
+    case ObjectProto::LIST_GET_FUNCTION:
+      return new ListGetFunction();
 
     case ObjectProto::MAP_IS_SET_FUNCTION:
       return new MapIsSetFunction();

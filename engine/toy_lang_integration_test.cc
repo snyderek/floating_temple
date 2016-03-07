@@ -106,7 +106,7 @@ TEST_F(ToyLangIntegrationTest, FibList) {
       "\n"
       "  (while {(lt (len lst) 20)} {[\n"
       "    (begin_tran)\n"
-      "    (append lst (add (get_at lst -2) (get_at lst -1)))\n"
+      "    (list.append lst (add (list.get lst -2) (list.get lst -1)))\n"
       "    (end_tran)\n"
       "\n"
       "    (begin_tran)\n"

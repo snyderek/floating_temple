@@ -26,18 +26,18 @@
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
 #include "toy_lang/zoo/add_function.h"
-#include "toy_lang/zoo/append_function.h"
 #include "toy_lang/zoo/begin_tran_function.h"
 #include "toy_lang/zoo/bool_object.h"
 #include "toy_lang/zoo/end_tran_function.h"
 #include "toy_lang/zoo/expression_object.h"
 #include "toy_lang/zoo/for_function.h"
-#include "toy_lang/zoo/get_at_function.h"
 #include "toy_lang/zoo/if_function.h"
 #include "toy_lang/zoo/is_set_function.h"
 #include "toy_lang/zoo/len_function.h"
 #include "toy_lang/zoo/less_than_function.h"
+#include "toy_lang/zoo/list_append_function.h"
 #include "toy_lang/zoo/list_function.h"
+#include "toy_lang/zoo/list_get_function.h"
 #include "toy_lang/zoo/map_get_function.h"
 #include "toy_lang/zoo/map_is_set_function.h"
 #include "toy_lang/zoo/map_object.h"
@@ -104,11 +104,11 @@ bool PopulateSymbolTable(ObjectReference* symbol_table_object, Thread* thread,
   ADD_SYMBOL("while", new WhileFunction());
   ADD_SYMBOL("lt", new LessThanFunction());
   ADD_SYMBOL("len", new LenFunction());
-  ADD_SYMBOL("append", new AppendFunction());
-  ADD_SYMBOL("get_at", new GetAtFunction());
-  ADD_SYMBOL("map_is_set", new MapIsSetFunction());
-  ADD_SYMBOL("map_get", new MapGetFunction());
-  ADD_SYMBOL("map_set", new MapSetFunction());
+  ADD_SYMBOL("list.append", new ListAppendFunction());
+  ADD_SYMBOL("list.get", new ListGetFunction());
+  ADD_SYMBOL("map.is_set", new MapIsSetFunction());
+  ADD_SYMBOL("map.get", new MapGetFunction());
+  ADD_SYMBOL("map.set", new MapSetFunction());
 
   if (!thread->EndTransaction()) {
     return false;

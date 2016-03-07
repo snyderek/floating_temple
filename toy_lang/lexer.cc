@@ -46,7 +46,7 @@ string Hex(int n) {
 }
 
 bool IsIdentifierChar(char c) {
-  return isalpha(static_cast<int>(c)) != 0 || c == '_';
+  return isalpha(static_cast<int>(c)) != 0 || c == '.' || c == '_';
 }
 
 }  // namespace

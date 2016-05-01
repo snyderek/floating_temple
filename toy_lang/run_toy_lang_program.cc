@@ -51,7 +51,8 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   CHECK(peer != nullptr);
 
   Lexer lexer(fp);
-  const shared_ptr<const Expression> expression(ParseFile(&lexer));
+  Parser parser(&lexer);
+  const shared_ptr<const Expression> expression(parser.ParseFile());
 
   Value return_value;
   peer->RunProgram(new ProgramObject(expression), "run", &return_value, linger);

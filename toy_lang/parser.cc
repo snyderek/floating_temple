@@ -26,16 +26,23 @@ using std::vector;
 
 namespace floating_temple {
 namespace toy_lang {
-namespace {
 
-void ParseExpressionList(Lexer* lexer, Token::Type end_token_type,
-                         vector<Expression*>* expressions);
+Parser::Parser(Lexer* lexer)
+    : lexer_(CHECK_NOTNULL(lexer)) {
+}
 
-Expression* ParseExpression(Lexer* lexer) {
-  CHECK(lexer != nullptr);
+Expression* Parser::ParseFile() {
+  Expression* const expression = ParseExpression();
+  CHECK(!lexer_->HasNextToken());
 
+  VLOG(2) << expression->DebugString();
+
+  return expression;
+}
+
+Expression* Parser::ParseExpression() {
   Token token;
-  lexer->GetNextToken(&token);
+  lexer_->GetNextToken(&token);
   const Token::Type token_type = token.type();
 
   switch (token_type) {
@@ -49,24 +56,24 @@ Expression* ParseExpression(Lexer* lexer) {
       return new VariableExpression(token.identifier());
 
     case Token::BEGIN_EXPRESSION: {
-      Expression* const function = ParseExpression(lexer);
+      Expression* const function = ParseExpression();
 
       vector<Expression*> parameters;
-      ParseExpressionList(lexer, Token::END_EXPRESSION, &parameters);
+      ParseExpressionList(Token::END_EXPRESSION, &parameters);
 
       return new FunctionExpression(function, parameters);
     }
 
     case Token::BEGIN_BLOCK: {
-      Expression* const expression = ParseExpression(lexer);
-      CHECK_EQ(lexer->GetNextTokenType(), Token::END_BLOCK);
+      Expression* const expression = ParseExpression();
+      CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
 
       return new ExpressionExpression(expression);
     }
 
     case Token::BEGIN_LIST: {
       vector<Expression*> list_items;
-      ParseExpressionList(lexer, Token::END_LIST, &list_items);
+      ParseExpressionList(Token::END_LIST, &list_items);
 
       return new ListExpression(list_items);
     }
@@ -78,29 +85,15 @@ Expression* ParseExpression(Lexer* lexer) {
   return nullptr;
 }
 
-void ParseExpressionList(Lexer* lexer, Token::Type end_token_type,
-                         vector<Expression*>* expressions) {
-  CHECK(lexer != nullptr);
+void Parser::ParseExpressionList(Token::Type end_token_type,
+                                 vector<Expression*>* expressions) {
   CHECK(expressions != nullptr);
 
-  while (lexer->PeekNextTokenType() != end_token_type) {
-    expressions->push_back(ParseExpression(lexer));
+  while (lexer_->PeekNextTokenType() != end_token_type) {
+    expressions->push_back(ParseExpression());
   }
 
-  CHECK_EQ(lexer->GetNextTokenType(), end_token_type);
-}
-
-}  // namespace
-
-Expression* ParseFile(Lexer* lexer) {
-  CHECK(lexer != nullptr);
-
-  Expression* const expression = ParseExpression(lexer);
-  CHECK(!lexer->HasNextToken());
-
-  VLOG(2) << expression->DebugString();
-
-  return expression;
+  CHECK_EQ(lexer_->GetNextTokenType(), end_token_type);
 }
 
 }  // namespace toy_lang

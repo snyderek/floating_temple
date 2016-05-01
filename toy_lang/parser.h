@@ -16,13 +16,29 @@
 #ifndef TOY_LANG_PARSER_H_
 #define TOY_LANG_PARSER_H_
 
+#include <vector>
+
+#include "toy_lang/token.h"
+
 namespace floating_temple {
 namespace toy_lang {
 
 class Expression;
 class Lexer;
 
-Expression* ParseFile(Lexer* lexer);
+class Parser {
+ public:
+  explicit Parser(Lexer* lexer);
+
+  Expression* ParseFile();
+
+ private:
+  Expression* ParseExpression();
+  void ParseExpressionList(Token::Type end_token_type,
+                           std::vector<Expression*>* expressions);
+
+  Lexer* const lexer_;
+};
 
 }  // namespace toy_lang
 }  // namespace floating_temple

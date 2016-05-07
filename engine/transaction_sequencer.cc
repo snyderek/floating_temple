@@ -16,10 +16,10 @@
 #include "engine/transaction_sequencer.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/mutex_lock.h"
 #include "engine/canonical_peer.h"
@@ -32,13 +32,14 @@
 #include "engine/transaction_id_util.h"
 
 using std::map;
+using std::unique_ptr;
 using std::vector;
 
 namespace floating_temple {
 namespace engine {
 
 struct TransactionSequencer::Transaction {
-  vector<linked_ptr<OutgoingMessage>> outgoing_messages;
+  vector<unique_ptr<OutgoingMessage>> outgoing_messages;
   bool done;
 };
 
@@ -73,14 +74,14 @@ void TransactionSequencer::ReserveTransaction(TransactionId* transaction_id) {
   // TODO(dss): Provide a hint to map<...>::emplace that the new map entry is
   // being inserted at the end.
   CHECK(transactions_.emplace(*transaction_id,
-                              make_linked_ptr(transaction)).second);
+                              unique_ptr<Transaction>(transaction)).second);
 }
 
 void TransactionSequencer::ReleaseTransaction(
     const TransactionId& transaction_id) {
   MutexLock lock(&mu_);
 
-  const map<TransactionId, linked_ptr<Transaction>>::iterator it =
+  const map<TransactionId, unique_ptr<Transaction>>::iterator it =
       transactions_.find(transaction_id);
   CHECK(it != transactions_.end());
 
@@ -126,7 +127,7 @@ void TransactionSequencer::QueueOutgoingMessage(
   } else {
     MutexLock lock(&mu_);
 
-    const map<TransactionId, linked_ptr<Transaction>>::iterator it =
+    const map<TransactionId, unique_ptr<Transaction>>::iterator it =
         transactions_.find(*transaction_id);
     CHECK(it != transactions_.end());
     it->second->outgoing_messages.emplace_back(outgoing_message);
@@ -137,7 +138,7 @@ void TransactionSequencer::QueueOutgoingMessage(
 
 void TransactionSequencer::FlushMessages_Locked() {
   for (;;) {
-    const map<TransactionId, linked_ptr<Transaction>>::iterator transaction_it =
+    const map<TransactionId, unique_ptr<Transaction>>::iterator transaction_it =
         transactions_.begin();
     if (transaction_it == transactions_.end()) {
       return;

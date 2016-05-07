@@ -16,10 +16,10 @@
 #ifndef ENGINE_CANONICAL_PEER_MAP_H_
 #define ENGINE_CANONICAL_PEER_MAP_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
 
@@ -38,7 +38,7 @@ class CanonicalPeerMap {
  private:
   // TODO(dss): Delete CanonicalPeer instances when they're no longer being
   // used.
-  std::unordered_map<std::string, linked_ptr<CanonicalPeer>> map_;
+  std::unordered_map<std::string, std::unique_ptr<CanonicalPeer>> map_;
   mutable Mutex mu_;
 
   DISALLOW_COPY_AND_ASSIGN(CanonicalPeerMap);

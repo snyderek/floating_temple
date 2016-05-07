@@ -17,8 +17,8 @@
 #define ENGINE_TRANSACTION_SEQUENCER_H_
 
 #include <map>
+#include <memory>
 
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "engine/peer_message_sender.h"
@@ -79,7 +79,7 @@ class TransactionSequencer {
   TransactionIdGenerator* const transaction_id_generator_;
   const CanonicalPeer* const local_peer_;
 
-  std::map<TransactionId, linked_ptr<Transaction>> transactions_;
+  std::map<TransactionId, std::unique_ptr<Transaction>> transactions_;
   mutable Mutex mu_;
 
   DISALLOW_COPY_AND_ASSIGN(TransactionSequencer);

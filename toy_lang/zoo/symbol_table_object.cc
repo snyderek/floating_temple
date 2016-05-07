@@ -15,6 +15,7 @@
 
 #include "toy_lang/zoo/symbol_table_object.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -22,7 +23,6 @@
 
 #include "base/escape.h"
 #include "base/integral_types.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
@@ -35,15 +35,15 @@
 
 using std::pair;
 using std::string;
+using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {
 namespace toy_lang {
 
-SymbolTableObject::SymbolTableObject()
-    : scopes_(1,
-              make_linked_ptr(new unordered_map<string, ObjectReference*>())) {
+SymbolTableObject::SymbolTableObject() {
+  scopes_.emplace_back(new unordered_map<string, ObjectReference*>());
 }
 
 VersionedLocalObject* SymbolTableObject::Clone() const {

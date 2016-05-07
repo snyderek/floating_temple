@@ -21,8 +21,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/linked_ptr.h"
-
 namespace floating_temple {
 namespace engine {
 
@@ -50,7 +48,7 @@ class TransactionStoreInternalInterface {
       const std::string& name, bool versioned) = 0;
 
   virtual void CreateTransaction(
-      const std::vector<linked_ptr<PendingEvent>>& events,
+      const std::vector<std::unique_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
       const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<LiveObject>>& modified_objects,

@@ -16,11 +16,11 @@
 #ifndef TOY_LANG_ZOO_SYMBOL_TABLE_OBJECT_H_
 #define TOY_LANG_ZOO_SYMBOL_TABLE_OBJECT_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "toy_lang/zoo/local_object_impl.h"
@@ -55,8 +55,8 @@ class SymbolTableObject : public LocalObjectImpl {
                            SerializationContext* context) const override;
 
  private:
-  typedef std::vector<linked_ptr<std::unordered_map<std::string,
-                                                    ObjectReference*>>>
+  typedef std::vector<std::unique_ptr<std::unordered_map<std::string,
+                                                         ObjectReference*>>>
       ScopeVector;
 
   std::string GetStringForLogging() const;

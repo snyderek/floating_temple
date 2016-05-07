@@ -15,10 +15,10 @@
 
 #include "fake_engine/fake_thread.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "fake_engine/fake_object_reference.h"
@@ -28,6 +28,7 @@
 #include "util/dump_context_impl.h"
 
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace floating_temple {
@@ -37,7 +38,7 @@ FakeThread::FakeThread()
 }
 
 FakeThread::~FakeThread() {
-  for (linked_ptr<ObjectReference>& object_reference : object_references_) {
+  for (unique_ptr<ObjectReference>& object_reference : object_references_) {
     VLOG(1) << "Deleting object reference "
             << StringPrintf("%p", object_reference.get());
     object_reference.reset(nullptr);

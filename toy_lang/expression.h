@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "base/integral_types.h"
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 
 namespace floating_temple {
@@ -146,7 +145,7 @@ class FunctionExpression : public Expression {
 
  private:
   const std::unique_ptr<Expression> function_;
-  std::vector<linked_ptr<Expression>> parameters_;
+  std::vector<std::unique_ptr<Expression>> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(FunctionExpression);
 };
@@ -165,7 +164,7 @@ class ListExpression : public Expression {
       const ListExpressionProto& list_expression_proto);
 
  private:
-  std::vector<linked_ptr<Expression>> list_items_;
+  std::vector<std::unique_ptr<Expression>> list_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ListExpression);
 };

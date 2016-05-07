@@ -20,12 +20,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "engine/object_reference_impl.h"
 
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
 
@@ -67,7 +67,7 @@ ObjectReferenceImpl* MockTransactionStore::CreateBoundObjectReference(
     const string& name, bool versioned) {
   core_->CreateBoundObjectReference(name, versioned);
 
-  linked_ptr<ObjectReferenceImpl>* object_reference = nullptr;
+  unique_ptr<ObjectReferenceImpl>* object_reference = nullptr;
 
   if (name.empty()) {
     unnamed_objects_.emplace_back(nullptr);
@@ -84,7 +84,7 @@ ObjectReferenceImpl* MockTransactionStore::CreateBoundObjectReference(
 }
 
 void MockTransactionStore::CreateTransaction(
-    const vector<linked_ptr<PendingEvent>>& events,
+    const vector<unique_ptr<PendingEvent>>& events,
     TransactionId* transaction_id,
     const unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>&
         modified_objects,

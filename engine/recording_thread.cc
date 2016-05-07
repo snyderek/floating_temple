@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "base/cond_var.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
@@ -44,6 +43,7 @@
 using std::pair;
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -282,7 +282,7 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
     return false;
   }
 
-  const vector<linked_ptr<PendingEvent>>::size_type event_count_save =
+  const vector<unique_ptr<PendingEvent>>::size_type event_count_save =
       events_.size();
 
   TransactionId method_call_transaction_id;
@@ -510,7 +510,7 @@ void RecordingThread::CommitTransaction() {
   committing_transaction_ = true;
 
   while (!events_.empty()) {
-    vector<linked_ptr<PendingEvent>> events_to_commit;
+    vector<unique_ptr<PendingEvent>> events_to_commit;
     unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>
         modified_objects_to_commit;
     events_to_commit.swap(events_);

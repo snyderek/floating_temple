@@ -22,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "engine/max_version_map.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/transaction_id_util.h"
@@ -55,12 +54,12 @@ class ObjectContent {
 
   virtual void GetTransactions(
       const MaxVersionMap& transaction_store_version_map,
-      std::map<TransactionId, linked_ptr<SharedObjectTransaction>>*
+      std::map<TransactionId, std::unique_ptr<SharedObjectTransaction>>*
           transactions,
       MaxVersionMap* effective_version) const = 0;
   virtual void StoreTransactions(
       const CanonicalPeer* remote_peer,
-      const std::map<TransactionId, linked_ptr<SharedObjectTransaction>>&
+      const std::map<TransactionId, std::unique_ptr<SharedObjectTransaction>>&
           transactions,
       const MaxVersionMap& version_map,
       std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
@@ -71,7 +70,7 @@ class ObjectContent {
   virtual void InsertTransaction(
       const CanonicalPeer* origin_peer,
       const TransactionId& transaction_id,
-      const std::vector<linked_ptr<CommittedEvent>>& events,
+      const std::vector<std::unique_ptr<CommittedEvent>>& events,
       bool transaction_is_local,
       std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
           new_object_references,

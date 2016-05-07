@@ -15,15 +15,16 @@
 
 #include "engine/canonical_peer_map.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
-#include "base/linked_ptr.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
 #include "engine/canonical_peer.h"
 
 using std::string;
+using std::unique_ptr;
 
 namespace floating_temple {
 namespace engine {
@@ -37,7 +38,7 @@ CanonicalPeerMap::~CanonicalPeerMap() {
 const CanonicalPeer* CanonicalPeerMap::GetCanonicalPeer(const string& peer_id) {
   MutexLock lock(&mu_);
 
-  linked_ptr<CanonicalPeer>& canonical_peer = map_[peer_id];
+  unique_ptr<CanonicalPeer>& canonical_peer = map_[peer_id];
 
   if (canonical_peer.get() == nullptr) {
     canonical_peer.reset(new CanonicalPeer(peer_id));

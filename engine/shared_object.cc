@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "base/escape.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
@@ -48,6 +47,7 @@
 using std::map;
 using std::pair;
 using std::shared_ptr;
+using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -176,7 +176,7 @@ shared_ptr<const LiveObject> SharedObject::GetWorkingVersion(
 
 void SharedObject::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
-    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
+    map<TransactionId, unique_ptr<SharedObjectTransaction>>* transactions,
     MaxVersionMap* effective_version) {
   ObjectContent* const object_content_temp = GetObjectContent();
 
@@ -190,7 +190,7 @@ void SharedObject::GetTransactions(
 
 void SharedObject::StoreTransactions(
     const CanonicalPeer* remote_peer,
-    const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
+    const map<TransactionId, unique_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
@@ -203,15 +203,15 @@ void SharedObject::StoreTransactions(
 void SharedObject::InsertTransaction(
     const CanonicalPeer* origin_peer,
     const TransactionId& transaction_id,
-    const vector<linked_ptr<CommittedEvent>>& events,
+    const vector<unique_ptr<CommittedEvent>>& events,
     bool transaction_is_local,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
-  const vector<linked_ptr<CommittedEvent>>::size_type event_count =
+  const vector<unique_ptr<CommittedEvent>>::size_type event_count =
       events.size();
 
   if (VLOG_IS_ON(2)) {
-    for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
+    for (vector<unique_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
          ++i) {
       VLOG(2) << "Event " << i << ": " << GetJsonString(*events[i]);
     }

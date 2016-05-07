@@ -26,7 +26,6 @@
 
 #include "base/cond_var.h"
 #include "base/integral_types.h"
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "engine/connection_handler.h"
@@ -93,7 +92,7 @@ class TransactionStore : public ConnectionHandler,
     bool operator()(const Uuid& a, const Uuid& b) const;
   };
 
-  typedef std::unordered_map<Uuid, linked_ptr<SharedObject>,
+  typedef std::unordered_map<Uuid, std::unique_ptr<SharedObject>,
                              UuidHasher, UuidEquals> SharedObjectMap;
 
   bool delay_object_binding() const override { return delay_object_binding_; }
@@ -105,7 +104,7 @@ class TransactionStore : public ConnectionHandler,
   ObjectReferenceImpl* CreateBoundObjectReference(const std::string& name,
                                                   bool versioned) override;
   void CreateTransaction(
-      const std::vector<linked_ptr<PendingEvent>>& events,
+      const std::vector<std::unique_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
       const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<LiveObject>>& modified_objects,
@@ -144,13 +143,13 @@ class TransactionStore : public ConnectionHandler,
   void ApplyTransactionAndSendMessage(
       const TransactionId& transaction_id,
       const std::unordered_map<SharedObject*,
-                               linked_ptr<SharedObjectTransaction>>&
+                               std::unique_ptr<SharedObjectTransaction>>&
           shared_object_transactions);
   void ApplyTransaction(
       const TransactionId& transaction_id,
       const CanonicalPeer* origin_peer,
       const std::unordered_map<SharedObject*,
-                               linked_ptr<SharedObjectTransaction>>&
+                               std::unique_ptr<SharedObjectTransaction>>&
           shared_object_transactions);
 
   void RejectTransactionsAndSendMessages(
@@ -182,7 +181,8 @@ class TransactionStore : public ConnectionHandler,
 
   void ConvertPendingEventToCommittedEvents(
       const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
-      std::unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
+      std::unordered_map<SharedObject*,
+                         std::unique_ptr<SharedObjectTransaction>>*
           shared_object_transactions);
   void ConvertValueToCommittedValue(const Value& in, CommittedValue* out);
 
@@ -198,7 +198,8 @@ class TransactionStore : public ConnectionHandler,
       SharedObject* shared_object,
       const CanonicalPeer* origin_peer,
       CommittedEvent* event,
-      std::unordered_map<SharedObject*, linked_ptr<SharedObjectTransaction>>*
+      std::unordered_map<SharedObject*,
+                         std::unique_ptr<SharedObjectTransaction>>*
           shared_object_transactions);
 
   CanonicalPeerMap* const canonical_peer_map_;
@@ -210,7 +211,7 @@ class TransactionStore : public ConnectionHandler,
   TransactionIdGenerator transaction_id_generator_;
   TransactionSequencer transaction_sequencer_;
 
-  std::vector<linked_ptr<RecordingThread>> recording_threads_;
+  std::vector<std::unique_ptr<RecordingThread>> recording_threads_;
   mutable Mutex recording_threads_mu_;
 
   SharedObjectMap shared_objects_;
@@ -219,7 +220,7 @@ class TransactionStore : public ConnectionHandler,
   std::unordered_set<SharedObject*> named_objects_;
   mutable Mutex named_objects_mu_;
 
-  std::vector<linked_ptr<ObjectReferenceImpl>> object_references_;
+  std::vector<std::unique_ptr<ObjectReferenceImpl>> object_references_;
   mutable Mutex object_references_mu_;
 
   SequencePointImpl current_sequence_point_;

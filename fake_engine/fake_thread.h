@@ -16,10 +16,10 @@
 #ifndef FAKE_ENGINE_FAKE_THREAD_H_
 #define FAKE_ENGINE_FAKE_THREAD_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "include/c++/thread.h"
 
@@ -47,7 +47,7 @@ class FakeThread : public Thread {
                            const ObjectReference* b) const override;
 
  private:
-  std::vector<linked_ptr<ObjectReference>> object_references_;
+  std::vector<std::unique_ptr<ObjectReference>> object_references_;
   int transaction_depth_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeThread);

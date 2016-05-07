@@ -24,7 +24,6 @@
 
 #include <gflags/gflags.h>
 
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "engine/canonical_peer.h"
 #include "engine/committed_event.h"
@@ -49,6 +48,7 @@ using google::ParseCommandLineFlags;
 using std::pair;
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -91,7 +91,7 @@ class SharedObjectTest : public Test {
   void InsertObjectCreationTransaction(const CanonicalPeer* origin_peer,
                                        const TransactionId& transaction_id,
                                        const string& initial_string) {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
 
     AddEventToVector(
         new ObjectCreationCommittedEvent(MakeLocalObject(initial_string)),
@@ -107,7 +107,7 @@ class SharedObjectTest : public Test {
   void InsertAppendTransaction(const CanonicalPeer* origin_peer,
                                const TransactionId& transaction_id,
                                const string& string_to_append) {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
 
     vector<CommittedValue> parameters(1);
     parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
@@ -138,7 +138,7 @@ class SharedObjectTest : public Test {
                                   const TransactionId& transaction_id,
                                   const string& string_to_append,
                                   const string& expected_result_string) {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
     const unordered_set<SharedObject*> new_shared_objects;
 
     {
@@ -182,7 +182,7 @@ class SharedObjectTest : public Test {
   }
 
   void AddEventToVector(CommittedEvent* event,
-                        vector<linked_ptr<CommittedEvent>>* events) {
+                        vector<unique_ptr<CommittedEvent>>* events) {
     CHECK(event != nullptr);
     CHECK(events != nullptr);
 
@@ -473,7 +473,7 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
   const CanonicalPeer canonical_peer("peer_a");
 
   {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
 
     vector<CommittedValue> parameters(1);
     parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
@@ -543,7 +543,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
   const CanonicalPeer canonical_peer("peer_a");
 
   {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
 
     shared_ptr<const LiveObject> initial_live_object = MakeLocalObject(
         "I don't know. ");
@@ -568,7 +568,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
   }
 
   {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
     return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
@@ -632,7 +632,7 @@ TEST_F(SharedObjectTest, BackingUp) {
   // second and third transactions do not begin with METHOD_CALL events.
 
   {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
 
     shared_ptr<const LiveObject> initial_live_object = MakeLocalObject(
         "Game. ");
@@ -657,7 +657,7 @@ TEST_F(SharedObjectTest, BackingUp) {
   }
 
   {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
     return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
@@ -686,7 +686,7 @@ TEST_F(SharedObjectTest, BackingUp) {
   }
 
   {
-    vector<linked_ptr<CommittedEvent>> events;
+    vector<unique_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
     return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);

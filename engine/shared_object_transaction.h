@@ -16,9 +16,9 @@
 #ifndef ENGINE_SHARED_OBJECT_TRANSACTION_H_
 #define ENGINE_SHARED_OBJECT_TRANSACTION_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 
 namespace floating_temple {
@@ -32,12 +32,13 @@ class CommittedEvent;
 
 class SharedObjectTransaction {
  public:
-  SharedObjectTransaction(const std::vector<linked_ptr<CommittedEvent>>& events,
-                          const CanonicalPeer* origin_peer);
+  SharedObjectTransaction(
+      const std::vector<std::unique_ptr<CommittedEvent>>& events,
+      const CanonicalPeer* origin_peer);
   explicit SharedObjectTransaction(const CanonicalPeer* origin_peer);
   ~SharedObjectTransaction();
 
-  const std::vector<linked_ptr<CommittedEvent>>& events() const
+  const std::vector<std::unique_ptr<CommittedEvent>>& events() const
       { return events_; }
   const CanonicalPeer* origin_peer() const { return origin_peer_; }
 
@@ -48,7 +49,7 @@ class SharedObjectTransaction {
   void Dump(DumpContext* dc) const;
 
  private:
-  std::vector<linked_ptr<CommittedEvent>> events_;
+  std::vector<std::unique_ptr<CommittedEvent>> events_;
   const CanonicalPeer* const origin_peer_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedObjectTransaction);

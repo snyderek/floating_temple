@@ -21,7 +21,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "engine/transaction_store_internal_interface.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
@@ -50,7 +49,7 @@ class MockTransactionStoreCore {
                      void(const std::string& name, bool versioned));
   MOCK_CONST_METHOD4(
       CreateTransaction,
-      void(const std::vector<linked_ptr<PendingEvent>>& events,
+      void(const std::vector<std::unique_ptr<PendingEvent>>& events,
            TransactionId* transaction_id,
            const std::unordered_map<ObjectReferenceImpl*,
                                     std::shared_ptr<LiveObject>>&
@@ -78,7 +77,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   ObjectReferenceImpl* CreateBoundObjectReference(const std::string& name,
                                                   bool versioned) override;
   void CreateTransaction(
-      const std::vector<linked_ptr<PendingEvent>>& events,
+      const std::vector<std::unique_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,
       const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<LiveObject>>& modified_objects,
@@ -89,8 +88,8 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
  private:
   const MockTransactionStoreCore* const core_;
 
-  std::vector<linked_ptr<ObjectReferenceImpl>> unnamed_objects_;
-  std::unordered_map<std::string, linked_ptr<ObjectReferenceImpl>>
+  std::vector<std::unique_ptr<ObjectReferenceImpl>> unnamed_objects_;
+  std::unordered_map<std::string, std::unique_ptr<ObjectReferenceImpl>>
       named_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);

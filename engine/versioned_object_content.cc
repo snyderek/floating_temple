@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "base/escape.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
@@ -46,6 +45,7 @@
 using std::map;
 using std::pair;
 using std::shared_ptr;
+using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -116,7 +116,7 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
 
 void VersionedObjectContent::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
-    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
+    map<TransactionId, unique_ptr<SharedObjectTransaction>>* transactions,
     MaxVersionMap* effective_version) const {
   CHECK(transactions != nullptr);
 
@@ -127,8 +127,9 @@ void VersionedObjectContent::GetTransactions(
     const SharedObjectTransaction* const transaction =
         transaction_pair.second.get();
 
-    CHECK(transactions->emplace(transaction_id,
-                                make_linked_ptr(transaction->Clone())).second);
+    CHECK(transactions->emplace(
+        transaction_id,
+        unique_ptr<SharedObjectTransaction>(transaction->Clone())).second);
   }
 
   ComputeEffectiveVersion_Locked(transaction_store_version_map,
@@ -137,7 +138,7 @@ void VersionedObjectContent::GetTransactions(
 
 void VersionedObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
-    const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
+    const map<TransactionId, unique_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
@@ -149,12 +150,12 @@ void VersionedObjectContent::StoreTransactions(
 
   for (const auto& transaction_pair : transactions) {
     const TransactionId& transaction_id = transaction_pair.first;
-    const linked_ptr<SharedObjectTransaction>& src_transaction =
+    const unique_ptr<SharedObjectTransaction>& src_transaction =
         transaction_pair.second;
 
     CHECK(IsValidTransactionId(transaction_id));
 
-    linked_ptr<SharedObjectTransaction>& dest_transaction =
+    unique_ptr<SharedObjectTransaction>& dest_transaction =
         committed_versions_[transaction_id];
     if (dest_transaction.get() == nullptr) {
       dest_transaction.reset(src_transaction->Clone());
@@ -190,7 +191,7 @@ void VersionedObjectContent::StoreTransactions(
 void VersionedObjectContent::InsertTransaction(
     const CanonicalPeer* origin_peer,
     const TransactionId& transaction_id,
-    const vector<linked_ptr<CommittedEvent>>& events,
+    const vector<unique_ptr<CommittedEvent>>& events,
     bool transaction_is_local,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
@@ -199,7 +200,7 @@ void VersionedObjectContent::InsertTransaction(
 
   MutexLock lock(&committed_versions_mu_);
 
-  linked_ptr<SharedObjectTransaction>& transaction =
+  unique_ptr<SharedObjectTransaction>& transaction =
       committed_versions_[transaction_id];
 
   if (transaction.get() == nullptr) {
@@ -305,7 +306,7 @@ bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
   for (const auto& transaction_pair : committed_versions_) {
     const TransactionId& transaction_id = transaction_pair.first;
     const SharedObjectTransaction& transaction = *transaction_pair.second;
-    const vector<linked_ptr<CommittedEvent>>& events = transaction.events();
+    const vector<unique_ptr<CommittedEvent>>& events = transaction.events();
 
     if (!events.empty()) {
       const CanonicalPeer* const origin_peer = transaction.origin_peer();
@@ -313,7 +314,7 @@ bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
       if (desired_version.HasPeerTransactionId(origin_peer, transaction_id) &&
           FindTransactionIdInVector(*transactions_to_reject, transaction_id) ==
               transactions_to_reject->end()) {
-        for (const linked_ptr<CommittedEvent>& event : events) {
+        for (const unique_ptr<CommittedEvent>& event : events) {
           playback_thread->QueueEvent(event.get());
         }
 
@@ -392,24 +393,24 @@ bool VersionedObjectContent::CanUseCachedLiveObject_Locked(
       cached_transaction_id.CopyFrom(cached_peer_it->second);
     }
 
-    const map<TransactionId, linked_ptr<SharedObjectTransaction>>::
+    const map<TransactionId, unique_ptr<SharedObjectTransaction>>::
         const_iterator start_it = committed_versions_.upper_bound(
         cached_transaction_id);
-    const map<TransactionId, linked_ptr<SharedObjectTransaction>>::
+    const map<TransactionId, unique_ptr<SharedObjectTransaction>>::
         const_iterator end_it = committed_versions_.upper_bound(
         requested_transaction_id);
 
-    for (map<TransactionId, linked_ptr<SharedObjectTransaction>>::const_iterator
+    for (map<TransactionId, unique_ptr<SharedObjectTransaction>>::const_iterator
              transaction_it = start_it;
          transaction_it != end_it; ++transaction_it) {
       const SharedObjectTransaction& shared_object_transaction =
           *transaction_it->second;
 
       if (shared_object_transaction.origin_peer() == origin_peer) {
-        const vector<linked_ptr<CommittedEvent>>& events =
+        const vector<unique_ptr<CommittedEvent>>& events =
             shared_object_transaction.events();
 
-        for (const linked_ptr<CommittedEvent>& event : events) {
+        for (const unique_ptr<CommittedEvent>& event : events) {
           const CommittedEvent::Type event_type = event->type();
 
           if (event_type != CommittedEvent::METHOD_CALL &&

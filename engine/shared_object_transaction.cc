@@ -15,30 +15,31 @@
 
 #include "engine/shared_object_transaction.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/escape.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "engine/canonical_peer.h"
 #include "engine/committed_event.h"
 #include "util/dump_context.h"
 
+using std::unique_ptr;
 using std::vector;
 
 namespace floating_temple {
 namespace engine {
 
 SharedObjectTransaction::SharedObjectTransaction(
-    const vector<linked_ptr<CommittedEvent>>& events,
+    const vector<unique_ptr<CommittedEvent>>& events,
     const CanonicalPeer* origin_peer)
     : origin_peer_(CHECK_NOTNULL(origin_peer)) {
-  const vector<linked_ptr<CommittedEvent>>::size_type event_count =
+  const vector<unique_ptr<CommittedEvent>>::size_type event_count =
       events.size();
   events_.resize(event_count);
 
-  for (vector<linked_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
+  for (vector<unique_ptr<CommittedEvent>>::size_type i = 0; i < event_count;
        ++i) {
     events_[i].reset(events[i]->Clone());
   }
@@ -68,7 +69,7 @@ void SharedObjectTransaction::Dump(DumpContext* dc) const {
 
   dc->AddString("events");
   dc->BeginList();
-  for (const linked_ptr<CommittedEvent>& event : events_) {
+  for (const unique_ptr<CommittedEvent>& event : events_) {
     event->Dump(dc);
   }
   dc->End();

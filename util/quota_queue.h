@@ -16,11 +16,11 @@
 #ifndef UTIL_QUOTA_QUEUE_H_
 #define UTIL_QUOTA_QUEUE_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/cond_var.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/mutex.h"
@@ -54,7 +54,7 @@ class QuotaQueue {
   Service* GetService_Locked(int service_id);
   bool ServiceFull_Locked(const Service* service) const;
 
-  std::vector<linked_ptr<Service>> services_;
+  std::vector<std::unique_ptr<Service>> services_;
   bool draining_;
   mutable Mutex mu_;
 
@@ -88,15 +88,15 @@ void QuotaQueue<T>::AddService(int service_id, int max_item_count) {
   {
     MutexLock lock(&mu_);
 
-    const typename std::vector<linked_ptr<Service>>::size_type new_index =
-        static_cast<typename std::vector<linked_ptr<Service>>::size_type>(
+    const typename std::vector<std::unique_ptr<Service>>::size_type new_index =
+        static_cast<typename std::vector<std::unique_ptr<Service>>::size_type>(
             service_id);
 
     if (new_index >= services_.size()) {
       services_.resize(new_index + 1u);
     }
 
-    linked_ptr<Service>& service_ptr = services_[service_id];
+    std::unique_ptr<Service>& service_ptr = services_[service_id];
     CHECK(service_ptr.get() == nullptr);
     service_ptr.reset(new_service);
   }
@@ -159,7 +159,7 @@ void QuotaQueue<T>::Drain() {
 
     draining_ = true;
 
-    for (const linked_ptr<Service>& service : services_) {
+    for (const std::unique_ptr<Service>& service : services_) {
       if (service.get() != nullptr) {
         service->service_not_full_cond.Broadcast();
       }

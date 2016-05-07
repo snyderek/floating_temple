@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "base/cond_var.h"
-#include "base/linked_ptr.h"
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "engine/proto/transaction_id.pb.h"
@@ -113,7 +112,7 @@ class RecordingThread : public Thread {
   TransactionStoreInternalInterface* const transaction_store_;
 
   int transaction_level_;
-  std::vector<linked_ptr<PendingEvent>> events_;
+  std::vector<std::unique_ptr<PendingEvent>> events_;
   std::unordered_map<ObjectReferenceImpl*, NewObject> new_objects_;
   std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
       modified_objects_;

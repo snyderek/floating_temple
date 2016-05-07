@@ -22,7 +22,6 @@
 
 #include "base/escape.h"
 #include "base/integral_types.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "include/c++/thread.h"
@@ -36,6 +35,7 @@
 #include "toy_lang/zoo/string_object.h"
 
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 namespace floating_temple {
@@ -44,13 +44,13 @@ namespace {
 
 ObjectReference* EvaluateExpressionList(
     ObjectReference* symbol_table_object, Thread* thread,
-    const vector<linked_ptr<Expression>>& expressions) {
+    const vector<unique_ptr<Expression>>& expressions) {
   CHECK(thread != nullptr);
 
-  const vector<linked_ptr<Expression>>::size_type size = expressions.size();
+  const vector<unique_ptr<Expression>>::size_type size = expressions.size();
   vector<ObjectReference*> object_references(size);
 
-  for (vector<linked_ptr<Expression>>::size_type i = 0; i < size; ++i) {
+  for (vector<unique_ptr<Expression>>::size_type i = 0; i < size; ++i) {
     ObjectReference* const object_reference = expressions[i]->Evaluate(
         symbol_table_object, thread);
 
@@ -271,7 +271,7 @@ void FunctionExpression::PopulateExpressionProto(
   function_->PopulateExpressionProto(
       function_expression_proto->mutable_function());
 
-  for (const linked_ptr<Expression>& parameter : parameters_) {
+  for (const unique_ptr<Expression>& parameter : parameters_) {
     parameter->PopulateExpressionProto(
         function_expression_proto->add_parameter());
   }
@@ -281,7 +281,7 @@ string FunctionExpression::DebugString() const {
   string s;
   SStringPrintf(&s, "(%s", function_->DebugString().c_str());
 
-  for (const linked_ptr<Expression>& parameter : parameters_) {
+  for (const unique_ptr<Expression>& parameter : parameters_) {
     StringAppendF(&s, " %s", parameter->DebugString().c_str());
   }
 
@@ -324,7 +324,7 @@ void ListExpression::PopulateExpressionProto(
   ListExpressionProto* const list_expression_proto =
       expression_proto->mutable_list_expression();
 
-  for (const linked_ptr<Expression>& list_item : list_items_) {
+  for (const unique_ptr<Expression>& list_item : list_items_) {
     list_item->PopulateExpressionProto(list_expression_proto->add_list_item());
   }
 }
@@ -332,7 +332,7 @@ void ListExpression::PopulateExpressionProto(
 string ListExpression::DebugString() const {
   string s = "[";
 
-  for (vector<linked_ptr<Expression>>::const_iterator it = list_items_.begin();
+  for (vector<unique_ptr<Expression>>::const_iterator it = list_items_.begin();
        it != list_items_.end(); ++it) {
     if (it != list_items_.begin()) {
       s += ' ';

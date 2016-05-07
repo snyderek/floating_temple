@@ -32,6 +32,7 @@
 using std::map;
 using std::pair;
 using std::shared_ptr;
+using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
 
@@ -59,7 +60,7 @@ shared_ptr<const LiveObject> UnversionedObjectContent::GetWorkingVersion(
 
 void UnversionedObjectContent::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
-    map<TransactionId, linked_ptr<SharedObjectTransaction>>* transactions,
+    map<TransactionId, unique_ptr<SharedObjectTransaction>>* transactions,
     MaxVersionMap* effective_version) const {
   CHECK(effective_version != nullptr);
   effective_version->CopyFrom(transaction_store_version_map);
@@ -67,7 +68,7 @@ void UnversionedObjectContent::GetTransactions(
 
 void UnversionedObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
-    const map<TransactionId, linked_ptr<SharedObjectTransaction>>& transactions,
+    const map<TransactionId, unique_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
@@ -77,7 +78,7 @@ void UnversionedObjectContent::StoreTransactions(
 void UnversionedObjectContent::InsertTransaction(
     const CanonicalPeer* origin_peer,
     const TransactionId& transaction_id,
-    const vector<linked_ptr<CommittedEvent>>& events,
+    const vector<unique_ptr<CommittedEvent>>& events,
     bool transaction_is_local,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {

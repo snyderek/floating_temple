@@ -27,7 +27,6 @@
 #include <gflags/gflags.h>
 
 #include "base/escape.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "engine/committed_event.h"

@@ -30,6 +30,10 @@ message StringProto {
   required string value = 1;
 }
 
+message SymbolProto {
+  required int32 symbol_id = 1;
+}
+
 message SymbolDefinitionProto {
   required string name = 1;
   required int64 object_index = 2;
@@ -49,6 +53,10 @@ message IntExpressionProto {
 
 message StringExpressionProto {
   required string string_value = 1;
+}
+
+message SymbolExpressionProto {
+  required string symbol_name = 1;
 }
 
 message ExpressionExpressionProto {
@@ -74,6 +82,7 @@ message ExpressionProto {
 
     INT = 1;
     STRING = 2;
+    SYMBOL = 7;
     EXPRESSION = 3;
     VARIABLE = 4;
     FUNCTION = 5;
@@ -83,6 +92,7 @@ message ExpressionProto {
   // Exactly one of the following fields must be set.
   optional floating_temple.toy_lang.IntExpressionProto int_expression = 1;
   optional floating_temple.toy_lang.StringExpressionProto string_expression = 2;
+  optional floating_temple.toy_lang.SymbolExpressionProto symbol_expression = 7;
   optional floating_temple.toy_lang.ExpressionExpressionProto
       expression_expression = 3;
   optional floating_temple.toy_lang.VariableExpressionProto
@@ -126,6 +136,7 @@ message ObjectProto {
     BOOL = 2;
     INT = 3;
     STRING = 4;
+    SYMBOL = 29;
     SYMBOL_TABLE = 5;
     EXPRESSION = 6;
     LIST = 7;
@@ -157,6 +168,7 @@ message ObjectProto {
   optional floating_temple.toy_lang.BoolProto bool_object = 2;
   optional floating_temple.toy_lang.IntProto int_object = 3;
   optional floating_temple.toy_lang.StringProto string_object = 4;
+  optional floating_temple.toy_lang.SymbolProto symbol_object = 29;
   optional floating_temple.toy_lang.SymbolTableProto symbol_table_object = 5;
   optional floating_temple.toy_lang.ExpressionProto expression_object = 6;
   optional floating_temple.toy_lang.ListProto list_object = 7;

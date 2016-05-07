@@ -31,7 +31,6 @@ message StringProto {
 }
 
 message SymbolProto {
-  required int32 symbol_id = 1;
 }
 
 message SymbolDefinitionProto {

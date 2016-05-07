@@ -36,7 +36,7 @@ bool IsStringAttributeType(Token::Type token_type) {
       token_type == Token::SYMBOL_LITERAL || token_type == Token::IDENTIFIER;
 }
 
-}
+}  // namespace
 
 Token::Token()
     : type_(UNINITIALIZED) {

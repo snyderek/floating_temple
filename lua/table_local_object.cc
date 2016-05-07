@@ -510,7 +510,8 @@ TableLocalObject* TableLocalObject::Deserialize(
           gnext(node) = nullptr;
         }
         ValueProtoToLuaValue(lua_state, node_proto.key(), gkey(node), context);
-        ValueProtoToLuaValue(lua_state, node_proto.value(), gval(node), context);
+        ValueProtoToLuaValue(lua_state, node_proto.value(), gval(node),
+                             context);
 
         prev_node_index = node_index;
       }

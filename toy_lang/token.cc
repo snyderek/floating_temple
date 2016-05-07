@@ -25,6 +25,18 @@ using std::string;
 
 namespace floating_temple {
 namespace toy_lang {
+namespace {
+
+bool IsIntAttributeType(Token::Type token_type) {
+  return token_type == Token::INT_LITERAL;
+}
+
+bool IsStringAttributeType(Token::Type token_type) {
+  return token_type == Token::STRING_LITERAL ||
+      token_type == Token::SYMBOL_LITERAL || token_type == Token::IDENTIFIER;
+}
+
+}
 
 Token::Token()
     : type_(UNINITIALIZED) {
@@ -32,18 +44,11 @@ Token::Token()
 
 Token::Token(const Token& other)
     : type_(other.type_) {
-  switch (type_) {
-    case INT_LITERAL:
-      int_attribute_ = other.int_attribute_;
-      break;
-
-    case STRING_LITERAL:
-    case IDENTIFIER:
-      string_attribute_ = new string(*other.string_attribute_);
-      break;
-
-    default:
-      break;
+  if (IsIntAttributeType(type_)) {
+    int_attribute_ = other.int_attribute_;
+  }
+  if (IsStringAttributeType(type_)) {
+    string_attribute_ = new string(*other.string_attribute_);
   }
 }
 
@@ -61,36 +66,34 @@ const string& Token::string_literal() const {
   return *string_attribute_;
 }
 
+const string& Token::symbol_name() const {
+  CHECK_EQ(type_, SYMBOL_LITERAL);
+  return *string_attribute_;
+}
+
 const string& Token::identifier() const {
   CHECK_EQ(type_, IDENTIFIER);
   return *string_attribute_;
 }
 
 Token& Token::operator=(const Token& other) {
-  if (type_ == STRING_LITERAL || type_ == IDENTIFIER) {
-    if (other.type_ != STRING_LITERAL && other.type_ != IDENTIFIER) {
+  if (IsStringAttributeType(type_)) {
+    if (!IsStringAttributeType(other.type_)) {
       delete string_attribute_;
     }
   } else {
-    if (other.type_ == STRING_LITERAL || other.type_ == IDENTIFIER) {
+    if (IsStringAttributeType(other.type_)) {
       string_attribute_ = new string();
     }
   }
 
   type_ = other.type_;
 
-  switch (type_) {
-    case INT_LITERAL:
-      int_attribute_ = other.int_attribute_;
-      break;
-
-    case STRING_LITERAL:
-    case IDENTIFIER:
-      *string_attribute_ = *other.string_attribute_;
-      break;
-
-    default:
-      break;
+  if (IsIntAttributeType(type_)) {
+    int_attribute_ = other.int_attribute_;
+  }
+  if (IsStringAttributeType(type_)) {
+    *string_attribute_ = *other.string_attribute_;
   }
 
   return *this;
@@ -112,6 +115,15 @@ void Token::CreateStringLiteral(Token* token, const string& string_literal) {
   token->FreeMemory();
   token->type_ = STRING_LITERAL;
   token->string_attribute_ = new string(string_literal);
+}
+
+// static
+void Token::CreateSymbolLiteral(Token* token, const string& symbol_name) {
+  CHECK(token != nullptr);
+  VLOG(1) << "SYMBOL_LITERAL \"" << CEscape(symbol_name) << "\"";
+  token->FreeMemory();
+  token->type_ = SYMBOL_LITERAL;
+  token->string_attribute_ = new string(symbol_name);
 }
 
 // static
@@ -172,7 +184,7 @@ void Token::CreateEndList(Token* token) {
 }
 
 void Token::FreeMemory() {
-  if (type_ == STRING_LITERAL || type_ == IDENTIFIER) {
+  if (IsStringAttributeType(type_)) {
     delete string_attribute_;
   }
 }
@@ -185,19 +197,18 @@ bool operator==(const Token& lhs, const Token& rhs) {
     return false;
   }
 
-  switch (lhs_type) {
-    case Token::INT_LITERAL:
-      return lhs.int_literal() == rhs.int_literal();
-
-    case Token::STRING_LITERAL:
-      return lhs.string_literal() == rhs.string_literal();
-
-    case Token::IDENTIFIER:
-      return lhs.identifier() == rhs.identifier();
-
-    default:
-      return true;
+  if (IsIntAttributeType(lhs_type)) {
+    if (lhs.int_attribute_ != rhs.int_attribute_) {
+      return false;
+    }
   }
+  if (IsStringAttributeType(lhs_type)) {
+    if (*lhs.string_attribute_ != *rhs.string_attribute_) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool operator!=(const Token& lhs, const Token& rhs) {

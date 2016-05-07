@@ -29,6 +29,7 @@ class Token {
     UNINITIALIZED,
     INT_LITERAL,
     STRING_LITERAL,
+    SYMBOL_LITERAL,
     IDENTIFIER,
     BEGIN_EXPRESSION,
     END_EXPRESSION,
@@ -46,6 +47,7 @@ class Token {
 
   int64 int_literal() const;
   const std::string& string_literal() const;
+  const std::string& symbol_name() const;
   const std::string& identifier() const;
 
   Token& operator=(const Token& other);
@@ -53,6 +55,7 @@ class Token {
   static void CreateIntLiteral(Token* token, int64 int_literal);
   static void CreateStringLiteral(Token* token,
                                   const std::string& string_literal);
+  static void CreateSymbolLiteral(Token* token, const std::string& symbol_name);
   static void CreateIdentifier(Token* token, const std::string& identifier);
   static void CreateBeginExpression(Token* token);
   static void CreateEndExpression(Token* token);
@@ -70,6 +73,8 @@ class Token {
     int64 int_attribute_;
     std::string* string_attribute_;
   };
+
+  friend bool operator==(const Token& lhs, const Token& rhs);
 };
 
 bool operator==(const Token& lhs, const Token& rhs);

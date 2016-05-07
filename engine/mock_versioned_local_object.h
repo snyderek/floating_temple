@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ENGINE_MOCK_LOCAL_OBJECT_H_
-#define ENGINE_MOCK_LOCAL_OBJECT_H_
+#ifndef ENGINE_MOCK_VERSIONED_LOCAL_OBJECT_H_
+#define ENGINE_MOCK_VERSIONED_LOCAL_OBJECT_H_
 
 #include <string>
 #include <vector>
@@ -71,4 +71,4 @@ class MockVersionedLocalObject : public VersionedLocalObject {
 }  // namespace engine
 }  // namespace floating_temple
 
-#endif  // ENGINE_MOCK_LOCAL_OBJECT_H_
+#endif  // ENGINE_MOCK_VERSIONED_LOCAL_OBJECT_H_

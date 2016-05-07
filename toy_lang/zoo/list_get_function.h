@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TOY_LANG_ZOO_GET_AT_FUNCTION_H_
-#define TOY_LANG_ZOO_GET_AT_FUNCTION_H_
+#ifndef TOY_LANG_ZOO_LIST_GET_FUNCTION_H_
+#define TOY_LANG_ZOO_LIST_GET_FUNCTION_H_
 
 #include "base/macros.h"
 #include "toy_lang/zoo/function.h"
@@ -43,4 +43,4 @@ class ListGetFunction : public Function {
 }  // namespace toy_lang
 }  // namespace floating_temple
 
-#endif  // TOY_LANG_ZOO_GET_AT_FUNCTION_H_
+#endif  // TOY_LANG_ZOO_LIST_GET_FUNCTION_H_

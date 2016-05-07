@@ -42,6 +42,7 @@ class Lexer {
     COMMENT,
     INT_LITERAL,
     STRING_LITERAL,
+    SYMBOL_LITERAL,
     IDENTIFIER,
     END_OF_EXPRESSION,
     END_OF_FILE
@@ -51,6 +52,7 @@ class Lexer {
 
   void YieldIntLiteral(State new_state) const;
   void YieldStringLiteral(State new_state) const;
+  void YieldSymbolLiteral(State new_state) const;
   void YieldIdentifier(State new_state) const;
   void YieldBeginExpression(State new_state) const;
   void YieldEndExpression(State new_state) const;

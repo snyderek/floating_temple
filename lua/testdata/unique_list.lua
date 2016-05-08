@@ -4,7 +4,7 @@ local shared = floating_temple.shared
 
 begin_tran()
 if shared["num"] == nil then
-  shared["num"] = 1
+  shared["num"] = 0
 end
 end_tran()
 
@@ -17,5 +17,9 @@ for i=1,10 do
   end_tran()
 
   table.insert(lst, num)
-  print(lst)
+
+  for i, n in ipairs(lst) do
+    io.write(n, " ")
+  end
+  io.write("\n")
 end

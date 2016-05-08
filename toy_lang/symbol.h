@@ -1,5 +1,5 @@
 // Floating Temple
-// Copyright 2015 Derek S. Snyder
+// Copyright 2016 Derek S. Snyder
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,40 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TOY_LANG_PARSER_H_
-#define TOY_LANG_PARSER_H_
+#ifndef TOY_LANG_SYMBOL_H_
+#define TOY_LANG_SYMBOL_H_
 
-#include <vector>
+#include <string>
 
 #include "base/macros.h"
-#include "toy_lang/token.h"
 
 namespace floating_temple {
 namespace toy_lang {
 
-class Expression;
-class Lexer;
-class SymbolTable;
-
-class Parser {
+class Symbol {
  public:
-  Parser(Lexer* lexer, SymbolTable* symbol_table);
+  explicit Symbol(const std::string& symbol_name);
 
-  Expression* ParseFile();
+  std::string DebugString() const;
 
  private:
-  Expression* ParseScope();
-  Expression* ParseExpression();
-  void ParseExpressionList(Token::Type end_token_type,
-                           std::vector<Expression*>* expressions);
+  // For debugging purposes only.
+  const std::string symbol_name_;
 
-  Lexer* const lexer_;
-  SymbolTable* const symbol_table_;
-
-  DISALLOW_COPY_AND_ASSIGN(Parser);
+  DISALLOW_COPY_AND_ASSIGN(Symbol);
 };
 
 }  // namespace toy_lang
 }  // namespace floating_temple
 
-#endif  // TOY_LANG_PARSER_H_
+#endif  // TOY_LANG_SYMBOL_H_

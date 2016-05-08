@@ -16,7 +16,12 @@
 #ifndef TOY_LANG_SYMBOL_TABLE_H_
 #define TOY_LANG_SYMBOL_TABLE_H_
 
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "base/macros.h"
 
 namespace floating_temple {
 
@@ -24,6 +29,27 @@ class ObjectReference;
 class Thread;
 
 namespace toy_lang {
+
+class Symbol;
+
+class SymbolTable {
+ public:
+  SymbolTable();
+  ~SymbolTable();
+
+  void EnterScope();
+  void LeaveScope();
+
+  const Symbol* GetSymbol(const std::string& symbol_name);
+
+ private:
+  std::vector<std::unique_ptr<Symbol>> all_symbols_;
+  std::vector<std::unordered_map<std::string, const Symbol*>> scopes_;
+
+  DISALLOW_COPY_AND_ASSIGN(SymbolTable);
+};
+
+// TODO(dss): Delete all of the following functions.
 
 bool EnterScope(ObjectReference* symbol_table_object, Thread* thread);
 bool LeaveScope(ObjectReference* symbol_table_object, Thread* thread);

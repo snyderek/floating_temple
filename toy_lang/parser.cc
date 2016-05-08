@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/lexer.h"
+#include "toy_lang/symbol_table.h"
 #include "toy_lang/token.h"
 
 using std::vector;
@@ -27,15 +28,24 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-Parser::Parser(Lexer* lexer)
-    : lexer_(CHECK_NOTNULL(lexer)) {
+Parser::Parser(Lexer* lexer, SymbolTable* symbol_table)
+    : lexer_(CHECK_NOTNULL(lexer)),
+      symbol_table_(CHECK_NOTNULL(symbol_table)) {
 }
 
 Expression* Parser::ParseFile() {
-  Expression* const expression = ParseExpression();
+  Expression* const expression = ParseScope();
   CHECK(!lexer_->HasNextToken());
 
   VLOG(2) << expression->DebugString();
+
+  return expression;
+}
+
+Expression* Parser::ParseScope() {
+  symbol_table_->EnterScope();
+  Expression* const expression = ParseExpression();
+  symbol_table_->LeaveScope();
 
   return expression;
 }
@@ -52,6 +62,8 @@ Expression* Parser::ParseExpression() {
     case Token::STRING_LITERAL:
       return new StringExpression(token.string_literal());
 
+    // TODO(dss): Add a case for Token::SYMBOL_LITERAL.
+
     case Token::IDENTIFIER:
       return new VariableExpression(token.identifier());
 
@@ -65,7 +77,7 @@ Expression* Parser::ParseExpression() {
     }
 
     case Token::BEGIN_BLOCK: {
-      Expression* const expression = ParseExpression();
+      Expression* const expression = ParseScope();
       CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
 
       return new ExpressionExpression(expression);

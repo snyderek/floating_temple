@@ -15,7 +15,9 @@
 
 #include "toy_lang/symbol_table.h"
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/escape.h"
@@ -23,12 +25,48 @@
 #include "include/c++/object_reference.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
+#include "toy_lang/symbol.h"
 
 using std::string;
+using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {
 namespace toy_lang {
+
+SymbolTable::SymbolTable() {
+}
+
+SymbolTable::~SymbolTable() {
+}
+
+void SymbolTable::EnterScope() {
+  scopes_.emplace_back();
+}
+
+void SymbolTable::LeaveScope() {
+  scopes_.pop_back();
+}
+
+const Symbol* SymbolTable::GetSymbol(const string& symbol_name) {
+  CHECK(!scopes_.empty());
+  CHECK(!symbol_name.empty());
+
+  for (auto scope_it = scopes_.rbegin(); scope_it != scopes_.rend();
+       ++scope_it) {
+    const unordered_map<string, const Symbol*>& symbol_map = *scope_it;
+
+    const auto it = symbol_map.find(symbol_name);
+    if (it != symbol_map.end()) {
+      return it->second;
+    }
+  }
+
+  Symbol* const symbol = new Symbol(symbol_name);
+  all_symbols_.emplace_back(symbol);
+  CHECK(scopes_.back().emplace(symbol_name, symbol).second);
+  return symbol;
+}
 
 bool EnterScope(ObjectReference* symbol_table_object, Thread* thread) {
   CHECK(thread != nullptr);

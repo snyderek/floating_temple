@@ -375,6 +375,7 @@ toy_lang_lib = ft_env.Library(
         toy_lang/zoo/string_object.cc
         toy_lang/zoo/symbol_object.cc
         toy_lang/zoo/symbol_table_object.cc
+        toy_lang/zoo/variable_object.cc
         toy_lang/zoo/while_function.cc
       """),
   )

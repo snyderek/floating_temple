@@ -33,6 +33,10 @@ message StringProto {
 message SymbolProto {
 }
 
+message VariableProto {
+  optional int64 object_index = 1;
+}
+
 message SymbolDefinitionProto {
   required string name = 1;
   required int64 object_index = 2;
@@ -136,6 +140,7 @@ message ObjectProto {
     INT = 3;
     STRING = 4;
     SYMBOL = 29;
+    VARIABLE = 30;
     SYMBOL_TABLE = 5;
     EXPRESSION = 6;
     LIST = 7;
@@ -168,6 +173,7 @@ message ObjectProto {
   optional floating_temple.toy_lang.IntProto int_object = 3;
   optional floating_temple.toy_lang.StringProto string_object = 4;
   optional floating_temple.toy_lang.SymbolProto symbol_object = 29;
+  optional floating_temple.toy_lang.VariableProto variable_object = 30;
   optional floating_temple.toy_lang.SymbolTableProto symbol_table_object = 5;
   optional floating_temple.toy_lang.ExpressionProto expression_object = 6;
   optional floating_temple.toy_lang.ListProto list_object = 7;

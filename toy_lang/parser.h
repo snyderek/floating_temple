@@ -26,11 +26,10 @@ namespace toy_lang {
 
 class Expression;
 class Lexer;
-class SymbolTable;
 
 class Parser {
  public:
-  Parser(Lexer* lexer, SymbolTable* symbol_table);
+  explicit Parser(Lexer* lexer);
 
   Expression* ParseFile();
 
@@ -41,7 +40,6 @@ class Parser {
                            std::vector<Expression*>* expressions);
 
   Lexer* const lexer_;
-  SymbolTable* const symbol_table_;
 
   DISALLOW_COPY_AND_ASSIGN(Parser);
 };

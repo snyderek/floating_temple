@@ -20,7 +20,6 @@
 #include "base/logging.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/lexer.h"
-#include "toy_lang/symbol_table.h"
 #include "toy_lang/token.h"
 
 using std::vector;
@@ -28,9 +27,8 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-Parser::Parser(Lexer* lexer, SymbolTable* symbol_table)
-    : lexer_(CHECK_NOTNULL(lexer)),
-      symbol_table_(CHECK_NOTNULL(symbol_table)) {
+Parser::Parser(Lexer* lexer)
+    : lexer_(CHECK_NOTNULL(lexer)) {
 }
 
 Expression* Parser::ParseFile() {
@@ -43,9 +41,7 @@ Expression* Parser::ParseFile() {
 }
 
 Expression* Parser::ParseScope() {
-  symbol_table_->EnterScope();
   Expression* const expression = ParseExpression();
-  symbol_table_->LeaveScope();
 
   return expression;
 }

@@ -38,6 +38,12 @@ message VariableProto {
   optional int64 object_index = 1;
 }
 
+message ExpressionObjectProto {
+  required floating_temple.toy_lang.ExpressionProto expression = 1;
+  required int64 bound_symbol_count = 2;
+  required int64 unbound_symbol_count = 3;
+}
+
 message IntExpressionProto {
   required int64 int_value = 1;
 }
@@ -52,6 +58,8 @@ message SymbolExpressionProto {
 
 message ExpressionExpressionProto {
   required floating_temple.toy_lang.ExpressionProto expression = 1;
+  required int64 bound_symbol_count = 2;
+  required int64 unbound_symbol_count = 3;
 }
 
 message FunctionExpressionProto {
@@ -154,7 +162,7 @@ message ObjectProto {
   optional floating_temple.toy_lang.StringProto string_object = 4;
   optional floating_temple.toy_lang.SymbolProto symbol_object = 29;
   optional floating_temple.toy_lang.VariableProto variable_object = 30;
-  optional floating_temple.toy_lang.ExpressionProto expression_object = 6;
+  optional floating_temple.toy_lang.ExpressionObjectProto expression_object = 6;
   optional floating_temple.toy_lang.ListProto list_object = 7;
   optional floating_temple.toy_lang.MapProto map_object = 8;
   optional floating_temple.toy_lang.RangeIteratorProto

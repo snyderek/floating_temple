@@ -114,9 +114,11 @@ class SymbolExpression : public Expression {
   DISALLOW_COPY_AND_ASSIGN(SymbolExpression);
 };
 
+// TODO(dss): Rename this class to BlockExpression.
 class ExpressionExpression : public Expression {
  public:
-  explicit ExpressionExpression(Expression* expression);
+  ExpressionExpression(Expression* expression, int bound_symbol_count,
+                       int unbound_symbol_count);
 
   ObjectReference* Evaluate(
       const std::vector<ObjectReference*>& symbol_bindings,
@@ -130,10 +132,13 @@ class ExpressionExpression : public Expression {
 
  private:
   const std::shared_ptr<const Expression> expression_;
+  const int bound_symbol_count_;
+  const int unbound_symbol_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpressionExpression);
 };
 
+// TODO(dss): Rename this class to FunctionCallExpression.
 class FunctionExpression : public Expression {
  public:
   FunctionExpression(Expression* function,

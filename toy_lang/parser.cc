@@ -79,7 +79,9 @@ Expression* Parser::ParseExpression() {
       Expression* const expression = ParseScope();
       CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
 
-      return new ExpressionExpression(expression);
+      // TODO(dss): Set the 'bound_symbol_count' and 'unbound_symbol_count'
+      // parameters.
+      return new ExpressionExpression(expression, 0, 0);
     }
 
     case Token::BEGIN_LIST: {

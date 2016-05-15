@@ -129,8 +129,9 @@ void ProgramObject::InvokeMethod(Thread* thread,
 
   ObjectReference* const shared_map_object = thread->CreateVersionedObject(
       new MapObject(), "shared");
+  // TODO(dss): Set the 'unbound_symbol_count' parameter.
   ObjectReference* const expression_object = thread->CreateVersionedObject(
-      new ExpressionObject(expression_), "");
+      new ExpressionObject(expression_, 0, 0), "");
 
   if (!PopulateSymbolTable(thread, shared_map_object)) {
     return;

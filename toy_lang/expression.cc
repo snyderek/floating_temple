@@ -182,14 +182,23 @@ SymbolExpression* SymbolExpression::ParseSymbolExpressionProto(
   return new SymbolExpression(symbol_expression_proto.symbol_id());
 }
 
-ExpressionExpression::ExpressionExpression(Expression* expression)
-    : expression_(CHECK_NOTNULL(expression)) {
+ExpressionExpression::ExpressionExpression(Expression* expression,
+                                           int bound_symbol_count,
+                                           int unbound_symbol_count)
+    : expression_(CHECK_NOTNULL(expression)),
+      bound_symbol_count_(bound_symbol_count),
+      unbound_symbol_count_(unbound_symbol_count) {
+  CHECK_GE(bound_symbol_count, 0);
+  CHECK_GE(unbound_symbol_count, 0);
 }
 
 ObjectReference* ExpressionExpression::Evaluate(
     const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
   CHECK(thread != nullptr);
-  return thread->CreateVersionedObject(new ExpressionObject(expression_), "");
+
+  VersionedLocalObject* const expression_object = new ExpressionObject(
+      expression_, bound_symbol_count_, unbound_symbol_count_);
+  return thread->CreateVersionedObject(expression_object, "");
 }
 
 void ExpressionExpression::PopulateExpressionProto(
@@ -209,7 +218,13 @@ ExpressionExpression* ExpressionExpression::ParseExpressionExpressionProto(
     const ExpressionExpressionProto& expression_expression_proto) {
   Expression* const expression = Expression::ParseExpressionProto(
       expression_expression_proto.expression());
-  return new ExpressionExpression(expression);
+  const int bound_symbol_count =
+      expression_expression_proto.bound_symbol_count();
+  const int unbound_symbol_count =
+      expression_expression_proto.unbound_symbol_count();
+
+  return new ExpressionExpression(expression, bound_symbol_count,
+                                  unbound_symbol_count);
 }
 
 FunctionExpression::FunctionExpression(Expression* function,

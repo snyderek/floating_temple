@@ -20,7 +20,10 @@
 #include <vector>
 
 #include "base/escape.h"
+#include "base/integral_types.h"
 #include "base/logging.h"
+#include "include/c++/thread.h"
+#include "include/c++/value.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "util/dump_context.h"
@@ -36,13 +39,19 @@ class ObjectReference;
 namespace toy_lang {
 
 ExpressionObject::ExpressionObject(
-    const shared_ptr<const Expression>& expression)
-    : expression_(expression) {
+    const shared_ptr<const Expression>& expression, int bound_symbol_count,
+    int unbound_symbol_count)
+    : expression_(expression),
+      bound_symbol_count_(bound_symbol_count),
+      unbound_symbol_count_(unbound_symbol_count) {
   CHECK(expression.get() != nullptr);
+  CHECK_GE(bound_symbol_count, 0);
+  CHECK_GE(unbound_symbol_count, 0);
 }
 
 VersionedLocalObject* ExpressionObject::Clone() const {
-  return new ExpressionObject(expression_);
+  return new ExpressionObject(expression_, bound_symbol_count_,
+                              unbound_symbol_count_);
 }
 
 void ExpressionObject::InvokeMethod(Thread* thread,
@@ -53,11 +62,32 @@ void ExpressionObject::InvokeMethod(Thread* thread,
   CHECK(return_value != nullptr);
 
   if (method_name == "eval") {
-    CHECK_EQ(parameters.size(), 0u);
+    CHECK_EQ(parameters.size(), 1u);
 
-    // TODO(dss): Set the symbol bindings from the parameters to the "eval"
-    // method.
-    vector<ObjectReference*> symbol_bindings;
+    ObjectReference* const parameter_list_object =
+        parameters[0].object_reference();
+
+    Value length_value;
+    if (!thread->CallMethod(parameter_list_object, "length", vector<Value>(),
+                            &length_value)) {
+      return;
+    }
+
+    const int64 parameter_count = length_value.int64_value();
+    vector<ObjectReference*> symbol_bindings(parameter_count);
+
+    for (int64 i = 0; i < parameter_count; ++i) {
+      vector<Value> get_at_params(1);
+      get_at_params[0].set_int64_value(0, i);
+
+      Value list_item_value;
+      if (!thread->CallMethod(parameter_list_object, "get_at", get_at_params,
+                              &list_item_value)) {
+        return;
+      }
+
+      symbol_bindings[i] = list_item_value.object_reference();
+    }
 
     ObjectReference* const object_reference = expression_->Evaluate(
         symbol_bindings, thread);
@@ -73,25 +103,43 @@ void ExpressionObject::InvokeMethod(Thread* thread,
 void ExpressionObject::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
-  // TODO(dss): Dump the contents of the expression.
   dc->BeginMap();
   dc->AddString("type");
   dc->AddString("ExpressionObject");
+
+  // TODO(dss): Dump the contents of the expression.
+
+  dc->AddString("bound_symbol_count");
+  dc->AddInt(bound_symbol_count_);
+
+  dc->AddString("unbound_symbol_count");
+  dc->AddInt(unbound_symbol_count_);
+
   dc->End();
 }
 
 // static
 ExpressionObject* ExpressionObject::ParseExpressionProto(
-    const ExpressionProto& expression_proto) {
+    const ExpressionObjectProto& expression_object_proto) {
   const shared_ptr<const Expression> expression(
-      Expression::ParseExpressionProto(expression_proto));
-  return new ExpressionObject(expression);
+      Expression::ParseExpressionProto(expression_object_proto.expression()));
+  const int bound_symbol_count = expression_object_proto.bound_symbol_count();
+  const int unbound_symbol_count =
+      expression_object_proto.unbound_symbol_count();
+
+  return new ExpressionObject(expression, bound_symbol_count,
+                              unbound_symbol_count);
 }
 
 void ExpressionObject::PopulateObjectProto(
     ObjectProto* object_proto, SerializationContext* context) const {
+  ExpressionObjectProto* const expression_object_proto =
+      object_proto->mutable_expression_object();
+
   expression_->PopulateExpressionProto(
-      object_proto->mutable_expression_object());
+      expression_object_proto->mutable_expression());
+  expression_object_proto->set_bound_symbol_count(bound_symbol_count_);
+  expression_object_proto->set_unbound_symbol_count(unbound_symbol_count_);
 }
 
 }  // namespace toy_lang

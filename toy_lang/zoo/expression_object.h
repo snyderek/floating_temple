@@ -25,12 +25,12 @@ namespace floating_temple {
 namespace toy_lang {
 
 class Expression;
-class ExpressionProto;
+class ExpressionObjectProto;
 
 class ExpressionObject : public LocalObjectImpl {
  public:
-  explicit ExpressionObject(
-      const std::shared_ptr<const Expression>& expression);
+  ExpressionObject(const std::shared_ptr<const Expression>& expression,
+                   int bound_symbol_count, int unbound_symbol_count);
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
@@ -41,7 +41,7 @@ class ExpressionObject : public LocalObjectImpl {
   void Dump(DumpContext* dc) const override;
 
   static ExpressionObject* ParseExpressionProto(
-      const ExpressionProto& expression_proto);
+      const ExpressionObjectProto& expression_object_proto);
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
@@ -49,6 +49,8 @@ class ExpressionObject : public LocalObjectImpl {
 
  private:
   const std::shared_ptr<const Expression> expression_;
+  const int bound_symbol_count_;
+  const int unbound_symbol_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpressionObject);
 };

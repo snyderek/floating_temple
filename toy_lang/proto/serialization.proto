@@ -62,7 +62,7 @@ message BlockExpressionProto {
   required int64 unbound_symbol_count = 3;
 }
 
-message FunctionExpressionProto {
+message FunctionCallExpressionProto {
   required floating_temple.toy_lang.ExpressionProto function = 1;
   repeated floating_temple.toy_lang.ExpressionProto parameter = 2;
 }
@@ -79,7 +79,7 @@ message ExpressionProto {
     STRING = 2;
     SYMBOL = 7;
     BLOCK = 3;
-    FUNCTION = 5;
+    FUNCTION_CALL = 5;
     LIST = 6;
   }
 
@@ -88,8 +88,8 @@ message ExpressionProto {
   optional floating_temple.toy_lang.StringExpressionProto string_expression = 2;
   optional floating_temple.toy_lang.SymbolExpressionProto symbol_expression = 7;
   optional floating_temple.toy_lang.BlockExpressionProto block_expression = 3;
-  optional floating_temple.toy_lang.FunctionExpressionProto
-      function_expression = 5;
+  optional floating_temple.toy_lang.FunctionCallExpressionProto
+      function_call_expression = 5;
   optional floating_temple.toy_lang.ListExpressionProto list_expression = 6;
 }
 

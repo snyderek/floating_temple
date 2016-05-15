@@ -84,9 +84,9 @@ Expression* Expression::ParseExpressionProto(
       return BlockExpression::ParseBlockExpressionProto(
           expression_proto.block_expression());
 
-    case ExpressionProto::FUNCTION:
-      return FunctionExpression::ParseFunctionExpressionProto(
-          expression_proto.function_expression());
+    case ExpressionProto::FUNCTION_CALL:
+      return FunctionCallExpression::ParseFunctionCallExpressionProto(
+          expression_proto.function_call_expression());
 
     case ExpressionProto::LIST:
       return ListExpression::ParseListExpressionProto(
@@ -229,8 +229,8 @@ BlockExpression* BlockExpression::ParseBlockExpressionProto(
                              unbound_symbol_count);
 }
 
-FunctionExpression::FunctionExpression(Expression* function,
-                                       const vector<Expression*>& parameters)
+FunctionCallExpression::FunctionCallExpression(
+    Expression* function, const vector<Expression*>& parameters)
     : function_(CHECK_NOTNULL(function)),
       parameters_(parameters.size()) {
   for (vector<Expression*>::size_type i = 0; i < parameters.size(); ++i) {
@@ -238,7 +238,7 @@ FunctionExpression::FunctionExpression(Expression* function,
   }
 }
 
-ObjectReference* FunctionExpression::Evaluate(
+ObjectReference* FunctionCallExpression::Evaluate(
     const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
   CHECK(thread != nullptr);
 
@@ -271,23 +271,23 @@ ObjectReference* FunctionExpression::Evaluate(
   return return_value.object_reference();
 }
 
-void FunctionExpression::PopulateExpressionProto(
+void FunctionCallExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
   CHECK(expression_proto != nullptr);
 
-  FunctionExpressionProto* const function_expression_proto =
-      expression_proto->mutable_function_expression();
+  FunctionCallExpressionProto* const function_call_expression_proto =
+      expression_proto->mutable_function_call_expression();
 
   function_->PopulateExpressionProto(
-      function_expression_proto->mutable_function());
+      function_call_expression_proto->mutable_function());
 
   for (const unique_ptr<Expression>& parameter : parameters_) {
     parameter->PopulateExpressionProto(
-        function_expression_proto->add_parameter());
+        function_call_expression_proto->add_parameter());
   }
 }
 
-string FunctionExpression::DebugString() const {
+string FunctionCallExpression::DebugString() const {
   string s;
   SStringPrintf(&s, "(%s", function_->DebugString().c_str());
 
@@ -301,18 +301,20 @@ string FunctionExpression::DebugString() const {
 }
 
 // static
-FunctionExpression* FunctionExpression::ParseFunctionExpressionProto(
-    const FunctionExpressionProto& function_expression_proto) {
+FunctionCallExpression*
+FunctionCallExpression::ParseFunctionCallExpressionProto(
+    const FunctionCallExpressionProto& function_call_expression_proto) {
   Expression* const function = Expression::ParseExpressionProto(
-      function_expression_proto.function());
+      function_call_expression_proto.function());
 
-  vector<Expression*> parameters(function_expression_proto.parameter_size());
-  for (int i = 0; i < function_expression_proto.parameter_size(); ++i) {
+  vector<Expression*> parameters(
+      function_call_expression_proto.parameter_size());
+  for (int i = 0; i < function_call_expression_proto.parameter_size(); ++i) {
     parameters[i] = Expression::ParseExpressionProto(
-        function_expression_proto.parameter(i));
+        function_call_expression_proto.parameter(i));
   }
 
-  return new FunctionExpression(function, parameters);
+  return new FunctionCallExpression(function, parameters);
 }
 
 ListExpression::ListExpression(const vector<Expression*>& list_items)

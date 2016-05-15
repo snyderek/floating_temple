@@ -32,7 +32,7 @@ namespace toy_lang {
 
 class BlockExpressionProto;
 class ExpressionProto;
-class FunctionExpressionProto;
+class FunctionCallExpressionProto;
 class IntExpressionProto;
 class ListExpressionProto;
 class StringExpressionProto;
@@ -137,11 +137,10 @@ class BlockExpression : public Expression {
   DISALLOW_COPY_AND_ASSIGN(BlockExpression);
 };
 
-// TODO(dss): Rename this class to FunctionCallExpression.
-class FunctionExpression : public Expression {
+class FunctionCallExpression : public Expression {
  public:
-  FunctionExpression(Expression* function,
-                     const std::vector<Expression*>& parameters);
+  FunctionCallExpression(Expression* function,
+                         const std::vector<Expression*>& parameters);
 
   ObjectReference* Evaluate(
       const std::vector<ObjectReference*>& symbol_bindings,
@@ -150,14 +149,14 @@ class FunctionExpression : public Expression {
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
 
-  static FunctionExpression* ParseFunctionExpressionProto(
-      const FunctionExpressionProto& function_expression_proto);
+  static FunctionCallExpression* ParseFunctionCallExpressionProto(
+      const FunctionCallExpressionProto& function_call_expression_proto);
 
  private:
   const std::unique_ptr<Expression> function_;
   std::vector<std::unique_ptr<Expression>> parameters_;
 
-  DISALLOW_COPY_AND_ASSIGN(FunctionExpression);
+  DISALLOW_COPY_AND_ASSIGN(FunctionCallExpression);
 };
 
 class ListExpression : public Expression {

@@ -72,7 +72,7 @@ Expression* Parser::ParseExpression() {
       vector<Expression*> parameters;
       ParseExpressionList(Token::END_EXPRESSION, &parameters);
 
-      return new FunctionExpression(function, parameters);
+      return new FunctionCallExpression(function, parameters);
     }
 
     case Token::BEGIN_BLOCK: {

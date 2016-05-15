@@ -204,10 +204,12 @@ void BlockExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
   CHECK(expression_proto != nullptr);
 
+  BlockExpressionProto* const block_expression_proto =
+      expression_proto->mutable_block_expression();
   expression_->PopulateExpressionProto(
-      expression_proto->mutable_block_expression()->mutable_expression());
-  // TODO(dss): Set the 'bound_symbol_count' and 'unbound_symbol_count' fields
-  // in the proto.
+      block_expression_proto->mutable_expression());
+  block_expression_proto->set_bound_symbol_count(bound_symbol_count_);
+  block_expression_proto->set_unbound_symbol_count(unbound_symbol_count_);
 }
 
 string BlockExpression::DebugString() const {

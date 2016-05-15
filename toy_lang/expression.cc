@@ -42,14 +42,16 @@ namespace toy_lang {
 namespace {
 
 ObjectReference* EvaluateExpressionList(
-    Thread* thread, const vector<unique_ptr<Expression>>& expressions) {
+    const vector<ObjectReference*>& symbol_bindings, Thread* thread,
+    const vector<unique_ptr<Expression>>& expressions) {
   CHECK(thread != nullptr);
 
   const vector<unique_ptr<Expression>>::size_type size = expressions.size();
   vector<ObjectReference*> object_references(size);
 
   for (vector<unique_ptr<Expression>>::size_type i = 0; i < size; ++i) {
-    ObjectReference* const object_reference = expressions[i]->Evaluate(thread);
+    ObjectReference* const object_reference = expressions[i]->Evaluate(
+        symbol_bindings, thread);
 
     if (object_reference == nullptr) {
       return nullptr;
@@ -102,7 +104,8 @@ IntExpression::IntExpression(int64 n)
     : n_(n) {
 }
 
-ObjectReference* IntExpression::Evaluate(Thread* thread) const {
+ObjectReference* IntExpression::Evaluate(
+    const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
   CHECK(thread != nullptr);
   return thread->CreateVersionedObject(new IntObject(n_), "");
 }
@@ -127,7 +130,8 @@ StringExpression::StringExpression(const string& s)
     : s_(s) {
 }
 
-ObjectReference* StringExpression::Evaluate(Thread* thread) const {
+ObjectReference* StringExpression::Evaluate(
+    const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
   CHECK(thread != nullptr);
   return thread->CreateVersionedObject(new StringObject(s_), "");
 }
@@ -152,7 +156,8 @@ ExpressionExpression::ExpressionExpression(Expression* expression)
     : expression_(CHECK_NOTNULL(expression)) {
 }
 
-ObjectReference* ExpressionExpression::Evaluate(Thread* thread) const {
+ObjectReference* ExpressionExpression::Evaluate(
+    const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
   CHECK(thread != nullptr);
   return thread->CreateVersionedObject(new ExpressionObject(expression_), "");
 }
@@ -186,17 +191,19 @@ FunctionExpression::FunctionExpression(Expression* function,
   }
 }
 
-ObjectReference* FunctionExpression::Evaluate(Thread* thread) const {
+ObjectReference* FunctionExpression::Evaluate(
+    const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
   CHECK(thread != nullptr);
 
-  ObjectReference* const function_object = function_->Evaluate(thread);
+  ObjectReference* const function_object = function_->Evaluate(symbol_bindings,
+                                                               thread);
 
   if (function_object == nullptr) {
     return nullptr;
   }
 
   ObjectReference* const parameter_list_object = EvaluateExpressionList(
-      thread, parameters_);
+      symbol_bindings, thread, parameters_);
 
   if (parameter_list_object == nullptr) {
     return nullptr;
@@ -268,8 +275,9 @@ ListExpression::ListExpression(const vector<Expression*>& list_items)
   }
 }
 
-ObjectReference* ListExpression::Evaluate(Thread* thread) const {
-  return EvaluateExpressionList(thread, list_items_);
+ObjectReference* ListExpression::Evaluate(
+    const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
+  return EvaluateExpressionList(symbol_bindings, thread, list_items_);
 }
 
 void ListExpression::PopulateExpressionProto(

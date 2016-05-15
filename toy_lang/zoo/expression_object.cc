@@ -30,6 +30,9 @@ using std::string;
 using std::vector;
 
 namespace floating_temple {
+
+class ObjectReference;
+
 namespace toy_lang {
 
 ExpressionObject::ExpressionObject(
@@ -52,7 +55,12 @@ void ExpressionObject::InvokeMethod(Thread* thread,
   if (method_name == "eval") {
     CHECK_EQ(parameters.size(), 0u);
 
-    ObjectReference* const object_reference = expression_->Evaluate(thread);
+    // TODO(dss): Set the symbol bindings from the parameters to the "eval"
+    // method.
+    vector<ObjectReference*> symbol_bindings;
+
+    ObjectReference* const object_reference = expression_->Evaluate(
+        symbol_bindings, thread);
     if (object_reference == nullptr) {
       return;
     }

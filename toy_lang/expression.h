@@ -41,7 +41,9 @@ class Expression {
  public:
   virtual ~Expression() {}
 
-  virtual ObjectReference* Evaluate(Thread* thread) const = 0;
+  virtual ObjectReference* Evaluate(
+      const std::vector<ObjectReference*>& symbol_bindings,
+      Thread* thread) const = 0;
   virtual void PopulateExpressionProto(
       ExpressionProto* expression_proto) const = 0;
 
@@ -55,7 +57,9 @@ class IntExpression : public Expression {
  public:
   explicit IntExpression(int64 n);
 
-  ObjectReference* Evaluate(Thread* thread) const override;
+  ObjectReference* Evaluate(
+      const std::vector<ObjectReference*>& symbol_bindings,
+      Thread* thread) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -73,7 +77,9 @@ class StringExpression : public Expression {
  public:
   explicit StringExpression(const std::string& s);
 
-  ObjectReference* Evaluate(Thread* thread) const override;
+  ObjectReference* Evaluate(
+      const std::vector<ObjectReference*>& symbol_bindings,
+      Thread* thread) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -91,7 +97,9 @@ class ExpressionExpression : public Expression {
  public:
   explicit ExpressionExpression(Expression* expression);
 
-  ObjectReference* Evaluate(Thread* thread) const override;
+  ObjectReference* Evaluate(
+      const std::vector<ObjectReference*>& symbol_bindings,
+      Thread* thread) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -110,7 +118,9 @@ class FunctionExpression : public Expression {
   FunctionExpression(Expression* function,
                      const std::vector<Expression*>& parameters);
 
-  ObjectReference* Evaluate(Thread* thread) const override;
+  ObjectReference* Evaluate(
+      const std::vector<ObjectReference*>& symbol_bindings,
+      Thread* thread) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -129,7 +139,9 @@ class ListExpression : public Expression {
  public:
   explicit ListExpression(const std::vector<Expression*>& list_items);
 
-  ObjectReference* Evaluate(Thread* thread) const override;
+  ObjectReference* Evaluate(
+      const std::vector<ObjectReference*>& symbol_bindings,
+      Thread* thread) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;

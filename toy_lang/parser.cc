@@ -81,7 +81,7 @@ Expression* Parser::ParseExpression() {
 
       // TODO(dss): Set the 'bound_symbol_count' and 'unbound_symbol_count'
       // parameters.
-      return new ExpressionExpression(expression, 0, 0);
+      return new BlockExpression(expression, 0, 0);
     }
 
     case Token::BEGIN_LIST: {

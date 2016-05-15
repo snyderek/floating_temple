@@ -80,9 +80,9 @@ Expression* Expression::ParseExpressionProto(
       return StringExpression::ParseStringExpressionProto(
           expression_proto.string_expression());
 
-    case ExpressionProto::EXPRESSION:
-      return ExpressionExpression::ParseExpressionExpressionProto(
-          expression_proto.expression_expression());
+    case ExpressionProto::BLOCK:
+      return BlockExpression::ParseBlockExpressionProto(
+          expression_proto.block_expression());
 
     case ExpressionProto::FUNCTION:
       return FunctionExpression::ParseFunctionExpressionProto(
@@ -182,9 +182,8 @@ SymbolExpression* SymbolExpression::ParseSymbolExpressionProto(
   return new SymbolExpression(symbol_expression_proto.symbol_id());
 }
 
-ExpressionExpression::ExpressionExpression(Expression* expression,
-                                           int bound_symbol_count,
-                                           int unbound_symbol_count)
+BlockExpression::BlockExpression(Expression* expression, int bound_symbol_count,
+                                 int unbound_symbol_count)
     : expression_(CHECK_NOTNULL(expression)),
       bound_symbol_count_(bound_symbol_count),
       unbound_symbol_count_(unbound_symbol_count) {
@@ -192,7 +191,7 @@ ExpressionExpression::ExpressionExpression(Expression* expression,
   CHECK_GE(unbound_symbol_count, 0);
 }
 
-ObjectReference* ExpressionExpression::Evaluate(
+ObjectReference* BlockExpression::Evaluate(
     const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
   CHECK(thread != nullptr);
 
@@ -201,30 +200,31 @@ ObjectReference* ExpressionExpression::Evaluate(
   return thread->CreateVersionedObject(expression_object, "");
 }
 
-void ExpressionExpression::PopulateExpressionProto(
+void BlockExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
   CHECK(expression_proto != nullptr);
 
   expression_->PopulateExpressionProto(
-      expression_proto->mutable_expression_expression()->mutable_expression());
+      expression_proto->mutable_block_expression()->mutable_expression());
+  // TODO(dss): Set the 'bound_symbol_count' and 'unbound_symbol_count' fields
+  // in the proto.
 }
 
-string ExpressionExpression::DebugString() const {
+string BlockExpression::DebugString() const {
   return StringPrintf("{%s}", expression_->DebugString().c_str());
 }
 
 // static
-ExpressionExpression* ExpressionExpression::ParseExpressionExpressionProto(
-    const ExpressionExpressionProto& expression_expression_proto) {
+BlockExpression* BlockExpression::ParseBlockExpressionProto(
+    const BlockExpressionProto& block_expression_proto) {
   Expression* const expression = Expression::ParseExpressionProto(
-      expression_expression_proto.expression());
-  const int bound_symbol_count =
-      expression_expression_proto.bound_symbol_count();
+      block_expression_proto.expression());
+  const int bound_symbol_count = block_expression_proto.bound_symbol_count();
   const int unbound_symbol_count =
-      expression_expression_proto.unbound_symbol_count();
+      block_expression_proto.unbound_symbol_count();
 
-  return new ExpressionExpression(expression, bound_symbol_count,
-                                  unbound_symbol_count);
+  return new BlockExpression(expression, bound_symbol_count,
+                             unbound_symbol_count);
 }
 
 FunctionExpression::FunctionExpression(Expression* function,

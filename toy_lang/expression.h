@@ -30,7 +30,7 @@ class Thread;
 
 namespace toy_lang {
 
-class ExpressionExpressionProto;
+class BlockExpressionProto;
 class ExpressionProto;
 class FunctionExpressionProto;
 class IntExpressionProto;
@@ -114,11 +114,10 @@ class SymbolExpression : public Expression {
   DISALLOW_COPY_AND_ASSIGN(SymbolExpression);
 };
 
-// TODO(dss): Rename this class to BlockExpression.
-class ExpressionExpression : public Expression {
+class BlockExpression : public Expression {
  public:
-  ExpressionExpression(Expression* expression, int bound_symbol_count,
-                       int unbound_symbol_count);
+  BlockExpression(Expression* expression, int bound_symbol_count,
+                  int unbound_symbol_count);
 
   ObjectReference* Evaluate(
       const std::vector<ObjectReference*>& symbol_bindings,
@@ -127,15 +126,15 @@ class ExpressionExpression : public Expression {
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
 
-  static ExpressionExpression* ParseExpressionExpressionProto(
-      const ExpressionExpressionProto& expression_expression_proto);
+  static BlockExpression* ParseBlockExpressionProto(
+      const BlockExpressionProto& block_expression_proto);
 
  private:
   const std::shared_ptr<const Expression> expression_;
   const int bound_symbol_count_;
   const int unbound_symbol_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExpressionExpression);
+  DISALLOW_COPY_AND_ASSIGN(BlockExpression);
 };
 
 // TODO(dss): Rename this class to FunctionCallExpression.

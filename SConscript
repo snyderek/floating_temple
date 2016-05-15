@@ -353,6 +353,7 @@ toy_lang_lib = ft_env.Library(
         toy_lang/zoo/expression_object.cc
         toy_lang/zoo/for_function.cc
         toy_lang/zoo/function.cc
+        toy_lang/zoo/get_variable_function.cc
         toy_lang/zoo/if_function.cc
         toy_lang/zoo/int_object.cc
         toy_lang/zoo/len_function.cc

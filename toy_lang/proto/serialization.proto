@@ -127,6 +127,7 @@ message ObjectProto {
     MAP = 8;
     RANGE_ITERATOR = 9;
     LIST_FUNCTION = 10;
+    GET_VARIABLE_FUNCTION = 31;
     SET_VARIABLE_FUNCTION = 11;
     FOR_FUNCTION = 12;
     RANGE_FUNCTION = 13;
@@ -159,6 +160,7 @@ message ObjectProto {
   optional floating_temple.toy_lang.RangeIteratorProto
       range_iterator_object = 9;
   optional floating_temple.toy_lang.FunctionProto list_function = 10;
+  optional floating_temple.toy_lang.FunctionProto get_variable_function = 31;
   optional floating_temple.toy_lang.FunctionProto set_variable_function = 11;
   optional floating_temple.toy_lang.FunctionProto for_function = 12;
   optional floating_temple.toy_lang.FunctionProto range_function = 13;

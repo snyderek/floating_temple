@@ -1,5 +1,5 @@
 // Floating Temple
-// Copyright 2015 Derek S. Snyder
+// Copyright 2016 Derek S. Snyder
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "toy_lang/zoo/set_variable_function.h"
+#include "toy_lang/zoo/get_variable_function.h"
 
 #include <vector>
 
@@ -21,7 +21,6 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -29,41 +28,38 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-SetVariableFunction::SetVariableFunction() {
+GetVariableFunction::GetVariableFunction() {
 }
 
-VersionedLocalObject* SetVariableFunction::Clone() const {
-  return new SetVariableFunction();
+VersionedLocalObject* GetVariableFunction::Clone() const {
+  return new GetVariableFunction();
 }
 
-void SetVariableFunction::Dump(DumpContext* dc) const {
+void GetVariableFunction::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   dc->BeginMap();
   dc->AddString("type");
-  dc->AddString("SetVariableFunction");
+  dc->AddString("GetVariableFunction");
   dc->End();
 }
 
-void SetVariableFunction::PopulateObjectProto(
+void GetVariableFunction::PopulateObjectProto(
     ObjectProto* object_proto, SerializationContext* context) const {
-  object_proto->mutable_set_variable_function();
+  object_proto->mutable_get_variable_function();
 }
 
-ObjectReference* SetVariableFunction::Call(
+ObjectReference* GetVariableFunction::Call(
     Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
-  CHECK_EQ(parameters.size(), 2u);
+  CHECK_EQ(parameters.size(), 1u);
 
-  vector<Value> set_parameters(1);
-  set_parameters[0].set_object_reference(0, parameters[1]);
-
-  Value dummy;
-  if (!thread->CallMethod(parameters[0], "set", set_parameters, &dummy)) {
+  Value value;
+  if (!thread->CallMethod(parameters[0], "get", vector<Value>(), &value)) {
     return nullptr;
   }
 
-  return thread->CreateVersionedObject(new NoneObject(), "");
+  return value.object_reference();
 }
 
 }  // namespace toy_lang

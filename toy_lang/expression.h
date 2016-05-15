@@ -36,7 +36,6 @@ class FunctionExpressionProto;
 class IntExpressionProto;
 class ListExpressionProto;
 class StringExpressionProto;
-class VariableExpressionProto;
 
 class Expression {
  public:
@@ -104,24 +103,6 @@ class ExpressionExpression : public Expression {
   const std::shared_ptr<const Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpressionExpression);
-};
-
-class VariableExpression : public Expression {
- public:
-  explicit VariableExpression(const std::string& name);
-
-  ObjectReference* Evaluate(Thread* thread) const override;
-  void PopulateExpressionProto(
-      ExpressionProto* expression_proto) const override;
-  std::string DebugString() const override;
-
-  static VariableExpression* ParseVariableExpressionProto(
-      const VariableExpressionProto& variable_expression_proto);
-
- private:
-  const std::string name_;
-
-  DISALLOW_COPY_AND_ASSIGN(VariableExpression);
 };
 
 class FunctionExpression : public Expression {

@@ -82,10 +82,6 @@ Expression* Expression::ParseExpressionProto(
       return ExpressionExpression::ParseExpressionExpressionProto(
           expression_proto.expression_expression());
 
-    case ExpressionProto::VARIABLE:
-      return VariableExpression::ParseVariableExpressionProto(
-          expression_proto.variable_expression());
-
     case ExpressionProto::FUNCTION:
       return FunctionExpression::ParseFunctionExpressionProto(
           expression_proto.function_expression());
@@ -179,32 +175,6 @@ ExpressionExpression* ExpressionExpression::ParseExpressionExpressionProto(
   Expression* const expression = Expression::ParseExpressionProto(
       expression_expression_proto.expression());
   return new ExpressionExpression(expression);
-}
-
-VariableExpression::VariableExpression(const string& name)
-    : name_(name) {
-  CHECK(!name.empty());
-}
-
-ObjectReference* VariableExpression::Evaluate(Thread* thread) const {
-  // TODO(dss): Implement this.
-  return nullptr;
-}
-
-void VariableExpression::PopulateExpressionProto(
-    ExpressionProto* expression_proto) const {
-  CHECK(expression_proto != nullptr);
-  expression_proto->mutable_variable_expression()->set_name(name_);
-}
-
-string VariableExpression::DebugString() const {
-  return name_;
-}
-
-// static
-VariableExpression* VariableExpression::ParseVariableExpressionProto(
-    const VariableExpressionProto& variable_expression_proto) {
-  return new VariableExpression(variable_expression_proto.name());
 }
 
 FunctionExpression::FunctionExpression(Expression* function,

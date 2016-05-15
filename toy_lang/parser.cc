@@ -62,10 +62,9 @@ Expression* Parser::ParseExpression() {
     case Token::STRING_LITERAL:
       return new StringExpression(token.string_literal());
 
-    // TODO(dss): Add a case for Token::SYMBOL_LITERAL.
-
     case Token::IDENTIFIER:
-      return new VariableExpression(token.identifier());
+      // TODO(dss): Implement this.
+      break;
 
     case Token::BEGIN_EXPRESSION: {
       Expression* const function = ParseExpression();

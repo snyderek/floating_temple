@@ -35,7 +35,6 @@ ExpressionProto::Type GetSerializedExpressionType(
   CHECK_FIELD(has_string_expression, STRING);
   CHECK_FIELD(has_symbol_expression, SYMBOL);
   CHECK_FIELD(has_expression_expression, EXPRESSION);
-  CHECK_FIELD(has_variable_expression, VARIABLE);
   CHECK_FIELD(has_function_expression, FUNCTION);
   CHECK_FIELD(has_list_expression, LIST);
 

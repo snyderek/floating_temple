@@ -42,6 +42,7 @@ class Lexer {
     COMMENT,
     INT_LITERAL,
     STRING_LITERAL,
+    // TODO(dss): Remove the SYMBOL_LITERAL token type.
     SYMBOL_LITERAL,
     IDENTIFIER,
     END_OF_EXPRESSION,

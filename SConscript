@@ -778,20 +778,6 @@ toy_lang_lexer_test = ft_env.Program(
       ],
   )
 
-toy_lang_zoo_expression_object_test = ft_env.Program(
-    target = 'toy_lang/zoo/expression_object_test',
-    source = Split("""
-        toy_lang/zoo/expression_object_test.cc
-      """) + [
-        toy_lang_lib,
-        value_lib,
-        toy_lang_proto_lib,
-        base_lib,
-        gmock_lib,
-        gtest_lib,
-      ],
-  )
-
 util_dump_context_impl_test = ft_env.Program(
     target = 'util/dump_context_impl_test',
     source = Split("""
@@ -831,13 +817,14 @@ cxx_tests = [
     protocol_server_protocol_connection_impl_test,
     protocol_server_varint_test,
     toy_lang_lexer_test,
-    toy_lang_zoo_expression_object_test,
     util_dump_context_impl_test,
     util_stl_util_test,
   ]
 
 sh_tests = [
-    File('engine/toy_lang_integration_test.sh'),
+    # TODO(dss): Re-enable this test once the toy_lang interpreter is working
+    # again.
+    #File('engine/toy_lang_integration_test.sh'),
   ]
 
 all_tests = cxx_tests + sh_tests

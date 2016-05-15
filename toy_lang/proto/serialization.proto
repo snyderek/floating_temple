@@ -55,12 +55,6 @@ message ExpressionExpressionProto {
   required floating_temple.toy_lang.ExpressionProto expression = 1;
 }
 
-message VariableExpressionProto {
-  // TODO(dss): Replace this field with an object index that identifies the
-  // variable's symbol.
-  required string name = 1;
-}
-
 message FunctionExpressionProto {
   required floating_temple.toy_lang.ExpressionProto function = 1;
   repeated floating_temple.toy_lang.ExpressionProto parameter = 2;
@@ -78,7 +72,6 @@ message ExpressionProto {
     STRING = 2;
     SYMBOL = 7;
     EXPRESSION = 3;
-    VARIABLE = 4;
     FUNCTION = 5;
     LIST = 6;
   }
@@ -89,8 +82,6 @@ message ExpressionProto {
   optional floating_temple.toy_lang.SymbolExpressionProto symbol_expression = 7;
   optional floating_temple.toy_lang.ExpressionExpressionProto
       expression_expression = 3;
-  optional floating_temple.toy_lang.VariableExpressionProto
-      variable_expression = 4;
   optional floating_temple.toy_lang.FunctionExpressionProto
       function_expression = 5;
   optional floating_temple.toy_lang.ListExpressionProto list_expression = 6;

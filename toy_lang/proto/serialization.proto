@@ -47,8 +47,7 @@ message StringExpressionProto {
 }
 
 message SymbolExpressionProto {
-  // Index of the symbol object.
-  required int64 object_index = 1;
+  required int64 symbol_id = 1;
 }
 
 message ExpressionExpressionProto {

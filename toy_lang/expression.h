@@ -36,6 +36,7 @@ class FunctionExpressionProto;
 class IntExpressionProto;
 class ListExpressionProto;
 class StringExpressionProto;
+class SymbolExpressionProto;
 
 class Expression {
  public:
@@ -91,6 +92,26 @@ class StringExpression : public Expression {
   const std::string s_;
 
   DISALLOW_COPY_AND_ASSIGN(StringExpression);
+};
+
+class SymbolExpression : public Expression {
+ public:
+  explicit SymbolExpression(int symbol_id);
+
+  ObjectReference* Evaluate(
+      const std::vector<ObjectReference*>& symbol_bindings,
+      Thread* thread) const override;
+  void PopulateExpressionProto(
+      ExpressionProto* expression_proto) const override;
+  std::string DebugString() const override;
+
+  static SymbolExpression* ParseSymbolExpressionProto(
+      const SymbolExpressionProto& symbol_expression_proto);
+
+ private:
+  const int symbol_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SymbolExpression);
 };
 
 class ExpressionExpression : public Expression {

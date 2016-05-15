@@ -152,6 +152,36 @@ StringExpression* StringExpression::ParseStringExpressionProto(
   return new StringExpression(string_expression_proto.string_value());
 }
 
+SymbolExpression::SymbolExpression(int symbol_id)
+    : symbol_id_(symbol_id) {
+  CHECK_GE(symbol_id, 0);
+}
+
+ObjectReference* SymbolExpression::Evaluate(
+    const vector<ObjectReference*>& symbol_bindings, Thread* thread) const {
+  const vector<ObjectReference*>::size_type index =
+      static_cast<vector<ObjectReference*>::size_type>(symbol_id_);
+  CHECK_LT(index, symbol_bindings.size());
+
+  return symbol_bindings[index];
+}
+
+void SymbolExpression::PopulateExpressionProto(
+    ExpressionProto* expression_proto) const {
+  CHECK(expression_proto != nullptr);
+  expression_proto->mutable_symbol_expression()->set_symbol_id(symbol_id_);
+}
+
+string SymbolExpression::DebugString() const {
+  return StringPrintf("@%d", symbol_id_);
+}
+
+// static
+SymbolExpression* SymbolExpression::ParseSymbolExpressionProto(
+    const SymbolExpressionProto& symbol_expression_proto) {
+  return new SymbolExpression(symbol_expression_proto.symbol_id());
+}
+
 ExpressionExpression::ExpressionExpression(Expression* expression)
     : expression_(CHECK_NOTNULL(expression)) {
 }

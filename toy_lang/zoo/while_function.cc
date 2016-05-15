@@ -21,7 +21,6 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/symbol_table.h"
 #include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
@@ -52,16 +51,14 @@ void WhileFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* WhileFunction::Call(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<ObjectReference*>& parameters) const {
+    Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   ObjectReference* const condition_expression = parameters[0];
   ObjectReference* const expression = parameters[1];
 
-  vector<Value> eval_parameters(1);
-  eval_parameters[0].set_object_reference(0, symbol_table_object);
+  const vector<Value> eval_parameters;
 
   for (;;) {
     Value condition_object;
@@ -80,16 +77,8 @@ ObjectReference* WhileFunction::Call(
       break;
     }
 
-    if (!EnterScope(symbol_table_object, thread)) {
-      return nullptr;
-    }
-
     Value dummy;
     if (!thread->CallMethod(expression, "eval", eval_parameters, &dummy)) {
-      return nullptr;
-    }
-
-    if (!LeaveScope(symbol_table_object, thread)) {
       return nullptr;
     }
   }

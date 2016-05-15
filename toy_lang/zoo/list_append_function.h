@@ -33,7 +33,7 @@ class ListAppendFunction : public Function {
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
   ObjectReference* Call(
-      ObjectReference* symbol_table_object, Thread* thread,
+      Thread* thread,
       const std::vector<ObjectReference*>& parameters) const override;
 
  private:

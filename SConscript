@@ -355,7 +355,6 @@ toy_lang_lib = ft_env.Library(
         toy_lang/zoo/function.cc
         toy_lang/zoo/if_function.cc
         toy_lang/zoo/int_object.cc
-        toy_lang/zoo/is_set_function.cc
         toy_lang/zoo/len_function.cc
         toy_lang/zoo/less_than_function.cc
         toy_lang/zoo/list_append_function.cc
@@ -375,7 +374,6 @@ toy_lang_lib = ft_env.Library(
         toy_lang/zoo/set_variable_function.cc
         toy_lang/zoo/string_object.cc
         toy_lang/zoo/symbol_object.cc
-        toy_lang/zoo/symbol_table_object.cc
         toy_lang/zoo/variable_object.cc
         toy_lang/zoo/while_function.cc
       """),

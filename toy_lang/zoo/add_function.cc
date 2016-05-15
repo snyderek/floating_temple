@@ -52,8 +52,7 @@ void AddFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* AddFunction::Call(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<ObjectReference*>& parameters) const {
+    Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
 
   int64 sum = 0;

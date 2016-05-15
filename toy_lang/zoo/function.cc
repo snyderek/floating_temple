@@ -39,12 +39,10 @@ void Function::InvokeMethod(Thread* thread,
   CHECK(return_value != nullptr);
 
   if (method_name == "call") {
-    CHECK_EQ(parameters.size(), 2u);
+    CHECK_EQ(parameters.size(), 1u);
 
-    ObjectReference* const symbol_table_object =
-        parameters[0].object_reference();
     ObjectReference* const parameter_list_object =
-        parameters[1].object_reference();
+        parameters[0].object_reference();
 
     Value length_value;
     if (!thread->CallMethod(parameter_list_object, "length", vector<Value>(),
@@ -68,8 +66,7 @@ void Function::InvokeMethod(Thread* thread,
       param_objects[i] = list_item_value.object_reference();
     }
 
-    ObjectReference* const return_object = Call(symbol_table_object, thread,
-                                           param_objects);
+    ObjectReference* const return_object = Call(thread, param_objects);
     if (return_object == nullptr) {
       return;
     }

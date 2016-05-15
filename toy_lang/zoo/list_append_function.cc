@@ -51,8 +51,7 @@ void ListAppendFunction::PopulateObjectProto(
 }
 
 ObjectReference* ListAppendFunction::Call(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<ObjectReference*>& parameters) const {
+    Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 

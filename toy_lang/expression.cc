@@ -28,7 +28,6 @@
 #include "include/c++/value.h"
 #include "toy_lang/get_serialized_expression_type.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/symbol_table.h"
 #include "toy_lang/zoo/expression_object.h"
 #include "toy_lang/zoo/int_object.h"
 #include "toy_lang/zoo/list_object.h"
@@ -43,16 +42,14 @@ namespace toy_lang {
 namespace {
 
 ObjectReference* EvaluateExpressionList(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<unique_ptr<Expression>>& expressions) {
+    Thread* thread, const vector<unique_ptr<Expression>>& expressions) {
   CHECK(thread != nullptr);
 
   const vector<unique_ptr<Expression>>::size_type size = expressions.size();
   vector<ObjectReference*> object_references(size);
 
   for (vector<unique_ptr<Expression>>::size_type i = 0; i < size; ++i) {
-    ObjectReference* const object_reference = expressions[i]->Evaluate(
-        symbol_table_object, thread);
+    ObjectReference* const object_reference = expressions[i]->Evaluate(thread);
 
     if (object_reference == nullptr) {
       return nullptr;
@@ -109,8 +106,7 @@ IntExpression::IntExpression(int64 n)
     : n_(n) {
 }
 
-ObjectReference* IntExpression::Evaluate(ObjectReference* symbol_table_object,
-                                         Thread* thread) const {
+ObjectReference* IntExpression::Evaluate(Thread* thread) const {
   CHECK(thread != nullptr);
   return thread->CreateVersionedObject(new IntObject(n_), "");
 }
@@ -135,8 +131,7 @@ StringExpression::StringExpression(const string& s)
     : s_(s) {
 }
 
-ObjectReference* StringExpression::Evaluate(
-    ObjectReference* symbol_table_object, Thread* thread) const {
+ObjectReference* StringExpression::Evaluate(Thread* thread) const {
   CHECK(thread != nullptr);
   return thread->CreateVersionedObject(new StringObject(s_), "");
 }
@@ -161,8 +156,7 @@ ExpressionExpression::ExpressionExpression(Expression* expression)
     : expression_(CHECK_NOTNULL(expression)) {
 }
 
-ObjectReference* ExpressionExpression::Evaluate(
-    ObjectReference* symbol_table_object, Thread* thread) const {
+ObjectReference* ExpressionExpression::Evaluate(Thread* thread) const {
   CHECK(thread != nullptr);
   return thread->CreateVersionedObject(new ExpressionObject(expression_), "");
 }
@@ -192,14 +186,9 @@ VariableExpression::VariableExpression(const string& name)
   CHECK(!name.empty());
 }
 
-ObjectReference* VariableExpression::Evaluate(
-    ObjectReference* symbol_table_object, Thread* thread) const {
-  ObjectReference* object = nullptr;
-  if (!GetVariable(symbol_table_object, thread, name_, &object)) {
-    return nullptr;
-  }
-
-  return object;
+ObjectReference* VariableExpression::Evaluate(Thread* thread) const {
+  // TODO(dss): Implement this.
+  return nullptr;
 }
 
 void VariableExpression::PopulateExpressionProto(
@@ -227,26 +216,23 @@ FunctionExpression::FunctionExpression(Expression* function,
   }
 }
 
-ObjectReference* FunctionExpression::Evaluate(
-    ObjectReference* symbol_table_object, Thread* thread) const {
+ObjectReference* FunctionExpression::Evaluate(Thread* thread) const {
   CHECK(thread != nullptr);
 
-  ObjectReference* const function_object = function_->Evaluate(
-      symbol_table_object, thread);
+  ObjectReference* const function_object = function_->Evaluate(thread);
 
   if (function_object == nullptr) {
     return nullptr;
   }
 
   ObjectReference* const parameter_list_object = EvaluateExpressionList(
-      symbol_table_object, thread, parameters_);
+      thread, parameters_);
 
   if (parameter_list_object == nullptr) {
     return nullptr;
   }
 
-  vector<Value> parameter_values(2);
-  parameter_values[0].set_object_reference(0, symbol_table_object);
+  vector<Value> parameter_values(1);
   parameter_values[1].set_object_reference(0, parameter_list_object);
 
   Value return_value;
@@ -312,9 +298,8 @@ ListExpression::ListExpression(const vector<Expression*>& list_items)
   }
 }
 
-ObjectReference* ListExpression::Evaluate(ObjectReference* symbol_table_object,
-                                          Thread* thread) const {
-  return EvaluateExpressionList(symbol_table_object, thread, list_items_);
+ObjectReference* ListExpression::Evaluate(Thread* thread) const {
+  return EvaluateExpressionList(thread, list_items_);
 }
 
 void ListExpression::PopulateExpressionProto(

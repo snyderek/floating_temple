@@ -51,8 +51,7 @@ void IfFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* IfFunction::Call(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<ObjectReference*>& parameters) const {
+    Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_GE(parameters.size(), 2u);
   CHECK_LE(parameters.size(), 3u);
@@ -75,9 +74,7 @@ ObjectReference* IfFunction::Call(
     expression = parameters[2];
   }
 
-  vector<Value> eval_parameters(1);
-  eval_parameters[0].set_object_reference(0, symbol_table_object);
-
+  const vector<Value> eval_parameters;
   Value result;
   if (!thread->CallMethod(expression, "eval", eval_parameters, &result)) {
     return nullptr;

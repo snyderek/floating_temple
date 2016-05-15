@@ -37,7 +37,6 @@ using std::string;
 using std::vector;
 using testing::AnyNumber;
 using testing::InitGoogleMock;
-using testing::Return;
 using testing::_;
 
 namespace floating_temple {
@@ -79,7 +78,6 @@ class MockObjectReference : public ObjectReference {
 
 TEST(ExpressionObjectTest, InvokeMethodOnExpressionObject) {
   MockThread thread;
-  MockObjectReference symbol_table_object_reference;
 
   EXPECT_CALL(thread, BeginTransaction())
       .Times(0);
@@ -92,14 +90,6 @@ TEST(ExpressionObjectTest, InvokeMethodOnExpressionObject) {
   EXPECT_CALL(thread, ObjectsAreIdentical(_, _))
       .Times(0);
 
-  EXPECT_CALL(symbol_table_object_reference, Dump(_))
-      .Times(AnyNumber());
-
-  // Simulate Thread::CallMethod returning false. This should cause
-  // ExpressionObject::InvokeMethod (called below) to immediately return.
-  EXPECT_CALL(thread, CallMethod(&symbol_table_object_reference, "get", _, _))
-      .WillRepeatedly(Return(false));
-
   ExpressionObject expression_local_object(
       shared_ptr<const Expression>(new VariableExpression("some_variable")));
 
@@ -108,9 +98,7 @@ TEST(ExpressionObjectTest, InvokeMethodOnExpressionObject) {
   EXPECT_CALL(expression_object_reference, Dump(_))
       .Times(AnyNumber());
 
-  vector<Value> parameters(1);
-  parameters[0].set_object_reference(0, &symbol_table_object_reference);
-
+  const vector<Value> parameters;
   Value return_value;
   expression_local_object.InvokeMethod(&thread, &expression_object_reference,
                                        "eval", parameters, &return_value);

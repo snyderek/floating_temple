@@ -21,7 +21,6 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/symbol_table.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -51,8 +50,7 @@ void SetVariableFunction::PopulateObjectProto(
 }
 
 ObjectReference* SetVariableFunction::Call(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<ObjectReference*>& parameters) const {
+    Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
@@ -64,10 +62,7 @@ ObjectReference* SetVariableFunction::Call(
 
   ObjectReference* const object = parameters[1];
 
-  if (!SetVariable(symbol_table_object, thread, variable_name.string_value(),
-                   object)) {
-    return nullptr;
-  }
+  // TODO(dss): Implement this.
 
   return object;
 }

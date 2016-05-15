@@ -50,13 +50,9 @@ void ExpressionObject::InvokeMethod(Thread* thread,
   CHECK(return_value != nullptr);
 
   if (method_name == "eval") {
-    CHECK_EQ(parameters.size(), 1u);
+    CHECK_EQ(parameters.size(), 0u);
 
-    ObjectReference* const symbol_table_object =
-        parameters[0].object_reference();
-
-    ObjectReference* const object_reference = expression_->Evaluate(
-        symbol_table_object, thread);
+    ObjectReference* const object_reference = expression_->Evaluate(thread);
     if (object_reference == nullptr) {
       return;
     }

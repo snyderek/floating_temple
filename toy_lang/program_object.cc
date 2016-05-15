@@ -24,7 +24,6 @@
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/symbol_table.h"
 #include "toy_lang/zoo/add_function.h"
 #include "toy_lang/zoo/begin_tran_function.h"
 #include "toy_lang/zoo/bool_object.h"
@@ -32,7 +31,6 @@
 #include "toy_lang/zoo/expression_object.h"
 #include "toy_lang/zoo/for_function.h"
 #include "toy_lang/zoo/if_function.h"
-#include "toy_lang/zoo/is_set_function.h"
 #include "toy_lang/zoo/len_function.h"
 #include "toy_lang/zoo/less_than_function.h"
 #include "toy_lang/zoo/list_append_function.h"
@@ -46,7 +44,6 @@
 #include "toy_lang/zoo/print_function.h"
 #include "toy_lang/zoo/range_function.h"
 #include "toy_lang/zoo/set_variable_function.h"
-#include "toy_lang/zoo/symbol_table_object.h"
 #include "toy_lang/zoo/while_function.h"
 #include "util/dump_context.h"
 
@@ -61,22 +58,20 @@ class ObjectReference;
 namespace toy_lang {
 namespace {
 
-bool AddSymbol(ObjectReference* symbol_table_object,
-               Thread* thread,
-               const string& name,
+bool AddSymbol(Thread* thread, const string& name,
                LocalObjectImpl* local_object) {
-  return SetVariable(symbol_table_object, thread, name,
-                     thread->CreateVersionedObject(local_object, ""));
+  // TODO(dss): Implement this.
+  return false;
 }
 
 #define ADD_SYMBOL(name, local_object) \
   do { \
-    if (!AddSymbol(symbol_table_object, thread, name, local_object)) { \
+    if (!AddSymbol(thread, name, local_object)) { \
       return false; \
     } \
   } while (false)
 
-bool PopulateSymbolTable(ObjectReference* symbol_table_object, Thread* thread,
+bool PopulateSymbolTable(Thread* thread,
                          ObjectReference* shared_map_object) {
   CHECK(thread != nullptr);
 
@@ -84,9 +79,7 @@ bool PopulateSymbolTable(ObjectReference* symbol_table_object, Thread* thread,
     return false;
   }
 
-  if (!SetVariable(symbol_table_object, thread, "shared", shared_map_object)) {
-    return false;
-  }
+  // TODO(dss): Add the "shared" map to the symbol table.
 
   ADD_SYMBOL("false", new BoolObject(false));
   ADD_SYMBOL("true", new BoolObject(true));
@@ -100,7 +93,6 @@ bool PopulateSymbolTable(ObjectReference* symbol_table_object, Thread* thread,
   ADD_SYMBOL("end_tran", new EndTranFunction());
   ADD_SYMBOL("if", new IfFunction());
   ADD_SYMBOL("not", new NotFunction());
-  ADD_SYMBOL("is_set", new IsSetFunction());
   ADD_SYMBOL("while", new WhileFunction());
   ADD_SYMBOL("lt", new LessThanFunction());
   ADD_SYMBOL("len", new LenFunction());
@@ -139,16 +131,12 @@ void ProgramObject::InvokeMethod(Thread* thread,
       new MapObject(), "shared");
   ObjectReference* const expression_object = thread->CreateVersionedObject(
       new ExpressionObject(expression_), "");
-  ObjectReference* const symbol_table_object = thread->CreateVersionedObject(
-      new SymbolTableObject(), "");
 
-  if (!PopulateSymbolTable(symbol_table_object, thread, shared_map_object)) {
+  if (!PopulateSymbolTable(thread, shared_map_object)) {
     return;
   }
 
-  vector<Value> eval_parameters(1);
-  eval_parameters[0].set_object_reference(0, symbol_table_object);
-
+  const vector<Value> eval_parameters;
   Value dummy;
   if (!thread->CallMethod(expression_object, "eval", eval_parameters, &dummy)) {
     return;

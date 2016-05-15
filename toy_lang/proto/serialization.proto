@@ -38,19 +38,6 @@ message VariableProto {
   optional int64 object_index = 1;
 }
 
-message SymbolDefinitionProto {
-  required string name = 1;
-  required int64 object_index = 2;
-}
-
-message SymbolMapProto {
-  repeated floating_temple.toy_lang.SymbolDefinitionProto definition = 1;
-}
-
-message SymbolTableProto {
-  repeated floating_temple.toy_lang.SymbolMapProto map = 1;
-}
-
 message IntExpressionProto {
   required int64 int_value = 1;
 }
@@ -145,7 +132,6 @@ message ObjectProto {
     STRING = 4;
     SYMBOL = 29;
     VARIABLE = 30;
-    SYMBOL_TABLE = 5;
     EXPRESSION = 6;
     LIST = 7;
     MAP = 8;
@@ -160,7 +146,6 @@ message ObjectProto {
     END_TRAN_FUNCTION = 17;
     IF_FUNCTION = 18;
     NOT_FUNCTION = 19;
-    IS_SET_FUNCTION = 20;
     WHILE_FUNCTION = 21;
     LESS_THAN_FUNCTION = 22;
     LEN_FUNCTION = 23;
@@ -178,7 +163,6 @@ message ObjectProto {
   optional floating_temple.toy_lang.StringProto string_object = 4;
   optional floating_temple.toy_lang.SymbolProto symbol_object = 29;
   optional floating_temple.toy_lang.VariableProto variable_object = 30;
-  optional floating_temple.toy_lang.SymbolTableProto symbol_table_object = 5;
   optional floating_temple.toy_lang.ExpressionProto expression_object = 6;
   optional floating_temple.toy_lang.ListProto list_object = 7;
   optional floating_temple.toy_lang.MapProto map_object = 8;
@@ -194,7 +178,6 @@ message ObjectProto {
   optional floating_temple.toy_lang.FunctionProto end_tran_function = 17;
   optional floating_temple.toy_lang.FunctionProto if_function = 18;
   optional floating_temple.toy_lang.FunctionProto not_function = 19;
-  optional floating_temple.toy_lang.FunctionProto is_set_function = 20;
   optional floating_temple.toy_lang.FunctionProto while_function = 21;
   optional floating_temple.toy_lang.FunctionProto less_than_function = 22;
   optional floating_temple.toy_lang.FunctionProto len_function = 23;

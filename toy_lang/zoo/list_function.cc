@@ -50,8 +50,7 @@ void ListFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* ListFunction::Call(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<ObjectReference*>& parameters) const {
+    Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
 
   LocalObjectImpl* const local_object = new ListObject(parameters);

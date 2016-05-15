@@ -29,7 +29,6 @@
 #include "toy_lang/zoo/function.h"
 #include "toy_lang/zoo/if_function.h"
 #include "toy_lang/zoo/int_object.h"
-#include "toy_lang/zoo/is_set_function.h"
 #include "toy_lang/zoo/len_function.h"
 #include "toy_lang/zoo/less_than_function.h"
 #include "toy_lang/zoo/list_append_function.h"
@@ -47,7 +46,6 @@
 #include "toy_lang/zoo/range_iterator_object.h"
 #include "toy_lang/zoo/set_variable_function.h"
 #include "toy_lang/zoo/string_object.h"
-#include "toy_lang/zoo/symbol_table_object.h"
 #include "toy_lang/zoo/while_function.h"
 
 using std::size_t;
@@ -94,10 +92,6 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     case ObjectProto::STRING:
       return StringObject::ParseStringProto(object_proto.string_object());
 
-    case ObjectProto::SYMBOL_TABLE:
-      return SymbolTableObject::ParseSymbolTableProto(
-          object_proto.symbol_table_object(), context);
-
     case ObjectProto::EXPRESSION:
       return ExpressionObject::ParseExpressionProto(
           object_proto.expression_object());
@@ -141,9 +135,6 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
 
     case ObjectProto::NOT_FUNCTION:
       return new NotFunction();
-
-    case ObjectProto::IS_SET_FUNCTION:
-      return new IsSetFunction();
 
     case ObjectProto::WHILE_FUNCTION:
       return new WhileFunction();

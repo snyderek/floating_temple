@@ -36,7 +36,6 @@ ObjectProto::Type GetSerializedObjectType(const ObjectProto& object_proto) {
   CHECK_FIELD(has_string_object, STRING);
   CHECK_FIELD(has_symbol_object, SYMBOL);
   CHECK_FIELD(has_variable_object, VARIABLE);
-  CHECK_FIELD(has_symbol_table_object, SYMBOL_TABLE);
   CHECK_FIELD(has_expression_object, EXPRESSION);
   CHECK_FIELD(has_list_object, LIST);
   CHECK_FIELD(has_map_object, MAP);
@@ -51,7 +50,6 @@ ObjectProto::Type GetSerializedObjectType(const ObjectProto& object_proto) {
   CHECK_FIELD(has_end_tran_function, END_TRAN_FUNCTION);
   CHECK_FIELD(has_if_function, IF_FUNCTION);
   CHECK_FIELD(has_not_function, NOT_FUNCTION);
-  CHECK_FIELD(has_is_set_function, IS_SET_FUNCTION);
   CHECK_FIELD(has_while_function, WHILE_FUNCTION);
   CHECK_FIELD(has_less_than_function, LESS_THAN_FUNCTION);
   CHECK_FIELD(has_len_function, LEN_FUNCTION);

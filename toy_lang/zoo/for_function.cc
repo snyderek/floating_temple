@@ -21,8 +21,6 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/symbol_table.h"
-#include "toy_lang/zoo/int_object.h"
 #include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
@@ -53,8 +51,7 @@ void ForFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* ForFunction::Call(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<ObjectReference*>& parameters) const {
+    Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 3u);
 
@@ -67,8 +64,7 @@ ObjectReference* ForFunction::Call(
   ObjectReference* const iter = parameters[1];
   ObjectReference* const expression = parameters[2];
 
-  vector<Value> eval_parameters(1);
-  eval_parameters[0].set_object_reference(0, symbol_table_object);
+  const vector<Value> eval_parameters;
 
   for (;;) {
     Value has_next;
@@ -85,23 +81,10 @@ ObjectReference* ForFunction::Call(
       return nullptr;
     }
 
-    if (!EnterScope(symbol_table_object, thread)) {
-      return nullptr;
-    }
-
-    if (!SetVariable(
-            symbol_table_object, thread, variable_name.string_value(),
-            thread->CreateVersionedObject(
-                new IntObject(iter_value.int64_value()), ""))) {
-      return nullptr;
-    }
+    // TODO(dss): Set the loop variable.
 
     Value dummy;
     if (!thread->CallMethod(expression, "eval", eval_parameters, &dummy)) {
-      return nullptr;
-    }
-
-    if (!LeaveScope(symbol_table_object, thread)) {
       return nullptr;
     }
   }

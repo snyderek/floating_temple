@@ -53,8 +53,7 @@ void PrintFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* PrintFunction::Call(
-    ObjectReference* symbol_table_object, Thread* thread,
-    const vector<ObjectReference*>& parameters) const {
+    Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
 
   for (vector<ObjectReference*>::const_iterator it = parameters.begin();

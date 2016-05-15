@@ -37,7 +37,7 @@ class Function : public LocalObjectImpl {
 
  protected:
   virtual ObjectReference* Call(
-      ObjectReference* symbol_table_object, Thread* thread,
+      Thread* thread,
       const std::vector<ObjectReference*>& parameters) const = 0;
 };
 

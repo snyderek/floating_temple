@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "toy_lang/symbol.h"
 
 using std::string;
 using std::unordered_map;
@@ -29,7 +28,8 @@ using std::unordered_map;
 namespace floating_temple {
 namespace toy_lang {
 
-SymbolTable::SymbolTable() {
+SymbolTable::SymbolTable()
+    : next_symbol_id_(1) {
 }
 
 SymbolTable::~SymbolTable() {
@@ -43,13 +43,13 @@ void SymbolTable::LeaveScope() {
   scopes_.pop_back();
 }
 
-const Symbol* SymbolTable::GetSymbol(const string& symbol_name) {
+int SymbolTable::GetSymbolId(const string& symbol_name) {
   CHECK(!scopes_.empty());
   CHECK(!symbol_name.empty());
 
   for (auto scope_it = scopes_.rbegin(); scope_it != scopes_.rend();
        ++scope_it) {
-    const unordered_map<string, const Symbol*>& symbol_map = *scope_it;
+    const unordered_map<string, int>& symbol_map = *scope_it;
 
     const auto it = symbol_map.find(symbol_name);
     if (it != symbol_map.end()) {
@@ -57,10 +57,10 @@ const Symbol* SymbolTable::GetSymbol(const string& symbol_name) {
     }
   }
 
-  Symbol* const symbol = new Symbol(symbol_name);
-  all_symbols_.emplace_back(symbol);
-  CHECK(scopes_.back().emplace(symbol_name, symbol).second);
-  return symbol;
+  const int symbol_id = next_symbol_id_;
+  ++next_symbol_id_;
+  CHECK(scopes_.back().emplace(symbol_name, symbol_id).second);
+  return symbol_id;
 }
 
 }  // namespace toy_lang

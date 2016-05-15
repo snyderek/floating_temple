@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "toy_lang/symbol_table.h"
 #include "toy_lang/token.h"
 
 namespace floating_temple {
@@ -40,6 +41,7 @@ class Parser {
                            std::vector<Expression*>* expressions);
 
   Lexer* const lexer_;
+  SymbolTable symbol_table_;
 
   DISALLOW_COPY_AND_ASSIGN(Parser);
 };

@@ -343,7 +343,6 @@ toy_lang_lib = ft_env.Library(
         toy_lang/parser.cc
         toy_lang/program_object.cc
         toy_lang/run_toy_lang_program.cc
-        toy_lang/symbol.cc
         toy_lang/symbol_table.cc
         toy_lang/token.cc
         toy_lang/zoo/add_function.cc

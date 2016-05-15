@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/lexer.h"
+#include "toy_lang/symbol_table.h"
 #include "toy_lang/token.h"
 
 using std::vector;
@@ -41,7 +42,9 @@ Expression* Parser::ParseFile() {
 }
 
 Expression* Parser::ParseScope() {
+  symbol_table_.EnterScope();
   Expression* const expression = ParseExpression();
+  symbol_table_.LeaveScope();
 
   return expression;
 }
@@ -58,9 +61,10 @@ Expression* Parser::ParseExpression() {
     case Token::STRING_LITERAL:
       return new StringExpression(token.string_literal());
 
-    case Token::IDENTIFIER:
-      // TODO(dss): Implement this.
-      break;
+    case Token::IDENTIFIER: {
+      const int symbol_id = symbol_table_.GetSymbolId(token.identifier());
+      return new SymbolExpression(symbol_id);
+    }
 
     case Token::BEGIN_EXPRESSION: {
       Expression* const function = ParseExpression();

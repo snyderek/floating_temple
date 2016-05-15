@@ -26,8 +26,6 @@
 namespace floating_temple {
 namespace toy_lang {
 
-class Symbol;
-
 class SymbolTable {
  public:
   SymbolTable();
@@ -36,11 +34,11 @@ class SymbolTable {
   void EnterScope();
   void LeaveScope();
 
-  const Symbol* GetSymbol(const std::string& symbol_name);
+  int GetSymbolId(const std::string& symbol_name);
 
  private:
-  std::vector<std::unique_ptr<Symbol>> all_symbols_;
-  std::vector<std::unordered_map<std::string, const Symbol*>> scopes_;
+  std::vector<std::unordered_map<std::string, int>> scopes_;
+  int next_symbol_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SymbolTable);
 };

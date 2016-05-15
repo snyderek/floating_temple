@@ -116,8 +116,6 @@ void Lexer::FetchTokens() const {
           ChangeState(STRING_LITERAL);
         } else if (char_c == '#') {
           ChangeState(COMMENT);
-        } else if (char_c == '\'') {
-          ChangeState(SYMBOL_LITERAL);
         } else if (char_c == '(') {
           YieldBeginExpression(START);
         } else if (char_c == ')') {
@@ -183,30 +181,6 @@ void Lexer::FetchTokens() const {
           YieldStringLiteral(END_OF_EXPRESSION);
         } else {
           attribute_ += char_c;
-        }
-        break;
-
-      case SYMBOL_LITERAL:
-        if (c == EOF) {
-          YieldSymbolLiteral(END_OF_FILE);
-        } else if (char_c == '#') {
-          YieldSymbolLiteral(COMMENT);
-        } else if (char_c == ')') {
-          YieldSymbolLiteral(END_OF_EXPRESSION);
-          YieldEndExpression(END_OF_EXPRESSION);
-        } else if (char_c == ']') {
-          YieldSymbolLiteral(END_OF_EXPRESSION);
-          YieldEndList(END_OF_EXPRESSION);
-        } else if (char_c == '}') {
-          YieldSymbolLiteral(END_OF_EXPRESSION);
-          YieldEndBlock(END_OF_EXPRESSION);
-        } else if (isspace(c)) {
-          YieldSymbolLiteral(START);
-        } else if (IsIdentifierChar(char_c)) {
-          attribute_ += char_c;
-        } else {
-          LOG(FATAL) << "Line " << line_number_ << ": Unexpected character: "
-                     << "'\\x" << Hex(c) << "'";
         }
         break;
 
@@ -286,12 +260,6 @@ void Lexer::YieldIntLiteral(State new_state) const {
 void Lexer::YieldStringLiteral(State new_state) const {
   tokens_.push(Token());
   Token::CreateStringLiteral(&tokens_.back(), attribute_);
-  ChangeState(new_state);
-}
-
-void Lexer::YieldSymbolLiteral(State new_state) const {
-  tokens_.push(Token());
-  Token::CreateSymbolLiteral(&tokens_.back(), attribute_);
   ChangeState(new_state);
 }
 

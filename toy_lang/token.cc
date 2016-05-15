@@ -32,8 +32,7 @@ bool IsIntAttributeType(Token::Type token_type) {
 }
 
 bool IsStringAttributeType(Token::Type token_type) {
-  return token_type == Token::STRING_LITERAL ||
-      token_type == Token::SYMBOL_LITERAL || token_type == Token::IDENTIFIER;
+  return token_type == Token::STRING_LITERAL || token_type == Token::IDENTIFIER;
 }
 
 }  // namespace
@@ -63,11 +62,6 @@ int64 Token::int_literal() const {
 
 const string& Token::string_literal() const {
   CHECK_EQ(type_, STRING_LITERAL);
-  return *string_attribute_;
-}
-
-const string& Token::symbol_name() const {
-  CHECK_EQ(type_, SYMBOL_LITERAL);
   return *string_attribute_;
 }
 
@@ -115,15 +109,6 @@ void Token::CreateStringLiteral(Token* token, const string& string_literal) {
   token->FreeMemory();
   token->type_ = STRING_LITERAL;
   token->string_attribute_ = new string(string_literal);
-}
-
-// static
-void Token::CreateSymbolLiteral(Token* token, const string& symbol_name) {
-  CHECK(token != nullptr);
-  VLOG(1) << "SYMBOL_LITERAL \"" << CEscape(symbol_name) << "\"";
-  token->FreeMemory();
-  token->type_ = SYMBOL_LITERAL;
-  token->string_attribute_ = new string(symbol_name);
 }
 
 // static

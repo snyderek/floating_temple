@@ -32,8 +32,8 @@ Parser::Parser(Lexer* lexer)
     : lexer_(CHECK_NOTNULL(lexer)) {
 }
 
-Expression* Parser::ParseFile() {
-  Expression* const expression = ParseScope();
+BlockExpression* Parser::ParseFile() {
+  BlockExpression* const expression = ParseScope();
   CHECK(!lexer_->HasNextToken());
 
   VLOG(2) << expression->DebugString();
@@ -41,12 +41,13 @@ Expression* Parser::ParseFile() {
   return expression;
 }
 
-Expression* Parser::ParseScope() {
+BlockExpression* Parser::ParseScope() {
   symbol_table_.EnterScope();
   Expression* const expression = ParseExpression();
   symbol_table_.LeaveScope();
 
-  return expression;
+  // TODO(dss): Set the 'bound_symbol_ids' and 'unbound_symbol_ids' parameters.
+  return new BlockExpression(expression, vector<int>(), vector<int>());
 }
 
 Expression* Parser::ParseExpression() {
@@ -78,10 +79,7 @@ Expression* Parser::ParseExpression() {
     case Token::BEGIN_BLOCK: {
       Expression* const expression = ParseScope();
       CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
-
-      // TODO(dss): Set the 'bound_symbol_count' and 'unbound_symbol_count'
-      // parameters.
-      return new BlockExpression(expression, 0, 0);
+      return expression;
     }
 
     case Token::BEGIN_LIST: {

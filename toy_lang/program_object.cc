@@ -113,9 +113,10 @@ bool PopulateSymbolTable(Thread* thread,
 
 }  // namespace
 
-ProgramObject::ProgramObject(const shared_ptr<const Expression>& expression)
-    : expression_(expression) {
-  CHECK(expression.get() != nullptr);
+ProgramObject::ProgramObject(
+    const shared_ptr<const BlockExpression>& block_expression)
+    : block_expression_(block_expression) {
+  CHECK(block_expression.get() != nullptr);
 }
 
 void ProgramObject::InvokeMethod(Thread* thread,
@@ -129,9 +130,8 @@ void ProgramObject::InvokeMethod(Thread* thread,
 
   ObjectReference* const shared_map_object = thread->CreateVersionedObject(
       new MapObject(), "shared");
-  // TODO(dss): Set the 'unbound_symbol_count' parameter.
   ObjectReference* const expression_object = thread->CreateVersionedObject(
-      new ExpressionObject(expression_, 0, 0), "");
+      new ExpressionObject(block_expression_), "");
 
   if (!PopulateSymbolTable(thread, shared_map_object)) {
     return;

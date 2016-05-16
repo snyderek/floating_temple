@@ -24,13 +24,14 @@
 namespace floating_temple {
 namespace toy_lang {
 
-class Expression;
+class BlockExpression;
 class ExpressionObjectProto;
 
+// TODO(dss): Consider renaming this class to BlockExpressionObject.
 class ExpressionObject : public LocalObjectImpl {
  public:
-  ExpressionObject(const std::shared_ptr<const Expression>& expression,
-                   int bound_symbol_count, int unbound_symbol_count);
+  explicit ExpressionObject(
+      const std::shared_ptr<const BlockExpression>& block_expression);
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
@@ -48,9 +49,7 @@ class ExpressionObject : public LocalObjectImpl {
                            SerializationContext* context) const override;
 
  private:
-  const std::shared_ptr<const Expression> expression_;
-  const int bound_symbol_count_;
-  const int unbound_symbol_count_;
+  const std::shared_ptr<const BlockExpression> block_expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpressionObject);
 };

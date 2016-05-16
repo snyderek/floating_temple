@@ -39,9 +39,7 @@ message VariableProto {
 }
 
 message ExpressionObjectProto {
-  required floating_temple.toy_lang.ExpressionProto expression = 1;
-  required int64 bound_symbol_count = 2;
-  required int64 unbound_symbol_count = 3;
+  required floating_temple.toy_lang.BlockExpressionProto block_expression = 1;
 }
 
 message IntExpressionProto {
@@ -58,8 +56,8 @@ message SymbolExpressionProto {
 
 message BlockExpressionProto {
   required floating_temple.toy_lang.ExpressionProto expression = 1;
-  required int64 bound_symbol_count = 2;
-  required int64 unbound_symbol_count = 3;
+  repeated int64 bound_symbol_id = 2;
+  repeated int64 unbound_symbol_id = 3;
 }
 
 message FunctionCallExpressionProto {

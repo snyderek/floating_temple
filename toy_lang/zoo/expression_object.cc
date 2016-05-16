@@ -39,19 +39,13 @@ class ObjectReference;
 namespace toy_lang {
 
 ExpressionObject::ExpressionObject(
-    const shared_ptr<const Expression>& expression, int bound_symbol_count,
-    int unbound_symbol_count)
-    : expression_(expression),
-      bound_symbol_count_(bound_symbol_count),
-      unbound_symbol_count_(unbound_symbol_count) {
-  CHECK(expression.get() != nullptr);
-  CHECK_GE(bound_symbol_count, 0);
-  CHECK_GE(unbound_symbol_count, 0);
+    const shared_ptr<const BlockExpression>& block_expression)
+    : block_expression_(block_expression) {
+  CHECK(block_expression.get() != nullptr);
 }
 
 VersionedLocalObject* ExpressionObject::Clone() const {
-  return new ExpressionObject(expression_, bound_symbol_count_,
-                              unbound_symbol_count_);
+  return new ExpressionObject(block_expression_);
 }
 
 void ExpressionObject::InvokeMethod(Thread* thread,
@@ -74,7 +68,7 @@ void ExpressionObject::InvokeMethod(Thread* thread,
     }
 
     const int64 parameter_count = length_value.int64_value();
-    vector<ObjectReference*> symbol_bindings(parameter_count);
+    vector<ObjectReference*> parameter_object_references(parameter_count);
 
     for (int64 i = 0; i < parameter_count; ++i) {
       vector<Value> get_at_params(1);
@@ -86,11 +80,11 @@ void ExpressionObject::InvokeMethod(Thread* thread,
         return;
       }
 
-      symbol_bindings[i] = list_item_value.object_reference();
+      parameter_object_references[i] = list_item_value.object_reference();
     }
 
-    ObjectReference* const object_reference = expression_->Evaluate(
-        symbol_bindings, thread);
+    ObjectReference* const object_reference = block_expression_->EvaluateBlock(
+        parameter_object_references, thread);
     if (object_reference == nullptr) {
       return;
     }
@@ -104,16 +98,12 @@ void ExpressionObject::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   dc->BeginMap();
+
   dc->AddString("type");
   dc->AddString("ExpressionObject");
 
-  // TODO(dss): Dump the contents of the expression.
-
-  dc->AddString("bound_symbol_count");
-  dc->AddInt(bound_symbol_count_);
-
-  dc->AddString("unbound_symbol_count");
-  dc->AddInt(unbound_symbol_count_);
+  dc->AddString("block_expression");
+  dc->AddString(block_expression_->DebugString());
 
   dc->End();
 }
@@ -121,14 +111,11 @@ void ExpressionObject::Dump(DumpContext* dc) const {
 // static
 ExpressionObject* ExpressionObject::ParseExpressionProto(
     const ExpressionObjectProto& expression_object_proto) {
-  const shared_ptr<const Expression> expression(
-      Expression::ParseExpressionProto(expression_object_proto.expression()));
-  const int bound_symbol_count = expression_object_proto.bound_symbol_count();
-  const int unbound_symbol_count =
-      expression_object_proto.unbound_symbol_count();
+  const shared_ptr<const BlockExpression> block_expression(
+      BlockExpression::ParseBlockExpressionProto(
+          expression_object_proto.block_expression()));
 
-  return new ExpressionObject(expression, bound_symbol_count,
-                              unbound_symbol_count);
+  return new ExpressionObject(block_expression);
 }
 
 void ExpressionObject::PopulateObjectProto(
@@ -136,10 +123,8 @@ void ExpressionObject::PopulateObjectProto(
   ExpressionObjectProto* const expression_object_proto =
       object_proto->mutable_expression_object();
 
-  expression_->PopulateExpressionProto(
-      expression_object_proto->mutable_expression());
-  expression_object_proto->set_bound_symbol_count(bound_symbol_count_);
-  expression_object_proto->set_unbound_symbol_count(unbound_symbol_count_);
+  block_expression_->PopulateBlockExpressionProto(
+      expression_object_proto->mutable_block_expression());
 }
 
 }  // namespace toy_lang

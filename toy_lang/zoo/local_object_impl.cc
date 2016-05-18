@@ -93,8 +93,8 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
       return StringObject::ParseStringProto(object_proto.string_object());
 
     case ObjectProto::EXPRESSION:
-      return ExpressionObject::ParseExpressionProto(
-          object_proto.expression_object());
+      return ExpressionObject::ParseExpressionObjectProto(
+          object_proto.expression_object(), context);
 
     case ObjectProto::LIST:
       return ListObject::ParseListProto(object_proto.list_object(), context);

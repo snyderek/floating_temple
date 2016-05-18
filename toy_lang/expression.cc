@@ -27,6 +27,7 @@
 #include "base/string_printf.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
+#include "toy_lang/code_block.h"
 #include "toy_lang/get_serialized_expression_type.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/zoo/expression_object.h"
@@ -117,10 +118,6 @@ ObjectReference* IntExpression::Evaluate(
   return thread->CreateVersionedObject(new IntObject(n_), "");
 }
 
-Expression* IntExpression::Clone() const {
-  return new IntExpression(n_);
-}
-
 void IntExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
   CHECK(expression_proto != nullptr);
@@ -146,10 +143,6 @@ ObjectReference* StringExpression::Evaluate(
     Thread* thread) const {
   CHECK(thread != nullptr);
   return thread->CreateVersionedObject(new StringObject(s_), "");
-}
-
-Expression* StringExpression::Clone() const {
-  return new StringExpression(s_);
 }
 
 void StringExpression::PopulateExpressionProto(
@@ -181,10 +174,6 @@ ObjectReference* SymbolExpression::Evaluate(
   return it->second;
 }
 
-Expression* SymbolExpression::Clone() const {
-  return new SymbolExpression(symbol_id_);
-}
-
 void SymbolExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
   CHECK(expression_proto != nullptr);
@@ -201,33 +190,11 @@ SymbolExpression* SymbolExpression::ParseSymbolExpressionProto(
   return new SymbolExpression(symbol_expression_proto.symbol_id());
 }
 
-BlockExpression::BlockExpression(Expression* expression,
-                                 const vector<int>& bound_symbol_ids,
+BlockExpression::BlockExpression(const shared_ptr<const Expression>& expression,
                                  const vector<int>& unbound_symbol_ids)
-    : expression_(CHECK_NOTNULL(expression)),
-      bound_symbol_ids_(bound_symbol_ids),
+    : expression_(expression),
       unbound_symbol_ids_(unbound_symbol_ids) {
-}
-
-ObjectReference* BlockExpression::EvaluateBlock(
-    const vector<ObjectReference*>& parameters, Thread* thread) const {
-  const vector<ObjectReference*>::size_type parameter_count = parameters.size();
-  CHECK_EQ(parameter_count, unbound_symbol_ids_.size());
-
-  unordered_map<int, ObjectReference*> symbol_bindings;
-  symbol_bindings.reserve(parameter_count);
-
-  for (vector<ObjectReference*>::size_type i = 0; i < parameter_count; ++i) {
-    CHECK(symbol_bindings.emplace(unbound_symbol_ids_[i],
-                                  parameters[i]).second);
-  }
-
-  return expression_->Evaluate(symbol_bindings, thread);
-}
-
-void BlockExpression::PopulateBlockExpressionProto(
-    BlockExpressionProto* block_expression_proto) const {
-  PrivatePopulateBlockExpressionProto(block_expression_proto);
+  CHECK(expression.get() != nullptr);
 }
 
 ObjectReference* BlockExpression::Evaluate(
@@ -235,21 +202,24 @@ ObjectReference* BlockExpression::Evaluate(
     Thread* thread) const {
   CHECK(thread != nullptr);
 
-  const shared_ptr<const BlockExpression> clone(PrivateClone());
-  VersionedLocalObject* const expression_object = new ExpressionObject(clone);
+  CodeBlock* const code_block = new CodeBlock(expression_, symbol_bindings,
+                                              unbound_symbol_ids_);
+  VersionedLocalObject* const expression_object = new ExpressionObject(
+      code_block);
   return thread->CreateVersionedObject(expression_object, "");
-}
-
-Expression* BlockExpression::Clone() const {
-  return PrivateClone();
 }
 
 void BlockExpression::PopulateExpressionProto(
     ExpressionProto* expression_proto) const {
   CHECK(expression_proto != nullptr);
 
-  PrivatePopulateBlockExpressionProto(
-      expression_proto->mutable_block_expression());
+  BlockExpressionProto* const block_expression_proto =
+      expression_proto->mutable_block_expression();
+  expression_->PopulateExpressionProto(
+      block_expression_proto->mutable_expression());
+  for (int symbol_id : unbound_symbol_ids_) {
+    block_expression_proto->add_unbound_symbol_id(symbol_id);
+  }
 }
 
 string BlockExpression::DebugString() const {
@@ -259,14 +229,8 @@ string BlockExpression::DebugString() const {
 // static
 BlockExpression* BlockExpression::ParseBlockExpressionProto(
     const BlockExpressionProto& block_expression_proto) {
-  Expression* const expression = Expression::ParseExpressionProto(
-      block_expression_proto.expression());
-
-  const int bound_symbol_count = block_expression_proto.bound_symbol_id_size();
-  vector<int> bound_symbol_ids(bound_symbol_count);
-  for (int i = 0; i < bound_symbol_count; ++i) {
-    bound_symbol_ids[i] = block_expression_proto.bound_symbol_id(i);
-  }
+  const shared_ptr<const Expression> expression(
+      Expression::ParseExpressionProto(block_expression_proto.expression()));
 
   const int unbound_symbol_count =
       block_expression_proto.unbound_symbol_id_size();
@@ -275,26 +239,7 @@ BlockExpression* BlockExpression::ParseBlockExpressionProto(
     unbound_symbol_ids[i] = block_expression_proto.unbound_symbol_id(i);
   }
 
-  return new BlockExpression(expression, bound_symbol_ids, unbound_symbol_ids);
-}
-
-BlockExpression* BlockExpression::PrivateClone() const {
-  return new BlockExpression(expression_->Clone(), bound_symbol_ids_,
-                             unbound_symbol_ids_);
-}
-
-void BlockExpression::PrivatePopulateBlockExpressionProto(
-    BlockExpressionProto* block_expression_proto) const {
-  CHECK(block_expression_proto != nullptr);
-
-  expression_->PopulateExpressionProto(
-      block_expression_proto->mutable_expression());
-  for (int symbol_id : bound_symbol_ids_) {
-    block_expression_proto->add_bound_symbol_id(symbol_id);
-  }
-  for (int symbol_id : unbound_symbol_ids_) {
-    block_expression_proto->add_unbound_symbol_id(symbol_id);
-  }
+  return new BlockExpression(expression, unbound_symbol_ids);
 }
 
 FunctionCallExpression::FunctionCallExpression(
@@ -338,16 +283,6 @@ ObjectReference* FunctionCallExpression::Evaluate(
       << "The 'call' method should have returned an object.";
 
   return return_value.object_reference();
-}
-
-Expression* FunctionCallExpression::Clone() const {
-  vector<Expression*> parameters_copy;
-  parameters_copy.reserve(parameters_.size());
-  for (const unique_ptr<Expression>& parameter : parameters_) {
-    parameters_copy.push_back(parameter->Clone());
-  }
-
-  return new FunctionCallExpression(function_->Clone(), parameters_copy);
 }
 
 void FunctionCallExpression::PopulateExpressionProto(
@@ -407,16 +342,6 @@ ObjectReference* ListExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
     Thread* thread) const {
   return EvaluateExpressionList(symbol_bindings, thread, list_items_);
-}
-
-Expression* ListExpression::Clone() const {
-  vector<Expression*> list_items_copy;
-  list_items_copy.reserve(list_items_.size());
-  for (const unique_ptr<Expression>& parameter : list_items_) {
-    list_items_copy.push_back(parameter->Clone());
-  }
-
-  return new ListExpression(list_items_copy);
 }
 
 void ListExpression::PopulateExpressionProto(

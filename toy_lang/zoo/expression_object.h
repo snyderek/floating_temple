@@ -22,16 +22,19 @@
 #include "toy_lang/zoo/local_object_impl.h"
 
 namespace floating_temple {
+
+class DeserializationContext;
+
 namespace toy_lang {
 
-class BlockExpression;
+class CodeBlock;
 class ExpressionObjectProto;
 
-// TODO(dss): Consider renaming this class to BlockExpressionObject.
+// TODO(dss): Rename this class to CodeBlockObject.
 class ExpressionObject : public LocalObjectImpl {
  public:
-  explicit ExpressionObject(
-      const std::shared_ptr<const BlockExpression>& block_expression);
+  explicit ExpressionObject(CodeBlock* code_block);
+  ~ExpressionObject() override;
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
@@ -41,15 +44,16 @@ class ExpressionObject : public LocalObjectImpl {
                     Value* return_value) override;
   void Dump(DumpContext* dc) const override;
 
-  static ExpressionObject* ParseExpressionProto(
-      const ExpressionObjectProto& expression_object_proto);
+  static ExpressionObject* ParseExpressionObjectProto(
+      const ExpressionObjectProto& expression_object_proto,
+      DeserializationContext* context);
 
  protected:
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
 
  private:
-  const std::shared_ptr<const BlockExpression> block_expression_;
+  const std::unique_ptr<CodeBlock> code_block_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpressionObject);
 };

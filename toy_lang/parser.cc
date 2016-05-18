@@ -15,6 +15,7 @@
 
 #include "toy_lang/parser.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
@@ -23,6 +24,7 @@
 #include "toy_lang/symbol_table.h"
 #include "toy_lang/token.h"
 
+using std::shared_ptr;
 using std::vector;
 
 namespace floating_temple {
@@ -32,8 +34,8 @@ Parser::Parser(Lexer* lexer)
     : lexer_(CHECK_NOTNULL(lexer)) {
 }
 
-BlockExpression* Parser::ParseFile() {
-  BlockExpression* const expression = ParseScope();
+Expression* Parser::ParseFile() {
+  Expression* const expression = ParseScope();
   CHECK(!lexer_->HasNextToken());
 
   VLOG(2) << expression->DebugString();
@@ -41,13 +43,12 @@ BlockExpression* Parser::ParseFile() {
   return expression;
 }
 
-BlockExpression* Parser::ParseScope() {
+Expression* Parser::ParseScope() {
   symbol_table_.EnterScope();
   Expression* const expression = ParseExpression();
   symbol_table_.LeaveScope();
 
-  // TODO(dss): Set the 'bound_symbol_ids' and 'unbound_symbol_ids' parameters.
-  return new BlockExpression(expression, vector<int>(), vector<int>());
+  return expression;
 }
 
 Expression* Parser::ParseExpression() {
@@ -77,9 +78,10 @@ Expression* Parser::ParseExpression() {
     }
 
     case Token::BEGIN_BLOCK: {
-      Expression* const expression = ParseScope();
+      const shared_ptr<const Expression> expression(ParseScope());
       CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
-      return expression;
+      // TODO(dss): Set the 'unbound_symbol_ids' parameter.
+      return new BlockExpression(expression, vector<int>());
     }
 
     case Token::BEGIN_LIST: {

@@ -335,6 +335,7 @@ third_party_lua_env.Program(
 toy_lang_lib = ft_env.Library(
     target = 'toy_lang/toy_lang',
     source = Split("""
+        toy_lang/code_block.cc
         toy_lang/expression.cc
         toy_lang/get_serialized_expression_type.cc
         toy_lang/get_serialized_object_type.cc

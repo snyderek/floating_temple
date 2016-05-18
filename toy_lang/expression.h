@@ -46,7 +46,6 @@ class Expression {
   virtual ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
       Thread* thread) const = 0;
-  virtual Expression* Clone() const = 0;
   virtual void PopulateExpressionProto(
       ExpressionProto* expression_proto) const = 0;
 
@@ -63,7 +62,6 @@ class IntExpression : public Expression {
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
       Thread* thread) const override;
-  Expression* Clone() const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -84,7 +82,6 @@ class StringExpression : public Expression {
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
       Thread* thread) const override;
-  Expression* Clone() const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -105,7 +102,6 @@ class SymbolExpression : public Expression {
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
       Thread* thread) const override;
-  Expression* Clone() const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -121,19 +117,12 @@ class SymbolExpression : public Expression {
 
 class BlockExpression : public Expression {
  public:
-  BlockExpression(Expression* expression,
-                  const std::vector<int>& bound_symbol_ids,
+  BlockExpression(const std::shared_ptr<const Expression>& expression,
                   const std::vector<int>& unbound_symbol_ids);
-
-  ObjectReference* EvaluateBlock(
-      const std::vector<ObjectReference*>& parameters, Thread* thread) const;
-  void PopulateBlockExpressionProto(
-      BlockExpressionProto* block_expression_proto) const;
 
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
       Thread* thread) const override;
-  Expression* Clone() const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -142,12 +131,7 @@ class BlockExpression : public Expression {
       const BlockExpressionProto& block_expression_proto);
 
  private:
-  BlockExpression* PrivateClone() const;
-  void PrivatePopulateBlockExpressionProto(
-      BlockExpressionProto* block_expression_proto) const;
-
-  const std::unique_ptr<Expression> expression_;
-  const std::vector<int> bound_symbol_ids_;
+  const std::shared_ptr<const Expression> expression_;
   const std::vector<int> unbound_symbol_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BlockExpression);
@@ -161,7 +145,6 @@ class FunctionCallExpression : public Expression {
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
       Thread* thread) const override;
-  Expression* Clone() const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -183,7 +166,6 @@ class ListExpression : public Expression {
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
       Thread* thread) const override;
-  Expression* Clone() const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;

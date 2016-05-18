@@ -26,12 +26,12 @@
 namespace floating_temple {
 namespace toy_lang {
 
-class BlockExpression;
+class Expression;
 
 class ProgramObject : public UnversionedLocalObject {
  public:
-  explicit ProgramObject(
-      const std::shared_ptr<const BlockExpression>& block_expression);
+  explicit ProgramObject(const std::shared_ptr<const Expression>& expression);
+  ~ProgramObject() override;
 
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
@@ -41,7 +41,7 @@ class ProgramObject : public UnversionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
-  const std::shared_ptr<const BlockExpression> block_expression_;
+  const std::shared_ptr<const Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);
 };

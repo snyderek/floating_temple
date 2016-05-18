@@ -25,7 +25,6 @@
 namespace floating_temple {
 namespace toy_lang {
 
-class BlockExpression;
 class Expression;
 class Lexer;
 
@@ -33,10 +32,10 @@ class Parser {
  public:
   explicit Parser(Lexer* lexer);
 
-  BlockExpression* ParseFile();
+  Expression* ParseFile();
 
  private:
-  BlockExpression* ParseScope();
+  Expression* ParseScope();
   Expression* ParseExpression();
   void ParseExpressionList(Token::Type end_token_type,
                            std::vector<Expression*>* expressions);

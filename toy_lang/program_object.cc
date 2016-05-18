@@ -17,11 +17,13 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
+#include "toy_lang/code_block.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/zoo/add_function.h"
@@ -49,6 +51,7 @@
 
 using std::shared_ptr;
 using std::string;
+using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {
@@ -113,10 +116,12 @@ bool PopulateSymbolTable(Thread* thread,
 
 }  // namespace
 
-ProgramObject::ProgramObject(
-    const shared_ptr<const BlockExpression>& block_expression)
-    : block_expression_(block_expression) {
-  CHECK(block_expression.get() != nullptr);
+ProgramObject::ProgramObject(const shared_ptr<const Expression>& expression)
+    : expression_(expression) {
+  CHECK(expression.get() != nullptr);
+}
+
+ProgramObject::~ProgramObject() {
 }
 
 void ProgramObject::InvokeMethod(Thread* thread,
@@ -130,8 +135,11 @@ void ProgramObject::InvokeMethod(Thread* thread,
 
   ObjectReference* const shared_map_object = thread->CreateVersionedObject(
       new MapObject(), "shared");
+  // TODO(dss): Set the 'symbol_bindings' and 'unbound_symbol_ids' parameters.
+  CodeBlock* const code_block = new CodeBlock(
+      expression_, unordered_map<int, ObjectReference*>(), vector<int>());
   ObjectReference* const expression_object = thread->CreateVersionedObject(
-      new ExpressionObject(block_expression_), "");
+      new ExpressionObject(code_block), "");
 
   if (!PopulateSymbolTable(thread, shared_map_object)) {
     return;

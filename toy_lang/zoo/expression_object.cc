@@ -24,11 +24,10 @@
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
-#include "toy_lang/expression.h"
+#include "toy_lang/code_block.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "util/dump_context.h"
 
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -38,14 +37,15 @@ class ObjectReference;
 
 namespace toy_lang {
 
-ExpressionObject::ExpressionObject(
-    const shared_ptr<const BlockExpression>& block_expression)
-    : block_expression_(block_expression) {
-  CHECK(block_expression.get() != nullptr);
+ExpressionObject::ExpressionObject(CodeBlock* code_block)
+    : code_block_(CHECK_NOTNULL(code_block)) {
+}
+
+ExpressionObject::~ExpressionObject() {
 }
 
 VersionedLocalObject* ExpressionObject::Clone() const {
-  return new ExpressionObject(block_expression_);
+  return new ExpressionObject(code_block_->Clone());
 }
 
 void ExpressionObject::InvokeMethod(Thread* thread,
@@ -83,7 +83,7 @@ void ExpressionObject::InvokeMethod(Thread* thread,
       parameter_object_references[i] = list_item_value.object_reference();
     }
 
-    ObjectReference* const object_reference = block_expression_->EvaluateBlock(
+    ObjectReference* const object_reference = code_block_->Evaluate(
         parameter_object_references, thread);
     if (object_reference == nullptr) {
       return;
@@ -102,20 +102,20 @@ void ExpressionObject::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("ExpressionObject");
 
-  dc->AddString("block_expression");
-  dc->AddString(block_expression_->DebugString());
+  dc->AddString("code_block");
+  dc->AddString(code_block_->DebugString());
 
   dc->End();
 }
 
 // static
-ExpressionObject* ExpressionObject::ParseExpressionProto(
-    const ExpressionObjectProto& expression_object_proto) {
-  const shared_ptr<const BlockExpression> block_expression(
-      BlockExpression::ParseBlockExpressionProto(
-          expression_object_proto.block_expression()));
+ExpressionObject* ExpressionObject::ParseExpressionObjectProto(
+    const ExpressionObjectProto& expression_object_proto,
+    DeserializationContext* context) {
+  CodeBlock* const code_block = CodeBlock::ParseCodeBlockProto(
+      expression_object_proto.code_block(), context);
 
-  return new ExpressionObject(block_expression);
+  return new ExpressionObject(code_block);
 }
 
 void ExpressionObject::PopulateObjectProto(
@@ -123,8 +123,8 @@ void ExpressionObject::PopulateObjectProto(
   ExpressionObjectProto* const expression_object_proto =
       object_proto->mutable_expression_object();
 
-  block_expression_->PopulateBlockExpressionProto(
-      expression_object_proto->mutable_block_expression());
+  code_block_->PopulateCodeBlockProto(
+      expression_object_proto->mutable_code_block(), context);
 }
 
 }  // namespace toy_lang

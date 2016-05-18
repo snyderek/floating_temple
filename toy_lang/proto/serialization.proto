@@ -38,8 +38,19 @@ message VariableProto {
   optional int64 object_index = 1;
 }
 
+message SymbolBindingProto {
+  required int64 symbol_id = 1;
+  required int64 object_index = 2;
+}
+
+message CodeBlockProto {
+  required floating_temple.toy_lang.ExpressionProto expression = 1;
+  repeated floating_temple.toy_lang.SymbolBindingProto symbol_binding = 2;
+  repeated int64 unbound_symbol_id = 3;
+}
+
 message ExpressionObjectProto {
-  required floating_temple.toy_lang.BlockExpressionProto block_expression = 1;
+  required floating_temple.toy_lang.CodeBlockProto code_block = 1;
 }
 
 message IntExpressionProto {
@@ -56,8 +67,7 @@ message SymbolExpressionProto {
 
 message BlockExpressionProto {
   required floating_temple.toy_lang.ExpressionProto expression = 1;
-  repeated int64 bound_symbol_id = 2;
-  repeated int64 unbound_symbol_id = 3;
+  repeated int64 unbound_symbol_id = 2;
 }
 
 message FunctionCallExpressionProto {

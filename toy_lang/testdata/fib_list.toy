@@ -1,23 +1,21 @@
 # Create a list that contains the Fibonacci sequence.
 
-[
+(begin_tran)
+(if (map.is_set shared "lst") {
+  (set lst (map.get shared "lst"))
+}
+{
+  (set lst [0 1])
+  (map.set shared "lst" lst)
+})
+(end_tran)
+
+(while (lt (len lst) 20) {
   (begin_tran)
-  (if (map.is_set shared "lst") {[
-    (set "lst" (map.get shared "lst"))
-  ]}
-  {[
-    (set "lst" [0 1])
-    (map.set shared "lst" lst)
-  ]})
+  (list.append lst (add (list.get lst -2) (list.get lst -1)))
   (end_tran)
 
-  (while {(lt (len lst) 20)} {[
-    (begin_tran)
-    (list.append lst (add (list.get lst -2) (list.get lst -1)))
-    (end_tran)
-
-    (begin_tran)
-    (print lst)
-    (end_tran)
-  ]})
-]
+  (begin_tran)
+  (print lst)
+  (end_tran)
+})

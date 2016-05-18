@@ -87,10 +87,8 @@ TEST_F(DISABLED_ToyLangIntegrationTest, BeginTran) {
 
 TEST_F(DISABLED_ToyLangIntegrationTest, ExplicitTransaction) {
   const string kProgram =
-      "[\n"
-      "  (begin_tran)\n"
-      "  (end_tran)\n"
-      "]\n";
+      "(begin_tran)\n"
+      "(end_tran)\n";
 
   RunTestProgram(kProgram);
 }
@@ -99,23 +97,25 @@ TEST_F(DISABLED_ToyLangIntegrationTest, FibList) {
   const string kProgram =
       "# Create a list that contains the Fibonacci sequence.\n"
       "\n"
-      "[\n"
+      "(begin_tran)\n"
+      "(if (map.is_set shared \"lst\") {\n"
+      "  (set lst (map.get shared \"lst\"))\n"
+      "}\n"
+      "{\n"
+      "  (set lst [0 1])\n"
+      "  (map.set shared \"lst\" lst)\n"
+      "})\n"
+      "(end_tran)\n"
+      "\n"
+      "(while (lt (len lst) 20) {\n"
       "  (begin_tran)\n"
-      "  (if (not (is_set \"lst\")) {[\n"
-      "    (set \"lst\" [0 1])\n"
-      "  ]})\n"
+      "  (list.append lst (add (list.get lst -2) (list.get lst -1)))\n"
       "  (end_tran)\n"
       "\n"
-      "  (while {(lt (len lst) 20)} {[\n"
-      "    (begin_tran)\n"
-      "    (list.append lst (add (list.get lst -2) (list.get lst -1)))\n"
-      "    (end_tran)\n"
-      "\n"
-      "    (begin_tran)\n"
-      "    (print lst)\n"
-      "    (end_tran)\n"
-      "  ]})\n"
-      "]\n";
+      "  (begin_tran)\n"
+      "  (print lst)\n"
+      "  (end_tran)\n"
+      "})\n";
 
   RunTestProgram(kProgram);
 }

@@ -31,13 +31,23 @@ class SymbolTable {
   SymbolTable();
   ~SymbolTable();
 
-  void EnterScope();
-  void LeaveScope();
+  void EnterScope(const std::vector<std::string>& parameter_names);
+  void LeaveScope(std::vector<int>* parameter_symbol_ids,
+                  std::vector<int>* local_symbol_ids);
 
-  int GetSymbolId(const std::string& symbol_name);
+  int GetSymbolId(const std::string& symbol_name) const;
+  int CreateLocalVariable(const std::string& symbol_name);
 
  private:
-  std::vector<std::unordered_map<std::string, int>> scopes_;
+  struct Scope {
+    std::unordered_map<std::string, int> symbol_map;
+    std::vector<int> parameter_symbol_ids;
+    std::vector<int> local_symbol_ids;
+  };
+
+  int CreateSymbol(const std::string& symbol_name);
+
+  std::vector<Scope> scopes_;
   int next_symbol_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SymbolTable);

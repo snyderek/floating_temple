@@ -20,10 +20,12 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/escape.h"
 #include "base/logging.h"
 
 using std::string;
 using std::unordered_map;
+using std::vector;
 
 namespace floating_temple {
 namespace toy_lang {
@@ -35,21 +37,35 @@ SymbolTable::SymbolTable()
 SymbolTable::~SymbolTable() {
 }
 
-void SymbolTable::EnterScope() {
+void SymbolTable::EnterScope(const vector<string>& parameter_names) {
   scopes_.emplace_back();
+
+  vector<int>* const parameter_symbol_ids =
+      &scopes_.back().parameter_symbol_ids;
+  parameter_symbol_ids->reserve(parameter_names.size());
+
+  for (const string& parameter_name : parameter_names) {
+    const int symbol_id = CreateSymbol(parameter_name);
+    parameter_symbol_ids->push_back(symbol_id);
+  }
 }
 
-void SymbolTable::LeaveScope() {
+void SymbolTable::LeaveScope(vector<int>* parameter_symbol_ids,
+                             vector<int>* local_symbol_ids) {
+  CHECK(!scopes_.empty());
+  CHECK(parameter_symbol_ids != nullptr);
+  CHECK(local_symbol_ids != nullptr);
+
+  parameter_symbol_ids->swap(scopes_.back().parameter_symbol_ids);
+  local_symbol_ids->swap(scopes_.back().local_symbol_ids);
+
   scopes_.pop_back();
 }
 
-int SymbolTable::GetSymbolId(const string& symbol_name) {
-  CHECK(!scopes_.empty());
-  CHECK(!symbol_name.empty());
-
+int SymbolTable::GetSymbolId(const string& symbol_name) const {
   for (auto scope_it = scopes_.rbegin(); scope_it != scopes_.rend();
        ++scope_it) {
-    const unordered_map<string, int>& symbol_map = *scope_it;
+    const unordered_map<string, int>& symbol_map = scope_it->symbol_map;
 
     const auto it = symbol_map.find(symbol_name);
     if (it != symbol_map.end()) {
@@ -57,9 +73,23 @@ int SymbolTable::GetSymbolId(const string& symbol_name) {
     }
   }
 
+  LOG(FATAL) << "Symbol not found: \"" << CEscape(symbol_name) << "\"";
+}
+
+int SymbolTable::CreateLocalVariable(const string& symbol_name) {
+  const int symbol_id = CreateSymbol(symbol_name);
+  scopes_.back().local_symbol_ids.push_back(symbol_id);
+  return symbol_id;
+}
+
+int SymbolTable::CreateSymbol(const string& symbol_name) {
+  CHECK(!scopes_.empty());
+  CHECK(!symbol_name.empty());
+
   const int symbol_id = next_symbol_id_;
   ++next_symbol_id_;
-  CHECK(scopes_.back().emplace(symbol_name, symbol_id).second);
+  CHECK(scopes_.back().symbol_map.emplace(symbol_name, symbol_id).second);
+
   return symbol_id;
 }
 

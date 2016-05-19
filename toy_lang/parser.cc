@@ -16,6 +16,7 @@
 #include "toy_lang/parser.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -25,6 +26,7 @@
 #include "toy_lang/token.h"
 
 using std::shared_ptr;
+using std::string;
 using std::vector;
 
 namespace floating_temple {
@@ -35,18 +37,17 @@ Parser::Parser(Lexer* lexer)
 }
 
 Expression* Parser::ParseFile() {
-  Expression* const expression = ParseScope();
+  symbol_table_.EnterScope(vector<string>());
+
+  Expression* const expression = ParseExpression();
   CHECK(!lexer_->HasNextToken());
 
+  vector<int> parameter_symbol_ids;
+  vector<int> local_symbol_ids;
+  symbol_table_.LeaveScope(&parameter_symbol_ids, &local_symbol_ids);
+  CHECK_EQ(parameter_symbol_ids.size(), 0u);
+
   VLOG(2) << expression->DebugString();
-
-  return expression;
-}
-
-Expression* Parser::ParseScope() {
-  symbol_table_.EnterScope();
-  Expression* const expression = ParseExpression();
-  symbol_table_.LeaveScope();
 
   return expression;
 }
@@ -78,11 +79,18 @@ Expression* Parser::ParseExpression() {
     }
 
     case Token::BEGIN_BLOCK: {
-      const shared_ptr<const Expression> expression(ParseScope());
+      symbol_table_.EnterScope(vector<string>());
+
+      const shared_ptr<const Expression> expression(ParseExpression());
       CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
-      // TODO(dss): Set the 'parameter_symbol_ids' and 'local_symbol_ids'
-      // parameters.
-      return new BlockExpression(expression, vector<int>(), vector<int>());
+
+      vector<int> parameter_symbol_ids;
+      vector<int> local_symbol_ids;
+      symbol_table_.LeaveScope(&parameter_symbol_ids, &local_symbol_ids);
+      CHECK_EQ(parameter_symbol_ids.size(), 0u);
+
+      return new BlockExpression(expression, parameter_symbol_ids,
+                                 local_symbol_ids);
     }
 
     case Token::BEGIN_LIST: {

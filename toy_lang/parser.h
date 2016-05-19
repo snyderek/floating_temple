@@ -32,10 +32,11 @@ class Parser {
  public:
   explicit Parser(Lexer* lexer);
 
+  // TODO(dss): Return a CodeBlock instance from this method so that the local
+  // variables will be created when the program is run.
   Expression* ParseFile();
 
  private:
-  Expression* ParseScope();
   Expression* ParseExpression();
   void ParseExpressionList(Token::Type end_token_type,
                            std::vector<Expression*>* expressions);

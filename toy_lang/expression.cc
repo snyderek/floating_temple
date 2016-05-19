@@ -30,7 +30,7 @@
 #include "toy_lang/code_block.h"
 #include "toy_lang/get_serialized_expression_type.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/expression_object.h"
+#include "toy_lang/zoo/code_block_object.h"
 #include "toy_lang/zoo/int_object.h"
 #include "toy_lang/zoo/list_object.h"
 #include "toy_lang/zoo/string_object.h"
@@ -206,9 +206,9 @@ ObjectReference* BlockExpression::Evaluate(
   CodeBlock* const code_block = new CodeBlock(expression_, symbol_bindings,
                                               unbound_symbol_ids_,
                                               vector<int>());
-  VersionedLocalObject* const expression_object = new ExpressionObject(
+  VersionedLocalObject* const code_block_object = new CodeBlockObject(
       code_block);
-  return thread->CreateVersionedObject(expression_object, "");
+  return thread->CreateVersionedObject(code_block_object, "");
 }
 
 void BlockExpression::PopulateExpressionProto(

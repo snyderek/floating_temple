@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TOY_LANG_ZOO_EXPRESSION_OBJECT_H_
-#define TOY_LANG_ZOO_EXPRESSION_OBJECT_H_
+#ifndef TOY_LANG_ZOO_CODE_BLOCK_OBJECT_H_
+#define TOY_LANG_ZOO_CODE_BLOCK_OBJECT_H_
 
 #include <memory>
 
@@ -28,13 +28,12 @@ class DeserializationContext;
 namespace toy_lang {
 
 class CodeBlock;
-class ExpressionObjectProto;
+class CodeBlockObjectProto;
 
-// TODO(dss): Rename this class to CodeBlockObject.
-class ExpressionObject : public LocalObjectImpl {
+class CodeBlockObject : public LocalObjectImpl {
  public:
-  explicit ExpressionObject(CodeBlock* code_block);
-  ~ExpressionObject() override;
+  explicit CodeBlockObject(CodeBlock* code_block);
+  ~CodeBlockObject() override;
 
   VersionedLocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
@@ -44,8 +43,8 @@ class ExpressionObject : public LocalObjectImpl {
                     Value* return_value) override;
   void Dump(DumpContext* dc) const override;
 
-  static ExpressionObject* ParseExpressionObjectProto(
-      const ExpressionObjectProto& expression_object_proto,
+  static CodeBlockObject* ParseCodeBlockObjectProto(
+      const CodeBlockObjectProto& code_block_object_proto,
       DeserializationContext* context);
 
  protected:
@@ -55,10 +54,10 @@ class ExpressionObject : public LocalObjectImpl {
  private:
   const std::unique_ptr<CodeBlock> code_block_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExpressionObject);
+  DISALLOW_COPY_AND_ASSIGN(CodeBlockObject);
 };
 
 }  // namespace toy_lang
 }  // namespace floating_temple
 
-#endif  // TOY_LANG_ZOO_EXPRESSION_OBJECT_H_
+#endif  // TOY_LANG_ZOO_CODE_BLOCK_OBJECT_H_

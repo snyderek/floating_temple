@@ -50,7 +50,7 @@ message CodeBlockProto {
   repeated int64 local_symbol_id = 4;
 }
 
-message ExpressionObjectProto {
+message CodeBlockObjectProto {
   required floating_temple.toy_lang.CodeBlockProto code_block = 1;
 }
 
@@ -138,7 +138,7 @@ message ObjectProto {
     STRING = 4;
     SYMBOL = 29;
     VARIABLE = 30;
-    EXPRESSION = 6;
+    CODE_BLOCK = 6;
     LIST = 7;
     MAP = 8;
     RANGE_ITERATOR = 9;
@@ -170,7 +170,7 @@ message ObjectProto {
   optional floating_temple.toy_lang.StringProto string_object = 4;
   optional floating_temple.toy_lang.SymbolProto symbol_object = 29;
   optional floating_temple.toy_lang.VariableProto variable_object = 30;
-  optional floating_temple.toy_lang.ExpressionObjectProto expression_object = 6;
+  optional floating_temple.toy_lang.CodeBlockObjectProto code_block_object = 6;
   optional floating_temple.toy_lang.ListProto list_object = 7;
   optional floating_temple.toy_lang.MapProto map_object = 8;
   optional floating_temple.toy_lang.RangeIteratorProto

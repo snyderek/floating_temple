@@ -29,8 +29,8 @@
 #include "toy_lang/zoo/add_function.h"
 #include "toy_lang/zoo/begin_tran_function.h"
 #include "toy_lang/zoo/bool_object.h"
+#include "toy_lang/zoo/code_block_object.h"
 #include "toy_lang/zoo/end_tran_function.h"
-#include "toy_lang/zoo/expression_object.h"
 #include "toy_lang/zoo/for_function.h"
 #include "toy_lang/zoo/if_function.h"
 #include "toy_lang/zoo/len_function.h"
@@ -140,8 +140,8 @@ void ProgramObject::InvokeMethod(Thread* thread,
   CodeBlock* const code_block = new CodeBlock(
       expression_, unordered_map<int, ObjectReference*>(), vector<int>(),
       vector<int>());
-  ObjectReference* const expression_object = thread->CreateVersionedObject(
-      new ExpressionObject(code_block), "");
+  ObjectReference* const code_block_object = thread->CreateVersionedObject(
+      new CodeBlockObject(code_block), "");
 
   if (!PopulateSymbolTable(thread, shared_map_object)) {
     return;
@@ -149,7 +149,7 @@ void ProgramObject::InvokeMethod(Thread* thread,
 
   const vector<Value> eval_parameters;
   Value dummy;
-  if (!thread->CallMethod(expression_object, "eval", eval_parameters, &dummy)) {
+  if (!thread->CallMethod(code_block_object, "eval", eval_parameters, &dummy)) {
     return;
   }
 

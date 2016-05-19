@@ -23,8 +23,8 @@
 #include "toy_lang/zoo/add_function.h"
 #include "toy_lang/zoo/begin_tran_function.h"
 #include "toy_lang/zoo/bool_object.h"
+#include "toy_lang/zoo/code_block_object.h"
 #include "toy_lang/zoo/end_tran_function.h"
-#include "toy_lang/zoo/expression_object.h"
 #include "toy_lang/zoo/for_function.h"
 #include "toy_lang/zoo/function.h"
 #include "toy_lang/zoo/if_function.h"
@@ -92,9 +92,9 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     case ObjectProto::STRING:
       return StringObject::ParseStringProto(object_proto.string_object());
 
-    case ObjectProto::EXPRESSION:
-      return ExpressionObject::ParseExpressionObjectProto(
-          object_proto.expression_object(), context);
+    case ObjectProto::CODE_BLOCK:
+      return CodeBlockObject::ParseCodeBlockObjectProto(
+          object_proto.code_block_object(), context);
 
     case ObjectProto::LIST:
       return ListObject::ParseListProto(object_proto.list_object(), context);

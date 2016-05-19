@@ -36,7 +36,7 @@ ObjectProto::Type GetSerializedObjectType(const ObjectProto& object_proto) {
   CHECK_FIELD(has_string_object, STRING);
   CHECK_FIELD(has_symbol_object, SYMBOL);
   CHECK_FIELD(has_variable_object, VARIABLE);
-  CHECK_FIELD(has_expression_object, EXPRESSION);
+  CHECK_FIELD(has_code_block_object, CODE_BLOCK);
   CHECK_FIELD(has_list_object, LIST);
   CHECK_FIELD(has_map_object, MAP);
   CHECK_FIELD(has_range_iterator_object, RANGE_ITERATOR);

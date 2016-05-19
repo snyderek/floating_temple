@@ -37,6 +37,7 @@ class SymbolTable {
 
   int GetSymbolId(const std::string& symbol_name) const;
   int CreateLocalVariable(const std::string& symbol_name);
+  int AddExternalSymbol(const std::string& symbol_name);
 
  private:
   struct Scope {
@@ -46,8 +47,10 @@ class SymbolTable {
   };
 
   int CreateSymbol(const std::string& symbol_name);
+  int GetNextSymbolId();
 
   std::vector<Scope> scopes_;
+  std::unordered_map<std::string, int> external_symbol_map_;
   int next_symbol_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SymbolTable);

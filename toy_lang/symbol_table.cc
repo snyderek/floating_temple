@@ -73,6 +73,11 @@ int SymbolTable::GetSymbolId(const string& symbol_name) const {
     }
   }
 
+  const auto it = external_symbol_map_.find(symbol_name);
+  if (it != external_symbol_map_.end()) {
+    return it->second;
+  }
+
   LOG(FATAL) << "Symbol not found: \"" << CEscape(symbol_name) << "\"";
 }
 
@@ -82,15 +87,27 @@ int SymbolTable::CreateLocalVariable(const string& symbol_name) {
   return symbol_id;
 }
 
+int SymbolTable::AddExternalSymbol(const string& symbol_name) {
+  CHECK(!symbol_name.empty());
+
+  const int symbol_id = GetNextSymbolId();
+  CHECK(external_symbol_map_.emplace(symbol_name, symbol_id).second);
+
+  return symbol_id;
+}
+
 int SymbolTable::CreateSymbol(const string& symbol_name) {
   CHECK(!scopes_.empty());
   CHECK(!symbol_name.empty());
 
-  const int symbol_id = next_symbol_id_;
-  ++next_symbol_id_;
+  const int symbol_id = GetNextSymbolId();
   CHECK(scopes_.back().symbol_map.emplace(symbol_name, symbol_id).second);
 
   return symbol_id;
+}
+
+int SymbolTable::GetNextSymbolId() {
+  return next_symbol_id_++;
 }
 
 }  // namespace toy_lang

@@ -80,8 +80,9 @@ Expression* Parser::ParseExpression() {
     case Token::BEGIN_BLOCK: {
       const shared_ptr<const Expression> expression(ParseScope());
       CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
-      // TODO(dss): Set the 'unbound_symbol_ids' parameter.
-      return new BlockExpression(expression, vector<int>());
+      // TODO(dss): Set the 'parameter_symbol_ids' and 'local_symbol_ids'
+      // parameters.
+      return new BlockExpression(expression, vector<int>(), vector<int>());
     }
 
     case Token::BEGIN_LIST: {

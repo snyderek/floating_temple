@@ -191,9 +191,11 @@ SymbolExpression* SymbolExpression::ParseSymbolExpressionProto(
 }
 
 BlockExpression::BlockExpression(const shared_ptr<const Expression>& expression,
-                                 const vector<int>& unbound_symbol_ids)
+                                 const vector<int>& parameter_symbol_ids,
+                                 const vector<int>& local_symbol_ids)
     : expression_(expression),
-      unbound_symbol_ids_(unbound_symbol_ids) {
+      parameter_symbol_ids_(parameter_symbol_ids),
+      local_symbol_ids_(local_symbol_ids) {
   CHECK(expression.get() != nullptr);
 }
 
@@ -202,10 +204,9 @@ ObjectReference* BlockExpression::Evaluate(
     Thread* thread) const {
   CHECK(thread != nullptr);
 
-  // TODO(dss): Set the 'local_symbol_ids' parameter.
   CodeBlock* const code_block = new CodeBlock(expression_, symbol_bindings,
-                                              unbound_symbol_ids_,
-                                              vector<int>());
+                                              parameter_symbol_ids_,
+                                              local_symbol_ids_);
   VersionedLocalObject* const code_block_object = new CodeBlockObject(
       code_block);
   return thread->CreateVersionedObject(code_block_object, "");
@@ -217,10 +218,16 @@ void BlockExpression::PopulateExpressionProto(
 
   BlockExpressionProto* const block_expression_proto =
       expression_proto->mutable_block_expression();
+
   expression_->PopulateExpressionProto(
       block_expression_proto->mutable_expression());
-  for (int symbol_id : unbound_symbol_ids_) {
-    block_expression_proto->add_unbound_symbol_id(symbol_id);
+
+  for (int symbol_id : parameter_symbol_ids_) {
+    block_expression_proto->add_parameter_symbol_id(symbol_id);
+  }
+
+  for (int symbol_id : local_symbol_ids_) {
+    block_expression_proto->add_local_symbol_id(symbol_id);
   }
 }
 
@@ -234,14 +241,21 @@ BlockExpression* BlockExpression::ParseBlockExpressionProto(
   const shared_ptr<const Expression> expression(
       Expression::ParseExpressionProto(block_expression_proto.expression()));
 
-  const int unbound_symbol_count =
-      block_expression_proto.unbound_symbol_id_size();
-  vector<int> unbound_symbol_ids(unbound_symbol_count);
-  for (int i = 0; i < unbound_symbol_count; ++i) {
-    unbound_symbol_ids[i] = block_expression_proto.unbound_symbol_id(i);
+  const int parameter_symbol_count =
+      block_expression_proto.parameter_symbol_id_size();
+  vector<int> parameter_symbol_ids(parameter_symbol_count);
+  for (int i = 0; i < parameter_symbol_count; ++i) {
+    parameter_symbol_ids[i] = block_expression_proto.parameter_symbol_id(i);
   }
 
-  return new BlockExpression(expression, unbound_symbol_ids);
+  const int local_symbol_count = block_expression_proto.local_symbol_id_size();
+  vector<int> local_symbol_ids(local_symbol_count);
+  for (int i = 0; i < local_symbol_count; ++i) {
+    local_symbol_ids[i] = block_expression_proto.local_symbol_id(i);
+  }
+
+  return new BlockExpression(expression, parameter_symbol_ids,
+                             local_symbol_ids);
 }
 
 FunctionCallExpression::FunctionCallExpression(

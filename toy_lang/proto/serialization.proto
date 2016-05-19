@@ -68,7 +68,8 @@ message SymbolExpressionProto {
 
 message BlockExpressionProto {
   required floating_temple.toy_lang.ExpressionProto expression = 1;
-  repeated int64 unbound_symbol_id = 2;
+  repeated int64 parameter_symbol_id = 2;
+  repeated int64 local_symbol_id = 3;
 }
 
 message FunctionCallExpressionProto {

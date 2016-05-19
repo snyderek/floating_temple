@@ -118,7 +118,8 @@ class SymbolExpression : public Expression {
 class BlockExpression : public Expression {
  public:
   BlockExpression(const std::shared_ptr<const Expression>& expression,
-                  const std::vector<int>& unbound_symbol_ids);
+                  const std::vector<int>& parameter_symbol_ids,
+                  const std::vector<int>& local_symbol_ids);
 
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
@@ -132,7 +133,8 @@ class BlockExpression : public Expression {
 
  private:
   const std::shared_ptr<const Expression> expression_;
-  const std::vector<int> unbound_symbol_ids_;
+  const std::vector<int> parameter_symbol_ids_;
+  const std::vector<int> local_symbol_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BlockExpression);
 };

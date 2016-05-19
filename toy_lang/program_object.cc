@@ -135,9 +135,11 @@ void ProgramObject::InvokeMethod(Thread* thread,
 
   ObjectReference* const shared_map_object = thread->CreateVersionedObject(
       new MapObject(), "shared");
-  // TODO(dss): Set the 'symbol_bindings' and 'unbound_symbol_ids' parameters.
+  // TODO(dss): Set the 'external_symbols', 'parameter_symbol_ids', and
+  // 'local_symbol_ids' parameters.
   CodeBlock* const code_block = new CodeBlock(
-      expression_, unordered_map<int, ObjectReference*>(), vector<int>());
+      expression_, unordered_map<int, ObjectReference*>(), vector<int>(),
+      vector<int>());
   ObjectReference* const expression_object = thread->CreateVersionedObject(
       new ExpressionObject(code_block), "");
 

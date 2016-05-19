@@ -202,8 +202,10 @@ ObjectReference* BlockExpression::Evaluate(
     Thread* thread) const {
   CHECK(thread != nullptr);
 
+  // TODO(dss): Set the 'local_symbol_ids' parameter.
   CodeBlock* const code_block = new CodeBlock(expression_, symbol_bindings,
-                                              unbound_symbol_ids_);
+                                              unbound_symbol_ids_,
+                                              vector<int>());
   VersionedLocalObject* const expression_object = new ExpressionObject(
       code_block);
   return thread->CreateVersionedObject(expression_object, "");

@@ -38,15 +38,16 @@ message VariableProto {
   optional int64 object_index = 1;
 }
 
-message SymbolBindingProto {
+message ExternalSymbolProto {
   required int64 symbol_id = 1;
   required int64 object_index = 2;
 }
 
 message CodeBlockProto {
   required floating_temple.toy_lang.ExpressionProto expression = 1;
-  repeated floating_temple.toy_lang.SymbolBindingProto symbol_binding = 2;
-  repeated int64 unbound_symbol_id = 3;
+  repeated floating_temple.toy_lang.ExternalSymbolProto external_symbol = 2;
+  repeated int64 parameter_symbol_id = 3;
+  repeated int64 local_symbol_id = 4;
 }
 
 message ExpressionObjectProto {

@@ -38,8 +38,9 @@ class Expression;
 class CodeBlock {
  public:
   CodeBlock(const std::shared_ptr<const Expression>& expression,
-            const std::unordered_map<int, ObjectReference*>& symbol_bindings,
-            const std::vector<int>& unbound_symbol_ids);
+            const std::unordered_map<int, ObjectReference*>& external_symbols,
+            const std::vector<int>& parameter_symbol_ids,
+            const std::vector<int>& local_symbol_ids);
   ~CodeBlock();
 
   ObjectReference* Evaluate(const std::vector<ObjectReference*>& parameters,
@@ -54,8 +55,9 @@ class CodeBlock {
 
  private:
   const std::shared_ptr<const Expression> expression_;
-  const std::unordered_map<int, ObjectReference*> symbol_bindings_;
-  const std::vector<int> unbound_symbol_ids_;
+  const std::unordered_map<int, ObjectReference*> external_symbols_;
+  const std::vector<int> parameter_symbol_ids_;
+  const std::vector<int> local_symbol_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(CodeBlock);
 };

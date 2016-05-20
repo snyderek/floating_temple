@@ -26,6 +26,7 @@
 #include "toy_lang/lexer.h"
 #include "toy_lang/parser.h"
 #include "toy_lang/program_object.h"
+#include "toy_lang/symbol_table.h"
 
 using std::FILE;
 using std::fclose;
@@ -50,11 +51,16 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   CHECK(peer != nullptr);
 
   Lexer lexer(fp);
-  Parser parser(&lexer);
+  SymbolTable symbol_table;
+  Parser parser(&lexer, &symbol_table);
   Expression* const expression = parser.ParseFile();
 
+  UnversionedLocalObject* const program_object = new ProgramObject(
+      &symbol_table, expression);
+
   Value return_value;
-  peer->RunProgram(new ProgramObject(expression), "run", &return_value, linger);
+  peer->RunProgram(program_object, "run", &return_value, linger);
+  CHECK_EQ(return_value.type(), Value::EMPTY);
 }
 
 }  // namespace toy_lang

@@ -27,10 +27,12 @@ namespace floating_temple {
 namespace toy_lang {
 
 class Expression;
+class SymbolTable;
 
 class ProgramObject : public UnversionedLocalObject {
  public:
-  explicit ProgramObject(Expression* expression);
+  // Does not take ownership of 'symbol_table'. Takes ownership of 'expression'.
+  ProgramObject(SymbolTable* symbol_table, Expression* expression);
   ~ProgramObject() override;
 
   void InvokeMethod(Thread* thread,
@@ -41,6 +43,7 @@ class ProgramObject : public UnversionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
+  SymbolTable* const symbol_table_;
   const std::unique_ptr<Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);

@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "toy_lang/symbol_table.h"
 #include "toy_lang/token.h"
 
 namespace floating_temple {
@@ -29,10 +28,13 @@ namespace toy_lang {
 
 class Expression;
 class Lexer;
+class SymbolTable;
 
 class Parser {
  public:
-  explicit Parser(Lexer* lexer);
+  // Does not take ownership of 'lexer'. Does not take ownership of
+  // 'symbol_table'.
+  Parser(Lexer* lexer, SymbolTable* symbol_table);
 
   Expression* ParseFile();
 
@@ -45,7 +47,7 @@ class Parser {
   Expression* LeaveScope(const std::shared_ptr<const Expression>& expression);
 
   Lexer* const lexer_;
-  SymbolTable symbol_table_;
+  SymbolTable* const symbol_table_;
 
   DISALLOW_COPY_AND_ASSIGN(Parser);
 };

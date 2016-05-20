@@ -47,7 +47,6 @@
 #include "toy_lang/zoo/while_function.h"
 #include "util/dump_context.h"
 
-using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -114,9 +113,8 @@ bool PopulateSymbolTable(Thread* thread,
 
 }  // namespace
 
-ProgramObject::ProgramObject(const shared_ptr<const Expression>& expression)
-    : expression_(expression) {
-  CHECK(expression.get() != nullptr);
+ProgramObject::ProgramObject(Expression* expression)
+    : expression_(CHECK_NOTNULL(expression)) {
 }
 
 ProgramObject::~ProgramObject() {

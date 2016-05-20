@@ -30,7 +30,6 @@
 using std::FILE;
 using std::fclose;
 using std::fopen;
-using std::shared_ptr;
 using std::string;
 
 namespace floating_temple {
@@ -52,7 +51,7 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
 
   Lexer lexer(fp);
   Parser parser(&lexer);
-  const shared_ptr<const Expression> expression(parser.ParseFile());
+  Expression* const expression = parser.ParseFile();
 
   Value return_value;
   peer->RunProgram(new ProgramObject(expression), "run", &return_value, linger);

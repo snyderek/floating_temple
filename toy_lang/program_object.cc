@@ -45,6 +45,7 @@
 #include "toy_lang/zoo/print_function.h"
 #include "toy_lang/zoo/range_function.h"
 #include "toy_lang/zoo/set_variable_function.h"
+#include "toy_lang/zoo/variable_object.h"
 #include "toy_lang/zoo/while_function.h"
 #include "util/dump_context.h"
 
@@ -66,10 +67,13 @@ void AddSymbol(SymbolTable* symbol_table,
                unordered_map<int, ObjectReference*>* symbol_bindings) {
   CHECK(!name.empty());
 
-  const int symbol_id = symbol_table->AddExternalSymbol(name);
-  ObjectReference* const object_reference = thread->CreateVersionedObject(
+  ObjectReference* const built_in_object = thread->CreateVersionedObject(
       local_object, name);
-  CHECK(symbol_bindings->emplace(symbol_id, object_reference).second);
+
+  const int symbol_id = symbol_table->AddExternalSymbol(name);
+  ObjectReference* const variable_object = thread->CreateVersionedObject(
+      new VariableObject(built_in_object), "");
+  CHECK(symbol_bindings->emplace(symbol_id, variable_object).second);
 }
 
 bool CreateBuiltInObjects(

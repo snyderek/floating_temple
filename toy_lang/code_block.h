@@ -35,6 +35,7 @@ namespace toy_lang {
 class CodeBlockProto;
 class Expression;
 
+// TODO(dss): Consider merging this class into the CodeBlockObject class.
 class CodeBlock {
  public:
   CodeBlock(const std::shared_ptr<const Expression>& expression,

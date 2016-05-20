@@ -41,6 +41,7 @@ class ProgramObject : public UnversionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
+  // TODO(dss): Does this need to be a shared_ptr?
   const std::shared_ptr<const Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);

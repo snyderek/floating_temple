@@ -23,13 +23,11 @@
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
-#include "toy_lang/code_block.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/zoo/add_function.h"
 #include "toy_lang/zoo/begin_tran_function.h"
 #include "toy_lang/zoo/bool_object.h"
-#include "toy_lang/zoo/code_block_object.h"
 #include "toy_lang/zoo/end_tran_function.h"
 #include "toy_lang/zoo/for_function.h"
 #include "toy_lang/zoo/if_function.h"
@@ -135,17 +133,15 @@ void ProgramObject::InvokeMethod(Thread* thread,
 
   ObjectReference* const shared_map_object = thread->CreateVersionedObject(
       new MapObject(), "shared");
-  // TODO(dss): Set the 'external_symbols', 'parameter_symbol_ids', and
-  // 'local_symbol_ids' parameters.
-  CodeBlock* const code_block = new CodeBlock(
-      expression_, unordered_map<int, ObjectReference*>(), vector<int>(),
-      vector<int>());
-  ObjectReference* const code_block_object = thread->CreateVersionedObject(
-      new CodeBlockObject(code_block), "");
 
   if (!PopulateSymbolTable(thread, shared_map_object)) {
     return;
   }
+
+  // TODO(dss): Populate this map.
+  const unordered_map<int, ObjectReference*> symbol_bindings;
+  ObjectReference* const code_block_object = expression_->Evaluate(
+      symbol_bindings, thread);
 
   const vector<Value> eval_parameters;
   Value dummy;

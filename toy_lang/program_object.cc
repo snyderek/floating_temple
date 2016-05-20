@@ -154,8 +154,13 @@ void ProgramObject::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   dc->BeginMap();
+
   dc->AddString("type");
   dc->AddString("ProgramObject");
+
+  dc->AddString("expression");
+  dc->AddString(expression_->DebugString());
+
   dc->End();
 }
 

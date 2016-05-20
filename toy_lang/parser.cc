@@ -37,19 +37,28 @@ Parser::Parser(Lexer* lexer)
 }
 
 Expression* Parser::ParseFile() {
+  vector<Expression*> list_items;
+
   symbol_table_.EnterScope(vector<string>());
 
-  Expression* const expression = ParseExpression();
-  CHECK(!lexer_->HasNextToken());
+  while (lexer_->HasNextToken()) {
+    list_items.push_back(ParseExpression());
+  }
 
   vector<int> parameter_symbol_ids;
   vector<int> local_symbol_ids;
   symbol_table_.LeaveScope(&parameter_symbol_ids, &local_symbol_ids);
   CHECK_EQ(parameter_symbol_ids.size(), 0u);
 
-  VLOG(2) << expression->DebugString();
+  const shared_ptr<const Expression> list_expression(
+        new ListExpression(list_items));
+  Expression* const block_expression = new BlockExpression(list_expression,
+                                                           parameter_symbol_ids,
+                                                           local_symbol_ids);
 
-  return expression;
+  VLOG(2) << block_expression->DebugString();
+
+  return block_expression;
 }
 
 Expression* Parser::ParseExpression() {

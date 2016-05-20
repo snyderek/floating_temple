@@ -132,6 +132,7 @@ class BlockExpression : public Expression {
       const BlockExpressionProto& block_expression_proto);
 
  private:
+  // TODO(dss): Does this need to be a shared_ptr?
   const std::shared_ptr<const Expression> expression_;
   const std::vector<int> parameter_symbol_ids_;
   const std::vector<int> local_symbol_ids_;

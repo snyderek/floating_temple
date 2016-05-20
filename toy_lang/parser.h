@@ -16,6 +16,8 @@
 #ifndef TOY_LANG_PARSER_H_
 #define TOY_LANG_PARSER_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -38,6 +40,9 @@ class Parser {
   Expression* ParseExpression();
   void ParseExpressionList(Token::Type end_token_type,
                            std::vector<Expression*>* expressions);
+
+  void EnterScope(const std::vector<std::string>& parameter_names);
+  Expression* LeaveScope(const std::shared_ptr<const Expression>& expression);
 
   Lexer* const lexer_;
   SymbolTable symbol_table_;

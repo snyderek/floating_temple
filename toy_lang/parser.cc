@@ -37,24 +37,16 @@ Parser::Parser(Lexer* lexer)
 }
 
 Expression* Parser::ParseFile() {
+  EnterScope(vector<string>());
+
   vector<Expression*> list_items;
-
-  symbol_table_.EnterScope(vector<string>());
-
   while (lexer_->HasNextToken()) {
     list_items.push_back(ParseExpression());
   }
 
-  vector<int> parameter_symbol_ids;
-  vector<int> local_symbol_ids;
-  symbol_table_.LeaveScope(&parameter_symbol_ids, &local_symbol_ids);
-  CHECK_EQ(parameter_symbol_ids.size(), 0u);
-
   const shared_ptr<const Expression> list_expression(
         new ListExpression(list_items));
-  Expression* const block_expression = new BlockExpression(list_expression,
-                                                           parameter_symbol_ids,
-                                                           local_symbol_ids);
+  Expression* const block_expression = LeaveScope(list_expression);
 
   VLOG(2) << block_expression->DebugString();
 
@@ -88,18 +80,12 @@ Expression* Parser::ParseExpression() {
     }
 
     case Token::BEGIN_BLOCK: {
-      symbol_table_.EnterScope(vector<string>());
+      EnterScope(vector<string>());
 
       const shared_ptr<const Expression> expression(ParseExpression());
       CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
 
-      vector<int> parameter_symbol_ids;
-      vector<int> local_symbol_ids;
-      symbol_table_.LeaveScope(&parameter_symbol_ids, &local_symbol_ids);
-      CHECK_EQ(parameter_symbol_ids.size(), 0u);
-
-      return new BlockExpression(expression, parameter_symbol_ids,
-                                 local_symbol_ids);
+      return LeaveScope(expression);
     }
 
     case Token::BEGIN_LIST: {
@@ -125,6 +111,19 @@ void Parser::ParseExpressionList(Token::Type end_token_type,
   }
 
   CHECK_EQ(lexer_->GetNextTokenType(), end_token_type);
+}
+
+void Parser::EnterScope(const vector<string>& parameter_names) {
+  symbol_table_.EnterScope(parameter_names);
+}
+
+Expression* Parser::LeaveScope(const shared_ptr<const Expression>& expression) {
+  vector<int> parameter_symbol_ids;
+  vector<int> local_symbol_ids;
+  symbol_table_.LeaveScope(&parameter_symbol_ids, &local_symbol_ids);
+
+  return new BlockExpression(expression, parameter_symbol_ids,
+                             local_symbol_ids);
 }
 
 }  // namespace toy_lang

@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "toy_lang/hidden_symbols.h"
 #include "toy_lang/token.h"
 
 namespace floating_temple {
@@ -34,7 +35,8 @@ class Parser {
  public:
   // Does not take ownership of 'lexer'. Does not take ownership of
   // 'symbol_table'.
-  Parser(Lexer* lexer, SymbolTable* symbol_table, int get_variable_symbol_id);
+  Parser(Lexer* lexer, SymbolTable* symbol_table,
+         const HiddenSymbols& hidden_symbols);
 
   Expression* ParseFile();
 
@@ -48,7 +50,7 @@ class Parser {
 
   Lexer* const lexer_;
   SymbolTable* const symbol_table_;
-  const int get_variable_symbol_id_;
+  const HiddenSymbols hidden_symbols_;
 
   DISALLOW_COPY_AND_ASSIGN(Parser);
 };

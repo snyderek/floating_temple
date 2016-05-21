@@ -23,6 +23,7 @@
 
 #include "base/macros.h"
 #include "include/c++/unversioned_local_object.h"
+#include "toy_lang/hidden_symbols.h"
 
 namespace floating_temple {
 
@@ -38,7 +39,7 @@ class ProgramObject : public UnversionedLocalObject {
  public:
   // Does not take ownership of 'symbol_table'. Takes ownership of 'expression'.
   ProgramObject(SymbolTable* symbol_table, Expression* expression,
-                int get_variable_symbol_id);
+                const HiddenSymbols& hidden_symbols);
   ~ProgramObject() override;
 
   void InvokeMethod(Thread* thread,
@@ -55,7 +56,7 @@ class ProgramObject : public UnversionedLocalObject {
 
   SymbolTable* const symbol_table_;
   const std::unique_ptr<Expression> expression_;
-  const int get_variable_symbol_id_;
+  const HiddenSymbols hidden_symbols_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);
 };

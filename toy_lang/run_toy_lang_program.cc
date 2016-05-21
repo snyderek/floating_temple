@@ -23,6 +23,7 @@
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"
+#include "toy_lang/hidden_symbols.h"
 #include "toy_lang/lexer.h"
 #include "toy_lang/parser.h"
 #include "toy_lang/program_object.h"
@@ -51,14 +52,15 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   CHECK(peer != nullptr);
 
   SymbolTable symbol_table;
-  const int get_variable_symbol_id = symbol_table.AddExternalSymbol("");
+  HiddenSymbols hidden_symbols;
+  hidden_symbols.get_variable_symbol_id = symbol_table.AddExternalSymbol("");
 
   Lexer lexer(fp);
-  Parser parser(&lexer, &symbol_table, get_variable_symbol_id);
+  Parser parser(&lexer, &symbol_table, hidden_symbols);
   Expression* const expression = parser.ParseFile();
 
   UnversionedLocalObject* const program_object = new ProgramObject(
-      &symbol_table, expression, get_variable_symbol_id);
+      &symbol_table, expression, hidden_symbols);
 
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value, linger);

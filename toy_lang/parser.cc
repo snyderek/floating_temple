@@ -21,6 +21,7 @@
 
 #include "base/logging.h"
 #include "toy_lang/expression.h"
+#include "toy_lang/hidden_symbols.h"
 #include "toy_lang/lexer.h"
 #include "toy_lang/symbol_table.h"
 #include "toy_lang/token.h"
@@ -33,10 +34,10 @@ namespace floating_temple {
 namespace toy_lang {
 
 Parser::Parser(Lexer* lexer, SymbolTable* symbol_table,
-               int get_variable_symbol_id)
+               const HiddenSymbols& hidden_symbols)
     : lexer_(CHECK_NOTNULL(lexer)),
       symbol_table_(CHECK_NOTNULL(symbol_table)),
-      get_variable_symbol_id_(get_variable_symbol_id) {
+      hidden_symbols_(hidden_symbols) {
 }
 
 Expression* Parser::ParseFile() {
@@ -70,7 +71,7 @@ Expression* Parser::ParseExpression() {
 
     case Token::IDENTIFIER: {
       Expression* const function_expression = new SymbolExpression(
-          get_variable_symbol_id_);
+          hidden_symbols_.get_variable_symbol_id);
 
       const int symbol_id = symbol_table_->GetSymbolId(token.identifier());
       Expression* const variable_expression = new SymbolExpression(symbol_id);

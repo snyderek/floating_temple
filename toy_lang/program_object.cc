@@ -24,6 +24,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"
+#include "toy_lang/hidden_symbols.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
 #include "toy_lang/zoo/add_function.h"
@@ -80,10 +81,10 @@ void AddSymbol(SymbolTable* symbol_table,
 }  // namespace
 
 ProgramObject::ProgramObject(SymbolTable* symbol_table, Expression* expression,
-                             int get_variable_symbol_id)
+                             const HiddenSymbols& hidden_symbols)
     : symbol_table_(CHECK_NOTNULL(symbol_table)),
       expression_(CHECK_NOTNULL(expression)),
-      get_variable_symbol_id_(get_variable_symbol_id) {
+      hidden_symbols_(hidden_symbols) {
 }
 
 ProgramObject::~ProgramObject() {
@@ -142,7 +143,7 @@ bool ProgramObject::CreateBuiltInObjects(
 
   ObjectReference* const get_variable_function = thread->CreateVersionedObject(
       new GetVariableFunction(), "get");
-  CHECK(symbol_bindings->emplace(get_variable_symbol_id_,
+  CHECK(symbol_bindings->emplace(hidden_symbols_.get_variable_symbol_id,
                                  get_variable_function).second);
 
   // TODO(dss): Make these unversioned objects. There's no reason to record

@@ -39,7 +39,7 @@ class SymbolTable {
                   std::vector<int>* local_symbol_ids);
 
   int GetSymbolId(const std::string& symbol_name, bool visible) const;
-  int CreateLocalVariable(const std::string& symbol_name);
+  int GetLocalVariable(const std::string& symbol_name);
 
   int AddExternalSymbol(const std::string& symbol_name, bool visible);
   void ResolveExternalSymbol(const std::string& symbol_name,
@@ -60,6 +60,8 @@ class SymbolTable {
     ObjectReference* object_reference;
   };
 
+  bool PrivateGetSymbolId(const std::string& symbol_name, bool visible,
+                          int* symbol_id) const;
   int CreateSymbol(const std::string& symbol_name);
   int GetNextSymbolId();
 

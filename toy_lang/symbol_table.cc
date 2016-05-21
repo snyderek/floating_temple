@@ -63,30 +63,19 @@ void SymbolTable::LeaveScope(vector<int>* parameter_symbol_ids,
 }
 
 int SymbolTable::GetSymbolId(const string& symbol_name, bool visible) const {
-  for (auto scope_it = scopes_.rbegin(); scope_it != scopes_.rend();
-       ++scope_it) {
-    const unordered_map<string, int>& symbol_map = scope_it->symbol_map;
-
-    const auto it = symbol_map.find(symbol_name);
-    if (it != symbol_map.end()) {
-      return it->second;
-    }
-  }
-
-  const auto it = external_symbol_map_.find(symbol_name);
-  if (it != external_symbol_map_.end()) {
-    const ExternalSymbol& external_symbol = it->second;
-    CHECK_EQ(external_symbol.visible, visible);
-    return external_symbol.symbol_id;
-  }
-
-  LOG(FATAL) << "Symbol not found: \"" << CEscape(symbol_name) << "\"";
-  return -1;
+  int symbol_id = -1;
+  CHECK(PrivateGetSymbolId(symbol_name, visible, &symbol_id))
+      << "Symbol not found: \"" << CEscape(symbol_name) << "\"";
+  return symbol_id;
 }
 
-int SymbolTable::CreateLocalVariable(const string& symbol_name) {
-  const int symbol_id = CreateSymbol(symbol_name);
-  scopes_.back().local_symbol_ids.push_back(symbol_id);
+int SymbolTable::GetLocalVariable(const string& symbol_name) {
+  int symbol_id = -1;
+  if (!PrivateGetSymbolId(symbol_name, true, &symbol_id)) {
+    symbol_id = CreateSymbol(symbol_name);
+    scopes_.back().local_symbol_ids.push_back(symbol_id);
+  }
+
   return symbol_id;
 }
 
@@ -127,6 +116,35 @@ void SymbolTable::GetExternalSymbolBindings(
     CHECK(symbol_bindings->emplace(external_symbol.symbol_id,
                                    external_symbol.object_reference).second);
   }
+}
+
+bool SymbolTable::PrivateGetSymbolId(const string& symbol_name, bool visible,
+                                     int* symbol_id) const {
+  CHECK(symbol_id != nullptr);
+
+  if (visible) {
+    for (auto scope_it = scopes_.rbegin(); scope_it != scopes_.rend();
+         ++scope_it) {
+      const unordered_map<string, int>& symbol_map = scope_it->symbol_map;
+
+      const auto it = symbol_map.find(symbol_name);
+      if (it != symbol_map.end()) {
+        *symbol_id = it->second;
+        return true;
+      }
+    }
+  }
+
+  const auto it = external_symbol_map_.find(symbol_name);
+  if (it != external_symbol_map_.end()) {
+    const ExternalSymbol& external_symbol = it->second;
+    if (external_symbol.visible == visible) {
+      *symbol_id = external_symbol.symbol_id;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 int SymbolTable::CreateSymbol(const string& symbol_name) {

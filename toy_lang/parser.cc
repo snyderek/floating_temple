@@ -89,8 +89,7 @@ Expression* Parser::ParseExpression() {
         Expression* const rhs_expression = ParseExpression();
         CHECK_EQ(lexer_->GetNextTokenType(), Token::END_EXPRESSION);
 
-        // TODO(dss): Create the variable if it doesn't exist.
-        const int symbol_id = symbol_table_->GetSymbolId(identifier, true);
+        const int symbol_id = symbol_table_->GetLocalVariable(identifier);
         Expression* const variable_expression = new SymbolExpression(symbol_id);
 
         Expression* const function_expression = new SymbolExpression(

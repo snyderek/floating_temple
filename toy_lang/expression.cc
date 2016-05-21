@@ -287,7 +287,7 @@ ObjectReference* FunctionCallExpression::Evaluate(
   }
 
   vector<Value> parameter_values(1);
-  parameter_values[1].set_object_reference(0, parameter_list_object);
+  parameter_values[0].set_object_reference(0, parameter_list_object);
 
   Value return_value;
   if (!thread->CallMethod(function_object, "call", parameter_values,

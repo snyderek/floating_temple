@@ -42,9 +42,7 @@ namespace floating_temple {
 namespace engine {
 namespace {
 
-// TODO(dss): Re-enable this test case once the toy_lang interpreter is working
-// again.
-class DISABLED_ToyLangIntegrationTest : public Test {
+class ToyLangIntegrationTest : public Test {
  protected:
   void SetUp() override {
     interpreter_ = new toy_lang::InterpreterImpl();
@@ -77,15 +75,15 @@ class DISABLED_ToyLangIntegrationTest : public Test {
   Interpreter* interpreter_;
 };
 
-TEST_F(DISABLED_ToyLangIntegrationTest, HelloWorld) {
+TEST_F(ToyLangIntegrationTest, HelloWorld) {
   RunTestProgram("(print \"Hello, world.\")");
 }
 
-TEST_F(DISABLED_ToyLangIntegrationTest, BeginTran) {
+TEST_F(ToyLangIntegrationTest, BeginTran) {
   RunTestProgram("(begin_tran)");
 }
 
-TEST_F(DISABLED_ToyLangIntegrationTest, ExplicitTransaction) {
+TEST_F(ToyLangIntegrationTest, ExplicitTransaction) {
   const string kProgram =
       "(begin_tran)\n"
       "(end_tran)\n";
@@ -93,7 +91,9 @@ TEST_F(DISABLED_ToyLangIntegrationTest, ExplicitTransaction) {
   RunTestProgram(kProgram);
 }
 
-TEST_F(DISABLED_ToyLangIntegrationTest, FibList) {
+// TODO(dss): Re-enable this test once the toy_lang interpreter is working
+// again.
+TEST_F(ToyLangIntegrationTest, DISABLED_FibList) {
   const string kProgram =
       "# Create a list that contains the Fibonacci sequence.\n"
       "\n"

@@ -18,12 +18,17 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
 #include "include/c++/unversioned_local_object.h"
 
 namespace floating_temple {
+
+class ObjectReference;
+class Thread;
+
 namespace toy_lang {
 
 class Expression;
@@ -32,7 +37,8 @@ class SymbolTable;
 class ProgramObject : public UnversionedLocalObject {
  public:
   // Does not take ownership of 'symbol_table'. Takes ownership of 'expression'.
-  ProgramObject(SymbolTable* symbol_table, Expression* expression);
+  ProgramObject(SymbolTable* symbol_table, Expression* expression,
+                int get_variable_symbol_id);
   ~ProgramObject() override;
 
   void InvokeMethod(Thread* thread,
@@ -43,8 +49,13 @@ class ProgramObject : public UnversionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
+  bool CreateBuiltInObjects(
+      SymbolTable* symbol_table, Thread* thread,
+      std::unordered_map<int, ObjectReference*>* symbol_bindings);
+
   SymbolTable* const symbol_table_;
   const std::unique_ptr<Expression> expression_;
+  const int get_variable_symbol_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);
 };

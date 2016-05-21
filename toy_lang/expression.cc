@@ -169,19 +169,9 @@ SymbolExpression::SymbolExpression(int symbol_id)
 ObjectReference* SymbolExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
     Thread* thread) const {
-  CHECK(thread != nullptr);
-
   const auto it = symbol_bindings.find(symbol_id_);
   CHECK(it != symbol_bindings.end());
-  ObjectReference* const variable_object = it->second;
-
-  Value return_value;
-  if (!thread->CallMethod(variable_object, "get", vector<Value>(),
-                          &return_value)) {
-    return nullptr;
-  }
-
-  return return_value.object_reference();
+  return it->second;
 }
 
 void SymbolExpression::PopulateExpressionProto(

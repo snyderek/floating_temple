@@ -50,13 +50,15 @@ void RunToyLangProgram(Peer* peer, const string& source_file_name,
 void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   CHECK(peer != nullptr);
 
-  Lexer lexer(fp);
   SymbolTable symbol_table;
-  Parser parser(&lexer, &symbol_table);
+  const int get_variable_symbol_id = symbol_table.AddExternalSymbol("");
+
+  Lexer lexer(fp);
+  Parser parser(&lexer, &symbol_table, get_variable_symbol_id);
   Expression* const expression = parser.ParseFile();
 
   UnversionedLocalObject* const program_object = new ProgramObject(
-      &symbol_table, expression);
+      &symbol_table, expression, get_variable_symbol_id);
 
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value, linger);

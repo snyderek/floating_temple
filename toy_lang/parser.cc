@@ -32,9 +32,11 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-Parser::Parser(Lexer* lexer, SymbolTable* symbol_table)
+Parser::Parser(Lexer* lexer, SymbolTable* symbol_table,
+               int get_variable_symbol_id)
     : lexer_(CHECK_NOTNULL(lexer)),
-      symbol_table_(CHECK_NOTNULL(symbol_table)) {
+      symbol_table_(CHECK_NOTNULL(symbol_table)),
+      get_variable_symbol_id_(get_variable_symbol_id) {
 }
 
 Expression* Parser::ParseFile() {
@@ -67,8 +69,14 @@ Expression* Parser::ParseExpression() {
       return new StringExpression(token.string_literal());
 
     case Token::IDENTIFIER: {
+      Expression* const function_expression = new SymbolExpression(
+          get_variable_symbol_id_);
+
       const int symbol_id = symbol_table_->GetSymbolId(token.identifier());
-      return new SymbolExpression(symbol_id);
+      Expression* const variable_expression = new SymbolExpression(symbol_id);
+      const vector<Expression*> parameters(1, variable_expression);
+
+      return new FunctionCallExpression(function_expression, parameters);
     }
 
     case Token::BEGIN_EXPRESSION: {

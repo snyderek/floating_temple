@@ -31,6 +31,7 @@
 #include "toy_lang/zoo/bool_object.h"
 #include "toy_lang/zoo/end_tran_function.h"
 #include "toy_lang/zoo/for_function.h"
+#include "toy_lang/zoo/get_variable_function.h"
 #include "toy_lang/zoo/if_function.h"
 #include "toy_lang/zoo/len_function.h"
 #include "toy_lang/zoo/less_than_function.h"
@@ -76,7 +77,59 @@ void AddSymbol(SymbolTable* symbol_table,
   CHECK(symbol_bindings->emplace(symbol_id, variable_object).second);
 }
 
-bool CreateBuiltInObjects(
+}  // namespace
+
+ProgramObject::ProgramObject(SymbolTable* symbol_table, Expression* expression,
+                             int get_variable_symbol_id)
+    : symbol_table_(CHECK_NOTNULL(symbol_table)),
+      expression_(CHECK_NOTNULL(expression)),
+      get_variable_symbol_id_(get_variable_symbol_id) {
+}
+
+ProgramObject::~ProgramObject() {
+}
+
+void ProgramObject::InvokeMethod(Thread* thread,
+                                 ObjectReference* object_reference,
+                                 const string& method_name,
+                                 const vector<Value>& parameters,
+                                 Value* return_value) {
+  CHECK(thread != nullptr);
+  CHECK_EQ(method_name, "run");
+  CHECK(return_value != nullptr);
+
+  unordered_map<int, ObjectReference*> symbol_bindings;
+  if (!CreateBuiltInObjects(symbol_table_, thread, &symbol_bindings)) {
+    return;
+  }
+
+  ObjectReference* const code_block_object = expression_->Evaluate(
+      symbol_bindings, thread);
+
+  const vector<Value> eval_parameters;
+  Value dummy;
+  if (!thread->CallMethod(code_block_object, "eval", eval_parameters, &dummy)) {
+    return;
+  }
+
+  return_value->set_empty(0);
+}
+
+void ProgramObject::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("ProgramObject");
+
+  dc->AddString("expression");
+  dc->AddString(expression_->DebugString());
+
+  dc->End();
+}
+
+bool ProgramObject::CreateBuiltInObjects(
     SymbolTable* symbol_table, Thread* thread,
     unordered_map<int, ObjectReference*>* symbol_bindings) {
   CHECK(symbol_table != nullptr);
@@ -86,6 +139,11 @@ bool CreateBuiltInObjects(
   if (!thread->BeginTransaction()) {
     return false;
   }
+
+  ObjectReference* const get_variable_function = thread->CreateVersionedObject(
+      new GetVariableFunction(), "get");
+  CHECK(symbol_bindings->emplace(get_variable_symbol_id_,
+                                 get_variable_function).second);
 
   // TODO(dss): Make these unversioned objects. There's no reason to record
   // method calls on any of these objects, because they're constant. (The
@@ -138,56 +196,6 @@ bool CreateBuiltInObjects(
   }
 
   return true;
-}
-
-}  // namespace
-
-ProgramObject::ProgramObject(SymbolTable* symbol_table, Expression* expression)
-    : symbol_table_(CHECK_NOTNULL(symbol_table)),
-      expression_(CHECK_NOTNULL(expression)) {
-}
-
-ProgramObject::~ProgramObject() {
-}
-
-void ProgramObject::InvokeMethod(Thread* thread,
-                                 ObjectReference* object_reference,
-                                 const string& method_name,
-                                 const vector<Value>& parameters,
-                                 Value* return_value) {
-  CHECK(thread != nullptr);
-  CHECK_EQ(method_name, "run");
-  CHECK(return_value != nullptr);
-
-  unordered_map<int, ObjectReference*> symbol_bindings;
-  if (!CreateBuiltInObjects(symbol_table_, thread, &symbol_bindings)) {
-    return;
-  }
-
-  ObjectReference* const code_block_object = expression_->Evaluate(
-      symbol_bindings, thread);
-
-  const vector<Value> eval_parameters;
-  Value dummy;
-  if (!thread->CallMethod(code_block_object, "eval", eval_parameters, &dummy)) {
-    return;
-  }
-
-  return_value->set_empty(0);
-}
-
-void ProgramObject::Dump(DumpContext* dc) const {
-  CHECK(dc != nullptr);
-
-  dc->BeginMap();
-
-  dc->AddString("type");
-  dc->AddString("ProgramObject");
-
-  dc->AddString("expression");
-  dc->AddString(expression_->DebugString());
-
-  dc->End();
 }
 
 }  // namespace toy_lang

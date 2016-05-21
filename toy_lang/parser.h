@@ -34,7 +34,7 @@ class Parser {
  public:
   // Does not take ownership of 'lexer'. Does not take ownership of
   // 'symbol_table'.
-  Parser(Lexer* lexer, SymbolTable* symbol_table);
+  Parser(Lexer* lexer, SymbolTable* symbol_table, int get_variable_symbol_id);
 
   Expression* ParseFile();
 
@@ -48,6 +48,7 @@ class Parser {
 
   Lexer* const lexer_;
   SymbolTable* const symbol_table_;
+  const int get_variable_symbol_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Parser);
 };

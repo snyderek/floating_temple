@@ -88,10 +88,10 @@ int SymbolTable::CreateLocalVariable(const string& symbol_name) {
 }
 
 int SymbolTable::AddExternalSymbol(const string& symbol_name) {
-  CHECK(!symbol_name.empty());
-
   const int symbol_id = GetNextSymbolId();
-  CHECK(external_symbol_map_.emplace(symbol_name, symbol_id).second);
+  if (!symbol_name.empty()) {
+    CHECK(external_symbol_map_.emplace(symbol_name, symbol_id).second);
+  }
 
   return symbol_id;
 }

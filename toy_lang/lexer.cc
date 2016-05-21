@@ -41,6 +41,8 @@ namespace floating_temple {
 namespace toy_lang {
 namespace {
 
+const char kSetKeyword[] = "set";
+
 string Hex(int n) {
   return StringPrintf("%02X", n);
 }
@@ -258,6 +260,7 @@ void Lexer::YieldIntLiteral(State new_state) const {
 }
 
 void Lexer::YieldStringLiteral(State new_state) const {
+  // TODO(dss): Use tokens_.emplace() here.
   tokens_.push(Token());
   Token::CreateStringLiteral(&tokens_.back(), attribute_);
   ChangeState(new_state);
@@ -265,7 +268,12 @@ void Lexer::YieldStringLiteral(State new_state) const {
 
 void Lexer::YieldIdentifier(State new_state) const {
   tokens_.push(Token());
-  Token::CreateIdentifier(&tokens_.back(), attribute_);
+  Token* const token = &tokens_.back();
+  if (attribute_ == kSetKeyword) {
+    Token::CreateSetKeyword(token);
+  } else {
+    Token::CreateIdentifier(token, attribute_);
+  }
   ChangeState(new_state);
 }
 

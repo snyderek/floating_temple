@@ -80,14 +80,36 @@ Expression* Parser::ParseExpression() {
       return new FunctionCallExpression(function_expression, parameters);
     }
 
-    case Token::BEGIN_EXPRESSION: {
-      Expression* const function = ParseExpression();
+    case Token::BEGIN_EXPRESSION:
+      if (lexer_->PeekNextTokenType() == Token::SET_KEYWORD) {
+        CHECK_EQ(lexer_->GetNextTokenType(), Token::SET_KEYWORD);
 
-      vector<Expression*> parameters;
-      ParseExpressionList(Token::END_EXPRESSION, &parameters);
+        Token identifier_token;
+        lexer_->GetNextToken(&identifier_token);
+        const string& identifier = identifier_token.identifier();
 
-      return new FunctionCallExpression(function, parameters);
-    }
+        Expression* const rhs_expression = ParseExpression();
+        CHECK_EQ(lexer_->GetNextTokenType(), Token::END_EXPRESSION);
+
+        const int symbol_id = symbol_table_->GetSymbolId(identifier);
+        Expression* const variable_expression = new SymbolExpression(symbol_id);
+
+        Expression* const function_expression = new SymbolExpression(
+            hidden_symbols_.set_variable_symbol_id);
+
+        vector<Expression*> parameters(2);
+        parameters[0] = variable_expression;
+        parameters[1] = rhs_expression;
+
+        return new FunctionCallExpression(function_expression, parameters);
+      } else {
+        Expression* const function = ParseExpression();
+        vector<Expression*> parameters;
+        ParseExpressionList(Token::END_EXPRESSION, &parameters);
+
+        return new FunctionCallExpression(function, parameters);
+      }
+      break;
 
     case Token::BEGIN_BLOCK: {
       EnterScope(vector<string>());
@@ -109,6 +131,7 @@ Expression* Parser::ParseExpression() {
       LOG(FATAL) << "Unexpected token type: " << static_cast<int>(token_type);
   }
 
+  LOG(FATAL) << "Execution should not reach this point.";
   return nullptr;
 }
 

@@ -143,8 +143,13 @@ bool ProgramObject::CreateBuiltInObjects(
 
   ObjectReference* const get_variable_function = thread->CreateVersionedObject(
       new GetVariableFunction(), "get");
+  ObjectReference* const set_variable_function = thread->CreateVersionedObject(
+      new SetVariableFunction(), "set");
+
   CHECK(symbol_bindings->emplace(hidden_symbols_.get_variable_symbol_id,
                                  get_variable_function).second);
+  CHECK(symbol_bindings->emplace(hidden_symbols_.set_variable_symbol_id,
+                                 set_variable_function).second);
 
   // TODO(dss): Make these unversioned objects. There's no reason to record
   // method calls on any of these objects, because they're constant. (The
@@ -154,8 +159,6 @@ bool ProgramObject::CreateBuiltInObjects(
   AddSymbol(symbol_table, thread, "true", new BoolObject(true),
             symbol_bindings);
   AddSymbol(symbol_table, thread, "list", new ListFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "set", new SetVariableFunction(),
             symbol_bindings);
   AddSymbol(symbol_table, thread, "for", new ForFunction(),
             symbol_bindings);

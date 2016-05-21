@@ -54,6 +54,7 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   SymbolTable symbol_table;
   HiddenSymbols hidden_symbols;
   hidden_symbols.get_variable_symbol_id = symbol_table.AddExternalSymbol("");
+  hidden_symbols.set_variable_symbol_id = symbol_table.AddExternalSymbol("");
 
   Lexer lexer(fp);
   Parser parser(&lexer, &symbol_table, hidden_symbols);

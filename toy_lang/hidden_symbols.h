@@ -21,6 +21,7 @@ namespace toy_lang {
 
 struct HiddenSymbols {
   int get_variable_symbol_id;
+  int set_variable_symbol_id;
 };
 
 }  // namespace toy_lang

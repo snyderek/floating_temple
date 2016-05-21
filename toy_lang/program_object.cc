@@ -38,6 +38,7 @@
 #include "toy_lang/zoo/list_append_function.h"
 #include "toy_lang/zoo/list_function.h"
 #include "toy_lang/zoo/list_get_function.h"
+#include "toy_lang/zoo/list_object.h"
 #include "toy_lang/zoo/map_get_function.h"
 #include "toy_lang/zoo/map_is_set_function.h"
 #include "toy_lang/zoo/map_object.h"
@@ -87,7 +88,11 @@ void ProgramObject::InvokeMethod(Thread* thread,
   ObjectReference* const code_block_object = expression_->Evaluate(
       symbol_bindings, thread);
 
-  const vector<Value> eval_parameters;
+  ObjectReference* const list_object = thread->CreateVersionedObject(
+      new ListObject(vector<ObjectReference*>()), "");
+  vector<Value> eval_parameters(1);
+  eval_parameters[0].set_object_reference(0, list_object);
+
   Value dummy;
   if (!thread->CallMethod(code_block_object, "eval", eval_parameters, &dummy)) {
     return;

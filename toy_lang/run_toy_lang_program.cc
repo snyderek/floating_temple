@@ -23,7 +23,6 @@
 #include "include/c++/peer.h"
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"
-#include "toy_lang/hidden_symbols.h"
 #include "toy_lang/lexer.h"
 #include "toy_lang/parser.h"
 #include "toy_lang/program_object.h"
@@ -52,16 +51,37 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   CHECK(peer != nullptr);
 
   SymbolTable symbol_table;
-  HiddenSymbols hidden_symbols;
-  hidden_symbols.get_variable_symbol_id = symbol_table.AddExternalSymbol("");
-  hidden_symbols.set_variable_symbol_id = symbol_table.AddExternalSymbol("");
+
+  symbol_table.AddExternalSymbol("get", false);
+  symbol_table.AddExternalSymbol("set", false);
+
+  symbol_table.AddExternalSymbol("false", true);
+  symbol_table.AddExternalSymbol("true", true);
+  symbol_table.AddExternalSymbol("list", true);
+  symbol_table.AddExternalSymbol("for", true);
+  symbol_table.AddExternalSymbol("range", true);
+  symbol_table.AddExternalSymbol("print", true);
+  symbol_table.AddExternalSymbol("add", true);
+  symbol_table.AddExternalSymbol("begin_tran", true);
+  symbol_table.AddExternalSymbol("end_tran", true);
+  symbol_table.AddExternalSymbol("if", true);
+  symbol_table.AddExternalSymbol("not", true);
+  symbol_table.AddExternalSymbol("while", true);
+  symbol_table.AddExternalSymbol("lt", true);
+  symbol_table.AddExternalSymbol("len", true);
+  symbol_table.AddExternalSymbol("list.append", true);
+  symbol_table.AddExternalSymbol("list.get", true);
+  symbol_table.AddExternalSymbol("map.is_set", true);
+  symbol_table.AddExternalSymbol("map.get", true);
+  symbol_table.AddExternalSymbol("map.set", true);
+  symbol_table.AddExternalSymbol("shared", true);
 
   Lexer lexer(fp);
-  Parser parser(&lexer, &symbol_table, hidden_symbols);
+  Parser parser(&lexer, &symbol_table);
   Expression* const expression = parser.ParseFile();
 
   UnversionedLocalObject* const program_object = new ProgramObject(
-      &symbol_table, expression, hidden_symbols);
+      &symbol_table, expression);
 
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value, linger);

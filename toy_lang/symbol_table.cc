@@ -62,7 +62,7 @@ void SymbolTable::LeaveScope(vector<int>* parameter_symbol_ids,
   scopes_.pop_back();
 }
 
-int SymbolTable::GetSymbolId(const string& symbol_name) const {
+int SymbolTable::GetSymbolId(const string& symbol_name, bool visible) const {
   for (auto scope_it = scopes_.rbegin(); scope_it != scopes_.rend();
        ++scope_it) {
     const unordered_map<string, int>& symbol_map = scope_it->symbol_map;
@@ -75,10 +75,13 @@ int SymbolTable::GetSymbolId(const string& symbol_name) const {
 
   const auto it = external_symbol_map_.find(symbol_name);
   if (it != external_symbol_map_.end()) {
-    return it->second;
+    const ExternalSymbol& external_symbol = it->second;
+    CHECK_EQ(external_symbol.visible, visible);
+    return external_symbol.symbol_id;
   }
 
   LOG(FATAL) << "Symbol not found: \"" << CEscape(symbol_name) << "\"";
+  return -1;
 }
 
 int SymbolTable::CreateLocalVariable(const string& symbol_name) {
@@ -87,13 +90,43 @@ int SymbolTable::CreateLocalVariable(const string& symbol_name) {
   return symbol_id;
 }
 
-int SymbolTable::AddExternalSymbol(const string& symbol_name) {
+int SymbolTable::AddExternalSymbol(const string& symbol_name, bool visible) {
+  CHECK(!symbol_name.empty());
+
   const int symbol_id = GetNextSymbolId();
-  if (!symbol_name.empty()) {
-    CHECK(external_symbol_map_.emplace(symbol_name, symbol_id).second);
-  }
+
+  ExternalSymbol external_symbol;
+  external_symbol.symbol_id = symbol_id;
+  external_symbol.visible = visible;
+  external_symbol.object_reference = nullptr;
+
+  CHECK(external_symbol_map_.emplace(symbol_name, external_symbol).second);
 
   return symbol_id;
+}
+
+void SymbolTable::ResolveExternalSymbol(const string& symbol_name,
+                                        ObjectReference* object_reference) {
+  CHECK(object_reference != nullptr);
+
+  const auto it = external_symbol_map_.find(symbol_name);
+  CHECK(it != external_symbol_map_.end())
+      << "External symbol \"" << CEscape(symbol_name) << "\" not found.";
+
+  ExternalSymbol* const external_symbol = &it->second;
+  CHECK(external_symbol->object_reference == nullptr);
+  external_symbol->object_reference = object_reference;
+}
+
+void SymbolTable::GetExternalSymbolBindings(
+    unordered_map<int, ObjectReference*>* symbol_bindings) {
+  CHECK(symbol_bindings != nullptr);
+
+  for (const auto& external_symbol_pair : external_symbol_map_) {
+    const ExternalSymbol& external_symbol = external_symbol_pair.second;
+    CHECK(symbol_bindings->emplace(external_symbol.symbol_id,
+                                   external_symbol.object_reference).second);
+  }
 }
 
 int SymbolTable::CreateSymbol(const string& symbol_name) {

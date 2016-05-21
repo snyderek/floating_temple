@@ -21,7 +21,6 @@
 
 #include "base/logging.h"
 #include "toy_lang/expression.h"
-#include "toy_lang/hidden_symbols.h"
 #include "toy_lang/lexer.h"
 #include "toy_lang/symbol_table.h"
 #include "toy_lang/token.h"
@@ -33,11 +32,9 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-Parser::Parser(Lexer* lexer, SymbolTable* symbol_table,
-               const HiddenSymbols& hidden_symbols)
+Parser::Parser(Lexer* lexer, SymbolTable* symbol_table)
     : lexer_(CHECK_NOTNULL(lexer)),
-      symbol_table_(CHECK_NOTNULL(symbol_table)),
-      hidden_symbols_(hidden_symbols) {
+      symbol_table_(CHECK_NOTNULL(symbol_table)) {
 }
 
 Expression* Parser::ParseFile() {
@@ -71,9 +68,10 @@ Expression* Parser::ParseExpression() {
 
     case Token::IDENTIFIER: {
       Expression* const function_expression = new SymbolExpression(
-          hidden_symbols_.get_variable_symbol_id);
+          symbol_table_->GetSymbolId("get", false));
 
-      const int symbol_id = symbol_table_->GetSymbolId(token.identifier());
+      const int symbol_id = symbol_table_->GetSymbolId(token.identifier(),
+                                                       true);
       Expression* const variable_expression = new SymbolExpression(symbol_id);
       const vector<Expression*> parameters(1, variable_expression);
 
@@ -91,11 +89,12 @@ Expression* Parser::ParseExpression() {
         Expression* const rhs_expression = ParseExpression();
         CHECK_EQ(lexer_->GetNextTokenType(), Token::END_EXPRESSION);
 
-        const int symbol_id = symbol_table_->GetSymbolId(identifier);
+        // TODO(dss): Create the variable if it doesn't exist.
+        const int symbol_id = symbol_table_->GetSymbolId(identifier, true);
         Expression* const variable_expression = new SymbolExpression(symbol_id);
 
         Expression* const function_expression = new SymbolExpression(
-            hidden_symbols_.set_variable_symbol_id);
+            symbol_table_->GetSymbolId("set", false));
 
         vector<Expression*> parameters(2);
         parameters[0] = variable_expression;

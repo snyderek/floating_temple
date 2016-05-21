@@ -24,6 +24,9 @@
 #include "base/macros.h"
 
 namespace floating_temple {
+
+class ObjectReference;
+
 namespace toy_lang {
 
 class SymbolTable {
@@ -35,9 +38,14 @@ class SymbolTable {
   void LeaveScope(std::vector<int>* parameter_symbol_ids,
                   std::vector<int>* local_symbol_ids);
 
-  int GetSymbolId(const std::string& symbol_name) const;
+  int GetSymbolId(const std::string& symbol_name, bool visible) const;
   int CreateLocalVariable(const std::string& symbol_name);
-  int AddExternalSymbol(const std::string& symbol_name);
+
+  int AddExternalSymbol(const std::string& symbol_name, bool visible);
+  void ResolveExternalSymbol(const std::string& symbol_name,
+                             ObjectReference* object_reference);
+  void GetExternalSymbolBindings(
+      std::unordered_map<int, ObjectReference*>* symbol_bindings);
 
  private:
   struct Scope {
@@ -46,11 +54,17 @@ class SymbolTable {
     std::vector<int> local_symbol_ids;
   };
 
+  struct ExternalSymbol {
+    int symbol_id;
+    bool visible;
+    ObjectReference* object_reference;
+  };
+
   int CreateSymbol(const std::string& symbol_name);
   int GetNextSymbolId();
 
   std::vector<Scope> scopes_;
-  std::unordered_map<std::string, int> external_symbol_map_;
+  std::unordered_map<std::string, ExternalSymbol> external_symbol_map_;
   int next_symbol_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SymbolTable);

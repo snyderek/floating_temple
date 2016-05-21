@@ -24,7 +24,6 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"
-#include "toy_lang/hidden_symbols.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
 #include "toy_lang/zoo/add_function.h"
@@ -60,31 +59,10 @@ namespace floating_temple {
 class ObjectReference;
 
 namespace toy_lang {
-namespace {
 
-void AddSymbol(SymbolTable* symbol_table,
-               Thread* thread,
-               const string& name,
-               LocalObjectImpl* local_object,
-               unordered_map<int, ObjectReference*>* symbol_bindings) {
-  CHECK(!name.empty());
-
-  ObjectReference* const built_in_object = thread->CreateVersionedObject(
-      local_object, name);
-
-  const int symbol_id = symbol_table->AddExternalSymbol(name);
-  ObjectReference* const variable_object = thread->CreateVersionedObject(
-      new VariableObject(built_in_object), "");
-  CHECK(symbol_bindings->emplace(symbol_id, variable_object).second);
-}
-
-}  // namespace
-
-ProgramObject::ProgramObject(SymbolTable* symbol_table, Expression* expression,
-                             const HiddenSymbols& hidden_symbols)
+ProgramObject::ProgramObject(SymbolTable* symbol_table, Expression* expression)
     : symbol_table_(CHECK_NOTNULL(symbol_table)),
-      expression_(CHECK_NOTNULL(expression)),
-      hidden_symbols_(hidden_symbols) {
+      expression_(CHECK_NOTNULL(expression)) {
 }
 
 ProgramObject::~ProgramObject() {
@@ -99,10 +77,12 @@ void ProgramObject::InvokeMethod(Thread* thread,
   CHECK_EQ(method_name, "run");
   CHECK(return_value != nullptr);
 
-  unordered_map<int, ObjectReference*> symbol_bindings;
-  if (!CreateBuiltInObjects(symbol_table_, thread, &symbol_bindings)) {
+  if (!CreateBuiltInObjects(thread)) {
     return;
   }
+
+  unordered_map<int, ObjectReference*> symbol_bindings;
+  symbol_table_->GetExternalSymbolBindings(&symbol_bindings);
 
   ObjectReference* const code_block_object = expression_->Evaluate(
       symbol_bindings, thread);
@@ -130,76 +110,60 @@ void ProgramObject::Dump(DumpContext* dc) const {
   dc->End();
 }
 
-bool ProgramObject::CreateBuiltInObjects(
-    SymbolTable* symbol_table, Thread* thread,
-    unordered_map<int, ObjectReference*>* symbol_bindings) {
-  CHECK(symbol_table != nullptr);
+bool ProgramObject::CreateBuiltInObjects(Thread* thread) {
   CHECK(thread != nullptr);
-  CHECK(symbol_bindings != nullptr);
 
   if (!thread->BeginTransaction()) {
     return false;
   }
 
-  ObjectReference* const get_variable_function = thread->CreateVersionedObject(
-      new GetVariableFunction(), "get");
-  ObjectReference* const set_variable_function = thread->CreateVersionedObject(
-      new SetVariableFunction(), "set");
-
-  CHECK(symbol_bindings->emplace(hidden_symbols_.get_variable_symbol_id,
-                                 get_variable_function).second);
-  CHECK(symbol_bindings->emplace(hidden_symbols_.set_variable_symbol_id,
-                                 set_variable_function).second);
+  symbol_table_->ResolveExternalSymbol(
+      "get", thread->CreateVersionedObject(new GetVariableFunction(), "get"));
+  symbol_table_->ResolveExternalSymbol(
+      "set", thread->CreateVersionedObject(new SetVariableFunction(), "set"));
 
   // TODO(dss): Make these unversioned objects. There's no reason to record
   // method calls on any of these objects, because they're constant. (The
   // "shared" map object should still be versioned, however.)
-  AddSymbol(symbol_table, thread, "false", new BoolObject(false),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "true", new BoolObject(true),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "list", new ListFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "for", new ForFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "range", new RangeFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "print", new PrintFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "add", new AddFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "begin_tran", new BeginTranFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "end_tran", new EndTranFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "if", new IfFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "not", new NotFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "while", new WhileFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "lt", new LessThanFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "len", new LenFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "list.append", new ListAppendFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "list.get", new ListGetFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "map.is_set", new MapIsSetFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "map.get", new MapGetFunction(),
-            symbol_bindings);
-  AddSymbol(symbol_table, thread, "map.set", new MapSetFunction(),
-            symbol_bindings);
+  CreateExternalVariable(thread, "false", new BoolObject(false));
+  CreateExternalVariable(thread, "true", new BoolObject(true));
+  CreateExternalVariable(thread, "list", new ListFunction());
+  CreateExternalVariable(thread, "for", new ForFunction());
+  CreateExternalVariable(thread, "range", new RangeFunction());
+  CreateExternalVariable(thread, "print", new PrintFunction());
+  CreateExternalVariable(thread, "add", new AddFunction());
+  CreateExternalVariable(thread, "begin_tran", new BeginTranFunction());
+  CreateExternalVariable(thread, "end_tran", new EndTranFunction());
+  CreateExternalVariable(thread, "if", new IfFunction());
+  CreateExternalVariable(thread, "not", new NotFunction());
+  CreateExternalVariable(thread, "while", new WhileFunction());
+  CreateExternalVariable(thread, "lt", new LessThanFunction());
+  CreateExternalVariable(thread, "len", new LenFunction());
+  CreateExternalVariable(thread, "list.append", new ListAppendFunction());
+  CreateExternalVariable(thread, "list.get", new ListGetFunction());
+  CreateExternalVariable(thread, "map.is_set", new MapIsSetFunction());
+  CreateExternalVariable(thread, "map.get", new MapGetFunction());
+  CreateExternalVariable(thread, "map.set", new MapSetFunction());
 
-  AddSymbol(symbol_table, thread, "shared", new MapObject(), symbol_bindings);
+  CreateExternalVariable(thread, "shared", new MapObject());
 
   if (!thread->EndTransaction()) {
     return false;
   }
 
   return true;
+}
+
+void ProgramObject::CreateExternalVariable(Thread* thread, const string& name,
+                                           LocalObjectImpl* local_object) {
+  CHECK(thread != nullptr);
+  CHECK(!name.empty());
+
+  ObjectReference* const built_in_object = thread->CreateVersionedObject(
+      local_object, name);
+  ObjectReference* const variable_object = thread->CreateVersionedObject(
+      new VariableObject(built_in_object), "");
+  symbol_table_->ResolveExternalSymbol(name, variable_object);
 }
 
 }  // namespace toy_lang

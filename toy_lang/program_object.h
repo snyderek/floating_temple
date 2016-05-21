@@ -25,6 +25,7 @@
 namespace floating_temple {
 
 class Thread;
+class VersionedLocalObject;
 
 namespace toy_lang {
 
@@ -47,6 +48,8 @@ class ProgramObject : public UnversionedLocalObject {
 
  private:
   bool CreateBuiltInObjects(Thread* thread);
+  void ResolveHiddenSymbol(Thread* thread, const std::string& symbol_name,
+                           VersionedLocalObject* local_object);
   void CreateExternalVariable(Thread* thread, const std::string& name,
                               LocalObjectImpl* local_object);
 

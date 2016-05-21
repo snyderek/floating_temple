@@ -122,10 +122,8 @@ bool ProgramObject::CreateBuiltInObjects(Thread* thread) {
     return false;
   }
 
-  symbol_table_->ResolveExternalSymbol(
-      "get", thread->CreateVersionedObject(new GetVariableFunction(), "get"));
-  symbol_table_->ResolveExternalSymbol(
-      "set", thread->CreateVersionedObject(new SetVariableFunction(), "set"));
+  ResolveHiddenSymbol(thread, "get", new GetVariableFunction());
+  ResolveHiddenSymbol(thread, "set", new SetVariableFunction());
 
   // TODO(dss): Make these unversioned objects. There's no reason to record
   // method calls on any of these objects, because they're constant. (The
@@ -157,6 +155,17 @@ bool ProgramObject::CreateBuiltInObjects(Thread* thread) {
   }
 
   return true;
+}
+
+void ProgramObject::ResolveHiddenSymbol(Thread* thread,
+                                        const string& symbol_name,
+                                        VersionedLocalObject* local_object) {
+  CHECK(thread != nullptr);
+  CHECK(!symbol_name.empty());
+
+  ObjectReference* const object_reference = thread->CreateVersionedObject(
+      local_object, symbol_name);
+  symbol_table_->ResolveExternalSymbol(symbol_name, object_reference);
 }
 
 void ProgramObject::CreateExternalVariable(Thread* thread, const string& name,

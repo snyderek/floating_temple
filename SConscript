@@ -824,9 +824,7 @@ cxx_tests = [
   ]
 
 sh_tests = [
-    # TODO(dss): Re-enable this test once the toy_lang interpreter is working
-    # again.
-    #File('engine/toy_lang_integration_test.sh'),
+    File('engine/toy_lang_integration_test.sh'),
   ]
 
 all_tests = cxx_tests + sh_tests

@@ -15,6 +15,7 @@
 
 #include "toy_lang/zoo/if_function.h"
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -22,11 +23,15 @@
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
+#include "toy_lang/zoo/list_object.h"
 #include "util/dump_context.h"
 
 using std::vector;
 
 namespace floating_temple {
+
+class ObjectReference;
+
 namespace toy_lang {
 
 IfFunction::IfFunction() {
@@ -61,21 +66,26 @@ ObjectReference* IfFunction::Call(
     return nullptr;
   }
 
-  ObjectReference* expression = nullptr;
+  ObjectReference* code_block = nullptr;
 
   if (condition) {
-    expression = parameters[1];
+    code_block = parameters[1];
   } else {
     if (parameters.size() < 3u) {
       return MakeNoneObject(thread);
     }
 
-    expression = parameters[2];
+    code_block = parameters[2];
   }
 
-  const vector<Value> eval_parameters;
+  vector<Value> eval_parameters(1);
+  eval_parameters[0].set_object_reference(
+      0,
+      thread->CreateVersionedObject(new ListObject(vector<ObjectReference*>()),
+                                    ""));
+
   Value result;
-  if (!thread->CallMethod(expression, "eval", eval_parameters, &result)) {
+  if (!thread->CallMethod(code_block, "eval", eval_parameters, &result)) {
     return nullptr;
   }
 

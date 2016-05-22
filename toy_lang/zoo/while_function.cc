@@ -15,6 +15,7 @@
 
 #include "toy_lang/zoo/while_function.h"
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -22,11 +23,15 @@
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
+#include "toy_lang/zoo/list_object.h"
 #include "util/dump_context.h"
 
 using std::vector;
 
 namespace floating_temple {
+
+class ObjectReference;
+
 namespace toy_lang {
 
 WhileFunction::WhileFunction() {
@@ -55,14 +60,18 @@ ObjectReference* WhileFunction::Call(
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
-  ObjectReference* const condition_expression = parameters[0];
-  ObjectReference* const expression = parameters[1];
+  ObjectReference* const condition_block = parameters[0];
+  ObjectReference* const code_block = parameters[1];
 
-  const vector<Value> eval_parameters;
+  vector<Value> eval_parameters(1);
+  eval_parameters[0].set_object_reference(
+      0,
+      thread->CreateVersionedObject(new ListObject(vector<ObjectReference*>()),
+                                    ""));
 
   for (;;) {
     Value condition_object;
-    if (!thread->CallMethod(condition_expression, "eval", eval_parameters,
+    if (!thread->CallMethod(condition_block, "eval", eval_parameters,
                             &condition_object)) {
       return nullptr;
     }
@@ -77,7 +86,7 @@ ObjectReference* WhileFunction::Call(
     }
 
     Value dummy;
-    if (!thread->CallMethod(expression, "eval", eval_parameters, &dummy)) {
+    if (!thread->CallMethod(code_block, "eval", eval_parameters, &dummy)) {
       return nullptr;
     }
   }

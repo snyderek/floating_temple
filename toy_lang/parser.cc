@@ -123,6 +123,10 @@ Expression* Parser::ParseStatement() {
       expression = ParseSetStatement();
       break;
 
+    case Token::WHILE_KEYWORD:
+      expression = ParseWhileStatement();
+      break;
+
     default:
       expression = ParseFunctionCall();
   }
@@ -172,6 +176,26 @@ Expression* Parser::ParseSetStatement() {
   vector<Expression*> parameters(2);
   parameters[0] = variable_expression;
   parameters[1] = rhs_expression;
+
+  return new FunctionCallExpression(function_expression, parameters);
+}
+
+Expression* Parser::ParseWhileStatement() {
+  CHECK_EQ(lexer_->GetNextTokenType(), Token::WHILE_KEYWORD);
+
+  EnterScope(vector<string>());
+  const shared_ptr<const Expression> condition_expression(ParseExpression());
+  Expression* const condition_block_expression = LeaveScope(
+      condition_expression);
+
+  Expression* const code_block_expression = ParseBlock(vector<string>());
+
+  Expression* const function_expression = new SymbolExpression(
+      symbol_table_->GetSymbolId("while", false));
+
+  vector<Expression*> parameters(2);
+  parameters[0] = condition_block_expression;
+  parameters[1] = code_block_expression;
 
   return new FunctionCallExpression(function_expression, parameters);
 }

@@ -29,6 +29,7 @@ class Token {
     UNINITIALIZED,
     FOR_KEYWORD,
     SET_KEYWORD,
+    WHILE_KEYWORD,
     INT_LITERAL,
     STRING_LITERAL,
     IDENTIFIER,
@@ -56,6 +57,7 @@ class Token {
 
   static void CreateForKeyword(Token* token);
   static void CreateSetKeyword(Token* token);
+  static void CreateWhileKeyword(Token* token);
   static void CreateIntLiteral(Token* token, int64 int_literal);
   static void CreateStringLiteral(Token* token,
                                   const std::string& string_literal);

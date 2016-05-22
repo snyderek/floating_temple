@@ -1,5 +1,7 @@
 # Create a list that contains the Fibonacci sequence.
 
+(set lst [])
+
 (begin_tran)
 (if (map.is_set shared "lst") {
   (set lst (map.get shared "lst"))

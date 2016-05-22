@@ -76,6 +76,7 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   symbol_table.AddExternalSymbol("get", false, new GetVariableFunction());
   symbol_table.AddExternalSymbol("set", false, new SetVariableFunction());
   symbol_table.AddExternalSymbol("for", false, new ForFunction());
+  symbol_table.AddExternalSymbol("while", false, new WhileFunction());
 
   // TODO(dss): Make these unversioned objects. There's no reason to record
   // method calls on any of these objects, because they're constant. (The
@@ -90,7 +91,6 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   symbol_table.AddExternalSymbol("end_tran", true, new EndTranFunction());
   symbol_table.AddExternalSymbol("if", true, new IfFunction());
   symbol_table.AddExternalSymbol("not", true, new NotFunction());
-  symbol_table.AddExternalSymbol("while", true, new WhileFunction());
   symbol_table.AddExternalSymbol("lt", true, new LessThanFunction());
   symbol_table.AddExternalSymbol("len", true, new LenFunction());
   symbol_table.AddExternalSymbol("list.append", true, new ListAppendFunction());

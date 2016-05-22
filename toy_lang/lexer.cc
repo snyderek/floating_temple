@@ -43,6 +43,7 @@ namespace {
 
 const char kForKeyword[] = "for";
 const char kSetKeyword[] = "set";
+const char kWhileKeyword[] = "while";
 
 string Hex(int n) {
   return StringPrintf("%02X", n);
@@ -274,6 +275,8 @@ void Lexer::YieldIdentifier(State new_state) const {
     Token::CreateForKeyword(token);
   } else if (attribute_ == kSetKeyword) {
     Token::CreateSetKeyword(token);
+  } else if (attribute_ == kWhileKeyword) {
+    Token::CreateWhileKeyword(token);
   } else {
     Token::CreateIdentifier(token, attribute_);
   }

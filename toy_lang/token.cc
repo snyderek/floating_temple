@@ -110,6 +110,14 @@ void Token::CreateSetKeyword(Token* token) {
 }
 
 // static
+void Token::CreateWhileKeyword(Token* token) {
+  CHECK(token != nullptr);
+  VLOG(1) << "WHILE_KEYWORD";
+  token->FreeMemory();
+  token->type_ = WHILE_KEYWORD;
+}
+
+// static
 void Token::CreateIntLiteral(Token* token, int64 int_literal) {
   CHECK(token != nullptr);
   VLOG(1) << "INT_LITERAL " << int_literal;

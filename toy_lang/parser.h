@@ -46,6 +46,7 @@ class Parser {
   Expression* ParseStatement();
   Expression* ParseForStatement();
   Expression* ParseSetStatement();
+  Expression* ParseWhileStatement();
   Expression* ParseFunctionCall();
   Expression* ParseBlock(const std::vector<std::string>& parameter_names);
   Expression* ParseList();

@@ -93,9 +93,11 @@ TEST_F(ToyLangIntegrationTest, ExplicitTransaction) {
 
 // TODO(dss): Re-enable this test once the toy_lang interpreter is working
 // again.
-TEST_F(ToyLangIntegrationTest, DISABLED_FibList) {
+TEST_F(ToyLangIntegrationTest, FibList) {
   const string kProgram =
       "# Create a list that contains the Fibonacci sequence.\n"
+      "\n"
+      "(set lst [])\n"
       "\n"
       "(begin_tran)\n"
       "(if (map.is_set shared \"lst\") {\n"

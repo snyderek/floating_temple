@@ -26,6 +26,8 @@
 namespace floating_temple {
 
 class ObjectReference;
+class Thread;
+class VersionedLocalObject;
 
 namespace toy_lang {
 
@@ -41,11 +43,11 @@ class SymbolTable {
   int GetSymbolId(const std::string& symbol_name, bool visible) const;
   int GetLocalVariable(const std::string& symbol_name);
 
-  int AddExternalSymbol(const std::string& symbol_name, bool visible);
-  void ResolveExternalSymbol(const std::string& symbol_name,
-                             ObjectReference* object_reference);
+  int AddExternalSymbol(const std::string& symbol_name, bool visible,
+                        VersionedLocalObject* local_object);
+  void ResolveExternalSymbols(Thread* thread);
   void GetExternalSymbolBindings(
-      std::unordered_map<int, ObjectReference*>* symbol_bindings);
+      std::unordered_map<int, ObjectReference*>* symbol_bindings) const;
 
  private:
   struct Scope {
@@ -57,6 +59,7 @@ class SymbolTable {
   struct ExternalSymbol {
     int symbol_id;
     bool visible;
+    VersionedLocalObject* local_object;
     ObjectReference* object_reference;
   };
 

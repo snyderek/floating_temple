@@ -22,6 +22,8 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
+#include "include/c++/thread.h"
+#include "toy_lang/zoo/variable_object.h"
 
 using std::string;
 using std::unordered_map;
@@ -79,14 +81,17 @@ int SymbolTable::GetLocalVariable(const string& symbol_name) {
   return symbol_id;
 }
 
-int SymbolTable::AddExternalSymbol(const string& symbol_name, bool visible) {
+int SymbolTable::AddExternalSymbol(const string& symbol_name, bool visible,
+                                   VersionedLocalObject* local_object) {
   CHECK(!symbol_name.empty());
+  CHECK(local_object != nullptr);
 
   const int symbol_id = GetNextSymbolId();
 
   ExternalSymbol external_symbol;
   external_symbol.symbol_id = symbol_id;
   external_symbol.visible = visible;
+  external_symbol.local_object = local_object;
   external_symbol.object_reference = nullptr;
 
   CHECK(external_symbol_map_.emplace(symbol_name, external_symbol).second);
@@ -94,21 +99,28 @@ int SymbolTable::AddExternalSymbol(const string& symbol_name, bool visible) {
   return symbol_id;
 }
 
-void SymbolTable::ResolveExternalSymbol(const string& symbol_name,
-                                        ObjectReference* object_reference) {
-  CHECK(object_reference != nullptr);
+void SymbolTable::ResolveExternalSymbols(Thread* thread) {
+  CHECK(thread != nullptr);
 
-  const auto it = external_symbol_map_.find(symbol_name);
-  CHECK(it != external_symbol_map_.end())
-      << "External symbol \"" << CEscape(symbol_name) << "\" not found.";
+  for (auto& external_symbol_pair : external_symbol_map_) {
+    const string& symbol_name = external_symbol_pair.first;
+    ExternalSymbol* const external_symbol = &external_symbol_pair.second;
+    CHECK(external_symbol->object_reference == nullptr);
 
-  ExternalSymbol* const external_symbol = &it->second;
-  CHECK(external_symbol->object_reference == nullptr);
-  external_symbol->object_reference = object_reference;
+    ObjectReference* const built_in_object = thread->CreateVersionedObject(
+        external_symbol->local_object, symbol_name);
+
+    if (external_symbol->visible) {
+      external_symbol->object_reference = thread->CreateVersionedObject(
+          new VariableObject(built_in_object), "");
+    } else {
+      external_symbol->object_reference = built_in_object;
+    }
+  }
 }
 
 void SymbolTable::GetExternalSymbolBindings(
-    unordered_map<int, ObjectReference*>* symbol_bindings) {
+    unordered_map<int, ObjectReference*>* symbol_bindings) const {
   CHECK(symbol_bindings != nullptr);
 
   for (const auto& external_symbol_pair : external_symbol_map_) {

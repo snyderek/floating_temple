@@ -27,6 +27,27 @@
 #include "toy_lang/parser.h"
 #include "toy_lang/program_object.h"
 #include "toy_lang/symbol_table.h"
+#include "toy_lang/zoo/add_function.h"
+#include "toy_lang/zoo/begin_tran_function.h"
+#include "toy_lang/zoo/bool_object.h"
+#include "toy_lang/zoo/end_tran_function.h"
+#include "toy_lang/zoo/for_function.h"
+#include "toy_lang/zoo/get_variable_function.h"
+#include "toy_lang/zoo/if_function.h"
+#include "toy_lang/zoo/len_function.h"
+#include "toy_lang/zoo/less_than_function.h"
+#include "toy_lang/zoo/list_append_function.h"
+#include "toy_lang/zoo/list_function.h"
+#include "toy_lang/zoo/list_get_function.h"
+#include "toy_lang/zoo/map_get_function.h"
+#include "toy_lang/zoo/map_is_set_function.h"
+#include "toy_lang/zoo/map_object.h"
+#include "toy_lang/zoo/map_set_function.h"
+#include "toy_lang/zoo/not_function.h"
+#include "toy_lang/zoo/print_function.h"
+#include "toy_lang/zoo/range_function.h"
+#include "toy_lang/zoo/set_variable_function.h"
+#include "toy_lang/zoo/while_function.h"
 
 using std::FILE;
 using std::fclose;
@@ -52,31 +73,33 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
 
   SymbolTable symbol_table;
 
-  // TODO(dss): Refactor the code so that it's not necessary to enumerate the
-  // external symbols both here and in program_object.cc.
-  symbol_table.AddExternalSymbol("get", false);
-  symbol_table.AddExternalSymbol("set", false);
-  symbol_table.AddExternalSymbol("for", false);
+  symbol_table.AddExternalSymbol("get", false, new GetVariableFunction());
+  symbol_table.AddExternalSymbol("set", false, new SetVariableFunction());
+  symbol_table.AddExternalSymbol("for", false, new ForFunction());
 
-  symbol_table.AddExternalSymbol("false", true);
-  symbol_table.AddExternalSymbol("true", true);
-  symbol_table.AddExternalSymbol("list", true);
-  symbol_table.AddExternalSymbol("range", true);
-  symbol_table.AddExternalSymbol("print", true);
-  symbol_table.AddExternalSymbol("add", true);
-  symbol_table.AddExternalSymbol("begin_tran", true);
-  symbol_table.AddExternalSymbol("end_tran", true);
-  symbol_table.AddExternalSymbol("if", true);
-  symbol_table.AddExternalSymbol("not", true);
-  symbol_table.AddExternalSymbol("while", true);
-  symbol_table.AddExternalSymbol("lt", true);
-  symbol_table.AddExternalSymbol("len", true);
-  symbol_table.AddExternalSymbol("list.append", true);
-  symbol_table.AddExternalSymbol("list.get", true);
-  symbol_table.AddExternalSymbol("map.is_set", true);
-  symbol_table.AddExternalSymbol("map.get", true);
-  symbol_table.AddExternalSymbol("map.set", true);
-  symbol_table.AddExternalSymbol("shared", true);
+  // TODO(dss): Make these unversioned objects. There's no reason to record
+  // method calls on any of these objects, because they're constant. (The
+  // "shared" map object should still be versioned, however.)
+  symbol_table.AddExternalSymbol("false", true, new BoolObject(false));
+  symbol_table.AddExternalSymbol("true", true, new BoolObject(true));
+  symbol_table.AddExternalSymbol("list", true, new ListFunction());
+  symbol_table.AddExternalSymbol("range", true, new RangeFunction());
+  symbol_table.AddExternalSymbol("print", true, new PrintFunction());
+  symbol_table.AddExternalSymbol("add", true, new AddFunction());
+  symbol_table.AddExternalSymbol("begin_tran", true, new BeginTranFunction());
+  symbol_table.AddExternalSymbol("end_tran", true, new EndTranFunction());
+  symbol_table.AddExternalSymbol("if", true, new IfFunction());
+  symbol_table.AddExternalSymbol("not", true, new NotFunction());
+  symbol_table.AddExternalSymbol("while", true, new WhileFunction());
+  symbol_table.AddExternalSymbol("lt", true, new LessThanFunction());
+  symbol_table.AddExternalSymbol("len", true, new LenFunction());
+  symbol_table.AddExternalSymbol("list.append", true, new ListAppendFunction());
+  symbol_table.AddExternalSymbol("list.get", true, new ListGetFunction());
+  symbol_table.AddExternalSymbol("map.is_set", true, new MapIsSetFunction());
+  symbol_table.AddExternalSymbol("map.get", true, new MapGetFunction());
+  symbol_table.AddExternalSymbol("map.set", true, new MapSetFunction());
+
+  symbol_table.AddExternalSymbol("shared", true, new MapObject());
 
   Lexer lexer(fp);
   Parser parser(&lexer, &symbol_table);

@@ -24,31 +24,8 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"
-#include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/symbol_table.h"
-#include "toy_lang/zoo/add_function.h"
-#include "toy_lang/zoo/begin_tran_function.h"
-#include "toy_lang/zoo/bool_object.h"
-#include "toy_lang/zoo/end_tran_function.h"
-#include "toy_lang/zoo/for_function.h"
-#include "toy_lang/zoo/get_variable_function.h"
-#include "toy_lang/zoo/if_function.h"
-#include "toy_lang/zoo/len_function.h"
-#include "toy_lang/zoo/less_than_function.h"
-#include "toy_lang/zoo/list_append_function.h"
-#include "toy_lang/zoo/list_function.h"
-#include "toy_lang/zoo/list_get_function.h"
 #include "toy_lang/zoo/list_object.h"
-#include "toy_lang/zoo/map_get_function.h"
-#include "toy_lang/zoo/map_is_set_function.h"
-#include "toy_lang/zoo/map_object.h"
-#include "toy_lang/zoo/map_set_function.h"
-#include "toy_lang/zoo/not_function.h"
-#include "toy_lang/zoo/print_function.h"
-#include "toy_lang/zoo/range_function.h"
-#include "toy_lang/zoo/set_variable_function.h"
-#include "toy_lang/zoo/variable_object.h"
-#include "toy_lang/zoo/while_function.h"
 #include "util/dump_context.h"
 
 using std::string;
@@ -122,62 +99,13 @@ bool ProgramObject::CreateBuiltInObjects(Thread* thread) {
     return false;
   }
 
-  ResolveHiddenSymbol(thread, "get", new GetVariableFunction());
-  ResolveHiddenSymbol(thread, "set", new SetVariableFunction());
-  ResolveHiddenSymbol(thread, "for", new ForFunction());
-
-  // TODO(dss): Make these unversioned objects. There's no reason to record
-  // method calls on any of these objects, because they're constant. (The
-  // "shared" map object should still be versioned, however.)
-  CreateExternalVariable(thread, "false", new BoolObject(false));
-  CreateExternalVariable(thread, "true", new BoolObject(true));
-  CreateExternalVariable(thread, "list", new ListFunction());
-  CreateExternalVariable(thread, "range", new RangeFunction());
-  CreateExternalVariable(thread, "print", new PrintFunction());
-  CreateExternalVariable(thread, "add", new AddFunction());
-  CreateExternalVariable(thread, "begin_tran", new BeginTranFunction());
-  CreateExternalVariable(thread, "end_tran", new EndTranFunction());
-  CreateExternalVariable(thread, "if", new IfFunction());
-  CreateExternalVariable(thread, "not", new NotFunction());
-  CreateExternalVariable(thread, "while", new WhileFunction());
-  CreateExternalVariable(thread, "lt", new LessThanFunction());
-  CreateExternalVariable(thread, "len", new LenFunction());
-  CreateExternalVariable(thread, "list.append", new ListAppendFunction());
-  CreateExternalVariable(thread, "list.get", new ListGetFunction());
-  CreateExternalVariable(thread, "map.is_set", new MapIsSetFunction());
-  CreateExternalVariable(thread, "map.get", new MapGetFunction());
-  CreateExternalVariable(thread, "map.set", new MapSetFunction());
-
-  CreateExternalVariable(thread, "shared", new MapObject());
+  symbol_table_->ResolveExternalSymbols(thread);
 
   if (!thread->EndTransaction()) {
     return false;
   }
 
   return true;
-}
-
-void ProgramObject::ResolveHiddenSymbol(Thread* thread,
-                                        const string& symbol_name,
-                                        VersionedLocalObject* local_object) {
-  CHECK(thread != nullptr);
-  CHECK(!symbol_name.empty());
-
-  ObjectReference* const object_reference = thread->CreateVersionedObject(
-      local_object, symbol_name);
-  symbol_table_->ResolveExternalSymbol(symbol_name, object_reference);
-}
-
-void ProgramObject::CreateExternalVariable(Thread* thread, const string& name,
-                                           LocalObjectImpl* local_object) {
-  CHECK(thread != nullptr);
-  CHECK(!name.empty());
-
-  ObjectReference* const built_in_object = thread->CreateVersionedObject(
-      local_object, name);
-  ObjectReference* const variable_object = thread->CreateVersionedObject(
-      new VariableObject(built_in_object), "");
-  symbol_table_->ResolveExternalSymbol(name, variable_object);
 }
 
 }  // namespace toy_lang

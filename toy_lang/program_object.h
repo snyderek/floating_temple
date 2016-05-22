@@ -17,7 +17,6 @@
 #define TOY_LANG_PROGRAM_OBJECT_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "include/c++/unversioned_local_object.h"
@@ -25,12 +24,10 @@
 namespace floating_temple {
 
 class Thread;
-class VersionedLocalObject;
 
 namespace toy_lang {
 
 class Expression;
-class LocalObjectImpl;
 class SymbolTable;
 
 class ProgramObject : public UnversionedLocalObject {
@@ -48,10 +45,6 @@ class ProgramObject : public UnversionedLocalObject {
 
  private:
   bool CreateBuiltInObjects(Thread* thread);
-  void ResolveHiddenSymbol(Thread* thread, const std::string& symbol_name,
-                           VersionedLocalObject* local_object);
-  void CreateExternalVariable(Thread* thread, const std::string& name,
-                              LocalObjectImpl* local_object);
 
   SymbolTable* const symbol_table_;
   const std::unique_ptr<Expression> expression_;

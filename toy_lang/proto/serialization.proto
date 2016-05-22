@@ -125,6 +125,7 @@ message RangeIteratorProto {
 message FunctionProto {
 }
 
+// TODO(dss): Delete this message. It isn't used anywhere.
 message ProgramProto {
   required floating_temple.toy_lang.ExpressionProto expression = 1;
 }

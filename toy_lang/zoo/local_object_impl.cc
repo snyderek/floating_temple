@@ -27,6 +27,7 @@
 #include "toy_lang/zoo/end_tran_function.h"
 #include "toy_lang/zoo/for_function.h"
 #include "toy_lang/zoo/function.h"
+#include "toy_lang/zoo/get_variable_function.h"
 #include "toy_lang/zoo/if_function.h"
 #include "toy_lang/zoo/int_object.h"
 #include "toy_lang/zoo/len_function.h"
@@ -46,6 +47,7 @@
 #include "toy_lang/zoo/range_iterator_object.h"
 #include "toy_lang/zoo/set_variable_function.h"
 #include "toy_lang/zoo/string_object.h"
+#include "toy_lang/zoo/variable_object.h"
 #include "toy_lang/zoo/while_function.h"
 
 using std::size_t;
@@ -92,6 +94,10 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     case ObjectProto::STRING:
       return StringObject::ParseStringProto(object_proto.string_object());
 
+    case ObjectProto::VARIABLE:
+      return VariableObject::ParseVariableProto(object_proto.variable_object(),
+                                                context);
+
     case ObjectProto::CODE_BLOCK:
       return CodeBlockObject::ParseCodeBlockObjectProto(
           object_proto.code_block_object(), context);
@@ -108,6 +114,9 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
 
     case ObjectProto::LIST_FUNCTION:
       return new ListFunction();
+
+    case ObjectProto::GET_VARIABLE_FUNCTION:
+      return new GetVariableFunction();
 
     case ObjectProto::SET_VARIABLE_FUNCTION:
       return new SetVariableFunction();

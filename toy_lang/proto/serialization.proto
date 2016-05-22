@@ -30,9 +30,6 @@ message StringProto {
   required string value = 1;
 }
 
-message SymbolProto {
-}
-
 message VariableProto {
   // Index of the object that the variable currently points to.
   optional int64 object_index = 1;
@@ -138,7 +135,6 @@ message ObjectProto {
     BOOL = 2;
     INT = 3;
     STRING = 4;
-    SYMBOL = 29;
     VARIABLE = 30;
     CODE_BLOCK = 6;
     LIST = 7;
@@ -170,7 +166,6 @@ message ObjectProto {
   optional floating_temple.toy_lang.BoolProto bool_object = 2;
   optional floating_temple.toy_lang.IntProto int_object = 3;
   optional floating_temple.toy_lang.StringProto string_object = 4;
-  optional floating_temple.toy_lang.SymbolProto symbol_object = 29;
   optional floating_temple.toy_lang.VariableProto variable_object = 30;
   optional floating_temple.toy_lang.CodeBlockObjectProto code_block_object = 6;
   optional floating_temple.toy_lang.ListProto list_object = 7;

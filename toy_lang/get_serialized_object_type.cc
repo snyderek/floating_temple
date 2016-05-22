@@ -34,13 +34,13 @@ ObjectProto::Type GetSerializedObjectType(const ObjectProto& object_proto) {
   CHECK_FIELD(has_bool_object, BOOL);
   CHECK_FIELD(has_int_object, INT);
   CHECK_FIELD(has_string_object, STRING);
-  CHECK_FIELD(has_symbol_object, SYMBOL);
   CHECK_FIELD(has_variable_object, VARIABLE);
   CHECK_FIELD(has_code_block_object, CODE_BLOCK);
   CHECK_FIELD(has_list_object, LIST);
   CHECK_FIELD(has_map_object, MAP);
   CHECK_FIELD(has_range_iterator_object, RANGE_ITERATOR);
   CHECK_FIELD(has_list_function, LIST_FUNCTION);
+  CHECK_FIELD(has_get_variable_function, GET_VARIABLE_FUNCTION);
   CHECK_FIELD(has_set_variable_function, SET_VARIABLE_FUNCTION);
   CHECK_FIELD(has_for_function, FOR_FUNCTION);
   CHECK_FIELD(has_range_function, RANGE_FUNCTION);

@@ -3,8 +3,7 @@
 (begin_tran)
 (if (map.is_set shared "lst") {
   (set lst (map.get shared "lst"))
-}
-{
+} {
   (set lst [0 1])
   (map.set shared "lst" lst)
 })

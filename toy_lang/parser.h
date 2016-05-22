@@ -40,6 +40,16 @@ class Parser {
 
  private:
   Expression* ParseExpression();
+  Expression* ParseIntLiteral();
+  Expression* ParseStringLiteral();
+  Expression* ParseIdentifier();
+  Expression* ParseStatement();
+  Expression* ParseForStatement();
+  Expression* ParseSetStatement();
+  Expression* ParseFunctionCall();
+  Expression* ParseBlock(const std::vector<std::string>& parameter_names);
+  Expression* ParseList();
+
   void ParseExpressionList(Token::Type end_token_type,
                            std::vector<Expression*>* expressions);
 

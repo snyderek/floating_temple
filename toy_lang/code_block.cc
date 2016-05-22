@@ -130,7 +130,8 @@ CodeBlock* CodeBlock::ParseCodeBlockProto(
         code_block_proto.external_symbol(i);
     const int symbol_id = external_symbol_proto.symbol_id();
     ObjectReference* const object_reference =
-        context->GetObjectReferenceByIndex(external_symbol_proto.object_index());
+        context->GetObjectReferenceByIndex(
+            external_symbol_proto.object_index());
     CHECK(external_symbols.emplace(symbol_id, object_reference).second);
   }
 

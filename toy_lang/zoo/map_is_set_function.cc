@@ -15,15 +15,17 @@
 
 #include "toy_lang/zoo/map_is_set_function.h"
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/bool_object.h"
+#include "toy_lang/wrap.h"
 #include "util/dump_context.h"
 
+using std::string;
 using std::vector;
 
 namespace floating_temple {
@@ -55,20 +57,20 @@ ObjectReference* MapIsSetFunction::Call(
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
-  Value key;
-  if (!thread->CallMethod(parameters[1], "get_string", vector<Value>(), &key)) {
+  string key;
+  if (!UnwrapString(thread, parameters[1], &key)) {
     return nullptr;
   }
 
   vector<Value> is_set_params(1);
-  is_set_params[0] = key;
+  is_set_params[0].set_string_value(0, key);
 
   Value result;
   if (!thread->CallMethod(parameters[0], "is_set", is_set_params, &result)) {
     return nullptr;
   }
 
-  return thread->CreateVersionedObject(new BoolObject(result.bool_value()), "");
+  return WrapBool(thread, result.bool_value());
 }
 
 }  // namespace toy_lang

@@ -21,6 +21,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
@@ -56,15 +57,14 @@ ObjectReference* IfFunction::Call(
   CHECK_GE(parameters.size(), 2u);
   CHECK_LE(parameters.size(), 3u);
 
-  Value condition;
-  if (!thread->CallMethod(parameters[0], "get_bool", vector<Value>(),
-                          &condition)) {
+  bool condition = false;
+  if (!UnwrapBool(thread, parameters[0], &condition)) {
     return nullptr;
   }
 
   ObjectReference* expression = nullptr;
 
-  if (condition.bool_value()) {
+  if (condition) {
     expression = parameters[1];
   } else {
     if (parameters.size() < 3u) {

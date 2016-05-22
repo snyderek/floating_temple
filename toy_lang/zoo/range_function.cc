@@ -17,10 +17,11 @@
 
 #include <vector>
 
+#include "base/integral_types.h"
 #include "base/logging.h"
 #include "include/c++/thread.h"
-#include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "toy_lang/zoo/range_iterator_object.h"
 #include "util/dump_context.h"
 
@@ -55,13 +56,12 @@ ObjectReference* RangeFunction::Call(
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
-  Value limit;
-  if (!thread->CallMethod(parameters[0], "get_int", vector<Value>(), &limit)) {
+  int64 limit = 0;
+  if (!UnwrapInt(thread, parameters[0], &limit)) {
     return nullptr;
   }
 
-  return thread->CreateVersionedObject(
-      new RangeIteratorObject(limit.int64_value(), 0), "");
+  return thread->CreateVersionedObject(new RangeIteratorObject(limit, 0), "");
 }
 
 }  // namespace toy_lang

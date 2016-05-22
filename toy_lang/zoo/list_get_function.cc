@@ -17,10 +17,12 @@
 
 #include <vector>
 
+#include "base/integral_types.h"
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -54,13 +56,13 @@ ObjectReference* ListGetFunction::Call(
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
-  Value index;
-  if (!thread->CallMethod(parameters[1], "get_int", vector<Value>(), &index)) {
+  int64 index = 0;
+  if (!UnwrapInt(thread, parameters[1], &index)) {
     return nullptr;
   }
 
   vector<Value> get_at_params(1);
-  get_at_params[0] = index;
+  get_at_params[0].set_int64_value(0, index);
 
   Value item;
   if (!thread->CallMethod(parameters[0], "get_at", get_at_params, &item)) {

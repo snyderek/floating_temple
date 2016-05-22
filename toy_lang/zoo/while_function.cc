@@ -21,6 +21,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
@@ -67,13 +68,12 @@ ObjectReference* WhileFunction::Call(
       return nullptr;
     }
 
-    Value condition;
-    if (!thread->CallMethod(condition_object.object_reference(), "get_bool",
-                            vector<Value>(), &condition)) {
+    bool condition = false;
+    if (!UnwrapBool(thread, condition_object.object_reference(), &condition)) {
       return nullptr;
     }
 
-    if (!condition.bool_value()) {
+    if (!condition) {
       break;
     }
 

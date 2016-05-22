@@ -30,10 +30,9 @@
 #include "toy_lang/code_block.h"
 #include "toy_lang/get_serialized_expression_type.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "toy_lang/zoo/code_block_object.h"
-#include "toy_lang/zoo/int_object.h"
 #include "toy_lang/zoo/list_object.h"
-#include "toy_lang/zoo/string_object.h"
 
 using std::shared_ptr;
 using std::string;
@@ -114,8 +113,7 @@ IntExpression::IntExpression(int64 n)
 ObjectReference* IntExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
     Thread* thread) const {
-  CHECK(thread != nullptr);
-  return thread->CreateVersionedObject(new IntObject(n_), "");
+  return WrapInt(thread, n_);
 }
 
 void IntExpression::PopulateExpressionProto(
@@ -141,8 +139,7 @@ StringExpression::StringExpression(const string& s)
 ObjectReference* StringExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
     Thread* thread) const {
-  CHECK(thread != nullptr);
-  return thread->CreateVersionedObject(new StringObject(s_), "");
+  return WrapString(thread, s_);
 }
 
 void StringExpression::PopulateExpressionProto(

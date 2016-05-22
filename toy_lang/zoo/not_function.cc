@@ -18,10 +18,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
-#include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/bool_object.h"
+#include "toy_lang/wrap.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -52,17 +50,14 @@ void NotFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 ObjectReference* NotFunction::Call(
     Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
-  Value condition;
-  if (!thread->CallMethod(parameters[0], "get_bool", vector<Value>(),
-                          &condition)) {
+  bool condition = false;
+  if (!UnwrapBool(thread, parameters[0], &condition)) {
     return nullptr;
   }
 
-  return thread->CreateVersionedObject(new BoolObject(!condition.bool_value()),
-                                       "");
+  return WrapBool(thread, !condition);
 }
 
 }  // namespace toy_lang

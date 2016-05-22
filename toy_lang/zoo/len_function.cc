@@ -21,7 +21,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/int_object.h"
+#include "toy_lang/wrap.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -60,7 +60,7 @@ ObjectReference* LenFunction::Call(
     return nullptr;
   }
 
-  return thread->CreateVersionedObject(new IntObject(length.int64_value()), "");
+  return WrapInt(thread, length.int64_value());
 }
 
 }  // namespace toy_lang

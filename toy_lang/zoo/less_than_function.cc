@@ -19,10 +19,8 @@
 
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "include/c++/thread.h"
-#include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/bool_object.h"
+#include "toy_lang/wrap.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -53,23 +51,16 @@ void LessThanFunction::PopulateObjectProto(
 
 ObjectReference* LessThanFunction::Call(
     Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   int64 operands[2];
-
   for (int i = 0; i < 2; ++i) {
-    Value number;
-    if (!thread->CallMethod(parameters[i], "get_int", vector<Value>(),
-                            &number)) {
+    if (!UnwrapInt(thread, parameters[i], &operands[i])) {
       return nullptr;
     }
-
-    operands[i] = number.int64_value();
   }
 
-  return thread->CreateVersionedObject(
-      new BoolObject(operands[0] < operands[1]), "");
+  return WrapBool(thread, operands[0] < operands[1]);
 }
 
 }  // namespace toy_lang

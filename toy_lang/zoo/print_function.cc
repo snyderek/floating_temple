@@ -16,16 +16,18 @@
 #include "toy_lang/zoo/print_function.h"
 
 #include <cstdio>
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "include/c++/thread.h"
-#include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
 using std::printf;
+using std::string;
 using std::vector;
 
 namespace floating_temple {
@@ -62,12 +64,12 @@ ObjectReference* PrintFunction::Call(
       printf(" ");
     }
 
-    Value str;
-    if (!thread->CallMethod(*it, "get_string", vector<Value>(), &str)) {
+    string str;
+    if (!UnwrapString(thread, *it, &str)) {
       return nullptr;
     }
 
-    printf("%s", str.string_value().c_str());
+    printf("%s", str.c_str());
   }
 
   printf("\n");

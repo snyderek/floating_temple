@@ -15,15 +15,18 @@
 
 #include "toy_lang/zoo/map_set_function.h"
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
+using std::string;
 using std::vector;
 
 namespace floating_temple {
@@ -55,13 +58,13 @@ ObjectReference* MapSetFunction::Call(
   CHECK(thread != nullptr);
   CHECK_EQ(parameters.size(), 3u);
 
-  Value key;
-  if (!thread->CallMethod(parameters[1], "get_string", vector<Value>(), &key)) {
+  string key;
+  if (!UnwrapString(thread, parameters[1], &key)) {
     return nullptr;
   }
 
   vector<Value> set_params(2);
-  set_params[0] = key;
+  set_params[0].set_string_value(0, key);
   set_params[1].set_object_reference(0, parameters[2]);
 
   Value result;

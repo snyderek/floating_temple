@@ -29,6 +29,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "util/dump_context.h"
 
 using std::string;
@@ -59,7 +60,6 @@ void ListObject::InvokeMethod(Thread* thread,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {
-  CHECK(thread != nullptr);
   CHECK(return_value != nullptr);
 
   if (method_name == "length") {
@@ -98,13 +98,12 @@ void ListObject::InvokeMethod(Thread* thread,
           s += ' ';
         }
 
-        Value item_str;
-        if (!thread->CallMethod(*it, "get_string", vector<Value>(),
-                                &item_str)) {
+        string item_str;
+        if (!UnwrapString(thread, *it, &item_str)) {
           return;
         }
 
-        s += item_str.string_value();
+        s += item_str;
       }
     }
     s += ']';

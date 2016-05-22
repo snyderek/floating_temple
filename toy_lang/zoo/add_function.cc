@@ -19,10 +19,8 @@
 
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "include/c++/thread.h"
-#include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/int_object.h"
+#include "toy_lang/wrap.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -53,21 +51,18 @@ void AddFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 ObjectReference* AddFunction::Call(
     Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
-
   int64 sum = 0;
 
   for (ObjectReference* const object_reference : parameters) {
-    Value number;
-    if (!thread->CallMethod(object_reference, "get_int", vector<Value>(),
-                            &number)) {
+    int64 number = 0;
+    if (!UnwrapInt(thread, object_reference, &number)) {
       return nullptr;
     }
 
-    sum += number.int64_value();
+    sum += number;
   }
 
-  return thread->CreateVersionedObject(new IntObject(sum), "");
+  return WrapInt(thread, sum);
 }
 
 }  // namespace toy_lang

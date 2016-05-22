@@ -24,6 +24,7 @@
 #include "include/c++/value.h"
 #include "toy_lang/zoo/bool_object.h"
 #include "toy_lang/zoo/int_object.h"
+#include "toy_lang/zoo/none_object.h"
 #include "toy_lang/zoo/string_object.h"
 
 using std::string;
@@ -31,6 +32,12 @@ using std::vector;
 
 namespace floating_temple {
 namespace toy_lang {
+
+ObjectReference* MakeNoneObject(Thread* thread) {
+  CHECK(thread != nullptr);
+  // TODO(dss): Consider having just a single instance of the "none" object.
+  return thread->CreateVersionedObject(new NoneObject(), "");
+}
 
 ObjectReference* WrapBool(Thread* thread, bool b) {
   CHECK(thread != nullptr);

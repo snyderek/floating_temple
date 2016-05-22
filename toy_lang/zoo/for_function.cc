@@ -22,8 +22,8 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/wrap.h"
 #include "toy_lang/zoo/list_object.h"
-#include "toy_lang/zoo/none_object.h"
 #include "toy_lang/zoo/variable_object.h"
 #include "util/dump_context.h"
 
@@ -93,7 +93,7 @@ ObjectReference* ForFunction::Call(
     }
   }
 
-  return thread->CreateVersionedObject(new NoneObject(), "");
+  return MakeNoneObject(thread);
 }
 
 }  // namespace toy_lang

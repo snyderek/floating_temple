@@ -21,7 +21,7 @@
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
-#include "toy_lang/zoo/none_object.h"
+#include "toy_lang/wrap.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -66,7 +66,7 @@ ObjectReference* ListAppendFunction::Call(
     return nullptr;
   }
 
-  return thread->CreateVersionedObject(new NoneObject(), "");
+  return MakeNoneObject(thread);
 }
 
 }  // namespace toy_lang

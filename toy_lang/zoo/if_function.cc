@@ -22,7 +22,6 @@
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
-#include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
 using std::vector;
@@ -68,7 +67,7 @@ ObjectReference* IfFunction::Call(
     expression = parameters[1];
   } else {
     if (parameters.size() < 3u) {
-      return thread->CreateVersionedObject(new NoneObject(), "");
+      return MakeNoneObject(thread);
     }
 
     expression = parameters[2];

@@ -27,6 +27,8 @@ class Thread;
 
 namespace toy_lang {
 
+ObjectReference* MakeNoneObject(Thread* thread);
+
 ObjectReference* WrapBool(Thread* thread, bool b);
 ObjectReference* WrapInt(Thread* thread, int64 n);
 ObjectReference* WrapString(Thread* thread, const std::string& s);

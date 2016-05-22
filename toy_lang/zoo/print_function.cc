@@ -20,10 +20,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
-#include "toy_lang/zoo/none_object.h"
 #include "util/dump_context.h"
 
 using std::printf;
@@ -56,8 +54,6 @@ void PrintFunction::PopulateObjectProto(ObjectProto* object_proto,
 
 ObjectReference* PrintFunction::Call(
     Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
-
   for (vector<ObjectReference*>::const_iterator it = parameters.begin();
        it != parameters.end(); ++it) {
     if (it != parameters.begin()) {
@@ -74,7 +70,7 @@ ObjectReference* PrintFunction::Call(
 
   printf("\n");
 
-  return thread->CreateVersionedObject(new NoneObject(), "");
+  return MakeNoneObject(thread);
 }
 
 }  // namespace toy_lang

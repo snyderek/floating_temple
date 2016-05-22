@@ -52,13 +52,15 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
 
   SymbolTable symbol_table;
 
+  // TODO(dss): Refactor the code so that it's not necessary to enumerate the
+  // external symbols both here and in program_object.cc.
   symbol_table.AddExternalSymbol("get", false);
   symbol_table.AddExternalSymbol("set", false);
+  symbol_table.AddExternalSymbol("for", false);
 
   symbol_table.AddExternalSymbol("false", true);
   symbol_table.AddExternalSymbol("true", true);
   symbol_table.AddExternalSymbol("list", true);
-  symbol_table.AddExternalSymbol("for", true);
   symbol_table.AddExternalSymbol("range", true);
   symbol_table.AddExternalSymbol("print", true);
   symbol_table.AddExternalSymbol("add", true);

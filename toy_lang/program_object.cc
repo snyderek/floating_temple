@@ -124,6 +124,7 @@ bool ProgramObject::CreateBuiltInObjects(Thread* thread) {
 
   ResolveHiddenSymbol(thread, "get", new GetVariableFunction());
   ResolveHiddenSymbol(thread, "set", new SetVariableFunction());
+  ResolveHiddenSymbol(thread, "for", new ForFunction());
 
   // TODO(dss): Make these unversioned objects. There's no reason to record
   // method calls on any of these objects, because they're constant. (The
@@ -131,7 +132,6 @@ bool ProgramObject::CreateBuiltInObjects(Thread* thread) {
   CreateExternalVariable(thread, "false", new BoolObject(false));
   CreateExternalVariable(thread, "true", new BoolObject(true));
   CreateExternalVariable(thread, "list", new ListFunction());
-  CreateExternalVariable(thread, "for", new ForFunction());
   CreateExternalVariable(thread, "range", new RangeFunction());
   CreateExternalVariable(thread, "print", new PrintFunction());
   CreateExternalVariable(thread, "add", new AddFunction());

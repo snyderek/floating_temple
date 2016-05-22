@@ -23,7 +23,9 @@
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
+#include "include/c++/thread.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/zoo/int_object.h"
 #include "util/dump_context.h"
 
 using std::string;
@@ -66,7 +68,8 @@ void RangeIteratorObject::InvokeMethod(Thread* thread,
 
     MutexLock lock(&i_mu_);
     CHECK_LT(i_, limit_);
-    return_value->set_int64_value(0, i_);
+    return_value->set_object_reference(
+        0, thread->CreateVersionedObject(new IntObject(i_), ""));
     ++i_;
   } else {
     LOG(FATAL) << "Unsupported method: \"" << CEscape(method_name) << "\"";

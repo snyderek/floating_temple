@@ -27,6 +27,7 @@ class Token {
  public:
   enum Type {
     UNINITIALIZED,
+    FOR_KEYWORD,
     SET_KEYWORD,
     INT_LITERAL,
     STRING_LITERAL,
@@ -51,6 +52,7 @@ class Token {
 
   Token& operator=(const Token& other);
 
+  static void CreateForKeyword(Token* token);
   static void CreateSetKeyword(Token* token);
   static void CreateIntLiteral(Token* token, int64 int_literal);
   static void CreateStringLiteral(Token* token,

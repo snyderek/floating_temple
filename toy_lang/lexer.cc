@@ -41,6 +41,7 @@ namespace floating_temple {
 namespace toy_lang {
 namespace {
 
+const char kForKeyword[] = "for";
 const char kSetKeyword[] = "set";
 
 string Hex(int n) {
@@ -269,7 +270,9 @@ void Lexer::YieldStringLiteral(State new_state) const {
 void Lexer::YieldIdentifier(State new_state) const {
   tokens_.push(Token());
   Token* const token = &tokens_.back();
-  if (attribute_ == kSetKeyword) {
+  if (attribute_ == kForKeyword) {
+    Token::CreateForKeyword(token);
+  } else if (attribute_ == kSetKeyword) {
     Token::CreateSetKeyword(token);
   } else {
     Token::CreateIdentifier(token, attribute_);

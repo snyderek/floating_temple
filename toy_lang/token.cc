@@ -94,6 +94,14 @@ Token& Token::operator=(const Token& other) {
 }
 
 // static
+void Token::CreateForKeyword(Token* token) {
+  CHECK(token != nullptr);
+  VLOG(1) << "FOR_KEYWORD";
+  token->FreeMemory();
+  token->type_ = FOR_KEYWORD;
+}
+
+// static
 void Token::CreateSetKeyword(Token* token) {
   CHECK(token != nullptr);
   VLOG(1) << "SET_KEYWORD";

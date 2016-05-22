@@ -15,18 +15,24 @@
 
 #include "toy_lang/zoo/for_function.h"
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
+#include "toy_lang/zoo/list_object.h"
 #include "toy_lang/zoo/none_object.h"
+#include "toy_lang/zoo/variable_object.h"
 #include "util/dump_context.h"
 
 using std::vector;
 
 namespace floating_temple {
+
+class ObjectReference;
+
 namespace toy_lang {
 
 ForFunction::ForFunction() {
@@ -53,18 +59,10 @@ void ForFunction::PopulateObjectProto(ObjectProto* object_proto,
 ObjectReference* ForFunction::Call(
     Thread* thread, const vector<ObjectReference*>& parameters) const {
   CHECK(thread != nullptr);
-  CHECK_EQ(parameters.size(), 3u);
+  CHECK_EQ(parameters.size(), 2u);
 
-  Value variable_name;
-  if (!thread->CallMethod(parameters[0], "get_string", vector<Value>(),
-                          &variable_name)) {
-    return nullptr;
-  }
-
-  ObjectReference* const iter = parameters[1];
-  ObjectReference* const expression = parameters[2];
-
-  const vector<Value> eval_parameters;
+  ObjectReference* const iter = parameters[0];
+  ObjectReference* const code_block = parameters[1];
 
   for (;;) {
     Value has_next;
@@ -81,10 +79,16 @@ ObjectReference* ForFunction::Call(
       return nullptr;
     }
 
-    // TODO(dss): Set the loop variable.
+    ObjectReference* const iter_variable = thread->CreateVersionedObject(
+        new VariableObject(iter_value.object_reference()), "");
+    const vector<ObjectReference*> block_parameters(1, iter_variable);
+
+    vector<Value> eval_parameters(1);
+    eval_parameters[0].set_object_reference(
+        0, thread->CreateVersionedObject(new ListObject(block_parameters), ""));
 
     Value dummy;
-    if (!thread->CallMethod(expression, "eval", eval_parameters, &dummy)) {
+    if (!thread->CallMethod(code_block, "eval", eval_parameters, &dummy)) {
       return nullptr;
     }
   }

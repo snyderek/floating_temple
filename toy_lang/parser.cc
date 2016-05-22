@@ -79,39 +79,74 @@ Expression* Parser::ParseExpression() {
     }
 
     case Token::BEGIN_EXPRESSION:
-      if (lexer_->PeekNextTokenType() == Token::SET_KEYWORD) {
-        CHECK_EQ(lexer_->GetNextTokenType(), Token::SET_KEYWORD);
+      switch (lexer_->PeekNextTokenType()) {
+        case Token::FOR_KEYWORD: {
+          CHECK_EQ(lexer_->GetNextTokenType(), Token::FOR_KEYWORD);
 
-        Token identifier_token;
-        lexer_->GetNextToken(&identifier_token);
-        const string& identifier = identifier_token.identifier();
+          Token identifier_token;
+          lexer_->GetNextToken(&identifier_token);
+          const string& identifier = identifier_token.identifier();
 
-        Expression* const rhs_expression = ParseExpression();
-        CHECK_EQ(lexer_->GetNextTokenType(), Token::END_EXPRESSION);
+          Expression* const range_expression = ParseExpression();
 
-        const int symbol_id = symbol_table_->GetLocalVariable(identifier);
-        Expression* const variable_expression = new SymbolExpression(symbol_id);
+          CHECK_EQ(lexer_->GetNextTokenType(), Token::BEGIN_BLOCK);
+          EnterScope(vector<string>(1, identifier));
+          vector<Expression*> expressions;
+          ParseExpressionList(Token::END_BLOCK, &expressions);
+          const shared_ptr<const Expression> list_expression(
+              new ListExpression(expressions));
+          Expression* const block_expression = LeaveScope(list_expression);
 
-        Expression* const function_expression = new SymbolExpression(
-            symbol_table_->GetSymbolId("set", false));
+          CHECK_EQ(lexer_->GetNextTokenType(), Token::END_EXPRESSION);
 
-        vector<Expression*> parameters(2);
-        parameters[0] = variable_expression;
-        parameters[1] = rhs_expression;
+          Expression* const function_expression = new SymbolExpression(
+              symbol_table_->GetSymbolId("for", false));
 
-        return new FunctionCallExpression(function_expression, parameters);
-      } else {
-        Expression* const function = ParseExpression();
-        vector<Expression*> parameters;
-        ParseExpressionList(Token::END_EXPRESSION, &parameters);
+          vector<Expression*> parameters(2);
+          parameters[0] = range_expression;
+          parameters[1] = block_expression;
 
-        return new FunctionCallExpression(function, parameters);
+          return new FunctionCallExpression(function_expression, parameters);
+        }
+
+        case Token::SET_KEYWORD: {
+          CHECK_EQ(lexer_->GetNextTokenType(), Token::SET_KEYWORD);
+
+          Token identifier_token;
+          lexer_->GetNextToken(&identifier_token);
+          const string& identifier = identifier_token.identifier();
+
+          Expression* const rhs_expression = ParseExpression();
+          CHECK_EQ(lexer_->GetNextTokenType(), Token::END_EXPRESSION);
+
+          const int symbol_id = symbol_table_->GetLocalVariable(identifier);
+          Expression* const variable_expression = new SymbolExpression(
+              symbol_id);
+
+          Expression* const function_expression = new SymbolExpression(
+              symbol_table_->GetSymbolId("set", false));
+
+          vector<Expression*> parameters(2);
+          parameters[0] = variable_expression;
+          parameters[1] = rhs_expression;
+
+          return new FunctionCallExpression(function_expression, parameters);
+        }
+
+        default: {
+          Expression* const function = ParseExpression();
+          vector<Expression*> parameters;
+          ParseExpressionList(Token::END_EXPRESSION, &parameters);
+
+          return new FunctionCallExpression(function, parameters);
+        }
       }
       break;
 
     case Token::BEGIN_BLOCK: {
       EnterScope(vector<string>());
 
+      // TODO(dss): Allow multiple expressions within a block.
       const shared_ptr<const Expression> expression(ParseExpression());
       CHECK_EQ(lexer_->GetNextTokenType(), Token::END_BLOCK);
 

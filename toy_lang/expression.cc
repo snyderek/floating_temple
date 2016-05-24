@@ -86,6 +86,10 @@ Expression* Expression::ParseExpressionProto(
       return StringExpression::ParseStringExpressionProto(
           expression_proto.string_expression());
 
+    case ExpressionProto::SYMBOL:
+      return SymbolExpression::ParseSymbolExpressionProto(
+          expression_proto.symbol_expression());
+
     case ExpressionProto::BLOCK:
       return BlockExpression::ParseBlockExpressionProto(
           expression_proto.block_expression());

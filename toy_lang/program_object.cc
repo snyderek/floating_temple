@@ -38,7 +38,8 @@ class ObjectReference;
 
 namespace toy_lang {
 
-ProgramObject::ProgramObject(SymbolTable* symbol_table, Expression* expression)
+ProgramObject::ProgramObject(const SymbolTable* symbol_table,
+                             Expression* expression)
     : symbol_table_(CHECK_NOTNULL(symbol_table)),
       expression_(CHECK_NOTNULL(expression)) {
 }
@@ -55,12 +56,16 @@ void ProgramObject::InvokeMethod(Thread* thread,
   CHECK_EQ(method_name, "run");
   CHECK(return_value != nullptr);
 
-  if (!CreateBuiltInObjects(thread)) {
+  if (!thread->BeginTransaction()) {
     return;
   }
 
   unordered_map<int, ObjectReference*> symbol_bindings;
-  symbol_table_->GetExternalSymbolBindings(&symbol_bindings);
+  symbol_table_->ResolveExternalSymbols(thread, &symbol_bindings);
+
+  if (!thread->EndTransaction()) {
+    return;
+  }
 
   ObjectReference* const code_block_object = expression_->Evaluate(
       symbol_bindings, thread);
@@ -90,22 +95,6 @@ void ProgramObject::Dump(DumpContext* dc) const {
   dc->AddString(expression_->DebugString());
 
   dc->End();
-}
-
-bool ProgramObject::CreateBuiltInObjects(Thread* thread) {
-  CHECK(thread != nullptr);
-
-  if (!thread->BeginTransaction()) {
-    return false;
-  }
-
-  symbol_table_->ResolveExternalSymbols(thread);
-
-  if (!thread->EndTransaction()) {
-    return false;
-  }
-
-  return true;
 }
 
 }  // namespace toy_lang

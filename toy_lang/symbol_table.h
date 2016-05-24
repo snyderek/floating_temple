@@ -42,11 +42,11 @@ class SymbolTable {
 
   int GetSymbolId(const std::string& symbol_name, bool visible) const;
   int GetLocalVariable(const std::string& symbol_name);
-
   int AddExternalSymbol(const std::string& symbol_name, bool visible,
                         VersionedLocalObject* local_object);
-  void ResolveExternalSymbols(Thread* thread);
-  void GetExternalSymbolBindings(
+
+  void ResolveExternalSymbols(
+      Thread* thread,
       std::unordered_map<int, ObjectReference*>* symbol_bindings) const;
 
  private:
@@ -60,7 +60,6 @@ class SymbolTable {
     int symbol_id;
     bool visible;
     VersionedLocalObject* local_object;
-    ObjectReference* object_reference;
   };
 
   bool PrivateGetSymbolId(const std::string& symbol_name, bool visible,

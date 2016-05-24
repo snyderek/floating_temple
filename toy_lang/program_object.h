@@ -22,9 +22,6 @@
 #include "include/c++/unversioned_local_object.h"
 
 namespace floating_temple {
-
-class Thread;
-
 namespace toy_lang {
 
 class Expression;
@@ -33,7 +30,7 @@ class SymbolTable;
 class ProgramObject : public UnversionedLocalObject {
  public:
   // Does not take ownership of 'symbol_table'. Takes ownership of 'expression'.
-  ProgramObject(SymbolTable* symbol_table, Expression* expression);
+  ProgramObject(const SymbolTable* symbol_table, Expression* expression);
   ~ProgramObject() override;
 
   void InvokeMethod(Thread* thread,
@@ -44,9 +41,7 @@ class ProgramObject : public UnversionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
-  bool CreateBuiltInObjects(Thread* thread);
-
-  SymbolTable* const symbol_table_;
+  const SymbolTable* const symbol_table_;
   const std::unique_ptr<Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);

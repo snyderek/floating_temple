@@ -227,6 +227,9 @@ ProtocolConnection* ProtocolServer<Message>::OpenConnection(
     ProtocolConnectionHandler<Message>* connection_handler,
     const std::string& address, int port) {
   const int socket_fd = ConnectToRemoteHost(address, port);
+  if (socket_fd == -1) {
+    return nullptr;
+  }
   return CreateConnection(connection_handler, socket_fd, "");
 }
 

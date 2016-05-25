@@ -188,8 +188,7 @@ int ConnectToRemoteHost(const string& address, int port) {
   const int socket_fd = ConnectToSomeAddress(address_info);
   freeaddrinfo(address_info);
 
-  // TODO(dss): Fail gracefully if the peer can't connect to a remote peer.
-  CHECK_NE(socket_fd, -1)
+  LOG_IF(WARNING, socket_fd == -1)
       << "Could not connect to " << address << " port " << port;
 
   return socket_fd;

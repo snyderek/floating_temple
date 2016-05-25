@@ -32,6 +32,9 @@
 #include "util/state_variable.h"
 
 namespace floating_temple {
+
+class ProtocolConnection;
+
 namespace engine {
 
 class CanonicalPeer;
@@ -76,6 +79,10 @@ class ConnectionManager : public PeerMessageSender,
 
   intrusive_ptr<PeerConnection> GetConnectionToPeer(
       const CanonicalPeer* canonical_peer);
+  ProtocolConnection* ConnectToPeer(PeerConnection* connection_handler,
+                                    const std::string& peer_id,
+                                    const std::string& address,
+                                    int port);
   void GetAllOpenConnections(
       std::vector<intrusive_ptr<PeerConnection>>* peer_connections);
   void DrainAllConnections();

@@ -15,6 +15,8 @@
 
 #include "engine/connection_manager.h"
 
+#include <unistd.h>
+
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -41,6 +43,11 @@ namespace floating_temple {
 class ProtocolConnection;
 
 namespace engine {
+namespace {
+
+const int kConnectionRetryTimeoutSec = 5;
+
+}
 
 ConnectionManager::ConnectionManager()
     : canonical_peer_map_(nullptr),
@@ -78,6 +85,12 @@ void ConnectionManager::ConnectToRemotePeer(const CanonicalPeer* remote_peer) {
 
   ProtocolConnection* const connection = protocol_server_.OpenConnection(
       peer_connection.get(), address, port);
+
+  if (connection == nullptr) {
+    LOG(ERROR) << "Couldn't connect to peer " << peer_id;
+    return;
+  }
+
   LOG(INFO) << "Successfully connected to peer " << peer_id << " (peer "
             << "connection " << peer_connection.get() << ")";
   peer_connection->Init(connection);
@@ -174,14 +187,36 @@ intrusive_ptr<PeerConnection> ConnectionManager::GetConnectionToPeer(
   CHECK(peer_connection.get() != nullptr);
 
   if (connection_is_new) {
-    ProtocolConnection* const connection = protocol_server_.OpenConnection(
-        peer_connection.get(), address, port);
-    LOG(INFO) << "Successfully connected to peer " << peer_id << " (peer "
-              << "connection " << peer_connection.get() << ")";
+    ProtocolConnection* const connection = ConnectToPeer(
+        peer_connection.get(), peer_id, address, port);
     peer_connection->Init(connection);
   }
 
   return peer_connection;
+}
+
+ProtocolConnection* ConnectionManager::ConnectToPeer(
+    PeerConnection* connection_handler,
+    const string& peer_id,
+    const string& address,
+    int port) {
+  for (;;) {
+    ProtocolConnection* const connection = protocol_server_.OpenConnection(
+        connection_handler, address, port);
+
+    if (connection != nullptr) {
+      LOG(INFO) << "Successfully connected to peer " << peer_id << " (peer "
+                << "connection " << connection_handler << ")";
+      return connection;
+    }
+
+    LOG(ERROR) << "Couldn't connect to peer " << peer_id << ". Will try "
+               << "again in " << kConnectionRetryTimeoutSec << " seconds.";
+    sleep(static_cast<unsigned>(kConnectionRetryTimeoutSec));
+  }
+
+  LOG(FATAL) << "Execution should not reach this point.";
+  return nullptr;
 }
 
 void ConnectionManager::GetAllOpenConnections(

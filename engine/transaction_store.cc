@@ -620,10 +620,16 @@ void TransactionStore::HandleRejectTransactionMessage(
     transactions_to_reject.emplace_back(rejected_peer, rejected_transaction_id);
   }
 
+  TransactionId new_transaction_id;
+  transaction_sequencer_.ReserveTransaction(&new_transaction_id);
+
   RejectTransactionMessage dummy;
-  RejectTransactions(transactions_to_reject, remote_transaction_id, &dummy);
+  RejectTransactions(transactions_to_reject, new_transaction_id, &dummy);
+
+  transaction_sequencer_.ReleaseTransaction(new_transaction_id);
 
   UpdateCurrentSequencePoint(remote_peer, remote_transaction_id);
+  UpdateCurrentSequencePoint(local_peer_, new_transaction_id);
 }
 
 void TransactionStore::HandleInvalidateTransactionsMessage(

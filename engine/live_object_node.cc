@@ -62,6 +62,7 @@ LiveObjectNode* LiveObjectNode::InvokeMethod(
 
   if (ref_count > 1) {
     VersionedLocalObject* const new_local_object = local_object_->Clone();
+    CHECK(new_local_object != nullptr);
     VLOG(4) << "Before: " << GetJsonString(*new_local_object);
     new_local_object->InvokeMethod(thread, object_reference, method_name,
                                    parameters, return_value);

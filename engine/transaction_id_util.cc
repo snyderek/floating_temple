@@ -16,6 +16,7 @@
 #include "engine/transaction_id_util.h"
 
 #include <cinttypes>
+#include <ostream>
 #include <string>
 
 #include "base/integral_types.h"
@@ -23,6 +24,7 @@
 #include "base/string_printf.h"
 #include "engine/proto/transaction_id.pb.h"
 
+using std::ostream;
 using std::string;
 
 namespace floating_temple {
@@ -99,12 +101,9 @@ string TransactionIdToString(const TransactionId& transaction_id) {
                       transaction_id.c());
 }
 
-bool operator<(const TransactionId& a, const TransactionId& b) {
-  return CompareTransactionIds(a, b) < 0;
-}
-
-bool operator==(const TransactionId& a, const TransactionId& b) {
-  return CompareTransactionIds(a, b) == 0;
+ostream& operator<<(ostream& os, const TransactionId& transaction_id) {
+  os << TransactionIdToString(transaction_id);
+  return os;
 }
 
 }  // namespace engine

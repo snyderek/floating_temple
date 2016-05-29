@@ -16,6 +16,7 @@
 #ifndef ENGINE_MIN_VERSION_MAP_H_
 #define ENGINE_MIN_VERSION_MAP_H_
 
+#include "engine/transaction_id_util.h"
 #include "engine/version_map.h"
 
 namespace floating_temple {
@@ -25,7 +26,9 @@ class TransactionId;
 
 class TransactionIdLessThanFunction {
  public:
-  bool operator()(const TransactionId& a, const TransactionId& b) const;
+  bool operator()(const TransactionId& a, const TransactionId& b) const {
+    return a < b;
+  }
 };
 
 typedef VersionMap<TransactionIdLessThanFunction> MinVersionMap;

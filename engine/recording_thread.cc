@@ -124,8 +124,7 @@ void RecordingThread::Rewind(const TransactionId& rejected_transaction_id) {
   MutexLock lock(&rejected_transaction_id_mu_);
 
   if (!Rewinding_Locked() ||
-      CompareTransactionIds(rejected_transaction_id,
-                            rejected_transaction_id_) < 0) {
+      rejected_transaction_id < rejected_transaction_id_) {
     rejected_transaction_id_.CopyFrom(rejected_transaction_id);
     rewinding_cond_.Broadcast();
   }
@@ -334,8 +333,7 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
     // If the METHOD_CALL event has not been committed yet, delete the event.
     // (If the event has been committed, then the transaction store is
     // responsible for deleting it.)
-    if (CompareTransactionIds(current_transaction_id_,
-                              method_call_transaction_id) == 0) {
+    if (current_transaction_id_ == method_call_transaction_id) {
       CHECK_GE(events_.size(), event_count_save);
       events_.resize(event_count_save);
     }
@@ -437,8 +435,7 @@ bool RecordingThread::CallMethodHelper(
 bool RecordingThread::WaitForBlockingThreads_Locked(
     const TransactionId& method_call_transaction_id) const {
   for (;;) {
-    if (CompareTransactionIds(rejected_transaction_id_,
-                              method_call_transaction_id) <= 0) {
+    if (rejected_transaction_id_ <= method_call_transaction_id) {
       return false;
     }
 

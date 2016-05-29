@@ -854,8 +854,7 @@ void TransactionStore::RejectTransactions(
         rejected_transaction_pair.second;
 
     if (rejected_peer == local_peer_) {
-      if (CompareTransactionIds(rejected_transaction_id,
-                                invalidate_start_transaction_id) < 0) {
+      if (rejected_transaction_id < invalidate_start_transaction_id) {
         invalidate_start_transaction_id.CopyFrom(rejected_transaction_id);
       }
     } else {

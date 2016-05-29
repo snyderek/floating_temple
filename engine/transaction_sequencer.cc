@@ -65,8 +65,7 @@ void TransactionSequencer::ReserveTransaction(TransactionId* transaction_id) {
   transaction_id_generator_->Generate(transaction_id);
 
   if (!transactions_.empty()) {
-    CHECK_LT(CompareTransactionIds(transactions_.rbegin()->first,
-                                   *transaction_id), 0);
+    CHECK_LT(transactions_.rbegin()->first, *transaction_id);
   }
 
   Transaction* const transaction = new Transaction();

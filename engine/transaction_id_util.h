@@ -16,6 +16,7 @@
 #ifndef ENGINE_TRANSACTION_ID_UTIL_H_
 #define ENGINE_TRANSACTION_ID_UTIL_H_
 
+#include <ostream>
 #include <string>
 
 namespace floating_temple {
@@ -34,8 +35,31 @@ void IncrementTransactionId(TransactionId* transaction_id);
 
 std::string TransactionIdToString(const TransactionId& transaction_id);
 
-bool operator<(const TransactionId& a, const TransactionId& b);
-bool operator==(const TransactionId& a, const TransactionId& b);
+std::ostream& operator<<(std::ostream& os, const TransactionId& transaction_id);
+
+inline bool operator<(const TransactionId& a, const TransactionId& b) {
+  return CompareTransactionIds(a, b) < 0;
+}
+
+inline bool operator==(const TransactionId& a, const TransactionId& b) {
+  return CompareTransactionIds(a, b) == 0;
+}
+
+inline bool operator>(const TransactionId& a, const TransactionId& b) {
+  return b < a;
+}
+
+inline bool operator<=(const TransactionId& a, const TransactionId& b) {
+  return !(b < a);
+}
+
+inline bool operator>=(const TransactionId& a, const TransactionId& b) {
+  return !(a < b);
+}
+
+inline bool operator!=(const TransactionId& a, const TransactionId& b) {
+  return !(a == b);
+}
 
 }  // namespace engine
 }  // namespace floating_temple

@@ -82,8 +82,6 @@ engine_lib = ft_env.Library(
         engine/get_event_proto_type.cc
         engine/get_peer_message_type.cc
         engine/live_object_node.cc
-        engine/max_version_map.cc
-        engine/min_version_map.cc
         engine/object_reference_impl.cc
         engine/peer_connection.cc
         engine/peer_exclusion_map.cc

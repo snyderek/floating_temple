@@ -57,7 +57,7 @@ bool SequencePointImpl::HasPeerTransactionId(
   const set<TransactionId>& transaction_ids = rejected_peer_it->second;
   CHECK(!transaction_ids.empty());
 
-  return CompareTransactionIds(transaction_id, *transaction_ids.begin()) < 0;
+  return transaction_id < *transaction_ids.begin();
 }
 
 void SequencePointImpl::AddPeerTransactionId(

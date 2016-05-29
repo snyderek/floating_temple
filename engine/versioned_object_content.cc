@@ -61,8 +61,7 @@ FindTransactionIdInVector(
   const auto end_it = transaction_pairs.end();
   auto it = transaction_pairs.begin();
 
-  while (it != end_it &&
-         CompareTransactionIds(it->second, transaction_id) != 0) {
+  while (it != end_it && it->second != transaction_id) {
     ++it;
   }
 
@@ -158,8 +157,7 @@ void VersionedObjectContent::StoreTransactions(
     if (dest_transaction.get() == nullptr) {
       dest_transaction.reset(src_transaction->Clone());
 
-      if (CompareTransactionIds(transaction_id,
-                                max_requested_transaction_id_) <= 0) {
+      if (transaction_id <= max_requested_transaction_id_) {
         should_replay_transactions = true;
       }
     }
@@ -208,8 +206,7 @@ void VersionedObjectContent::InsertTransaction(
   version_map_.AddPeerTransactionId(origin_peer, transaction_id);
   up_to_date_peers_.insert(origin_peer);
 
-  if (CompareTransactionIds(transaction_id,
-                            max_requested_transaction_id_) <= 0) {
+  if (transaction_id <= max_requested_transaction_id_) {
     // TODO(dss): Use the 'new_object_references' parameter here instead of
     // creating a temporary map?
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;

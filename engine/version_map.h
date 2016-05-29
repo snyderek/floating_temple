@@ -212,8 +212,7 @@ bool VersionMapsAreEqual(const VersionMap<CompareFunction>& a,
     const std::unordered_map<const CanonicalPeer*, TransactionId>::
         const_iterator b_it = b_map.find(a_pair.first);
 
-    if (b_it == b_map.end() ||
-        CompareTransactionIds(a_pair.second, b_it->second) != 0) {
+    if (b_it == b_map.end() || a_pair.second != b_it->second) {
       return false;
     }
   }
@@ -233,8 +232,7 @@ bool VersionMapIsLessThanOrEqual(const VersionMap<CompareFunction>& a,
     const std::unordered_map<const CanonicalPeer*, TransactionId>::
         const_iterator b_it = b_map.find(a_pair.first);
 
-    if (b_it == b_map.end() ||
-        CompareTransactionIds(a_pair.second, b_it->second) > 0) {
+    if (b_it == b_map.end() || a_pair.second > b_it->second) {
       return false;
     }
   }

@@ -90,6 +90,7 @@ TransactionStore::TransactionStore(CanonicalPeerMap* canonical_peer_map,
       object_namespace_uuid_(StringToUuid(kObjectNamespaceUuidString)),
       transaction_sequencer_(canonical_peer_map, peer_message_sender,
                              &transaction_id_generator_, local_peer),
+      recording_thread_(nullptr),
       version_number_(1) {
   TransactionId initial_transaction_id;
   transaction_id_generator_.Generate(&initial_transaction_id);
@@ -101,15 +102,25 @@ TransactionStore::TransactionStore(CanonicalPeerMap* canonical_peer_map,
 TransactionStore::~TransactionStore() {
 }
 
-RecordingThread* TransactionStore::CreateRecordingThread() {
-  RecordingThread* const thread = new RecordingThread(this);
+void TransactionStore::RunProgram(UnversionedLocalObject* local_object,
+                                  const string& method_name,
+                                  Value* return_value,
+                                  bool linger) {
+  RecordingThread thread(this);
 
   {
-    MutexLock lock(&recording_threads_mu_);
-    recording_threads_.emplace_back(thread);
+    MutexLock lock(&recording_thread_mu_);
+    CHECK(recording_thread_ == nullptr);
+    recording_thread_ = &thread;
   }
 
-  return thread;
+  thread.RunProgram(local_object, method_name, return_value, linger);
+
+  {
+    MutexLock lock(&recording_thread_mu_);
+    CHECK(recording_thread_ == &thread);
+    recording_thread_ = nullptr;
+  }
 }
 
 void TransactionStore::NotifyNewConnection(const CanonicalPeer* remote_peer) {
@@ -867,36 +878,23 @@ void TransactionStore::RejectTransactions(
   }
 
   if (invalidate_start_transaction_id < MAX_TRANSACTION_ID) {
-    vector<RecordingThread*> recording_threads_temp;
+    RecordingThread* recording_thread_temp = nullptr;
     {
-      MutexLock lock(&recording_threads_mu_);
-
-      const vector<unique_ptr<RecordingThread>>::size_type thread_count =
-          recording_threads_.size();
-      recording_threads_temp.resize(thread_count);
-
-      for (vector<unique_ptr<RecordingThread>>::size_type i = 0;
-           i < thread_count; ++i) {
-        recording_threads_temp[i] = recording_threads_[i].get();
-      }
+      MutexLock lock(&recording_thread_mu_);
+      recording_thread_temp = recording_thread_;
     }
 
-    // TODO(dss): There's a race condition here. If a recording thread is
-    // created after the recording_threads_ collection is copied, then execution
-    // will not be suspended on the new thread as it should be.
+    // TODO(dss): There's a race condition here. If the recording thread is
+    // created after the recording_thread_ member variable is copied, then
+    // execution will not be suspended on the new thread as it should be.
     //
-    // This is not currently a problem, because only one recording thread is
-    // created per peer, and the remote peers should have no reason to reject
-    // the local peer's transactions until after the recording thread has
-    // started executing. Nonetheless, it would be nice to fix the race
-    // condition.
+    // This is not currently a problem, because the remote peers should have no
+    // reason to reject the local peer's transactions until after the recording
+    // thread has started executing. Nonetheless, it would be nice to fix the
+    // race condition.
 
-    for (RecordingThread* const recording_thread : recording_threads_temp) {
-      recording_thread->Rewind(invalidate_start_transaction_id);
-    }
-    for (RecordingThread* const recording_thread : recording_threads_temp) {
-      recording_thread->Resume();
-    }
+    recording_thread_temp->Rewind(invalidate_start_transaction_id);
+    recording_thread_temp->Resume();
 
     PeerMessage peer_message;
     InvalidateTransactionsMessage* const invalidate_transactions_message =

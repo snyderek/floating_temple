@@ -28,7 +28,6 @@
 #include "engine/get_peer_message_type.h"
 #include "engine/mock_peer_message_sender.h"
 #include "engine/proto/peer.pb.h"
-#include "engine/recording_thread.h"
 #include "fake_interpreter/fake_interpreter.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/thread.h"
@@ -135,11 +134,8 @@ TEST(TransactionStoreTest,
                   remote_peer, IsPeerMessageType(PeerMessage::GET_OBJECT), _))
       .Times(3);
 
-  RecordingThread* const recording_thread =
-      transaction_store.CreateRecordingThread();
-
   Value return_value;
-  recording_thread->RunProgram(new TestProgramObject(), "run", &return_value,
+  transaction_store.RunProgram(new TestProgramObject(), "run", &return_value,
                                false);
   EXPECT_EQ(Value::EMPTY, return_value.type());
 

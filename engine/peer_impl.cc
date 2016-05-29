@@ -23,7 +23,6 @@
 #include "engine/canonical_peer_map.h"
 #include "engine/connection_manager.h"
 #include "engine/peer_id.h"
-#include "engine/recording_thread.h"
 #include "engine/transaction_store.h"
 #include "util/state_variable.h"
 
@@ -94,9 +93,8 @@ void PeerImpl::RunProgram(UnversionedLocalObject* local_object,
     return;
   }
 
-  RecordingThread* const recording_thread =
-      transaction_store_->CreateRecordingThread();
-  recording_thread->RunProgram(local_object, method_name, return_value, linger);
+  transaction_store_->RunProgram(local_object, method_name, return_value,
+                                 linger);
 }
 
 void PeerImpl::Stop() {

@@ -214,7 +214,7 @@ void VersionedObjectContent::InsertTransaction(
                              transactions_to_reject);
   } else {
     if (transaction_is_local) {
-      max_requested_transaction_id_.CopyFrom(transaction_id);
+      max_requested_transaction_id_ = transaction_id;
       VLOG(1) << "max_requested_transaction_id_ is now "
               << TransactionIdToString(max_requested_transaction_id_);
     }
@@ -385,7 +385,7 @@ bool VersionedObjectContent::CanUseCachedLiveObject_Locked(
     if (cached_peer_it == cached_peer_transactions_ids.end()) {
       cached_transaction_id = MIN_TRANSACTION_ID;
     } else {
-      cached_transaction_id.CopyFrom(cached_peer_it->second);
+      cached_transaction_id = cached_peer_it->second;
     }
 
     const map<TransactionId, unique_ptr<SharedObjectTransaction>>::

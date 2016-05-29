@@ -99,7 +99,7 @@ bool VersionMap<CompareFunction>::GetPeerTransactionId(
     return false;
   }
 
-  transaction_id->CopyFrom(it->second);
+  *transaction_id = it->second;
   return true;
 }
 
@@ -135,7 +135,7 @@ void VersionMap<CompareFunction>::AddPeerTransactionId(
       return;
     }
 
-    existing_transaction_id->CopyFrom(transaction_id);
+    *existing_transaction_id = transaction_id;
   }
 }
 

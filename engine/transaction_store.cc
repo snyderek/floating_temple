@@ -485,7 +485,7 @@ void TransactionStore::HandleGetObjectMessage(
 
     TransactionProto* const transaction_proto =
         store_object_message->add_transaction();
-    transaction_proto->mutable_transaction_id()->CopyFrom(transaction_id);
+    *transaction_proto->mutable_transaction_id() = transaction_id;
 
     for (const unique_ptr<CommittedEvent>& event : transaction->events()) {
       ConvertCommittedEventToEventProto(event.get(),
@@ -499,7 +499,7 @@ void TransactionStore::HandleGetObjectMessage(
   for (const auto& version_pair : effective_version.peer_transaction_ids()) {
     PeerVersion* const peer_version = store_object_message->add_peer_version();
     peer_version->set_peer_id(version_pair.first->peer_id());
-    peer_version->mutable_last_transaction_id()->CopyFrom(version_pair.second);
+    *peer_version->mutable_last_transaction_id() = version_pair.second;
   }
 
   unordered_set<const CanonicalPeer*> interested_peers;
@@ -721,7 +721,7 @@ void TransactionStore::ApplyTransactionAndSendMessage(
   PeerMessage peer_message;
   ApplyTransactionMessage* const apply_transaction_message =
       peer_message.mutable_apply_transaction_message();
-  apply_transaction_message->mutable_transaction_id()->CopyFrom(transaction_id);
+  *apply_transaction_message->mutable_transaction_id() = transaction_id;
 
   unordered_set<SharedObject*> affected_objects;
 
@@ -819,8 +819,8 @@ void TransactionStore::RejectTransactions(
     RejectTransactionMessage* reject_transaction_message) {
   CHECK(reject_transaction_message != nullptr);
 
-  reject_transaction_message->mutable_new_transaction_id()->CopyFrom(
-      new_transaction_id);
+  *reject_transaction_message->mutable_new_transaction_id() =
+      new_transaction_id;
 
   // Update the current sequence point.
   {
@@ -854,15 +854,15 @@ void TransactionStore::RejectTransactions(
 
     if (rejected_peer == local_peer_) {
       if (rejected_transaction_id < invalidate_start_transaction_id) {
-        invalidate_start_transaction_id.CopyFrom(rejected_transaction_id);
+        invalidate_start_transaction_id = rejected_transaction_id;
       }
     } else {
       RejectedPeerProto* const rejected_peer_proto =
           reject_transaction_message->add_rejected_peer();
 
       rejected_peer_proto->set_rejected_peer_id(rejected_peer->peer_id());
-      rejected_peer_proto->mutable_rejected_transaction_id()->CopyFrom(
-          rejected_transaction_id);
+      *rejected_peer_proto->mutable_rejected_transaction_id() =
+          rejected_transaction_id;
     }
   }
 
@@ -902,10 +902,10 @@ void TransactionStore::RejectTransactions(
     InvalidateTransactionsMessage* const invalidate_transactions_message =
         peer_message.mutable_invalidate_transactions_message();
 
-    invalidate_transactions_message->mutable_start_transaction_id()->CopyFrom(
-        invalidate_start_transaction_id);
-    invalidate_transactions_message->mutable_end_transaction_id()->CopyFrom(
-        new_transaction_id);
+    *invalidate_transactions_message->mutable_start_transaction_id() =
+        invalidate_start_transaction_id;
+    *invalidate_transactions_message->mutable_end_transaction_id() =
+        new_transaction_id;
 
     transaction_sequencer_.BroadcastMessage(peer_message,
                                             PeerMessageSender::BLOCKING_MODE);

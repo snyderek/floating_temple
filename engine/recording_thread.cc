@@ -125,7 +125,7 @@ void RecordingThread::Rewind(const TransactionId& rejected_transaction_id) {
 
   if (!Rewinding_Locked() ||
       rejected_transaction_id < rejected_transaction_id_) {
-    rejected_transaction_id_.CopyFrom(rejected_transaction_id);
+    rejected_transaction_id_ = rejected_transaction_id;
     rewinding_cond_.Broadcast();
   }
 
@@ -282,8 +282,7 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
   const vector<unique_ptr<PendingEvent>>::size_type event_count_save =
       events_.size();
 
-  TransactionId method_call_transaction_id;
-  method_call_transaction_id.CopyFrom(current_transaction_id_);
+  const TransactionId method_call_transaction_id = current_transaction_id_;
 
   ObjectReferenceImpl* const caller_object_reference =
       current_object_reference_;

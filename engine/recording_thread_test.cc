@@ -125,17 +125,17 @@ class ValueSetter {
 
 class TransactionIdSetter {
  public:
-  explicit TransactionIdSetter(const TransactionId& transaction_id) {
-    transaction_id_.CopyFrom(transaction_id);
+  explicit TransactionIdSetter(const TransactionId& transaction_id)
+      : transaction_id_(transaction_id) {
   }
 
   void CopyTransactionId(TransactionId* transaction_id) const {
     CHECK(transaction_id != nullptr);
-    transaction_id->CopyFrom(transaction_id_);
+    *transaction_id = transaction_id_;
   }
 
  private:
-  TransactionId transaction_id_;
+  const TransactionId transaction_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TransactionIdSetter);
 };

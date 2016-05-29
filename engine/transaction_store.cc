@@ -866,7 +866,7 @@ void TransactionStore::RejectTransactions(
     }
   }
 
-  if (IsValidTransactionId(invalidate_start_transaction_id)) {
+  if (invalidate_start_transaction_id < MAX_TRANSACTION_ID) {
     vector<RecordingThread*> recording_threads_temp;
     {
       MutexLock lock(&recording_threads_mu_);

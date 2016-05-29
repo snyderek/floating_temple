@@ -580,7 +580,7 @@ bool RecordingThread::Rewinding() const {
 }
 
 bool RecordingThread::Rewinding_Locked() const {
-  return IsValidTransactionId(rejected_transaction_id_);
+  return rejected_transaction_id_ > MIN_TRANSACTION_ID;
 }
 
 }  // namespace engine

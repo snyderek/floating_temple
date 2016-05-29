@@ -1,8 +1,8 @@
 Floating Temple
 Copyright 2015 Derek S. Snyder
 
-Build Instructions - Short Version
-==================================
+Build Instructions
+==================
 
 # Install prerequisites. The following command works on Ubuntu 14.04.1 (Trusty
 # Tahr):
@@ -16,6 +16,7 @@ cd ~/projects
 git clone https://github.com/snyderek/floating_temple.git
 
 # Install the OSSP UUID library.
+mkdir -p ~/scratch
 cd ~/scratch
 tar xzf ~/projects/floating_temple/third_party/uuid-1.6.2.tar.gz
 cd uuid-1.6.2

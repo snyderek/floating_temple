@@ -17,7 +17,6 @@
 #define ENGINE_INTERVAL_SET_H_
 
 #include <map>
-#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -63,18 +62,17 @@ void IntervalSet<T>::AddInterval(const T& start, const T& end) {
     return;
   }
 
-  typename std::map<T, T>::iterator start_it = map_.upper_bound(start);
+  auto start_it = map_.upper_bound(start);
 
   if (start_it == map_.begin() || PrevIterator(start_it)->second < start) {
-    const std::pair<typename std::map<T, T>::iterator, bool> insert_result =
-        map_.emplace(start, end);
+    const auto insert_result = map_.emplace(start, end);
     CHECK(insert_result.second);
     start_it = insert_result.first;
   } else {
     --start_it;
   }
 
-  const typename std::map<T, T>::iterator end_it = map_.upper_bound(end);
+  const auto end_it = map_.upper_bound(end);
   CHECK(end_it != map_.begin());
   const T& old_end = PrevIterator(end_it)->second;
 
@@ -88,7 +86,7 @@ void IntervalSet<T>::AddInterval(const T& start, const T& end) {
 
 template<typename T>
 bool IntervalSet<T>::Contains(const T& t) const {
-  const typename std::map<T, T>::const_iterator it = map_.upper_bound(t);
+  const auto it = map_.upper_bound(t);
 
   if (it == map_.begin()) {
     return false;

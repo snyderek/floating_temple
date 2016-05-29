@@ -58,10 +58,8 @@ vector<pair<const CanonicalPeer*, TransactionId>>::const_iterator
 FindTransactionIdInVector(
     const vector<pair<const CanonicalPeer*, TransactionId>>& transaction_pairs,
     const TransactionId& transaction_id) {
-  const vector<pair<const CanonicalPeer*, TransactionId>>::const_iterator
-      end_it = transaction_pairs.end();
-  vector<pair<const CanonicalPeer*, TransactionId>>::const_iterator it =
-      transaction_pairs.begin();
+  const auto end_it = transaction_pairs.end();
+  auto it = transaction_pairs.begin();
 
   while (it != end_it &&
          CompareTransactionIds(it->second, transaction_id) != 0) {

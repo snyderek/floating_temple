@@ -16,14 +16,11 @@
 #include "engine/serialization_context_impl.h"
 
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "engine/object_reference_impl.h"
 
-using std::pair;
-using std::unordered_map;
 using std::vector;
 
 namespace floating_temple {
@@ -41,8 +38,7 @@ int SerializationContextImpl::GetIndexForObjectReference(
   ObjectReferenceImpl* const object_reference_impl =
       static_cast<ObjectReferenceImpl*>(object_reference);
 
-  const pair<unordered_map<ObjectReferenceImpl*, int>::iterator, bool>
-      insert_result = indexes_.emplace(object_reference_impl, -1);
+  const auto insert_result = indexes_.emplace(object_reference_impl, -1);
 
   if (insert_result.second) {
     const int new_index = static_cast<int>(object_references_->size());

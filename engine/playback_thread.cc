@@ -21,7 +21,6 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include <gflags/gflags.h>
@@ -45,7 +44,6 @@
 #include "util/state_variable.h"
 #include "util/state_variable_internal_interface.h"
 
-using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;
@@ -489,9 +487,8 @@ bool PlaybackThread::ObjectMatches(
       (unbound_it != unbound_object_references_.end());
 
   if (shared_object_is_new && object_reference_is_unbound) {
-    const pair<unordered_map<SharedObject*, ObjectReferenceImpl*>::iterator,
-               bool>
-        insert_result = new_object_references_->emplace(shared_object, nullptr);
+    const auto insert_result = new_object_references_->emplace(shared_object,
+                                                               nullptr);
 
     if (!insert_result.second) {
       return false;

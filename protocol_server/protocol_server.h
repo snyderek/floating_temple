@@ -289,8 +289,7 @@ void ProtocolServer<Message>::DoSelectLoop() {
     FD_ZERO(&read_fd_set);
     FD_ZERO(&write_fd_set);
 
-    for (typename std::unordered_set<ProtocolConnectionImpl<Message>*>::iterator
-             connection_it = blocked_connections_temp.begin();
+    for (auto connection_it = blocked_connections_temp.begin();
          connection_it != blocked_connections_temp.end(); ) {
       ProtocolConnectionImpl<Message>* const connection = *connection_it;
 
@@ -321,9 +320,7 @@ void ProtocolServer<Message>::DoSelectLoop() {
       }
 
       if (erase_connection) {
-        const typename
-            std::unordered_set<ProtocolConnectionImpl<Message>*>::iterator
-            erase_it = connection_it;
+        const auto erase_it = connection_it;
         ++connection_it;
         blocked_connections_temp.erase(erase_it);
       } else {

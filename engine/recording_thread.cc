@@ -21,7 +21,6 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include "base/cond_var.h"
@@ -40,7 +39,6 @@
 #include "engine/versioned_live_object.h"
 #include "include/c++/value.h"
 
-using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
@@ -221,8 +219,8 @@ ObjectReference* RecordingThread::CreateVersionedObject(
     new_object.live_object = new_live_object;
     new_object.object_is_named = true;
 
-    const pair<unordered_map<ObjectReferenceImpl*, NewObject>::iterator, bool>
-        insert_result = new_objects_.emplace(object_reference, new_object);
+    const auto insert_result = new_objects_.emplace(object_reference,
+                                                    new_object);
 
     if (insert_result.second) {
       // The named object has not yet been created in this thread.

@@ -125,10 +125,8 @@ void VersionMap<CompareFunction>::AddPeerTransactionId(
   CHECK(canonical_peer != nullptr);
   CHECK(IsValidTransactionId(transaction_id)) << transaction_id.DebugString();
 
-  const std::pair<
-      std::unordered_map<const CanonicalPeer*, TransactionId>::iterator,
-      bool> insert_result =
-      peer_transaction_ids_.emplace(canonical_peer, transaction_id);
+  const auto insert_result = peer_transaction_ids_.emplace(canonical_peer,
+                                                           transaction_id);
 
   if (!insert_result.second) {
     TransactionId* const existing_transaction_id = &insert_result.first->second;

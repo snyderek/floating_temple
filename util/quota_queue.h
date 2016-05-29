@@ -88,7 +88,7 @@ void QuotaQueue<T>::AddService(int service_id, int max_item_count) {
   {
     MutexLock lock(&mu_);
 
-    const typename std::vector<std::unique_ptr<Service>>::size_type new_index =
+    const auto new_index =
         static_cast<typename std::vector<std::unique_ptr<Service>>::size_type>(
             service_id);
 

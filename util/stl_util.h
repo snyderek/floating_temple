@@ -37,8 +37,8 @@ typename Container::const_iterator FindInContainer(
     const Container* haystack, const typename Container::value_type& needle) {
   CHECK(haystack != nullptr);
 
-  const typename Container::const_iterator end_it = haystack->end();
-  typename Container::const_iterator it = haystack->begin();
+  const auto end_it = haystack->end();
+  auto it = haystack->begin();
 
   while (it != end_it && !(*it == needle)) {
     ++it;
@@ -52,8 +52,8 @@ typename Container::iterator FindInContainer(
     Container* haystack, const typename Container::value_type& needle) {
   CHECK(haystack != nullptr);
 
-  const typename Container::const_iterator end_it = haystack->end();
-  typename Container::iterator it = haystack->begin();
+  const auto end_it = haystack->end();
+  auto it = haystack->begin();
 
   while (it != end_it && !(*it == needle)) {
     ++it;

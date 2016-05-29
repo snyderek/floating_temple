@@ -80,6 +80,9 @@ class Thread {
   virtual ObjectReference* CreateVersionedObject(
       VersionedLocalObject* initial_version, const std::string& name) = 0;
 
+  // TODO(dss): Make the 'initial_version' parameter a LocalObject pointer so
+  // that the caller can optionally pass a pointer to a VersionedLocalObject
+  // instance.
   virtual ObjectReference* CreateUnversionedObject(
       UnversionedLocalObject* initial_version, const std::string& name) = 0;
 

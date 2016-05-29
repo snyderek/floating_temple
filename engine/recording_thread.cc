@@ -338,9 +338,12 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
     // responsible for deleting it.)
     if (CompareTransactionIds(current_transaction_id_,
                               method_call_transaction_id) == 0) {
-      CHECK_GT(events_.size(), event_count_save);
+      CHECK_GE(events_.size(), event_count_save);
       events_.resize(event_count_save);
     }
+
+    // TODO(dss): Set transaction_level_ to the value it had when
+    // RecordingThread::CallMethod was called.
 
     return false;
   }

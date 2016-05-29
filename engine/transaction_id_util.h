@@ -24,10 +24,10 @@ namespace engine {
 
 class TransactionId;
 
-int CompareTransactionIds(const TransactionId& a, const TransactionId& b);
+extern const TransactionId& MIN_TRANSACTION_ID;
+extern const TransactionId& MAX_TRANSACTION_ID;
 
-void GetMinTransactionId(TransactionId* transaction_id);
-void GetMaxTransactionId(TransactionId* transaction_id);
+int CompareTransactionIds(const TransactionId& a, const TransactionId& b);
 
 bool IsValidTransactionId(const TransactionId& transaction_id);
 

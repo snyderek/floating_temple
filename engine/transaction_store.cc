@@ -845,8 +845,7 @@ void TransactionStore::RejectTransactions(
     IncrementVersionNumber_Locked();
   }
 
-  TransactionId invalidate_start_transaction_id;
-  GetMaxTransactionId(&invalidate_start_transaction_id);
+  TransactionId invalidate_start_transaction_id = MAX_TRANSACTION_ID;
 
   for (const auto& rejected_transaction_pair : transactions_to_reject) {
     const CanonicalPeer* const rejected_peer = rejected_transaction_pair.first;

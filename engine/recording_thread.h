@@ -130,8 +130,8 @@ class RecordingThread : public Thread {
   // rewind past the start of the first rejected transaction, clear
   // rejected_transaction_id_, and then resume execution.
   //
-  // To clear rejected_transaction_id_, set it to the minimum transaction ID by
-  // calling GetMinTransactionId.
+  // To clear rejected_transaction_id_, set it equal to MIN_TRANSACTION_ID
+  // (declared in "engine/transaction_id_util.h").
   TransactionId rejected_transaction_id_;
   std::unordered_set<pthread_t> blocking_threads_;
   mutable CondVar rewinding_cond_;

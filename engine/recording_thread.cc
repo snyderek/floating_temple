@@ -68,9 +68,9 @@ RecordingThread::RecordingThread(
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       transaction_level_(0),
       committing_transaction_(false),
-      current_object_reference_(nullptr) {
-  GetMinTransactionId(&current_transaction_id_);
-  GetMinTransactionId(&rejected_transaction_id_);
+      current_object_reference_(nullptr),
+      current_transaction_id_(MIN_TRANSACTION_ID),
+      rejected_transaction_id_(MIN_TRANSACTION_ID) {
 }
 
 RecordingThread::~RecordingThread() {
@@ -115,7 +115,7 @@ void RecordingThread::RunProgram(UnversionedLocalObject* local_object,
       }
 
       // Clear the rewind state.
-      GetMinTransactionId(&rejected_transaction_id_);
+      rejected_transaction_id_ = MIN_TRANSACTION_ID;
     }
   }
 }
@@ -422,7 +422,7 @@ bool RecordingThread::CallMethodHelper(
       // A rewind action was requested, but the rewind does not include the
       // current method call. Clear the rejected_transaction_id_ member variable
       // and call the method again.
-      GetMinTransactionId(&rejected_transaction_id_);
+      rejected_transaction_id_ = MIN_TRANSACTION_ID;
     }
   }
 

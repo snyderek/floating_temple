@@ -30,6 +30,22 @@ using std::string;
 namespace floating_temple {
 namespace engine {
 
+const TransactionId& MIN_TRANSACTION_ID = *[]{
+  TransactionId* const transaction_id = new TransactionId();
+  transaction_id->set_a(0);
+  transaction_id->set_b(0);
+  transaction_id->set_c(0);
+  return transaction_id;
+}();
+
+const TransactionId& MAX_TRANSACTION_ID = *[]{
+  TransactionId* const transaction_id = new TransactionId();
+  transaction_id->set_a(kUint64Max);
+  transaction_id->set_b(kUint64Max);
+  transaction_id->set_c(kUint64Max);
+  return transaction_id;
+}();
+
 int CompareTransactionIds(const TransactionId& t1, const TransactionId& t2) {
   if (t1.a() != t2.a()) {
     return t1.a() < t2.a() ? -1 : 1;
@@ -44,24 +60,6 @@ int CompareTransactionIds(const TransactionId& t1, const TransactionId& t2) {
   }
 
   return 0;
-}
-
-void GetMinTransactionId(TransactionId* transaction_id) {
-  CHECK(transaction_id != nullptr);
-
-  transaction_id->Clear();
-  transaction_id->set_a(0);
-  transaction_id->set_b(0);
-  transaction_id->set_c(0);
-}
-
-void GetMaxTransactionId(TransactionId* transaction_id) {
-  CHECK(transaction_id != nullptr);
-
-  transaction_id->Clear();
-  transaction_id->set_a(kUint64Max);
-  transaction_id->set_b(kUint64Max);
-  transaction_id->set_c(kUint64Max);
 }
 
 bool IsValidTransactionId(const TransactionId& transaction_id) {

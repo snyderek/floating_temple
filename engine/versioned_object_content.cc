@@ -74,8 +74,8 @@ VersionedObjectContent::VersionedObjectContent(
     TransactionStoreInternalInterface* transaction_store,
     SharedObject* shared_object)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
-      shared_object_(CHECK_NOTNULL(shared_object)) {
-  GetMinTransactionId(&max_requested_transaction_id_);
+      shared_object_(CHECK_NOTNULL(shared_object)),
+      max_requested_transaction_id_(MIN_TRANSACTION_ID) {
 }
 
 VersionedObjectContent::~VersionedObjectContent() {
@@ -383,7 +383,7 @@ bool VersionedObjectContent::CanUseCachedLiveObject_Locked(
 
     TransactionId cached_transaction_id;
     if (cached_peer_it == cached_peer_transactions_ids.end()) {
-      GetMinTransactionId(&cached_transaction_id);
+      cached_transaction_id = MIN_TRANSACTION_ID;
     } else {
       cached_transaction_id.CopyFrom(cached_peer_it->second);
     }

@@ -28,11 +28,7 @@ extern const TransactionId& MIN_TRANSACTION_ID;
 extern const TransactionId& MAX_TRANSACTION_ID;
 
 int CompareTransactionIds(const TransactionId& a, const TransactionId& b);
-
 bool IsValidTransactionId(const TransactionId& transaction_id);
-
-void IncrementTransactionId(TransactionId* transaction_id);
-
 std::string TransactionIdToString(const TransactionId& transaction_id);
 
 std::ostream& operator<<(std::ostream& os, const TransactionId& transaction_id);

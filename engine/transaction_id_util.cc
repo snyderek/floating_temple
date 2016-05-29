@@ -20,7 +20,6 @@
 #include <string>
 
 #include "base/integral_types.h"
-#include "base/logging.h"
 #include "base/string_printf.h"
 #include "engine/proto/transaction_id.pb.h"
 
@@ -64,33 +63,6 @@ int CompareTransactionIds(const TransactionId& t1, const TransactionId& t2) {
 
 bool IsValidTransactionId(const TransactionId& transaction_id) {
   return transaction_id.a() > 0 && transaction_id.a() < kUint64Max;
-}
-
-void IncrementTransactionId(TransactionId* transaction_id) {
-  CHECK(transaction_id != nullptr);
-
-  uint64 a = transaction_id->a();
-  uint64 b = transaction_id->b();
-  uint64 c = transaction_id->c();
-
-  if (c < kUint64Max) {
-    ++c;
-  } else {
-    c = 0;
-
-    if (b < kUint64Max) {
-      ++b;
-    } else {
-      b = 0;
-
-      CHECK_LT(a, kUint64Max);
-      ++a;
-    }
-  }
-
-  transaction_id->set_a(a);
-  transaction_id->set_b(b);
-  transaction_id->set_c(c);
 }
 
 string TransactionIdToString(const TransactionId& transaction_id) {

@@ -161,50 +161,6 @@ fake_interpreter_lib = ft_env.Library(
       """),
   )
 
-# "lua" subdirectory
-#
-# Implementation of the local interpreter for the Lua language. Uses the
-# third-party Lua interpreter in "third_party/lua-5.2.3".
-
-lua_env = ft_env.Clone()
-lua_env.Append(
-    CFLAGS = Split('-DLUA_COMPAT_ALL -DLUA_USE_LINUX'),
-
-    CPPPATH = Split("""
-        third_party/lua-5.2.3/src
-      """),
-
-    LIBS = Split('dl m readline'),
-  )
-
-lua_lib = lua_env.Library(
-    target = 'lua/lua',
-    source = Split("""
-        lua/convert_value.cc
-        lua/ft_lib.cc
-        lua/get_serialized_lua_value_type.cc
-        lua/global_lock.cc
-        lua/global_unlock.cc
-        lua/hook_functions.cc
-        lua/interpreter_impl.cc
-        lua/program_object.cc
-        lua/run_lua_program.cc
-        lua/table_local_object.cc
-        lua/thread_substitution.cc
-      """),
-  )
-
-# "lua/proto" subdirectory
-#
-# Serialization protocol for Lua objects.
-
-lua_proto_lib = ft_env.ProtoLibrary(
-    target = 'lua/proto/lua_proto',
-    source = Split("""
-        lua/proto/serialization.proto
-      """),
-  )
-
 # "protocol_server" subdirectory
 #
 # Code for sending and receiving protocol messages over socket connections.
@@ -252,78 +208,6 @@ gmock_lib = gmock_env.Library(
 gtest_lib = gmock_env.Library(
     target = 'third_party/gtest',
     source = 'third_party/gmock-1.7.0/gtest/src/gtest-all.cc',
-  )
-
-third_party_lua_env = Environment(
-    # TODO(dss): Use different optimization flags when compiling in release
-    # mode.
-    CFLAGS = Split('-g -O0 -Wall -DLUA_COMPAT_ALL -DLUA_USE_LINUX'),
-    LINKFLAGS = Split('-Wl,-E'),
-
-    CPPPATH = Split("""
-        third_party/lua-5.2.3/src
-      """),
-
-    LIBS = Split('dl m readline'),
-  )
-
-third_party_lua_lib = third_party_lua_env.Library(
-    target = 'third_party/lua-5.2.3/lua',
-    source = Split("""
-        third_party/lua-5.2.3/src/floating_temple.c
-        third_party/lua-5.2.3/src/lapi.c
-        third_party/lua-5.2.3/src/lauxlib.c
-        third_party/lua-5.2.3/src/lbaselib.c
-        third_party/lua-5.2.3/src/lbitlib.c
-        third_party/lua-5.2.3/src/lcode.c
-        third_party/lua-5.2.3/src/lcorolib.c
-        third_party/lua-5.2.3/src/lctype.c
-        third_party/lua-5.2.3/src/ldblib.c
-        third_party/lua-5.2.3/src/ldebug.c
-        third_party/lua-5.2.3/src/ldo.c
-        third_party/lua-5.2.3/src/ldump.c
-        third_party/lua-5.2.3/src/lfunc.c
-        third_party/lua-5.2.3/src/lgc.c
-        third_party/lua-5.2.3/src/linit.c
-        third_party/lua-5.2.3/src/liolib.c
-        third_party/lua-5.2.3/src/llex.c
-        third_party/lua-5.2.3/src/lmathlib.c
-        third_party/lua-5.2.3/src/lmem.c
-        third_party/lua-5.2.3/src/loadlib.c
-        third_party/lua-5.2.3/src/lobject.c
-        third_party/lua-5.2.3/src/lopcodes.c
-        third_party/lua-5.2.3/src/loslib.c
-        third_party/lua-5.2.3/src/lparser.c
-        third_party/lua-5.2.3/src/lstate.c
-        third_party/lua-5.2.3/src/lstring.c
-        third_party/lua-5.2.3/src/lstrlib.c
-        third_party/lua-5.2.3/src/ltable.c
-        third_party/lua-5.2.3/src/ltablib.c
-        third_party/lua-5.2.3/src/ltm.c
-        third_party/lua-5.2.3/src/lundump.c
-        third_party/lua-5.2.3/src/lvm.c
-        third_party/lua-5.2.3/src/lzio.c
-      """),
-  )
-
-lua_env.Depends(lua_lib, third_party_lua_lib)
-
-third_party_lua_env.Program(
-    target = 'third_party/lua-5.2.3/lua',
-    source = Split("""
-        third_party/lua-5.2.3/src/lua.c
-      """) + [
-        third_party_lua_lib,
-      ],
-  )
-
-third_party_lua_env.Program(
-    target = 'third_party/lua-5.2.3/luac',
-    source = Split("""
-        third_party/lua-5.2.3/src/luac.c
-      """) + [
-        third_party_lua_lib,
-      ],
   )
 
 # "toy_lang" subdirectory
@@ -471,26 +355,6 @@ ft_env.Program(
         engine_proto_lib,
         util_lib,
         base_lib,
-      ],
-  )
-
-bin_floating_lua = lua_env.Program(
-    target = 'bin/floating_lua',
-    source = Split("""
-        bin/floating_lua.cc
-      """) + [
-        # These libraries must be listed in reverse-dependency order. That is,
-        # if library B depends on library A, then A must appear *after* B in the
-        # list.
-        lua_lib,
-        engine_lib,
-        protocol_server_lib,
-        value_lib,
-        engine_proto_lib,
-        lua_proto_lib,
-        util_lib,
-        base_lib,
-        third_party_lua_lib,
       ],
   )
 
@@ -708,22 +572,6 @@ engine_shared_object_test = ft_env.Program(
       ],
   )
 
-lua_table_local_object_test = ft_env.Program(
-    target = 'lua/table_local_object_test',
-    source = Split("""
-        lua/table_local_object_test.cc
-      """) + [
-        lua_lib,
-        value_lib,
-        lua_proto_lib,
-        util_lib,
-        base_lib,
-        third_party_lua_lib,
-        gmock_lib,
-        gtest_lib,
-      ],
-  )
-
 protocol_server_buffer_util_test = ft_env.Program(
     target = 'protocol_server/buffer_util_test',
     source = Split("""
@@ -811,7 +659,6 @@ cxx_tests = [
     engine_toy_lang_integration_test,
     engine_transaction_store_test,
     engine_uuid_util_test,
-    lua_table_local_object_test,
     protocol_server_buffer_util_test,
     protocol_server_protocol_connection_impl_test,
     protocol_server_varint_test,

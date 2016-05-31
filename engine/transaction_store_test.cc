@@ -135,7 +135,7 @@ TEST(TransactionStoreTest,
   FakeInterpreter interpreter;
   TransactionStore transaction_store(
       &canonical_peer_map, &peer_message_sender, &interpreter,
-      canonical_peer_map.GetCanonicalPeer("test-local-peer-id"), true);
+      canonical_peer_map.GetCanonicalPeer("test-local-peer-id"));
 
   const CanonicalPeer* const remote_peer = canonical_peer_map.GetCanonicalPeer(
       kRemotePeerId);

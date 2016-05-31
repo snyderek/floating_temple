@@ -80,12 +80,10 @@ const char TransactionStore::kObjectNamespaceUuidString[] =
 TransactionStore::TransactionStore(CanonicalPeerMap* canonical_peer_map,
                                    PeerMessageSender* peer_message_sender,
                                    Interpreter* interpreter,
-                                   const CanonicalPeer* local_peer,
-                                   bool delay_object_binding)
+                                   const CanonicalPeer* local_peer)
     : canonical_peer_map_(CHECK_NOTNULL(canonical_peer_map)),
       interpreter_(CHECK_NOTNULL(interpreter)),
       local_peer_(CHECK_NOTNULL(local_peer)),
-      delay_object_binding_(delay_object_binding),
       object_namespace_uuid_(StringToUuid(kObjectNamespaceUuidString)),
       transaction_sequencer_(canonical_peer_map, peer_message_sender,
                              &transaction_id_generator_, local_peer),
@@ -309,10 +307,6 @@ void TransactionStore::CreateTransaction(
       const PendingEvent::Type type = event->type();
 
       switch (type) {
-        case PendingEvent::OBJECT_CREATION:
-          VLOG(3) << "Event " << i << ": OBJECT_CREATION";
-          break;
-
         case PendingEvent::BEGIN_TRANSACTION:
           VLOG(3) << "Event " << i << ": BEGIN_TRANSACTION";
           break;
@@ -1024,18 +1018,6 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
   const PendingEvent::Type type = pending_event->type();
 
   switch (type) {
-    case PendingEvent::OBJECT_CREATION:
-      if (prev_shared_object != nullptr) {
-        CHECK_EQ(new_shared_objects.size(), 1u);
-        SharedObject* const new_shared_object = *new_shared_objects.begin();
-
-        AddEventToSharedObjectTransactions(
-            prev_shared_object, origin_peer,
-            new SubObjectCreationCommittedEvent(new_shared_object),
-            shared_object_transactions);
-      }
-      break;
-
     case PendingEvent::BEGIN_TRANSACTION:
       CHECK_EQ(new_shared_objects.size(), 0u);
       AddEventToSharedObjectTransactions(prev_shared_object, origin_peer,
@@ -1212,10 +1194,6 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       break;
     }
 
-    case CommittedEvent::SUB_OBJECT_CREATION:
-      out->mutable_sub_object_creation();
-      break;
-
     case CommittedEvent::BEGIN_TRANSACTION:
       out->mutable_begin_transaction();
       break;
@@ -1385,10 +1363,6 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
 
       return new ObjectCreationCommittedEvent(live_object);
     }
-
-    case EventProto::SUB_OBJECT_CREATION:
-      CHECK_EQ(new_shared_objects.size(), 1u);
-      return new SubObjectCreationCommittedEvent(*new_shared_objects.begin());
 
     case EventProto::BEGIN_TRANSACTION:
       CHECK_EQ(new_shared_objects.size(), 0u);

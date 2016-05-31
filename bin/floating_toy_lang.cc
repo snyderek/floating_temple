@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
   const unique_ptr<Peer> peer(
       CreateNetworkPeer(&interpreter, "toy_lang", GetLocalAddress(),
                         FLAGS_peer_port, known_peer_ids,
-                        FLAGS_send_receive_thread_count, true));
+                        FLAGS_send_receive_thread_count));
   LOG(WARNING) << "Peer started.";
 
   // Run the source file.

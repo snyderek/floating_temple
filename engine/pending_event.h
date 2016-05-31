@@ -34,7 +34,6 @@ class ObjectReferenceImpl;
 class PendingEvent {
  public:
   enum Type {
-    OBJECT_CREATION,
     BEGIN_TRANSACTION,
     END_TRANSACTION,
     METHOD_CALL,
@@ -70,20 +69,6 @@ class PendingEvent {
                            std::shared_ptr<const LiveObject>> live_objects_;
   const std::unordered_set<ObjectReferenceImpl*> new_object_references_;
   ObjectReferenceImpl* const prev_object_reference_;
-};
-
-class ObjectCreationPendingEvent : public PendingEvent {
- public:
-  // prev_object_reference may be NULL.
-  ObjectCreationPendingEvent(
-      ObjectReferenceImpl* prev_object_reference,
-      ObjectReferenceImpl* new_object_reference,
-      const std::shared_ptr<const LiveObject>& new_live_object);
-
-  Type type() const override { return OBJECT_CREATION; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ObjectCreationPendingEvent);
 };
 
 class BeginTransactionPendingEvent : public PendingEvent {

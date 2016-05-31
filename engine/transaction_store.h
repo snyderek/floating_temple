@@ -70,8 +70,7 @@ class TransactionStore : public ConnectionHandler,
   TransactionStore(CanonicalPeerMap* canonical_peer_map,
                    PeerMessageSender* peer_message_sender,
                    Interpreter* interpreter,
-                   const CanonicalPeer* local_peer,
-                   bool delay_object_binding);
+                   const CanonicalPeer* local_peer);
   ~TransactionStore() override;
 
   void RunProgram(LocalObject* local_object,
@@ -97,7 +96,6 @@ class TransactionStore : public ConnectionHandler,
   typedef std::unordered_map<Uuid, std::unique_ptr<SharedObject>,
                              UuidHasher, UuidEquals> SharedObjectMap;
 
-  bool delay_object_binding() const override { return delay_object_binding_; }
   SequencePoint* GetCurrentSequencePoint() const override;
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       ObjectReferenceImpl* object_reference,
@@ -207,7 +205,6 @@ class TransactionStore : public ConnectionHandler,
   CanonicalPeerMap* const canonical_peer_map_;
   Interpreter* const interpreter_;
   const CanonicalPeer* const local_peer_;
-  const bool delay_object_binding_;
   const Uuid object_namespace_uuid_;
 
   TransactionIdGenerator transaction_id_generator_;

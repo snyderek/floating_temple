@@ -19,14 +19,12 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "include/c++/value.h"
 #include "util/stl_util.h"
 
-using std::make_pair;
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;
@@ -61,19 +59,6 @@ void PendingEvent::GetMethodReturn(ObjectReferenceImpl** next_object_reference,
                                    const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
-}
-
-ObjectCreationPendingEvent::ObjectCreationPendingEvent(
-    ObjectReferenceImpl* prev_object_reference,
-    ObjectReferenceImpl* new_object_reference,
-    const shared_ptr<const LiveObject>& new_live_object)
-    : PendingEvent(
-          MakeSingletonSet<unordered_map<ObjectReferenceImpl*,
-                                         shared_ptr<const LiveObject>>>(
-              make_pair(CHECK_NOTNULL(new_object_reference), new_live_object)),
-          MakeSingletonSet<unordered_set<ObjectReferenceImpl*>>(
-              new_object_reference),
-          prev_object_reference) {
 }
 
 BeginTransactionPendingEvent::BeginTransactionPendingEvent(

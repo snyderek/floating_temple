@@ -76,15 +76,6 @@ class Peer;
 // read and write data on socket connections to remote peers. It must be at
 // least 1.
 //
-// If 'delay_object_binding' is true, an object reference created by calling
-// Thread::CreateObject will not be bound to a shared object until the object
-// reference is used. This improves performance, but it also means that the
-// local interpreter must call Thread::ObjectsAreIdentical to determine if two
-// ObjectReference pointers refer to the same shared object. If
-// 'delay_object_binding' is false, the local interpreter can safely assume that
-// two object references refer to the same shared object if and only if the
-// ObjectReference pointers have equal pointer values.
-//
 // This function does not take ownership of the Interpreter instance. The caller
 // must take ownership of the returned Peer instance.
 Peer* CreateNetworkPeer(Interpreter* interpreter,
@@ -92,8 +83,7 @@ Peer* CreateNetworkPeer(Interpreter* interpreter,
                         const std::string& local_address,
                         int peer_port,
                         const std::vector<std::string>& known_peer_ids,
-                        int send_receive_thread_count,
-                        bool delay_object_binding);
+                        int send_receive_thread_count);
 
 // The function is similar to CreateNetworkPeer, except that the newly created
 // peer has no ability to connect to other peers. This is useful for testing the

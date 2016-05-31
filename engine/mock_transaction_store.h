@@ -67,7 +67,6 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   explicit MockTransactionStore(const MockTransactionStoreCore* core);
   ~MockTransactionStore() override;
 
-  bool delay_object_binding() const override { return true; }
   SequencePoint* GetCurrentSequencePoint() const override;
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       ObjectReferenceImpl* object_reference,

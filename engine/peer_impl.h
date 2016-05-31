@@ -43,8 +43,7 @@ class PeerImpl : public Peer {
              const std::string& local_address,
              int peer_port,
              const std::vector<std::string>& known_peer_ids,
-             int send_receive_thread_count,
-             bool delay_object_binding);
+             int send_receive_thread_count);
 
   void RunProgram(LocalObject* local_object,
                   const std::string& method_name,

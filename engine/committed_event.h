@@ -37,7 +37,6 @@ class CommittedEvent {
  public:
   enum Type {
     OBJECT_CREATION,
-    SUB_OBJECT_CREATION,
     BEGIN_TRANSACTION,
     END_TRANSACTION,
     METHOD_CALL,
@@ -102,20 +101,6 @@ class ObjectCreationCommittedEvent : public CommittedEvent {
   const std::shared_ptr<const LiveObject> live_object_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectCreationCommittedEvent);
-};
-
-class SubObjectCreationCommittedEvent : public CommittedEvent {
- public:
-  explicit SubObjectCreationCommittedEvent(SharedObject* new_shared_object);
-
-  Type type() const override { return SUB_OBJECT_CREATION; }
-  CommittedEvent* Clone() const override;
-  void Dump(DumpContext* dc) const override;
-
- private:
-  SharedObject* GetNewSharedObject() const;
-
-  DISALLOW_COPY_AND_ASSIGN(SubObjectCreationCommittedEvent);
 };
 
 class BeginTransactionCommittedEvent : public CommittedEvent {

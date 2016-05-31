@@ -526,20 +526,10 @@ ObjectReference* PlaybackThread::CreateObjectReference(
   delete initial_version;
 
   if (name.empty()) {
-    if (transaction_store_->delay_object_binding() ||
-        conflict_detected_.Get() ||
-        !CheckNextEventType(CommittedEvent::SUB_OBJECT_CREATION)) {
-      ObjectReferenceImpl* const object_reference =
-          transaction_store_->CreateUnboundObjectReference();
-      CHECK(unbound_object_references_.insert(object_reference).second);
-      return object_reference;
-    } else {
-      const unordered_set<SharedObject*>& new_shared_objects =
-          GetNextEvent()->new_shared_objects();
-      CHECK_EQ(new_shared_objects.size(), 1u);
-      SharedObject* const shared_object = *new_shared_objects.begin();
-      return shared_object->GetOrCreateObjectReference();
-    }
+    ObjectReferenceImpl* const object_reference =
+        transaction_store_->CreateUnboundObjectReference();
+    CHECK(unbound_object_references_.insert(object_reference).second);
+    return object_reference;
   } else {
     return transaction_store_->CreateBoundObjectReference(name);
   }

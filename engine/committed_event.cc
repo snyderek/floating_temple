@@ -98,7 +98,6 @@ void CommittedEvent::GetSelfMethodReturn(
 string CommittedEvent::GetTypeString(Type event_type) {
   switch (event_type) {
     CHECK_EVENT_TYPE(OBJECT_CREATION);
-    CHECK_EVENT_TYPE(SUB_OBJECT_CREATION);
     CHECK_EVENT_TYPE(BEGIN_TRANSACTION);
     CHECK_EVENT_TYPE(END_TRANSACTION);
     CHECK_EVENT_TYPE(METHOD_CALL);
@@ -159,36 +158,6 @@ void ObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
   live_object_->Dump(dc);
 
   dc->End();
-}
-
-SubObjectCreationCommittedEvent::SubObjectCreationCommittedEvent(
-    SharedObject* new_shared_object)
-    : CommittedEvent(
-          MakeSingletonSet<unordered_set<SharedObject*>>(
-                CHECK_NOTNULL(new_shared_object))) {
-}
-
-CommittedEvent* SubObjectCreationCommittedEvent::Clone() const {
-  return new SubObjectCreationCommittedEvent(GetNewSharedObject());
-}
-
-void SubObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
-  CHECK(dc != nullptr);
-
-  dc->BeginMap();
-
-  dc->AddString("type");
-  dc->AddString("SUB_OBJECT_CREATION");
-
-  dc->AddString("new_shared_object");
-  dc->AddString(UuidToString(GetNewSharedObject()->object_id()));
-
-  dc->End();
-}
-
-SharedObject* SubObjectCreationCommittedEvent::GetNewSharedObject() const {
-  CHECK_EQ(new_shared_objects().size(), 1u);
-  return *new_shared_objects().begin();
 }
 
 BeginTransactionCommittedEvent::BeginTransactionCommittedEvent()

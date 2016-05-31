@@ -187,22 +187,13 @@ ObjectReference* RecordingThread::CreateObject(LocalObject* initial_version,
   ObjectReferenceImpl* object_reference = nullptr;
 
   if (name.empty()) {
-    if (transaction_store_->delay_object_binding()) {
-      object_reference = transaction_store_->CreateUnboundObjectReference();
+    object_reference = transaction_store_->CreateUnboundObjectReference();
 
-      NewObject new_object;
-      new_object.live_object = new_live_object;
-      new_object.object_is_named = false;
+    NewObject new_object;
+    new_object.live_object = new_live_object;
+    new_object.object_is_named = false;
 
-      CHECK(new_objects_.emplace(object_reference, new_object).second);
-    } else {
-      object_reference = transaction_store_->CreateBoundObjectReference("");
-
-      AddTransactionEvent(
-          new ObjectCreationPendingEvent(
-              GetObjectReferenceForEvent(current_object_reference_),
-              object_reference, new_live_object));
-    }
+    CHECK(new_objects_.emplace(object_reference, new_object).second);
   } else {
     object_reference = transaction_store_->CreateBoundObjectReference(name);
 

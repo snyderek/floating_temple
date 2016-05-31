@@ -49,8 +49,7 @@ class ToyLangIntegrationTest : public Test {
 
     const vector<string> known_peer_ids;
     peer_ = CreateNetworkPeer(interpreter_, "toy_lang", GetLocalAddress(),
-                              GetUnusedPortForTesting(), known_peer_ids, 1,
-                              true);
+                              GetUnusedPortForTesting(), known_peer_ids, 1);
   }
 
   void TearDown() override {

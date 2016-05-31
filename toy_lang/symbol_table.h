@@ -24,11 +24,6 @@
 #include "base/macros.h"
 
 namespace floating_temple {
-
-class ObjectReference;
-class Thread;
-class VersionedLocalObject;
-
 namespace toy_lang {
 
 class SymbolTable {
@@ -42,12 +37,10 @@ class SymbolTable {
 
   int GetSymbolId(const std::string& symbol_name, bool visible) const;
   int GetLocalVariable(const std::string& symbol_name);
-  int AddExternalSymbol(const std::string& symbol_name, bool visible,
-                        VersionedLocalObject* local_object);
+  int AddExternalSymbol(const std::string& symbol_name, bool visible);
 
-  void ResolveExternalSymbols(
-      Thread* thread,
-      std::unordered_map<int, ObjectReference*>* symbol_bindings) const;
+  void GetExternalSymbolIds(
+      std::unordered_map<std::string, int>* external_symbol_ids) const;
 
  private:
   struct Scope {
@@ -59,7 +52,6 @@ class SymbolTable {
   struct ExternalSymbol {
     int symbol_id;
     bool visible;
-    VersionedLocalObject* local_object;
   };
 
   bool PrivateGetSymbolId(const std::string& symbol_name, bool visible,

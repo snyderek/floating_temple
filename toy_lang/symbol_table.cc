@@ -22,8 +22,6 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "include/c++/thread.h"
-#include "toy_lang/zoo/variable_object.h"
 
 using std::string;
 using std::unordered_map;
@@ -81,48 +79,30 @@ int SymbolTable::GetLocalVariable(const string& symbol_name) {
   return symbol_id;
 }
 
-int SymbolTable::AddExternalSymbol(const string& symbol_name, bool visible,
-                                   VersionedLocalObject* local_object) {
+int SymbolTable::AddExternalSymbol(const string& symbol_name, bool visible) {
   CHECK(!symbol_name.empty());
-  CHECK(local_object != nullptr);
 
   const int symbol_id = GetNextSymbolId();
 
   ExternalSymbol external_symbol;
   external_symbol.symbol_id = symbol_id;
   external_symbol.visible = visible;
-  external_symbol.local_object = local_object;
 
   CHECK(external_symbol_map_.emplace(symbol_name, external_symbol).second);
 
   return symbol_id;
 }
 
-void SymbolTable::ResolveExternalSymbols(
-    Thread* thread,
-    unordered_map<int, ObjectReference*>* symbol_bindings) const {
-  CHECK(thread != nullptr);
-  CHECK(symbol_bindings != nullptr);
+void SymbolTable::GetExternalSymbolIds(
+    unordered_map<string, int>* external_symbol_ids) const {
+  CHECK(external_symbol_ids != nullptr);
 
-  symbol_bindings->reserve(external_symbol_map_.size());
+  external_symbol_ids->reserve(external_symbol_map_.size());
 
   for (const auto& external_symbol_pair : external_symbol_map_) {
-    const string& symbol_name = external_symbol_pair.first;
-    const ExternalSymbol& external_symbol = external_symbol_pair.second;
-
-    ObjectReference* const built_in_object = thread->CreateVersionedObject(
-        external_symbol.local_object, symbol_name);
-
-    ObjectReference* object_reference = nullptr;
-    if (external_symbol.visible) {
-      object_reference = thread->CreateVersionedObject(
-          new VariableObject(built_in_object), "");
-    } else {
-      object_reference = built_in_object;
-    }
-
-    CHECK(symbol_bindings->emplace(external_symbol.symbol_id,
-                                   object_reference).second);
+    CHECK(external_symbol_ids->emplace(
+        external_symbol_pair.first,
+        external_symbol_pair.second.symbol_id).second);
   }
 }
 

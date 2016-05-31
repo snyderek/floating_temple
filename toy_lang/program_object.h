@@ -17,20 +17,27 @@
 #define TOY_LANG_PROGRAM_OBJECT_H_
 
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "include/c++/unversioned_local_object.h"
 
 namespace floating_temple {
+
+class ObjectReference;
+class Thread;
+class VersionedLocalObject;
+
 namespace toy_lang {
 
 class Expression;
-class SymbolTable;
 
 class ProgramObject : public UnversionedLocalObject {
  public:
-  // Does not take ownership of 'symbol_table'. Takes ownership of 'expression'.
-  ProgramObject(const SymbolTable* symbol_table, Expression* expression);
+  // Takes ownership of 'expression'.
+  ProgramObject(const std::unordered_map<std::string, int>& external_symbols,
+                Expression* expression);
   ~ProgramObject() override;
 
   void InvokeMethod(Thread* thread,
@@ -41,7 +48,14 @@ class ProgramObject : public UnversionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
-  const SymbolTable* const symbol_table_;
+  void ResolveExternalSymbol(
+      Thread* thread,
+      const std::string& symbol_name,
+      bool visible,
+      VersionedLocalObject* local_object,
+      std::unordered_map<int, ObjectReference*>* symbol_bindings) const;
+
+  const std::unordered_map<std::string, int> external_symbols_;
   const std::unique_ptr<Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);

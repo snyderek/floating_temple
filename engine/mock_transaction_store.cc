@@ -53,19 +53,17 @@ shared_ptr<const LiveObject> MockTransactionStore::GetLiveObjectAtSequencePoint(
                                              wait);
 }
 
-ObjectReferenceImpl* MockTransactionStore::CreateUnboundObjectReference(
-    bool versioned) {
-  core_->CreateUnboundObjectReference(versioned);
+ObjectReferenceImpl* MockTransactionStore::CreateUnboundObjectReference() {
+  core_->CreateUnboundObjectReference();
 
-  ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl(
-      versioned);
+  ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl();
   unnamed_objects_.emplace_back(object_reference);
   return object_reference;
 }
 
 ObjectReferenceImpl* MockTransactionStore::CreateBoundObjectReference(
-    const string& name, bool versioned) {
-  core_->CreateBoundObjectReference(name, versioned);
+    const string& name) {
+  core_->CreateBoundObjectReference(name);
 
   unique_ptr<ObjectReferenceImpl>* object_reference = nullptr;
 
@@ -77,7 +75,7 @@ ObjectReferenceImpl* MockTransactionStore::CreateBoundObjectReference(
   }
 
   if (object_reference->get() == nullptr) {
-    object_reference->reset(new ObjectReferenceImpl(versioned));
+    object_reference->reset(new ObjectReferenceImpl());
   }
 
   return object_reference->get();

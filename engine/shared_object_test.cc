@@ -36,7 +36,6 @@
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/proto/uuid.pb.h"
 #include "engine/sequence_point_impl.h"
-#include "engine/versioned_live_object.h"
 #include "fake_interpreter/fake_interpreter.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/interpreter.h"
@@ -65,8 +64,7 @@ class ObjectReferenceImpl;
 namespace {
 
 shared_ptr<const LiveObject> MakeLocalObject(const string& s) {
-  return shared_ptr<const LiveObject>(
-      new VersionedLiveObject(new FakeVersionedLocalObject(s)));
+  return shared_ptr<const LiveObject>(new LiveObject(new FakeLocalObject(s)));
 }
 
 class SharedObjectTest : public Test {
@@ -110,11 +108,11 @@ class SharedObjectTest : public Test {
     vector<unique_ptr<CommittedEvent>> events;
 
     vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
+    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
     parameters[0].set_string_value(string_to_append);
 
     CommittedValue return_value;
-    return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
+    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
     return_value.set_empty();
 
     const unordered_set<SharedObject*> new_shared_objects;
@@ -143,11 +141,11 @@ class SharedObjectTest : public Test {
 
     {
       vector<CommittedValue> parameters(1);
-      parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
+      parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
       parameters[0].set_string_value(string_to_append);
 
       CommittedValue return_value;
-      return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
+      return_value.set_local_type(FakeLocalObject::kVoidLocalType);
       return_value.set_empty();
 
       AddEventToVector(
@@ -161,7 +159,7 @@ class SharedObjectTest : public Test {
 
     {
       CommittedValue return_value;
-      return_value.set_local_type(FakeVersionedLocalObject::kStringLocalType);
+      return_value.set_local_type(FakeLocalObject::kStringLocalType);
       return_value.set_string_value(expected_result_string);
 
       AddEventToVector(
@@ -199,9 +197,9 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference(_))
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -247,7 +245,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.banana.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
                                                     &new_object_references,
@@ -264,9 +262,9 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference(_))
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -297,7 +295,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
                                                     &new_object_references,
@@ -319,7 +317,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
                                                     &new_object_references,
@@ -344,7 +342,7 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.cherry.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
                                                     &new_object_references,
@@ -364,9 +362,9 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference(_))
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -395,7 +393,7 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
                                                     &new_object_references,
@@ -417,7 +415,7 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
                                                     &new_object_references,
@@ -444,7 +442,7 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.banana.cherry.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
                                                     &new_object_references,
@@ -461,9 +459,9 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference(_))
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -476,11 +474,11 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
     vector<unique_ptr<CommittedEvent>> events;
 
     vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
+    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
     parameters[0].set_string_value("whatcha playin'?");
 
     CommittedValue return_value;
-    return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
+    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
     return_value.set_empty();
 
     const unordered_set<SharedObject*> new_shared_objects;
@@ -521,7 +519,7 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
     EXPECT_EQ(0u, transactions_to_reject.size());
 
     EXPECT_EQ("Hey Ash, whatcha playin'?",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   live_object->local_object())->s());
   }
 }
@@ -531,9 +529,9 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference(_))
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -549,7 +547,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
         "I don't know. ");
 
     vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
+    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
     parameters[0].set_string_value("Third base.");
 
     AddEventToVector(
@@ -571,7 +569,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     vector<unique_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
-    return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
+    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
     return_value.set_empty();
 
     const unordered_set<SharedObject*> new_shared_objects;
@@ -606,7 +604,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     EXPECT_EQ(0u, transactions_to_reject.size());
 
     EXPECT_EQ("I don't know. Third base.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   live_object->local_object())->s());
   }
 }
@@ -616,9 +614,9 @@ TEST_F(SharedObjectTest, BackingUp) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference(_))
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -638,7 +636,7 @@ TEST_F(SharedObjectTest, BackingUp) {
         "Game. ");
 
     vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
+    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
     parameters[0].set_string_value("Set. ");
 
     AddEventToVector(
@@ -660,13 +658,13 @@ TEST_F(SharedObjectTest, BackingUp) {
     vector<unique_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
-    return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
+    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
     return_value.set_empty();
 
     const unordered_set<SharedObject*> new_shared_objects;
 
     vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeVersionedLocalObject::kStringLocalType);
+    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
     parameters[0].set_string_value("Match.");
 
     AddEventToVector(
@@ -689,7 +687,7 @@ TEST_F(SharedObjectTest, BackingUp) {
     vector<unique_ptr<CommittedEvent>> events;
 
     CommittedValue return_value;
-    return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
+    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
     return_value.set_empty();
 
     const unordered_set<SharedObject*> new_shared_objects;
@@ -724,7 +722,7 @@ TEST_F(SharedObjectTest, BackingUp) {
     EXPECT_EQ(0u, transactions_to_reject.size());
 
     EXPECT_EQ("Game. Set. Match.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   live_object->local_object())->s());
   }
 }
@@ -734,9 +732,9 @@ TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference(_))
+  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -774,7 +772,7 @@ TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("batman.",
-              static_cast<const FakeVersionedLocalObject*>(
+              static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
                                                     &new_object_references,

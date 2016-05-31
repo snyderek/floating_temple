@@ -27,10 +27,8 @@ class SharedObject;
 
 class ObjectReferenceImpl : public ObjectReference {
  public:
-  explicit ObjectReferenceImpl(bool versioned);
+  ObjectReferenceImpl();
   ~ObjectReferenceImpl() override;
-
-  bool versioned() const { return versioned_; }
 
   const SharedObject* shared_object() const { return PrivateGetSharedObject(); }
   SharedObject* shared_object() { return PrivateGetSharedObject(); }
@@ -41,8 +39,6 @@ class ObjectReferenceImpl : public ObjectReference {
 
  private:
   SharedObject* PrivateGetSharedObject() const;
-
-  const bool versioned_;
 
   SharedObject* shared_object_;
   mutable Mutex shared_object_mu_;

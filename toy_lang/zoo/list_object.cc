@@ -50,7 +50,7 @@ ListObject::ListObject(const vector<ObjectReference*>& items)
     : items_(items) {
 }
 
-VersionedLocalObject* ListObject::Clone() const {
+LocalObject* ListObject::Clone() const {
   MutexLock lock(&items_mu_);
   return new ListObject(items_);
 }

@@ -30,7 +30,7 @@ class StringObject : public LocalObjectImpl {
  public:
   explicit StringObject(const std::string& s);
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
                     const std::string& method_name,

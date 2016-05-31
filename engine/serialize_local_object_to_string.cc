@@ -23,7 +23,7 @@
 #include "engine/deserialization_context_impl.h"
 #include "engine/serialization_context_impl.h"
 #include "include/c++/interpreter.h"
-#include "include/c++/versioned_local_object.h"
+#include "include/c++/local_object.h"
 
 using std::size_t;
 using std::string;
@@ -33,7 +33,7 @@ namespace floating_temple {
 namespace engine {
 namespace {
 
-size_t TryToSerialize(const VersionedLocalObject* local_object,
+size_t TryToSerialize(const LocalObject* local_object,
                       void* buffer,
                       size_t buffer_size,
                       vector<ObjectReferenceImpl*>* object_references) {
@@ -49,7 +49,7 @@ size_t TryToSerialize(const VersionedLocalObject* local_object,
 }  // namespace
 
 void SerializeLocalObjectToString(
-    const VersionedLocalObject* local_object, string* data,
+    const LocalObject* local_object, string* data,
     vector<ObjectReferenceImpl*>* object_references) {
   CHECK(data != nullptr);
 
@@ -71,7 +71,7 @@ void SerializeLocalObjectToString(
   delete[] dynamic_buffer;
 }
 
-VersionedLocalObject* DeserializeLocalObjectFromString(
+LocalObject* DeserializeLocalObjectFromString(
     Interpreter* interpreter, const string& data,
     const vector<ObjectReferenceImpl*>& object_references) {
   CHECK(interpreter != nullptr);

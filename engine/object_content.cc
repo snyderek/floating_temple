@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "engine/versioned_object_content.h"
+#include "engine/object_content.h"
 
 #include <map>
 #include <memory>
@@ -70,7 +70,7 @@ FindTransactionIdInVector(
 
 }  // namespace
 
-VersionedObjectContent::VersionedObjectContent(
+ObjectContent::ObjectContent(
     TransactionStoreInternalInterface* transaction_store,
     SharedObject* shared_object)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
@@ -78,10 +78,10 @@ VersionedObjectContent::VersionedObjectContent(
       max_requested_transaction_id_(MIN_TRANSACTION_ID) {
 }
 
-VersionedObjectContent::~VersionedObjectContent() {
+ObjectContent::~ObjectContent() {
 }
 
-shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
+shared_ptr<const LiveObject> ObjectContent::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
@@ -111,7 +111,7 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion(
                                   transactions_to_reject);
 }
 
-void VersionedObjectContent::GetTransactions(
+void ObjectContent::GetTransactions(
     const MaxVersionMap& transaction_store_version_map,
     map<TransactionId, unique_ptr<SharedObjectTransaction>>* transactions,
     MaxVersionMap* effective_version) const {
@@ -133,7 +133,7 @@ void VersionedObjectContent::GetTransactions(
                                  effective_version);
 }
 
-void VersionedObjectContent::StoreTransactions(
+void ObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
     const map<TransactionId, unique_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map,
@@ -184,7 +184,7 @@ void VersionedObjectContent::StoreTransactions(
   }
 }
 
-void VersionedObjectContent::InsertTransaction(
+void ObjectContent::InsertTransaction(
     const CanonicalPeer* origin_peer,
     const TransactionId& transaction_id,
     const vector<unique_ptr<CommittedEvent>>& events,
@@ -221,7 +221,7 @@ void VersionedObjectContent::InsertTransaction(
   }
 }
 
-void VersionedObjectContent::SetCachedLiveObject(
+void ObjectContent::SetCachedLiveObject(
     const shared_ptr<const LiveObject>& cached_live_object,
     const SequencePointImpl& cached_sequence_point) {
   CHECK(cached_live_object.get() != nullptr);
@@ -231,7 +231,7 @@ void VersionedObjectContent::SetCachedLiveObject(
   cached_sequence_point_.CopyFrom(cached_sequence_point);
 }
 
-void VersionedObjectContent::Dump(DumpContext* dc) const {
+void ObjectContent::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   MutexLock lock(&committed_versions_mu_);
@@ -269,7 +269,7 @@ void VersionedObjectContent::Dump(DumpContext* dc) const {
   dc->End();
 }
 
-shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion_Locked(
+shared_ptr<const LiveObject> ObjectContent::GetWorkingVersion_Locked(
     const MaxVersionMap& desired_version,
     unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
@@ -292,7 +292,7 @@ shared_ptr<const LiveObject> VersionedObjectContent::GetWorkingVersion_Locked(
   return shared_ptr<const LiveObject>(nullptr);
 }
 
-bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
+bool ObjectContent::ApplyTransactionsToWorkingVersion_Locked(
     PlaybackThread* playback_thread, const MaxVersionMap& desired_version,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(playback_thread != nullptr);
@@ -326,7 +326,7 @@ bool VersionedObjectContent::ApplyTransactionsToWorkingVersion_Locked(
   return true;
 }
 
-void VersionedObjectContent::ComputeEffectiveVersion_Locked(
+void ObjectContent::ComputeEffectiveVersion_Locked(
     const MaxVersionMap& transaction_store_version_map,
     MaxVersionMap* effective_version) const {
   CHECK(effective_version != nullptr);
@@ -353,7 +353,7 @@ void VersionedObjectContent::ComputeEffectiveVersion_Locked(
   }
 }
 
-bool VersionedObjectContent::CanUseCachedLiveObject_Locked(
+bool ObjectContent::CanUseCachedLiveObject_Locked(
     const SequencePointImpl& requested_sequence_point) const {
   if (cached_live_object_.get() == nullptr) {
     return false;

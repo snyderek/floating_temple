@@ -39,7 +39,7 @@ VariableObject::VariableObject(ObjectReference* object_reference)
     : object_reference_(object_reference) {
 }
 
-VersionedLocalObject* VariableObject::Clone() const {
+LocalObject* VariableObject::Clone() const {
   return new VariableObject(GetObjectReference());
 }
 

@@ -32,7 +32,7 @@ namespace toy_lang {
 SetVariableFunction::SetVariableFunction() {
 }
 
-VersionedLocalObject* SetVariableFunction::Clone() const {
+LocalObject* SetVariableFunction::Clone() const {
   return new SetVariableFunction();
 }
 

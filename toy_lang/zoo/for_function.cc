@@ -38,7 +38,7 @@ namespace toy_lang {
 ForFunction::ForFunction() {
 }
 
-VersionedLocalObject* ForFunction::Clone() const {
+LocalObject* ForFunction::Clone() const {
   return new ForFunction();
 }
 
@@ -79,13 +79,13 @@ ObjectReference* ForFunction::Call(
       return nullptr;
     }
 
-    ObjectReference* const iter_variable = thread->CreateVersionedObject(
+    ObjectReference* const iter_variable = thread->CreateObject(
         new VariableObject(iter_value.object_reference()), "");
     const vector<ObjectReference*> block_parameters(1, iter_variable);
 
     vector<Value> eval_parameters(1);
     eval_parameters[0].set_object_reference(
-        0, thread->CreateVersionedObject(new ListObject(block_parameters), ""));
+        0, thread->CreateObject(new ListObject(block_parameters), ""));
 
     Value dummy;
     if (!thread->CallMethod(code_block, "eval", eval_parameters, &dummy)) {

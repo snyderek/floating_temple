@@ -26,7 +26,7 @@ class LenFunction : public Function {
  public:
   LenFunction();
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  protected:

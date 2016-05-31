@@ -32,7 +32,7 @@ namespace toy_lang {
 NoneObject::NoneObject() {
 }
 
-VersionedLocalObject* NoneObject::Clone() const {
+LocalObject* NoneObject::Clone() const {
   return new NoneObject();
 }
 

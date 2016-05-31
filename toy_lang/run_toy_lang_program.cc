@@ -32,6 +32,7 @@
 using std::FILE;
 using std::fclose;
 using std::fopen;
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 
@@ -59,9 +60,6 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
   symbol_table.AddExternalSymbol("for", false);
   symbol_table.AddExternalSymbol("while", false);
 
-  // TODO(dss): Make these unversioned objects. There's no reason to record
-  // method calls on any of these objects, because they're constant. (The
-  // "shared" map object should still be versioned, however.)
   symbol_table.AddExternalSymbol("false", true);
   symbol_table.AddExternalSymbol("true", true);
   symbol_table.AddExternalSymbol("list", true);
@@ -84,13 +82,13 @@ void RunToyLangFile(Peer* peer, FILE* fp, bool linger) {
 
   Lexer lexer(fp);
   Parser parser(&lexer, &symbol_table);
-  Expression* const expression = parser.ParseFile();
+  const shared_ptr<const Expression> expression(parser.ParseFile());
 
   unordered_map<string, int> external_symbol_ids;
   symbol_table.GetExternalSymbolIds(&external_symbol_ids);
 
-  UnversionedLocalObject* const program_object = new ProgramObject(
-      external_symbol_ids, expression);
+  LocalObject* const program_object = new ProgramObject(external_symbol_ids,
+                                                        expression);
 
   Value return_value;
   peer->RunProgram(program_object, "run", &return_value, linger);

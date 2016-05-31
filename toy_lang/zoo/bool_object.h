@@ -28,7 +28,7 @@ class BoolObject : public LocalObjectImpl {
  public:
   explicit BoolObject(bool b);
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
                     const std::string& method_name,

@@ -63,7 +63,7 @@ ObjectReference* EvaluateExpressionList(
     object_references[i] = object_reference;
   }
 
-  return thread->CreateVersionedObject(new ListObject(object_references), "");
+  return thread->CreateObject(new ListObject(object_references), "");
 }
 
 }  // namespace
@@ -208,9 +208,9 @@ ObjectReference* BlockExpression::Evaluate(
   CodeBlock* const code_block = new CodeBlock(expression_, symbol_bindings,
                                               parameter_symbol_ids_,
                                               local_symbol_ids_);
-  VersionedLocalObject* const code_block_object = new CodeBlockObject(
+  LocalObject* const code_block_object = new CodeBlockObject(
       code_block);
-  return thread->CreateVersionedObject(code_block_object, "");
+  return thread->CreateObject(code_block_object, "");
 }
 
 void BlockExpression::PopulateExpressionProto(

@@ -113,16 +113,12 @@ class PlaybackThread : private Thread {
   void SetConflictDetected(const std::string& description);
 
   ObjectReference* CreateObjectReference(LocalObject* initial_version,
-                                         const std::string& name,
-                                         bool versioned);
+                                         const std::string& name);
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  ObjectReference* CreateVersionedObject(VersionedLocalObject* initial_version,
-                                         const std::string& name) override;
-  ObjectReference* CreateUnversionedObject(
-      UnversionedLocalObject* initial_version,
-      const std::string& name) override;
+  ObjectReference* CreateObject(LocalObject* initial_version,
+                                const std::string& name) override;
   bool CallMethod(ObjectReference* object_reference,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,

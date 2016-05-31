@@ -31,7 +31,7 @@ namespace toy_lang {
 AddFunction::AddFunction() {
 }
 
-VersionedLocalObject* AddFunction::Clone() const {
+LocalObject* AddFunction::Clone() const {
   return new AddFunction();
 }
 

@@ -92,7 +92,7 @@ void ConvertCommittedValueToValue(const CommittedValue& in, Value* out) {
 
     case CommittedValue::SHARED_OBJECT:
       out->set_object_reference(
-          local_type, in.shared_object()->GetOrCreateObjectReference(true));
+          local_type, in.shared_object()->GetOrCreateObjectReference());
       break;
 
     default:

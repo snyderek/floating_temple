@@ -38,9 +38,7 @@
 #include "engine/shared_object_transaction.h"
 #include "engine/transaction_id_util.h"
 #include "engine/transaction_store_internal_interface.h"
-#include "engine/unversioned_object_content.h"
 #include "engine/uuid_util.h"
-#include "engine/versioned_object_content.h"
 #include "util/dump_context.h"
 #include "util/dump_context_impl.h"
 
@@ -99,18 +97,11 @@ void SharedObject::AddObjectReference(
     ObjectReferenceImpl* new_object_reference) {
   CHECK(new_object_reference != nullptr);
 
-  const bool versioned = new_object_reference->versioned();
-
   MutexLock lock(&object_references_mu_);
-
-  if (!object_references_.empty()) {
-    CHECK_EQ(versioned, object_references_.front()->versioned());
-  }
-
   object_references_.push_back(new_object_reference);
 }
 
-ObjectReferenceImpl* SharedObject::GetOrCreateObjectReference(bool versioned) {
+ObjectReferenceImpl* SharedObject::GetOrCreateObjectReference() {
   {
     MutexLock lock(&object_references_mu_);
 
@@ -120,7 +111,7 @@ ObjectReferenceImpl* SharedObject::GetOrCreateObjectReference(bool versioned) {
   }
 
   ObjectReferenceImpl* const new_object_reference =
-      transaction_store_->CreateUnboundObjectReference(versioned);
+      transaction_store_->CreateUnboundObjectReference();
   CHECK_EQ(new_object_reference->SetSharedObjectIfUnset(this), this);
 
   {
@@ -133,26 +124,6 @@ ObjectReferenceImpl* SharedObject::GetOrCreateObjectReference(bool versioned) {
       // TODO(dss): Notify the transaction store that it can delete
       // new_object_reference.
       return object_references_.back();
-    }
-  }
-}
-
-void SharedObject::CreateUnversionedObjectContent(
-    const shared_ptr<LiveObject>& live_object) {
-  {
-    MutexLock lock(&object_references_mu_);
-
-    if (!object_references_.empty()) {
-      CHECK(!object_references_.front()->versioned());
-    }
-  }
-
-  {
-    MutexLock lock(&object_content_mu_);
-
-    if (object_content_.get() == nullptr) {
-      object_content_.reset(new UnversionedObjectContent(transaction_store_,
-                                                         live_object));
     }
   }
 }
@@ -253,7 +224,7 @@ ObjectContent* SharedObject::GetOrCreateObjectContent() {
   MutexLock lock(&object_content_mu_);
 
   if (object_content_.get() == nullptr) {
-    object_content_.reset(new VersionedObjectContent(transaction_store_, this));
+    object_content_.reset(new ObjectContent(transaction_store_, this));
   }
 
   return object_content_.get();
@@ -282,8 +253,7 @@ void SharedObject::Dump_Locked(DumpContext* dc) const {
   }
   dc->End();
 
-  // TODO(dss): Change this string to "object_content".
-  dc->AddString("versioned_object");
+  dc->AddString("object_content");
   if (object_content_ == nullptr) {
     dc->AddNull();
   } else {

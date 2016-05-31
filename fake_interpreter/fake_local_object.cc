@@ -32,19 +32,18 @@ using std::vector;
 
 namespace floating_temple {
 
-const int FakeVersionedLocalObject::kVoidLocalType = 0;
-const int FakeVersionedLocalObject::kStringLocalType = 1;
-const int FakeVersionedLocalObject::kObjectLocalType = 2;
+const int FakeLocalObject::kVoidLocalType = 0;
+const int FakeLocalObject::kStringLocalType = 1;
+const int FakeLocalObject::kObjectLocalType = 2;
 
-const char FakeVersionedLocalObject::kSerializationPrefix[] =
-    "FakeVersionedLocalObject:";
+const char FakeLocalObject::kSerializationPrefix[] = "FakeLocalObject:";
 
-VersionedLocalObject* FakeVersionedLocalObject::Clone() const {
-  return new FakeVersionedLocalObject(s_);
+LocalObject* FakeLocalObject::Clone() const {
+  return new FakeLocalObject(s_);
 }
 
-size_t FakeVersionedLocalObject::Serialize(
-    void* buffer, size_t buffer_size, SerializationContext* context) const {
+size_t FakeLocalObject::Serialize(void* buffer, size_t buffer_size,
+                                  SerializationContext* context) const {
   string serialized_form = kSerializationPrefix;
   serialized_form += s_;
 
@@ -57,11 +56,11 @@ size_t FakeVersionedLocalObject::Serialize(
   return static_cast<size_t>(length);
 }
 
-void FakeVersionedLocalObject::InvokeMethod(Thread* thread,
-                                            ObjectReference* object_reference,
-                                            const string& method_name,
-                                            const vector<Value>& parameters,
-                                            Value* return_value) {
+void FakeLocalObject::InvokeMethod(Thread* thread,
+                                   ObjectReference* object_reference,
+                                   const string& method_name,
+                                   const vector<Value>& parameters,
+                                   Value* return_value) {
   CHECK(return_value != nullptr);
 
   VLOG(1) << "Applying method \"" << CEscape(method_name) << "\" on object "
@@ -86,7 +85,7 @@ void FakeVersionedLocalObject::InvokeMethod(Thread* thread,
   }
 }
 
-void FakeVersionedLocalObject::Dump(DumpContext* dc) const {
+void FakeLocalObject::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
   dc->AddString(s_);
 }

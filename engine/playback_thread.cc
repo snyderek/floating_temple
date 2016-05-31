@@ -37,9 +37,7 @@
 #include "engine/shared_object.h"
 #include "engine/transaction_store_internal_interface.h"
 #include "include/c++/local_object.h"
-#include "include/c++/unversioned_local_object.h"
 #include "include/c++/value.h"
-#include "include/c++/versioned_local_object.h"
 #include "util/bool_variable.h"
 #include "util/state_variable.h"
 #include "util/state_variable_internal_interface.h"
@@ -177,7 +175,7 @@ void PlaybackThread::DoMethodCall() {
   }
 
   ObjectReferenceImpl* const object_reference =
-      shared_object_->GetOrCreateObjectReference(true);
+      shared_object_->GetOrCreateObjectReference();
 
   Value return_value;
   live_object_->InvokeMethod(this, object_reference, method_name, parameters,
@@ -522,7 +520,7 @@ void PlaybackThread::SetConflictDetected(const string& description) {
 }
 
 ObjectReference* PlaybackThread::CreateObjectReference(
-    LocalObject* initial_version, const string& name, bool versioned) {
+    LocalObject* initial_version, const string& name) {
   CHECK(initial_version != nullptr);
 
   delete initial_version;
@@ -532,7 +530,7 @@ ObjectReference* PlaybackThread::CreateObjectReference(
         conflict_detected_.Get() ||
         !CheckNextEventType(CommittedEvent::SUB_OBJECT_CREATION)) {
       ObjectReferenceImpl* const object_reference =
-          transaction_store_->CreateUnboundObjectReference(versioned);
+          transaction_store_->CreateUnboundObjectReference();
       CHECK(unbound_object_references_.insert(object_reference).second);
       return object_reference;
     } else {
@@ -540,10 +538,10 @@ ObjectReference* PlaybackThread::CreateObjectReference(
           GetNextEvent()->new_shared_objects();
       CHECK_EQ(new_shared_objects.size(), 1u);
       SharedObject* const shared_object = *new_shared_objects.begin();
-      return shared_object->GetOrCreateObjectReference(versioned);
+      return shared_object->GetOrCreateObjectReference();
     }
   } else {
-    return transaction_store_->CreateBoundObjectReference(name, versioned);
+    return transaction_store_->CreateBoundObjectReference(name);
   }
 }
 
@@ -567,14 +565,9 @@ bool PlaybackThread::EndTransaction() {
   return HasNextEvent();
 }
 
-ObjectReference* PlaybackThread::CreateVersionedObject(
-    VersionedLocalObject* initial_version, const string& name) {
-  return CreateObjectReference(initial_version, name, true);
-}
-
-ObjectReference* PlaybackThread::CreateUnversionedObject(
-    UnversionedLocalObject* initial_version, const string& name) {
-  return CreateObjectReference(initial_version, name, false);
+ObjectReference* PlaybackThread::CreateObject(LocalObject* initial_version,
+                                              const string& name) {
+  return CreateObjectReference(initial_version, name);
 }
 
 bool PlaybackThread::CallMethod(ObjectReference* object_reference,

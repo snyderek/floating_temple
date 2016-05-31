@@ -33,7 +33,7 @@ namespace toy_lang {
 ListGetFunction::ListGetFunction() {
 }
 
-VersionedLocalObject* ListGetFunction::Clone() const {
+LocalObject* ListGetFunction::Clone() const {
   return new ListGetFunction();
 }
 

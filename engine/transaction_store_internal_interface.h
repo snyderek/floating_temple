@@ -43,9 +43,9 @@ class TransactionStoreInternalInterface {
       ObjectReferenceImpl* object_reference,
       const SequencePoint* sequence_point, bool wait) = 0;
 
-  virtual ObjectReferenceImpl* CreateUnboundObjectReference(bool versioned) = 0;
+  virtual ObjectReferenceImpl* CreateUnboundObjectReference() = 0;
   virtual ObjectReferenceImpl* CreateBoundObjectReference(
-      const std::string& name, bool versioned) = 0;
+      const std::string& name) = 0;
 
   virtual void CreateTransaction(
       const std::vector<std::unique_ptr<PendingEvent>>& events,

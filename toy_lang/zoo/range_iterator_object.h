@@ -30,7 +30,7 @@ class RangeIteratorObject : public LocalObjectImpl {
  public:
   RangeIteratorObject(int64 limit, int64 start);
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
                     const std::string& method_name,

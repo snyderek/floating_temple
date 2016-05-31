@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
+#include "base/mutex.h"
 #include "include/c++/value.h"
 
 namespace floating_temple {
@@ -30,25 +32,36 @@ class Thread;
 
 namespace engine {
 
+class LiveObjectNode;
 class ObjectReferenceImpl;
 
 class LiveObject {
  public:
-  virtual ~LiveObject() {}
+  explicit LiveObject(LocalObject* local_object);
+  ~LiveObject();
 
-  virtual const LocalObject* local_object() const = 0;
+  const LocalObject* local_object() const;
 
-  virtual std::shared_ptr<LiveObject> Clone() const = 0;
-  virtual void Serialize(
-      std::string* data,
-      std::vector<ObjectReferenceImpl*>* object_references) const = 0;
-  virtual void InvokeMethod(Thread* thread,
-                            ObjectReferenceImpl* object_reference,
-                            const std::string& method_name,
-                            const std::vector<Value>& parameters,
-                            Value* return_value) = 0;
+  std::shared_ptr<LiveObject> Clone() const;
+  void Serialize(std::string* data,
+                 std::vector<ObjectReferenceImpl*>* object_references) const;
+  void InvokeMethod(Thread* thread,
+                    ObjectReferenceImpl* object_reference,
+                    const std::string& method_name,
+                    const std::vector<Value>& parameters,
+                    Value* return_value);
 
-  virtual void Dump(DumpContext* dc) const = 0;
+  void Dump(DumpContext* dc) const;
+
+ private:
+  explicit LiveObject(LiveObjectNode* node);
+
+  LiveObjectNode* GetNode() const;
+
+  LiveObjectNode* node_;  // Not NULL
+  mutable Mutex node_mu_;
+
+  DISALLOW_COPY_AND_ASSIGN(LiveObject);
 };
 
 }  // namespace engine

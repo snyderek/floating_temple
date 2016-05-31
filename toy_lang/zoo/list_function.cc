@@ -31,7 +31,7 @@ namespace toy_lang {
 ListFunction::ListFunction() {
 }
 
-VersionedLocalObject* ListFunction::Clone() const {
+LocalObject* ListFunction::Clone() const {
   return new ListFunction();
 }
 
@@ -54,7 +54,7 @@ ObjectReference* ListFunction::Call(
   CHECK(thread != nullptr);
 
   LocalObjectImpl* const local_object = new ListObject(parameters);
-  return thread->CreateVersionedObject(local_object, "");
+  return thread->CreateObject(local_object, "");
 }
 
 }  // namespace toy_lang

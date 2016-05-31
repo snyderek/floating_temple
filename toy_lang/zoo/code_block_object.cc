@@ -44,7 +44,7 @@ CodeBlockObject::CodeBlockObject(CodeBlock* code_block)
 CodeBlockObject::~CodeBlockObject() {
 }
 
-VersionedLocalObject* CodeBlockObject::Clone() const {
+LocalObject* CodeBlockObject::Clone() const {
   return new CodeBlockObject(code_block_->Clone());
 }
 

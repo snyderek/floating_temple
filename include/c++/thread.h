@@ -23,9 +23,8 @@
 
 namespace floating_temple {
 
+class LocalObject;
 class ObjectReference;
-class UnversionedLocalObject;
-class VersionedLocalObject;
 
 // This interface is implemented by the peer. The local interpreter uses it to
 // perform any operations that require assistance from the peer during the
@@ -63,7 +62,7 @@ class Thread {
 
   // Returns a reference to a newly created shared object that corresponds to an
   // existing local object. *initial_version is the initial version of the local
-  // object; it may later be cloned via VersionedLocalObject::Clone to create
+  // object; it may later be cloned via LocalObject::Clone to create
   // additional versions of the object.
   //
   // The peer takes ownership of *initial_version. The caller must not take
@@ -77,14 +76,8 @@ class Thread {
   // TODO(dss): The local interpreter should take ownership of the
   // ObjectReference instance. Otherwise, the peer has no way of knowing when
   // the local interpreter is done using it.
-  virtual ObjectReference* CreateVersionedObject(
-      VersionedLocalObject* initial_version, const std::string& name) = 0;
-
-  // TODO(dss): Make the 'initial_version' parameter a LocalObject pointer so
-  // that the caller can optionally pass a pointer to a VersionedLocalObject
-  // instance.
-  virtual ObjectReference* CreateUnversionedObject(
-      UnversionedLocalObject* initial_version, const std::string& name) = 0;
+  virtual ObjectReference* CreateObject(LocalObject* initial_version,
+                                        const std::string& name) = 0;
 
   // Calls the specified method on the specified object, and copies the return
   // value to *return_value. Depending on how the interpreted code is being

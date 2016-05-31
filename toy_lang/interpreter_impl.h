@@ -27,7 +27,7 @@ class InterpreterImpl : public Interpreter {
   InterpreterImpl();
   ~InterpreterImpl() override;
 
-  VersionedLocalObject* DeserializeObject(
+  LocalObject* DeserializeObject(
       const void* buffer, std::size_t buffer_size,
       DeserializationContext* context) override;
 

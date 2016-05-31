@@ -18,12 +18,14 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"
+#include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/zoo/add_function.h"
 #include "toy_lang/zoo/begin_tran_function.h"
 #include "toy_lang/zoo/bool_object.h"
@@ -49,6 +51,8 @@
 #include "toy_lang/zoo/while_function.h"
 #include "util/dump_context.h"
 
+using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -57,12 +61,17 @@ namespace floating_temple {
 namespace toy_lang {
 
 ProgramObject::ProgramObject(const unordered_map<string, int>& external_symbols,
-                             Expression* expression)
+                             const shared_ptr<const Expression>& expression)
     : external_symbols_(external_symbols),
-      expression_(CHECK_NOTNULL(expression)) {
+      expression_(expression) {
+  CHECK(expression.get() != nullptr);
 }
 
 ProgramObject::~ProgramObject() {
+}
+
+LocalObject* ProgramObject::Clone() const {
+  return new ProgramObject(external_symbols_, expression_);
 }
 
 void ProgramObject::InvokeMethod(Thread* thread,
@@ -133,7 +142,7 @@ void ProgramObject::InvokeMethod(Thread* thread,
   ObjectReference* const code_block_object = expression_->Evaluate(
       symbol_bindings, thread);
 
-  ObjectReference* const list_object = thread->CreateVersionedObject(
+  ObjectReference* const list_object = thread->CreateObject(
       new ListObject(vector<ObjectReference*>()), "");
   vector<Value> eval_parameters(1);
   eval_parameters[0].set_object_reference(0, list_object);
@@ -157,14 +166,51 @@ void ProgramObject::Dump(DumpContext* dc) const {
   dc->AddString("expression");
   dc->AddString(expression_->DebugString());
 
+  // TODO(dss): Dump the symbol table.
+
   dc->End();
+}
+
+// static
+ProgramObject* ProgramObject::ParseProgramProto(
+    const ProgramProto& program_proto, DeserializationContext* context) {
+  const int external_symbol_count = program_proto.external_symbol_size();
+  unordered_map<string, int> external_symbols;
+  external_symbols.reserve(external_symbol_count);
+  for (int i = 0; i < external_symbol_count; ++i) {
+    const ProgramExternalSymbolProto& external_symbol_proto =
+        program_proto.external_symbol(i);
+    CHECK(external_symbols.emplace(external_symbol_proto.symbol_name(),
+                                   external_symbol_proto.symbol_id()).second);
+  }
+
+  const shared_ptr<const Expression> expression(
+      Expression::ParseExpressionProto(program_proto.expression()));
+
+  return new ProgramObject(external_symbols, expression);
+}
+
+void ProgramObject::PopulateObjectProto(ObjectProto* object_proto,
+                                        SerializationContext* context) const {
+  CHECK(object_proto != nullptr);
+
+  ProgramProto* const program_proto = object_proto->mutable_program_object();
+
+  for (const pair<string, int>& external_symbol_pair : external_symbols_) {
+    ProgramExternalSymbolProto* const external_symbol_proto =
+        program_proto->add_external_symbol();
+    external_symbol_proto->set_symbol_name(external_symbol_pair.first);
+    external_symbol_proto->set_symbol_id(external_symbol_pair.second);
+  }
+
+  expression_->PopulateExpressionProto(program_proto->mutable_expression());
 }
 
 void ProgramObject::ResolveExternalSymbol(
     Thread* thread,
     const string& symbol_name,
     bool visible,
-    VersionedLocalObject* local_object,
+    LocalObject* local_object,
     unordered_map<int, ObjectReference*>* symbol_bindings) const {
   CHECK(thread != nullptr);
   CHECK(!symbol_name.empty());
@@ -174,13 +220,13 @@ void ProgramObject::ResolveExternalSymbol(
   CHECK(it != external_symbols_.end());
   const int symbol_id = it->second;
 
-  ObjectReference* const built_in_object = thread->CreateVersionedObject(
-      local_object, symbol_name);
+  ObjectReference* const built_in_object = thread->CreateObject(local_object,
+                                                                symbol_name);
 
   ObjectReference* object_reference = nullptr;
   if (visible) {
-    object_reference = thread->CreateVersionedObject(
-        new VariableObject(built_in_object), "");
+    object_reference = thread->CreateObject(new VariableObject(built_in_object),
+                                            "");
   } else {
     object_reference = built_in_object;
   }

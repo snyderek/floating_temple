@@ -21,7 +21,7 @@
 namespace floating_temple {
 
 class DeserializationContext;
-class VersionedLocalObject;
+class LocalObject;
 
 // This interface is implemented by the local interpreter. It represents the
 // local interpreter itself.
@@ -53,9 +53,9 @@ class Interpreter {
   // The local interpreter must not take ownership of the DeserializationContext
   // instance.
   //
-  // Returns a pointer to a newly created VersionedLocalObject instance. The
+  // Returns a pointer to a newly created LocalObject instance. The
   // caller will take ownership of this instance.
-  virtual VersionedLocalObject* DeserializeObject(
+  virtual LocalObject* DeserializeObject(
       const void* buffer, std::size_t buffer_size,
       DeserializationContext* context) = 0;
 };

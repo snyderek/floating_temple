@@ -31,7 +31,7 @@ namespace toy_lang {
 BeginTranFunction::BeginTranFunction() {
 }
 
-VersionedLocalObject* BeginTranFunction::Clone() const {
+LocalObject* BeginTranFunction::Clone() const {
   return new BeginTranFunction();
 }
 

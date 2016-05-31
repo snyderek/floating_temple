@@ -35,8 +35,6 @@
 #include "engine/shared_object.h"
 #include "engine/transaction_id_util.h"
 #include "engine/transaction_store_internal_interface.h"
-#include "engine/unversioned_live_object.h"
-#include "engine/versioned_live_object.h"
 #include "include/c++/value.h"
 
 using std::shared_ptr;
@@ -55,7 +53,7 @@ namespace {
 
 ObjectReferenceImpl* GetObjectReferenceForEvent(
     ObjectReferenceImpl* object_reference) {
-  if (object_reference != nullptr && object_reference->versioned()) {
+  if (object_reference != nullptr) {
     return object_reference;
   }
   return nullptr;
@@ -76,14 +74,13 @@ RecordingThread::RecordingThread(
 RecordingThread::~RecordingThread() {
 }
 
-void RecordingThread::RunProgram(UnversionedLocalObject* local_object,
+void RecordingThread::RunProgram(LocalObject* local_object,
                                  const string& method_name,
                                  Value* return_value,
                                  bool linger) {
   CHECK(return_value != nullptr);
 
-  ObjectReference* const object_reference = CreateUnversionedObject(
-      local_object, "");
+  ObjectReference* const object_reference = CreateObject(local_object, "");
 
   for (;;) {
     Value return_value_temp;
@@ -149,8 +146,7 @@ bool RecordingThread::BeginTransaction() {
     return false;
   }
 
-  if (current_object_reference_ != nullptr &&
-      current_object_reference_->versioned()) {
+  if (current_object_reference_ != nullptr) {
     modified_objects_[current_object_reference_] = current_live_object_;
     AddTransactionEvent(
         new BeginTransactionPendingEvent(current_object_reference_));
@@ -168,8 +164,7 @@ bool RecordingThread::EndTransaction() {
     return false;
   }
 
-  if (current_object_reference_ != nullptr &&
-      current_object_reference_->versioned()) {
+  if (current_object_reference_ != nullptr) {
     modified_objects_[current_object_reference_] = current_live_object_;
     AddTransactionEvent(
         new EndTransactionPendingEvent(current_object_reference_));
@@ -184,17 +179,16 @@ bool RecordingThread::EndTransaction() {
   return true;
 }
 
-ObjectReference* RecordingThread::CreateVersionedObject(
-    VersionedLocalObject* initial_version, const string& name) {
+ObjectReference* RecordingThread::CreateObject(LocalObject* initial_version,
+                                               const string& name) {
   // Take ownership of *initial_version.
-  shared_ptr<const LiveObject> new_live_object(
-      new VersionedLiveObject(initial_version));
+  shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
 
   ObjectReferenceImpl* object_reference = nullptr;
 
   if (name.empty()) {
     if (transaction_store_->delay_object_binding()) {
-      object_reference = transaction_store_->CreateUnboundObjectReference(true);
+      object_reference = transaction_store_->CreateUnboundObjectReference();
 
       NewObject new_object;
       new_object.live_object = new_live_object;
@@ -202,8 +196,7 @@ ObjectReference* RecordingThread::CreateVersionedObject(
 
       CHECK(new_objects_.emplace(object_reference, new_object).second);
     } else {
-      object_reference = transaction_store_->CreateBoundObjectReference("",
-                                                                        true);
+      object_reference = transaction_store_->CreateBoundObjectReference("");
 
       AddTransactionEvent(
           new ObjectCreationPendingEvent(
@@ -211,8 +204,7 @@ ObjectReference* RecordingThread::CreateVersionedObject(
               object_reference, new_live_object));
     }
   } else {
-    object_reference = transaction_store_->CreateBoundObjectReference(name,
-                                                                      true);
+    object_reference = transaction_store_->CreateBoundObjectReference(name);
 
     NewObject new_object;
     new_object.live_object = new_live_object;
@@ -243,25 +235,6 @@ ObjectReference* RecordingThread::CreateVersionedObject(
       }
     }
   }
-
-  CHECK(object_reference != nullptr);
-  return object_reference;
-}
-
-ObjectReference* RecordingThread::CreateUnversionedObject(
-    UnversionedLocalObject* initial_version, const string& name) {
-  // Take ownership of *initial_version.
-  shared_ptr<LiveObject> new_live_object(
-      new UnversionedLiveObject(initial_version));
-
-  ObjectReferenceImpl* const object_reference =
-      transaction_store_->CreateBoundObjectReference(name, false);
-
-  // TODO(dss): RecordingThread should not call methods on SharedObject. This is
-  // the responsibility of TransactionStore.
-  SharedObject* const shared_object = object_reference->shared_object();
-  CHECK(shared_object != nullptr);
-  shared_object->CreateUnversionedObjectContent(new_live_object);
 
   CHECK(object_reference != nullptr);
   return object_reference;
@@ -304,21 +277,16 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
       CheckIfValueIsNew(parameter, &live_objects, &new_object_references);
     }
 
-    if (caller_object_reference != nullptr &&
-        caller_object_reference->versioned()) {
+    if (caller_object_reference != nullptr) {
       modified_objects_[caller_object_reference] = current_live_object_;
     }
 
-    if ((caller_object_reference != nullptr &&
-         caller_object_reference->versioned()) ||
-        callee_object_reference->versioned()) {
-      AddTransactionEvent(
-          new MethodCallPendingEvent(
-              live_objects, new_object_references,
-              GetObjectReferenceForEvent(caller_object_reference),
-              GetObjectReferenceForEvent(callee_object_reference),
-              method_name, parameters));
-    }
+    AddTransactionEvent(
+        new MethodCallPendingEvent(
+            live_objects, new_object_references,
+            GetObjectReferenceForEvent(caller_object_reference),
+            GetObjectReferenceForEvent(callee_object_reference),
+            method_name, parameters));
   }
 
   // Repeatedly try to call the method until either 1) the method succeeds, or
@@ -350,21 +318,14 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
     unordered_set<ObjectReferenceImpl*> new_object_references;
 
     CheckIfValueIsNew(*return_value, &live_objects, &new_object_references);
+    modified_objects_[callee_object_reference] = callee_live_object;
 
-    if (callee_object_reference->versioned()) {
-      modified_objects_[callee_object_reference] = callee_live_object;
-    }
-
-    if ((caller_object_reference != nullptr &&
-         caller_object_reference->versioned()) ||
-        callee_object_reference->versioned()) {
-      AddTransactionEvent(
-          new MethodReturnPendingEvent(
-              live_objects, new_object_references,
-              GetObjectReferenceForEvent(callee_object_reference),
-              GetObjectReferenceForEvent(caller_object_reference),
-              *return_value));
-    }
+    AddTransactionEvent(
+        new MethodReturnPendingEvent(
+            live_objects, new_object_references,
+            GetObjectReferenceForEvent(callee_object_reference),
+            GetObjectReferenceForEvent(caller_object_reference),
+            *return_value));
   }
 
   return true;
@@ -453,25 +414,17 @@ shared_ptr<LiveObject> RecordingThread::GetLiveObject(
   // modified_objects_ by RecordingThread::CheckIfObjectIsNew.
   CHECK(new_objects_.find(object_reference) == new_objects_.end());
 
-  if (object_reference->versioned()) {
-    shared_ptr<LiveObject>& live_object = modified_objects_[object_reference];
+  shared_ptr<LiveObject>& live_object = modified_objects_[object_reference];
 
-    if (live_object.get() == nullptr) {
-      const shared_ptr<const LiveObject> existing_live_object =
-          transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
-                                                           GetSequencePoint(),
-                                                           true);
-      live_object = existing_live_object->Clone();
-    }
-
-    return live_object;
-  } else {
+  if (live_object.get() == nullptr) {
     const shared_ptr<const LiveObject> existing_live_object =
         transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
                                                          GetSequencePoint(),
                                                          true);
-    return existing_live_object->Clone();
+    live_object = existing_live_object->Clone();
   }
+
+  return live_object;
 }
 
 const SequencePoint* RecordingThread::GetSequencePoint() {
@@ -548,7 +501,7 @@ void RecordingThread::CheckIfObjectIsNew(
   CHECK(live_objects != nullptr);
   CHECK(new_object_references != nullptr);
 
-  if (object_reference != nullptr && object_reference->versioned()) {
+  if (object_reference != nullptr) {
     const unordered_map<ObjectReferenceImpl*, NewObject>::iterator it =
         new_objects_.find(object_reference);
 

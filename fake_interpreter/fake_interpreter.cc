@@ -29,11 +29,11 @@ namespace floating_temple {
 FakeInterpreter::FakeInterpreter() {
 }
 
-VersionedLocalObject* FakeInterpreter::DeserializeObject(
+LocalObject* FakeInterpreter::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
   CHECK(buffer != nullptr);
 
-  const string prefix = FakeVersionedLocalObject::kSerializationPrefix;
+  const string prefix = FakeLocalObject::kSerializationPrefix;
   const size_t prefix_length = prefix.length();
 
   CHECK_GE(buffer_size, prefix_length);
@@ -42,7 +42,7 @@ VersionedLocalObject* FakeInterpreter::DeserializeObject(
   const string s(static_cast<const char*>(buffer) + prefix_length,
                  buffer_size - prefix_length);
 
-  return new FakeVersionedLocalObject(s);
+  return new FakeLocalObject(s);
 }
 
 }  // namespace floating_temple

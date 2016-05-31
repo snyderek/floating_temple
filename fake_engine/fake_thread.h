@@ -34,11 +34,8 @@ class FakeThread : public Thread {
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  ObjectReference* CreateVersionedObject(VersionedLocalObject* initial_version,
-                                         const std::string& name) override;
-  ObjectReference* CreateUnversionedObject(
-      UnversionedLocalObject* initial_version,
-      const std::string& name) override;
+  ObjectReference* CreateObject(LocalObject* initial_version,
+                                const std::string& name) override;
   bool CallMethod(ObjectReference* object_reference,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,

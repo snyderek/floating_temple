@@ -30,10 +30,9 @@
 #include "engine/proto/peer.pb.h"
 #include "fake_interpreter/fake_interpreter.h"
 #include "fake_interpreter/fake_local_object.h"
+#include "include/c++/local_object.h"
 #include "include/c++/thread.h"
-#include "include/c++/unversioned_local_object.h"
 #include "include/c++/value.h"
-#include "include/c++/versioned_local_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 #include "util/dump_context.h"
@@ -59,10 +58,13 @@ MATCHER_P(IsPeerMessageType, type, "") {
   return GetPeerMessageType(arg) == type;
 }
 
-class TestProgramObject : public UnversionedLocalObject {
+class TestProgramObject : public LocalObject {
  public:
   TestProgramObject() {}
 
+  LocalObject* Clone() const override;
+  size_t Serialize(void* buffer, size_t buffer_size,
+                   SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
                     const string& method_name,
@@ -73,6 +75,22 @@ class TestProgramObject : public UnversionedLocalObject {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestProgramObject);
 };
+
+LocalObject* TestProgramObject::Clone() const {
+  return new TestProgramObject();
+}
+
+size_t TestProgramObject::Serialize(void* buffer, size_t buffer_size,
+                                    SerializationContext* context) const {
+  const string kSerializedForm = "TestProgramObject:";
+  const size_t length = kSerializedForm.length();
+
+  if (length <= buffer_size) {
+    memcpy(buffer, kSerializedForm.data(), length);
+  }
+
+  return length;
+}
 
 void TestProgramObject::InvokeMethod(Thread* thread,
                                      ObjectReference* object_reference,
@@ -88,9 +106,9 @@ void TestProgramObject::InvokeMethod(Thread* thread,
     return;
   }
 
-  thread->CreateVersionedObject(new FakeVersionedLocalObject(""), "athos");
-  thread->CreateVersionedObject(new FakeVersionedLocalObject(""), "porthos");
-  thread->CreateVersionedObject(new FakeVersionedLocalObject(""), "aramis");
+  thread->CreateObject(new FakeLocalObject(""), "athos");
+  thread->CreateObject(new FakeLocalObject(""), "porthos");
+  thread->CreateObject(new FakeLocalObject(""), "aramis");
 
   if (!thread->EndTransaction()) {
     return;

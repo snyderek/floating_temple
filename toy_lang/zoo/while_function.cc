@@ -37,7 +37,7 @@ namespace toy_lang {
 WhileFunction::WhileFunction() {
 }
 
-VersionedLocalObject* WhileFunction::Clone() const {
+LocalObject* WhileFunction::Clone() const {
   return new WhileFunction();
 }
 
@@ -65,9 +65,7 @@ ObjectReference* WhileFunction::Call(
 
   vector<Value> eval_parameters(1);
   eval_parameters[0].set_object_reference(
-      0,
-      thread->CreateVersionedObject(new ListObject(vector<ObjectReference*>()),
-                                    ""));
+      0, thread->CreateObject(new ListObject(vector<ObjectReference*>()), ""));
 
   for (;;) {
     Value condition_object;

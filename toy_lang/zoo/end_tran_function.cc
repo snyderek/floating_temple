@@ -31,7 +31,7 @@ namespace toy_lang {
 EndTranFunction::EndTranFunction() {
 }
 
-VersionedLocalObject* EndTranFunction::Clone() const {
+LocalObject* EndTranFunction::Clone() const {
   return new EndTranFunction();
 }
 

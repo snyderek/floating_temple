@@ -40,7 +40,7 @@ namespace toy_lang {
 MapObject::MapObject() {
 }
 
-VersionedLocalObject* MapObject::Clone() const {
+LocalObject* MapObject::Clone() const {
   MapObject* new_object = new MapObject();
   new_object->map_ = map_;
 

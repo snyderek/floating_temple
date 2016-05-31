@@ -122,8 +122,14 @@ message RangeIteratorProto {
 message FunctionProto {
 }
 
-// TODO(dss): Delete this message. It isn't used anywhere.
+message ProgramExternalSymbolProto {
+  required string symbol_name = 1;
+  required int64 symbol_id = 2;
+}
+
 message ProgramProto {
+  repeated floating_temple.toy_lang.ProgramExternalSymbolProto
+      external_symbol = 2;
   required floating_temple.toy_lang.ExpressionProto expression = 1;
 }
 
@@ -159,6 +165,7 @@ message ObjectProto {
     MAP_IS_SET_FUNCTION = 26;
     MAP_GET_FUNCTION = 27;
     MAP_SET_FUNCTION = 28;
+    PROGRAM = 29;
   }
 
   // Exactly one of the following fields must be set.
@@ -191,4 +198,5 @@ message ObjectProto {
   optional floating_temple.toy_lang.FunctionProto map_is_set_function = 26;
   optional floating_temple.toy_lang.FunctionProto map_get_function = 27;
   optional floating_temple.toy_lang.FunctionProto map_set_function = 28;
+  optional floating_temple.toy_lang.ProgramProto program_object = 29;
 }

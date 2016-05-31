@@ -16,6 +16,7 @@
 #ifndef INCLUDE_CPP_LOCAL_OBJECT_H_
 #define INCLUDE_CPP_LOCAL_OBJECT_H_
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,7 @@ namespace floating_temple {
 
 class DumpContext;
 class ObjectReference;
+class SerializationContext;
 class Thread;
 
 // TODO(dss): Rewrite the following paragraph. It's confusing.
@@ -39,6 +41,19 @@ class Thread;
 class LocalObject {
  public:
   virtual ~LocalObject() {}
+
+  // Returns a pointer to a new LocalObject object that is a clone of *this. The
+  // caller must take ownership of the returned LocalObject object.
+  virtual LocalObject* Clone() const = 0;
+
+  // buffer points to a writable buffer, and buffer_size is the maximum number
+  // of bytes that can be written to the buffer.
+  //
+  // If the buffer is large enough, this method serializes *this to the buffer
+  // and returns the number of bytes written. Otherwise, it leaves the buffer
+  // untouched and returns the minimum required buffer size, in bytes.
+  virtual std::size_t Serialize(void* buffer, std::size_t buffer_size,
+                                SerializationContext* context) const = 0;
 
   // Invokes the specified method on *this and passes it the specified
   // parameters. method_name must not be empty. The method must exist on the

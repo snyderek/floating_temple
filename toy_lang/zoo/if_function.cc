@@ -37,7 +37,7 @@ namespace toy_lang {
 IfFunction::IfFunction() {
 }
 
-VersionedLocalObject* IfFunction::Clone() const {
+LocalObject* IfFunction::Clone() const {
   return new IfFunction();
 }
 
@@ -80,9 +80,7 @@ ObjectReference* IfFunction::Call(
 
   vector<Value> eval_parameters(1);
   eval_parameters[0].set_object_reference(
-      0,
-      thread->CreateVersionedObject(new ListObject(vector<ObjectReference*>()),
-                                    ""));
+      0, thread->CreateObject(new ListObject(vector<ObjectReference*>()), ""));
 
   Value result;
   if (!thread->CallMethod(code_block, "eval", eval_parameters, &result)) {

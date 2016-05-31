@@ -31,7 +31,7 @@ namespace toy_lang {
 GetVariableFunction::GetVariableFunction() {
 }
 
-VersionedLocalObject* GetVariableFunction::Clone() const {
+LocalObject* GetVariableFunction::Clone() const {
   return new GetVariableFunction();
 }
 

@@ -36,22 +36,22 @@ namespace toy_lang {
 ObjectReference* MakeNoneObject(Thread* thread) {
   CHECK(thread != nullptr);
   // TODO(dss): Consider having just a single instance of the "none" object.
-  return thread->CreateVersionedObject(new NoneObject(), "");
+  return thread->CreateObject(new NoneObject(), "");
 }
 
 ObjectReference* WrapBool(Thread* thread, bool b) {
   CHECK(thread != nullptr);
-  return thread->CreateVersionedObject(new BoolObject(b), "");
+  return thread->CreateObject(new BoolObject(b), "");
 }
 
 ObjectReference* WrapInt(Thread* thread, int64 n) {
   CHECK(thread != nullptr);
-  return thread->CreateVersionedObject(new IntObject(n), "");
+  return thread->CreateObject(new IntObject(n), "");
 }
 
 ObjectReference* WrapString(Thread* thread, const string& s) {
   CHECK(thread != nullptr);
-  return thread->CreateVersionedObject(new StringObject(s), "");
+  return thread->CreateObject(new StringObject(s), "");
 }
 
 bool UnwrapBool(Thread* thread, ObjectReference* object_reference, bool* b) {

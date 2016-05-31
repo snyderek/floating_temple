@@ -33,7 +33,7 @@ BoolObject::BoolObject(bool b)
     : b_(b) {
 }
 
-VersionedLocalObject* BoolObject::Clone() const {
+LocalObject* BoolObject::Clone() const {
   return new BoolObject(b_);
 }
 

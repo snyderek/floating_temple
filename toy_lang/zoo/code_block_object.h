@@ -35,7 +35,7 @@ class CodeBlockObject : public LocalObjectImpl {
   explicit CodeBlockObject(CodeBlock* code_block);
   ~CodeBlockObject() override;
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
                     const std::string& method_name,

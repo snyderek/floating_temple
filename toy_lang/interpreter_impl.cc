@@ -30,7 +30,7 @@ InterpreterImpl::InterpreterImpl() {
 InterpreterImpl::~InterpreterImpl() {
 }
 
-VersionedLocalObject* InterpreterImpl::DeserializeObject(
+LocalObject* InterpreterImpl::DeserializeObject(
     const void* buffer, size_t buffer_size, DeserializationContext* context) {
   return LocalObjectImpl::Deserialize(buffer, buffer_size, context);
 }

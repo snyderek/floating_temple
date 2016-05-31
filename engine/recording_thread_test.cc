@@ -24,18 +24,17 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "engine/live_object.h"
+#include "engine/mock_local_object.h"
 #include "engine/make_transaction_id.h"
 #include "engine/mock_sequence_point.h"
 #include "engine/mock_transaction_store.h"
-#include "engine/mock_versioned_local_object.h"
 #include "engine/object_reference_impl.h"
 #include "engine/pending_event.h"
 #include "engine/proto/transaction_id.pb.h"
-#include "engine/versioned_live_object.h"
 #include "fake_interpreter/fake_local_object.h"
+#include "include/c++/local_object.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
-#include "include/c++/versioned_local_object.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
@@ -95,14 +94,14 @@ void CallAppendMethod(Thread* thread, ObjectReference* object_reference,
   CHECK(thread != nullptr);
 
   vector<Value> parameters(1);
-  parameters[0].set_string_value(FakeVersionedLocalObject::kStringLocalType,
+  parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
                                  string_to_append);
 
   Value return_value;
   CHECK(thread->CallMethod(object_reference, "append", parameters,
                            &return_value));
 
-  CHECK_EQ(return_value.local_type(), FakeVersionedLocalObject::kVoidLocalType);
+  CHECK_EQ(return_value.local_type(), FakeLocalObject::kVoidLocalType);
   CHECK_EQ(return_value.type(), Value::EMPTY);
 }
 
@@ -141,12 +140,12 @@ class TransactionIdSetter {
 };
 
 TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
-  ObjectReferenceImpl object_reference(true);
+  ObjectReferenceImpl object_reference;
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   RecordingThread thread(&transaction_store);
   const shared_ptr<const LiveObject> initial_live_object(
-      new VersionedLiveObject(new FakeVersionedLocalObject("a")));
+      new LiveObject(new FakeLocalObject("a")));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
@@ -187,11 +186,10 @@ void CallEndTransaction(Thread* thread) {
 TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  ObjectReferenceImpl object_reference(true), new_object_reference(true);
-  const MockVersionedLocalObjectCore local_object_core;
+  ObjectReferenceImpl object_reference, new_object_reference;
+  const MockLocalObjectCore local_object_core;
   shared_ptr<const LiveObject> live_object(
-      new VersionedLiveObject(
-          new MockVersionedLocalObject(&local_object_core)));
+      new LiveObject(new MockLocalObject(&local_object_core)));
 
   RecordingThread thread(&transaction_store);
 
@@ -200,9 +198,9 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
   EXPECT_CALL(transaction_store_core,
               GetLiveObjectAtSequencePoint(&object_reference, _, _))
       .WillRepeatedly(Return(live_object));
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
@@ -249,11 +247,10 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
 TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
-  ObjectReferenceImpl object_reference(true);
-  const MockVersionedLocalObjectCore local_object_core;
+  ObjectReferenceImpl object_reference;
+  const MockLocalObjectCore local_object_core;
   shared_ptr<const LiveObject> live_object(
-      new VersionedLiveObject(
-          new MockVersionedLocalObject(&local_object_core)));
+      new LiveObject(new MockLocalObject(&local_object_core)));
 
   RecordingThread thread(&transaction_store);
 
@@ -262,9 +259,9 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
   EXPECT_CALL(transaction_store_core,
               GetLiveObjectAtSequencePoint(&object_reference, _, _))
       .WillRepeatedly(Return(live_object));
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
@@ -340,9 +337,9 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
   // copy, in fact, since the object hasn't been committed).
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AtLeast(1));
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
@@ -365,10 +362,10 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
   }
 
   ASSERT_TRUE(thread.BeginTransaction());
-  ObjectReference* const object_reference1 = thread.CreateVersionedObject(
-      new FakeVersionedLocalObject("lucy."), "");
-  ObjectReference* const object_reference2 = thread.CreateVersionedObject(
-      new FakeVersionedLocalObject("ethel."), "");
+  ObjectReference* const object_reference1 = thread.CreateObject(
+      new FakeLocalObject("lucy."), "");
+  ObjectReference* const object_reference2 = thread.CreateObject(
+      new FakeLocalObject("ethel."), "");
   // This method call is here only to force a transaction to be created.
   CallAppendMethod(&thread, object_reference1, "ricky.");
   ASSERT_TRUE(thread.EndTransaction());

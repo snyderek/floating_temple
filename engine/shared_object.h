@@ -59,10 +59,7 @@ class SharedObject {
 
   bool HasObjectReference(const ObjectReferenceImpl* object_reference) const;
   void AddObjectReference(ObjectReferenceImpl* new_object_reference);
-  ObjectReferenceImpl* GetOrCreateObjectReference(bool versioned);
-
-  void CreateUnversionedObjectContent(
-      const std::shared_ptr<LiveObject>& live_object);
+  ObjectReferenceImpl* GetOrCreateObjectReference();
 
   // TODO(dss): In the public methods below, 'new_object_references' is both an
   // input parameter and an output parameter. This is confusing. Try to come up
@@ -109,7 +106,7 @@ class SharedObject {
 
  private:
   ObjectContent* GetObjectContent();
-  // TODO(dss): Consider renaming this method to CreateVersionedObjectContent.
+  // TODO(dss): Consider renaming this method to CreateObjectContent.
   ObjectContent* GetOrCreateObjectContent();
 
   void Dump_Locked(DumpContext* dc) const;

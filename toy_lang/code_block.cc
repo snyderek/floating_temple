@@ -72,8 +72,8 @@ ObjectReference* CodeBlock::Evaluate(const vector<ObjectReference*>& parameters,
 
   // Create the local variables, all initially unset.
   for (int symbol_id : local_symbol_ids_) {
-    VersionedLocalObject* const variable_object = new VariableObject(nullptr);
-    ObjectReference* const object_reference = thread->CreateVersionedObject(
+    LocalObject* const variable_object = new VariableObject(nullptr);
+    ObjectReference* const object_reference = thread->CreateObject(
         variable_object, "");
     CHECK(symbol_bindings.emplace(symbol_id, object_reference).second);
   }

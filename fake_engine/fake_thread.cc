@@ -23,8 +23,6 @@
 #include "base/string_printf.h"
 #include "fake_engine/fake_object_reference.h"
 #include "include/c++/local_object.h"
-#include "include/c++/unversioned_local_object.h"
-#include "include/c++/versioned_local_object.h"
 #include "util/dump_context_impl.h"
 
 using std::string;
@@ -57,23 +55,8 @@ bool FakeThread::EndTransaction() {
   return true;
 }
 
-ObjectReference* FakeThread::CreateVersionedObject(
-    VersionedLocalObject* initial_version, const string& name) {
-  // TODO(dss): If an object with the given name was already created, return a
-  // pointer to the existing ObjectReference instance.
-
-  // TODO(dss): Implement garbage collection.
-
-  ObjectReference* const object_reference = new FakeObjectReference(
-      initial_version);
-  VLOG(1) << "New object reference: " << StringPrintf("%p", object_reference);
-  VLOG(1) << "object_reference: " << GetJsonString(*object_reference);
-  object_references_.emplace_back(object_reference);
-  return object_reference;
-}
-
-ObjectReference* FakeThread::CreateUnversionedObject(
-    UnversionedLocalObject* initial_version, const string& name) {
+ObjectReference* FakeThread::CreateObject(LocalObject* initial_version,
+                                          const string& name) {
   // TODO(dss): If an object with the given name was already created, return a
   // pointer to the existing ObjectReference instance.
 

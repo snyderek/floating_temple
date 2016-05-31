@@ -22,17 +22,17 @@
 namespace floating_temple {
 
 class Interpreter;
-class VersionedLocalObject;
+class LocalObject;
 
 namespace engine {
 
 class ObjectReferenceImpl;
 
 void SerializeLocalObjectToString(
-    const VersionedLocalObject* local_object, std::string* data,
+    const LocalObject* local_object, std::string* data,
     std::vector<ObjectReferenceImpl*>* object_references);
 
-VersionedLocalObject* DeserializeLocalObjectFromString(
+LocalObject* DeserializeLocalObjectFromString(
     Interpreter* interpreter, const std::string& data,
     const std::vector<ObjectReferenceImpl*>& object_references);
 

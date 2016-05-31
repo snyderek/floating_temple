@@ -13,15 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ENGINE_MOCK_VERSIONED_LOCAL_OBJECT_H_
-#define ENGINE_MOCK_VERSIONED_LOCAL_OBJECT_H_
+#ifndef ENGINE_MOCK_LOCAL_OBJECT_H_
+#define ENGINE_MOCK_LOCAL_OBJECT_H_
 
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "include/c++/local_object.h"
 #include "include/c++/value.h"
-#include "include/c++/versioned_local_object.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
 namespace floating_temple {
@@ -32,9 +32,9 @@ class Thread;
 
 namespace engine {
 
-class MockVersionedLocalObjectCore {
+class MockLocalObjectCore {
  public:
-  MockVersionedLocalObjectCore() {}
+  MockLocalObjectCore() {}
 
   MOCK_CONST_METHOD1(Serialize, std::string(SerializationContext* context));
   MOCK_CONST_METHOD5(InvokeMethod,
@@ -45,14 +45,14 @@ class MockVersionedLocalObjectCore {
                           Value* return_value));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockVersionedLocalObjectCore);
+  DISALLOW_COPY_AND_ASSIGN(MockLocalObjectCore);
 };
 
-class MockVersionedLocalObject : public VersionedLocalObject {
+class MockLocalObject : public LocalObject {
  public:
-  explicit MockVersionedLocalObject(const MockVersionedLocalObjectCore* core);
+  explicit MockLocalObject(const MockLocalObjectCore* core);
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
@@ -63,12 +63,12 @@ class MockVersionedLocalObject : public VersionedLocalObject {
   void Dump(DumpContext* dc) const override;
 
  private:
-  const MockVersionedLocalObjectCore* const core_;
+  const MockLocalObjectCore* const core_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockVersionedLocalObject);
+  DISALLOW_COPY_AND_ASSIGN(MockLocalObject);
 };
 
 }  // namespace engine
 }  // namespace floating_temple
 
-#endif  // ENGINE_MOCK_VERSIONED_LOCAL_OBJECT_H_
+#endif  // ENGINE_MOCK_LOCAL_OBJECT_H_

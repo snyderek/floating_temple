@@ -26,7 +26,7 @@ class NoneObject : public LocalObjectImpl {
  public:
   NoneObject();
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
                     const std::string& method_name,

@@ -32,7 +32,7 @@ namespace toy_lang {
 ListAppendFunction::ListAppendFunction() {
 }
 
-VersionedLocalObject* ListAppendFunction::Clone() const {
+LocalObject* ListAppendFunction::Clone() const {
   return new ListAppendFunction();
 }
 

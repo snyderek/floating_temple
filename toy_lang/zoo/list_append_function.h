@@ -26,7 +26,7 @@ class ListAppendFunction : public Function {
  public:
   ListAppendFunction();
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  protected:

@@ -27,9 +27,8 @@
 namespace floating_temple {
 namespace engine {
 
-ObjectReferenceImpl::ObjectReferenceImpl(bool versioned)
-    : versioned_(versioned),
-      shared_object_(nullptr) {
+ObjectReferenceImpl::ObjectReferenceImpl()
+    : shared_object_(nullptr) {
 }
 
 ObjectReferenceImpl::~ObjectReferenceImpl() {

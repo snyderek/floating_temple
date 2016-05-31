@@ -33,7 +33,7 @@ namespace toy_lang {
 RangeFunction::RangeFunction() {
 }
 
-VersionedLocalObject* RangeFunction::Clone() const {
+LocalObject* RangeFunction::Clone() const {
   return new RangeFunction();
 }
 
@@ -61,7 +61,7 @@ ObjectReference* RangeFunction::Call(
     return nullptr;
   }
 
-  return thread->CreateVersionedObject(new RangeIteratorObject(limit, 0), "");
+  return thread->CreateObject(new RangeIteratorObject(limit, 0), "");
 }
 
 }  // namespace toy_lang

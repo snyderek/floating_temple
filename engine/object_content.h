@@ -19,11 +19,15 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
+#include "base/mutex.h"
 #include "engine/max_version_map.h"
 #include "engine/proto/transaction_id.pb.h"
+#include "engine/sequence_point_impl.h"
 #include "engine/transaction_id_util.h"
 
 namespace floating_temple {
@@ -36,28 +40,33 @@ class CanonicalPeer;
 class CommittedEvent;
 class LiveObject;
 class ObjectReferenceImpl;
+class PlaybackThread;
 class SequencePointImpl;
 class SharedObject;
 class SharedObjectTransaction;
+class TransactionStoreInternalInterface;
+class Uuid;
 
 class ObjectContent {
  public:
-  virtual ~ObjectContent() {}
+  ObjectContent(TransactionStoreInternalInterface* transaction_store,
+                SharedObject* shared_object);
+  ~ObjectContent();
 
-  virtual std::shared_ptr<const LiveObject> GetWorkingVersion(
+  std::shared_ptr<const LiveObject> GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
       std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
           new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
-          transactions_to_reject) = 0;
+          transactions_to_reject);
 
-  virtual void GetTransactions(
+  void GetTransactions(
       const MaxVersionMap& transaction_store_version_map,
       std::map<TransactionId, std::unique_ptr<SharedObjectTransaction>>*
           transactions,
-      MaxVersionMap* effective_version) const = 0;
-  virtual void StoreTransactions(
+      MaxVersionMap* effective_version) const;
+  void StoreTransactions(
       const CanonicalPeer* remote_peer,
       const std::map<TransactionId, std::unique_ptr<SharedObjectTransaction>>&
           transactions,
@@ -65,9 +74,9 @@ class ObjectContent {
       std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
           new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
-          transactions_to_reject) = 0;
+          transactions_to_reject);
 
-  virtual void InsertTransaction(
+  void InsertTransaction(
       const CanonicalPeer* origin_peer,
       const TransactionId& transaction_id,
       const std::vector<std::unique_ptr<CommittedEvent>>& events,
@@ -75,13 +84,47 @@ class ObjectContent {
       std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
           new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
-          transactions_to_reject) = 0;
+          transactions_to_reject);
 
-  virtual void SetCachedLiveObject(
+  void SetCachedLiveObject(
       const std::shared_ptr<const LiveObject>& cached_live_object,
-      const SequencePointImpl& cached_sequence_point) = 0;
+      const SequencePointImpl& cached_sequence_point);
 
-  virtual void Dump(DumpContext* dc) const = 0;
+  void Dump(DumpContext* dc) const;
+
+ private:
+  std::shared_ptr<const LiveObject> GetWorkingVersion_Locked(
+      const MaxVersionMap& desired_version,
+      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
+          new_object_references,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject);
+  bool ApplyTransactionsToWorkingVersion_Locked(
+      PlaybackThread* playback_thread, const MaxVersionMap& desired_version,
+      std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
+          transactions_to_reject);
+
+  void ComputeEffectiveVersion_Locked(
+      const MaxVersionMap& transaction_store_version_map,
+      MaxVersionMap* effective_version) const;
+  bool CanUseCachedLiveObject_Locked(
+      const SequencePointImpl& requested_sequence_point) const;
+
+  TransactionStoreInternalInterface* const transaction_store_;
+  SharedObject* const shared_object_;
+
+  std::map<TransactionId, std::unique_ptr<SharedObjectTransaction>>
+      committed_versions_;
+  MaxVersionMap version_map_;
+  std::unordered_set<const CanonicalPeer*> up_to_date_peers_;
+  // TODO(dss): Rename this member variable. It's the max transaction ID
+  // committed by an interpreter thread on the local peer.
+  TransactionId max_requested_transaction_id_;
+  std::shared_ptr<const LiveObject> cached_live_object_;
+  SequencePointImpl cached_sequence_point_;
+  mutable Mutex committed_versions_mu_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObjectContent);
 };
 
 }  // namespace engine

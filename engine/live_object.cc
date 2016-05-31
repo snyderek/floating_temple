@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "engine/versioned_live_object.h"
+#include "engine/live_object.h"
 
 #include <memory>
 #include <string>
@@ -23,7 +23,7 @@
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
 #include "engine/live_object_node.h"
-#include "include/c++/versioned_local_object.h"
+#include "include/c++/local_object.h"
 
 using std::shared_ptr;
 using std::string;
@@ -32,35 +32,35 @@ using std::vector;
 namespace floating_temple {
 namespace engine {
 
-VersionedLiveObject::VersionedLiveObject(VersionedLocalObject* local_object)
+LiveObject::LiveObject(LocalObject* local_object)
     : node_(new LiveObjectNode(local_object)) {
 }
 
-VersionedLiveObject::~VersionedLiveObject() {
+LiveObject::~LiveObject() {
   LiveObjectNode* const node = GetNode();
   if (node->DecrementRefCount()) {
     delete node;
   }
 }
 
-const LocalObject* VersionedLiveObject::local_object() const {
+const LocalObject* LiveObject::local_object() const {
   return GetNode()->local_object();
 }
 
-shared_ptr<LiveObject> VersionedLiveObject::Clone() const {
-  return shared_ptr<LiveObject>(new VersionedLiveObject(GetNode()));
+shared_ptr<LiveObject> LiveObject::Clone() const {
+  return shared_ptr<LiveObject>(new LiveObject(GetNode()));
 }
 
-void VersionedLiveObject::Serialize(
+void LiveObject::Serialize(
     string* data, vector<ObjectReferenceImpl*>* object_references) const {
   GetNode()->Serialize(data, object_references);
 }
 
-void VersionedLiveObject::InvokeMethod(Thread* thread,
-                                       ObjectReferenceImpl* object_reference,
-                                       const string& method_name,
-                                       const vector<Value>& parameters,
-                                       Value* return_value) {
+void LiveObject::InvokeMethod(Thread* thread,
+                              ObjectReferenceImpl* object_reference,
+                              const string& method_name,
+                              const vector<Value>& parameters,
+                              Value* return_value) {
   LiveObjectNode* const new_node = GetNode()->InvokeMethod(
       thread, object_reference, method_name, parameters, return_value);
 
@@ -80,16 +80,16 @@ void VersionedLiveObject::InvokeMethod(Thread* thread,
   }
 }
 
-void VersionedLiveObject::Dump(DumpContext* dc) const {
+void LiveObject::Dump(DumpContext* dc) const {
   GetNode()->Dump(dc);
 }
 
-VersionedLiveObject::VersionedLiveObject(LiveObjectNode* node)
+LiveObject::LiveObject(LiveObjectNode* node)
     : node_(CHECK_NOTNULL(node)) {
   node->IncrementRefCount();
 }
 
-LiveObjectNode* VersionedLiveObject::GetNode() const {
+LiveObjectNode* LiveObject::GetNode() const {
   MutexLock lock(&node_mu_);
   return node_;
 }

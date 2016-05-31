@@ -34,7 +34,7 @@ namespace toy_lang {
 MapIsSetFunction::MapIsSetFunction() {
 }
 
-VersionedLocalObject* MapIsSetFunction::Clone() const {
+LocalObject* MapIsSetFunction::Clone() const {
   return new MapIsSetFunction();
 }
 

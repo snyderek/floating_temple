@@ -18,7 +18,7 @@
 
 #include <cstddef>
 
-#include "include/c++/versioned_local_object.h"
+#include "include/c++/local_object.h"
 
 namespace floating_temple {
 
@@ -29,7 +29,7 @@ namespace toy_lang {
 
 class ObjectProto;
 
-class LocalObjectImpl : public VersionedLocalObject {
+class LocalObjectImpl : public LocalObject {
  public:
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;

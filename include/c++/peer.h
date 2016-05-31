@@ -20,7 +20,7 @@
 
 namespace floating_temple {
 
-class UnversionedLocalObject;
+class LocalObject;
 class Value;
 
 // TODO(dss): Rename the Peer and PeerImpl classes to something else, and rename
@@ -33,7 +33,7 @@ class Peer {
   // method to return.
   //
   // The peer takes ownership of *local_object.
-  virtual void RunProgram(UnversionedLocalObject* local_object,
+  virtual void RunProgram(LocalObject* local_object,
                           const std::string& method_name,
                           Value* return_value,
                           bool linger) = 0;

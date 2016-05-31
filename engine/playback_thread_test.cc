@@ -28,12 +28,11 @@
 #include "engine/committed_event.h"
 #include "engine/committed_value.h"
 #include "engine/live_object.h"
+#include "engine/mock_local_object.h"
 #include "engine/mock_transaction_store.h"
-#include "engine/mock_versioned_local_object.h"
 #include "engine/object_reference_impl.h"
 #include "engine/proto/uuid.pb.h"
 #include "engine/shared_object.h"
-#include "engine/versioned_live_object.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
@@ -92,18 +91,17 @@ TEST(PlaybackThreadTest, SubMethodCallWithoutReturn) {
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
-  const MockVersionedLocalObjectCore local_object_core1;
+  const MockLocalObjectCore local_object_core1;
   shared_ptr<LiveObject> live_object1(
-      new VersionedLiveObject(
-          new MockVersionedLocalObject(&local_object_core1)));
+      new LiveObject(new MockLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -145,18 +143,17 @@ TEST(PlaybackThreadTest, FlushEvents) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(111));
-  const MockVersionedLocalObjectCore local_object_core;
+  const MockLocalObjectCore local_object_core;
   shared_ptr<LiveObject> live_object(
-      new VersionedLiveObject(
-          new MockVersionedLocalObject(&local_object_core)));
+      new LiveObject(new MockLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -203,17 +200,16 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(222));
-  FakeVersionedLocalObject* const local_object = new FakeVersionedLocalObject(
-      "snap.");
-  shared_ptr<LiveObject> live_object(new VersionedLiveObject(local_object));
+  FakeLocalObject* const local_object = new FakeLocalObject("snap.");
+  shared_ptr<LiveObject> live_object(new LiveObject(local_object));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -223,12 +219,11 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   const unordered_set<SharedObject*> new_shared_objects;
 
   CommittedValue empty_return_value;
-  empty_return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
+  empty_return_value.set_local_type(FakeLocalObject::kVoidLocalType);
   empty_return_value.set_empty();
 
   vector<CommittedValue> event1_parameters(1);
-  event1_parameters[0].set_local_type(
-      FakeVersionedLocalObject::kStringLocalType);
+  event1_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
   event1_parameters[0].set_string_value("crackle.");
 
   const MethodCallCommittedEvent event1(nullptr, "append", event1_parameters);
@@ -236,8 +231,7 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
                                           empty_return_value);
 
   vector<CommittedValue> event3_parameters(1);
-  event3_parameters[0].set_local_type(
-      FakeVersionedLocalObject::kStringLocalType);
+  event3_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
   event3_parameters[0].set_string_value("pop.");
 
   const MethodCallCommittedEvent event3(nullptr, "append", event3_parameters);
@@ -270,15 +264,15 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(333));
   shared_ptr<LiveObject> live_object(
-      new VersionedLiveObject(new FakeVersionedLocalObject("peter.")));
+      new LiveObject(new FakeLocalObject("peter.")));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -288,12 +282,11 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   const unordered_set<SharedObject*> new_shared_objects;
 
   CommittedValue empty_return_value;
-  empty_return_value.set_local_type(FakeVersionedLocalObject::kVoidLocalType);
+  empty_return_value.set_local_type(FakeLocalObject::kVoidLocalType);
   empty_return_value.set_empty();
 
   vector<CommittedValue> event1_parameters(1);
-  event1_parameters[0].set_local_type(
-      FakeVersionedLocalObject::kStringLocalType);
+  event1_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
   event1_parameters[0].set_string_value("paul.");
 
   const MethodCallCommittedEvent event1(nullptr, "append", event1_parameters);
@@ -301,7 +294,7 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
                                           empty_return_value);
 
   CommittedValue bogus_return_value;
-  bogus_return_value.set_local_type(FakeVersionedLocalObject::kStringLocalType);
+  bogus_return_value.set_local_type(FakeLocalObject::kStringLocalType);
   bogus_return_value.set_string_value("barney.");
 
   const MethodCallCommittedEvent event3(nullptr, "get",
@@ -311,8 +304,7 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
                                           bogus_return_value);
 
   vector<CommittedValue> event5_parameters(1);
-  event5_parameters[0].set_local_type(
-      FakeVersionedLocalObject::kStringLocalType);
+  event5_parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
   event5_parameters[0].set_string_value("mary.");
 
   const MethodCallCommittedEvent event5(nullptr, "append", event5_parameters);
@@ -347,18 +339,17 @@ TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(1));
-  const MockVersionedLocalObjectCore local_object_core;
+  const MockLocalObjectCore local_object_core;
   shared_ptr<LiveObject> live_object(
-      new VersionedLiveObject(
-          new MockVersionedLocalObject(&local_object_core)));
+      new LiveObject(new MockLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -407,18 +398,17 @@ TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object(&transaction_store, MakeUuid(1));
-  const MockVersionedLocalObjectCore local_object_core;
+  const MockLocalObjectCore local_object_core;
   shared_ptr<LiveObject> live_object(
-      new VersionedLiveObject(
-          new MockVersionedLocalObject(&local_object_core)));
+      new LiveObject(new MockLocalObject(&local_object_core)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -489,18 +479,17 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
-  const MockVersionedLocalObjectCore local_object_core1;
+  const MockLocalObjectCore local_object_core1;
   shared_ptr<LiveObject> live_object1(
-      new VersionedLiveObject(
-          new MockVersionedLocalObject(&local_object_core1)));
+      new LiveObject(new MockLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);
@@ -564,8 +553,8 @@ void TestMethod5(Thread* thread, const vector<Value>& parameters,
   CHECK_EQ(parameters.size(), 0u);
   CHECK(return_value != nullptr);
 
-  ObjectReference* const object_reference = thread->CreateVersionedObject(
-      new FakeVersionedLocalObject(""), "");
+  ObjectReference* const object_reference = thread->CreateObject(
+      new FakeLocalObject(""), "");
 
   {
     Value sub_return_value;
@@ -591,18 +580,17 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
   MockTransactionStore transaction_store(&transaction_store_core);
   SharedObject shared_object1(&transaction_store, MakeUuid(1));
   SharedObject shared_object2(&transaction_store, MakeUuid(2));
-  const MockVersionedLocalObjectCore local_object_core1;
+  const MockLocalObjectCore local_object_core1;
   shared_ptr<LiveObject> live_object1(
-      new VersionedLiveObject(
-          new MockVersionedLocalObject(&local_object_core1)));
+      new LiveObject(new MockLocalObject(&local_object_core1)));
 
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .Times(0);
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference(_))
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_, _))
+  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(0);

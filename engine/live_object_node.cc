@@ -24,8 +24,8 @@
 #include "base/mutex_lock.h"
 #include "engine/object_reference_impl.h"
 #include "engine/serialize_local_object_to_string.h"
+#include "include/c++/local_object.h"
 #include "include/c++/value.h"
-#include "include/c++/versioned_local_object.h"
 #include "util/dump_context.h"
 #include "util/dump_context_impl.h"
 
@@ -35,7 +35,7 @@ using std::vector;
 namespace floating_temple {
 namespace engine {
 
-LiveObjectNode::LiveObjectNode(VersionedLocalObject* local_object)
+LiveObjectNode::LiveObjectNode(LocalObject* local_object)
     : local_object_(CHECK_NOTNULL(local_object)),
       ref_count_(1) {
 }
@@ -61,7 +61,7 @@ LiveObjectNode* LiveObjectNode::InvokeMethod(
   VLOG(2) << "Method: \"" << CEscape(method_name) << "\"";
 
   if (ref_count > 1) {
-    VersionedLocalObject* const new_local_object = local_object_->Clone();
+    LocalObject* const new_local_object = local_object_->Clone();
     CHECK(new_local_object != nullptr);
     VLOG(4) << "Before: " << GetJsonString(*new_local_object);
     new_local_object->InvokeMethod(thread, object_reference, method_name,

@@ -27,7 +27,7 @@ class ObjectReference;
 // the other hand, are only valid within the local process.
 //
 // This class is not thread-safe. It's intended to be used only by the thread
-// that called VersionedLocalObject::Serialize.
+// that called LocalObject::Serialize.
 class SerializationContext {
  public:
   virtual ~SerializationContext() {}

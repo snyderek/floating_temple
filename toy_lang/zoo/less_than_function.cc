@@ -31,7 +31,7 @@ namespace toy_lang {
 LessThanFunction::LessThanFunction() {
 }
 
-VersionedLocalObject* LessThanFunction::Clone() const {
+LocalObject* LessThanFunction::Clone() const {
   return new LessThanFunction();
 }
 

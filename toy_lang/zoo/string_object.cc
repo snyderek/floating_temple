@@ -33,7 +33,7 @@ StringObject::StringObject(const string& s)
     : s_(s) {
 }
 
-VersionedLocalObject* StringObject::Clone() const {
+LocalObject* StringObject::Clone() const {
   return new StringObject(s_);
 }
 

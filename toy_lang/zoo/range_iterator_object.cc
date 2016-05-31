@@ -39,7 +39,7 @@ RangeIteratorObject::RangeIteratorObject(int64 limit, int64 start)
   CHECK_LE(start, limit);
 }
 
-VersionedLocalObject* RangeIteratorObject::Clone() const {
+LocalObject* RangeIteratorObject::Clone() const {
   int64 i_temp = 0;
   {
     MutexLock lock(&i_mu_);

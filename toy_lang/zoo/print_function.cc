@@ -34,7 +34,7 @@ namespace toy_lang {
 PrintFunction::PrintFunction() {
 }
 
-VersionedLocalObject* PrintFunction::Clone() const {
+LocalObject* PrintFunction::Clone() const {
   return new PrintFunction();
 }
 

@@ -21,25 +21,28 @@
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "include/c++/unversioned_local_object.h"
+#include "include/c++/local_object.h"
+#include "toy_lang/zoo/local_object_impl.h"
 
 namespace floating_temple {
 
+class DeserializationContext;
+class LocalObject;
 class ObjectReference;
 class Thread;
-class VersionedLocalObject;
 
 namespace toy_lang {
 
 class Expression;
+class ProgramProto;
 
-class ProgramObject : public UnversionedLocalObject {
+class ProgramObject : public LocalObjectImpl {
  public:
-  // Takes ownership of 'expression'.
   ProgramObject(const std::unordered_map<std::string, int>& external_symbols,
-                Expression* expression);
+                const std::shared_ptr<const Expression>& expression);
   ~ProgramObject() override;
 
+  LocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
                     const std::string& method_name,
@@ -47,16 +50,23 @@ class ProgramObject : public UnversionedLocalObject {
                     Value* return_value) override;
   void Dump(DumpContext* dc) const override;
 
+  static ProgramObject* ParseProgramProto(const ProgramProto& program_proto,
+                                          DeserializationContext* context);
+
+ protected:
+  void PopulateObjectProto(ObjectProto* object_proto,
+                           SerializationContext* context) const override;
+
  private:
   void ResolveExternalSymbol(
       Thread* thread,
       const std::string& symbol_name,
       bool visible,
-      VersionedLocalObject* local_object,
+      LocalObject* local_object,
       std::unordered_map<int, ObjectReference*>* symbol_bindings) const;
 
   const std::unordered_map<std::string, int> external_symbols_;
-  const std::unique_ptr<Expression> expression_;
+  const std::shared_ptr<const Expression> expression_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramObject);
 };

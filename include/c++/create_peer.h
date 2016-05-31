@@ -77,14 +77,13 @@ class Peer;
 // least 1.
 //
 // If 'delay_object_binding' is true, an object reference created by calling
-// Thread::CreateVersionedObject or Thread::CreateUnversionedObject will not be
-// bound to a shared object until the object reference is used. This improves
-// performance, but it also means that the local interpreter must call
-// Thread::ObjectsAreIdentical to determine if two ObjectReference pointers
-// refer to the same shared object. If 'delay_object_binding' is false, the
-// local interpreter can safely assume that two object references refer to the
-// same shared object if and only if the ObjectReference pointers have equal
-// pointer values.
+// Thread::CreateObject will not be bound to a shared object until the object
+// reference is used. This improves performance, but it also means that the
+// local interpreter must call Thread::ObjectsAreIdentical to determine if two
+// ObjectReference pointers refer to the same shared object. If
+// 'delay_object_binding' is false, the local interpreter can safely assume that
+// two object references refer to the same shared object if and only if the
+// ObjectReference pointers have equal pointer values.
 //
 // This function does not take ownership of the Interpreter instance. The caller
 // must take ownership of the returned Peer instance.

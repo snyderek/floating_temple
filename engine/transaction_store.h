@@ -40,7 +40,7 @@
 namespace floating_temple {
 
 class Interpreter;
-class UnversionedLocalObject;
+class LocalObject;
 class Value;
 
 namespace engine {
@@ -74,7 +74,7 @@ class TransactionStore : public ConnectionHandler,
                    bool delay_object_binding);
   ~TransactionStore() override;
 
-  void RunProgram(UnversionedLocalObject* local_object,
+  void RunProgram(LocalObject* local_object,
                   const std::string& method_name,
                   Value* return_value,
                   bool linger);
@@ -102,9 +102,9 @@ class TransactionStore : public ConnectionHandler,
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       ObjectReferenceImpl* object_reference,
       const SequencePoint* sequence_point, bool wait) override;
-  ObjectReferenceImpl* CreateUnboundObjectReference(bool versioned) override;
-  ObjectReferenceImpl* CreateBoundObjectReference(const std::string& name,
-                                                  bool versioned) override;
+  ObjectReferenceImpl* CreateUnboundObjectReference() override;
+  ObjectReferenceImpl* CreateBoundObjectReference(
+      const std::string& name) override;
   void CreateTransaction(
       const std::vector<std::unique_ptr<PendingEvent>>& events,
       TransactionId* transaction_id,

@@ -30,7 +30,7 @@ namespace toy_lang {
 NotFunction::NotFunction() {
 }
 
-VersionedLocalObject* NotFunction::Clone() const {
+LocalObject* NotFunction::Clone() const {
   return new NotFunction();
 }
 

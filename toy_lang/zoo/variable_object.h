@@ -34,7 +34,7 @@ class VariableObject : public LocalObjectImpl {
   // 'object_reference' may be nullptr, to indicate that the variable is unset.
   explicit VariableObject(ObjectReference* object_reference);
 
-  VersionedLocalObject* Clone() const override;
+  LocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
                     ObjectReference* object_reference,
                     const std::string& method_name,

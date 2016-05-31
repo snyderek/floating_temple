@@ -81,7 +81,9 @@ engine_lib = ft_env.Library(
         engine/event_queue.cc
         engine/get_event_proto_type.cc
         engine/get_peer_message_type.cc
+        engine/live_object.cc
         engine/live_object_node.cc
+        engine/object_content.cc
         engine/object_reference_impl.cc
         engine/peer_connection.cc
         engine/peer_exclusion_map.cc
@@ -99,12 +101,8 @@ engine_lib = ft_env.Library(
         engine/transaction_id_util.cc
         engine/transaction_sequencer.cc
         engine/transaction_store.cc
-        engine/unversioned_live_object.cc
-        engine/unversioned_object_content.cc
         engine/uuid_util.cc
         engine/value_proto_util.cc
-        engine/versioned_live_object.cc
-        engine/versioned_object_content.cc
       """),
   )
 
@@ -113,9 +111,9 @@ engine_testing_lib = ft_env.Library(
     target = 'engine/engine_testing',
     source = Split("""
         engine/make_transaction_id.cc
+        engine/mock_local_object.cc
         engine/mock_sequence_point.cc
         engine/mock_transaction_store.cc
-        engine/mock_versioned_local_object.cc
       """),
   )
 

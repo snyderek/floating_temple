@@ -32,7 +32,7 @@ namespace toy_lang {
 LenFunction::LenFunction() {
 }
 
-VersionedLocalObject* LenFunction::Clone() const {
+LocalObject* LenFunction::Clone() const {
   return new LenFunction();
 }
 

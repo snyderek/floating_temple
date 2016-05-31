@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "engine/mock_versioned_local_object.h"
+#include "engine/mock_local_object.h"
 
 #include <cstddef>
 #include <cstring>
@@ -32,17 +32,16 @@ using std::vector;
 namespace floating_temple {
 namespace engine {
 
-MockVersionedLocalObject::MockVersionedLocalObject(
-    const MockVersionedLocalObjectCore* core)
+MockLocalObject::MockLocalObject(const MockLocalObjectCore* core)
     : core_(CHECK_NOTNULL(core)) {
 }
 
-VersionedLocalObject* MockVersionedLocalObject::Clone() const {
-  return new MockVersionedLocalObject(core_);
+LocalObject* MockLocalObject::Clone() const {
+  return new MockLocalObject(core_);
 }
 
-size_t MockVersionedLocalObject::Serialize(
-    void* buffer, size_t buffer_size, SerializationContext* context) const {
+size_t MockLocalObject::Serialize(void* buffer, size_t buffer_size,
+                                  SerializationContext* context) const {
   CHECK(buffer != nullptr);
   CHECK(context != nullptr);
 
@@ -56,21 +55,21 @@ size_t MockVersionedLocalObject::Serialize(
   return data_size;
 }
 
-void MockVersionedLocalObject::InvokeMethod(Thread* thread,
-                                            ObjectReference* object_reference,
-                                            const string& method_name,
-                                            const vector<Value>& parameters,
-                                            Value* return_value) {
+void MockLocalObject::InvokeMethod(Thread* thread,
+                                   ObjectReference* object_reference,
+                                   const string& method_name,
+                                   const vector<Value>& parameters,
+                                   Value* return_value) {
   core_->InvokeMethod(thread, object_reference, method_name, parameters,
                       return_value);
 }
 
-void MockVersionedLocalObject::Dump(DumpContext* dc) const {
+void MockLocalObject::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   dc->BeginMap();
   dc->AddString("type");
-  dc->AddString("MockVersionedLocalObject");
+  dc->AddString("MockLocalObject");
   dc->End();
 }
 

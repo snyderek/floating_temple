@@ -27,19 +27,18 @@ namespace floating_temple {
 
 class DumpContext;
 class Thread;
-class VersionedLocalObject;
+class LocalObject;
 
 namespace engine {
 
 class ObjectReferenceImpl;
 
-// TODO(dss): Rename this class to VersionedLiveObjectNode.
 class LiveObjectNode {
  public:
-  explicit LiveObjectNode(VersionedLocalObject* local_object);
+  explicit LiveObjectNode(LocalObject* local_object);
   ~LiveObjectNode();
 
-  const VersionedLocalObject* local_object() const { return local_object_; }
+  const LocalObject* local_object() const { return local_object_; }
 
   void Serialize(std::string* data,
                  std::vector<ObjectReferenceImpl*>* object_references) const;
@@ -56,7 +55,7 @@ class LiveObjectNode {
  private:
   int GetRefCount() const;
 
-  VersionedLocalObject* const local_object_;  // Not NULL
+  LocalObject* const local_object_;  // Not NULL
 
   int ref_count_;
   mutable Mutex ref_count_mu_;

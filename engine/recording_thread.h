@@ -33,7 +33,7 @@
 
 namespace floating_temple {
 
-class UnversionedLocalObject;
+class LocalObject;
 
 namespace engine {
 
@@ -50,7 +50,7 @@ class RecordingThread : public Thread {
       TransactionStoreInternalInterface* transaction_store);
   ~RecordingThread() override;
 
-  void RunProgram(UnversionedLocalObject* local_object,
+  void RunProgram(LocalObject* local_object,
                   const std::string& method_name,
                   Value* return_value,
                   bool linger);
@@ -60,11 +60,8 @@ class RecordingThread : public Thread {
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
-  ObjectReference* CreateVersionedObject(VersionedLocalObject* initial_version,
-                                         const std::string& name) override;
-  ObjectReference* CreateUnversionedObject(
-      UnversionedLocalObject* initial_version,
-      const std::string& name) override;
+  ObjectReference* CreateObject(LocalObject* initial_version,
+                                const std::string& name) override;
   bool CallMethod(ObjectReference* object_reference,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,

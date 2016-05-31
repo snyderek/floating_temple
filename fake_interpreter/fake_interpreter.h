@@ -25,7 +25,7 @@ class FakeInterpreter : public Interpreter {
  public:
   FakeInterpreter();
 
-  VersionedLocalObject* DeserializeObject(
+  LocalObject* DeserializeObject(
       const void* buffer, std::size_t buffer_size,
       DeserializationContext* context) override;
 

@@ -58,7 +58,6 @@
 #include "engine/transaction_sequencer.h"
 #include "engine/uuid_util.h"
 #include "engine/value_proto_util.h"
-#include "engine/versioned_live_object.h"
 #include "include/c++/value.h"
 #include "util/dump_context_impl.h"
 
@@ -102,7 +101,7 @@ TransactionStore::TransactionStore(CanonicalPeerMap* canonical_peer_map,
 TransactionStore::~TransactionStore() {
 }
 
-void TransactionStore::RunProgram(UnversionedLocalObject* local_object,
+void TransactionStore::RunProgram(LocalObject* local_object,
                                   const string& method_name,
                                   Value* return_value,
                                   bool linger) {
@@ -249,10 +248,8 @@ shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
   return live_object;
 }
 
-ObjectReferenceImpl* TransactionStore::CreateUnboundObjectReference(
-    bool versioned) {
-  ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl(
-      versioned);
+ObjectReferenceImpl* TransactionStore::CreateUnboundObjectReference() {
+  ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl();
   CHECK(object_reference != nullptr);
 
   {
@@ -266,10 +263,10 @@ ObjectReferenceImpl* TransactionStore::CreateUnboundObjectReference(
 }
 
 ObjectReferenceImpl* TransactionStore::CreateBoundObjectReference(
-    const string& name, bool versioned) {
+    const string& name) {
   if (name.empty()) {
-    ObjectReferenceImpl* const object_reference = CreateUnboundObjectReference(
-        versioned);
+    ObjectReferenceImpl* const object_reference =
+        CreateUnboundObjectReference();
     GetSharedObjectForObjectReference(object_reference);
     return object_reference;
   } else {
@@ -283,7 +280,7 @@ ObjectReferenceImpl* TransactionStore::CreateBoundObjectReference(
       named_objects_.insert(shared_object);
     }
 
-    return shared_object->GetOrCreateObjectReference(versioned);
+    return shared_object->GetOrCreateObjectReference();
   }
 }
 
@@ -1377,11 +1374,11 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
         SharedObject* const referenced_shared_object = GetOrCreateSharedObject(
             object_id);
         object_references[i] =
-            referenced_shared_object->GetOrCreateObjectReference(true);
+            referenced_shared_object->GetOrCreateObjectReference();
       }
 
       const shared_ptr<const LiveObject> live_object(
-          new VersionedLiveObject(
+          new LiveObject(
               DeserializeLocalObjectFromString(
                   interpreter_, object_creation_event_proto.data(),
                   object_references)));

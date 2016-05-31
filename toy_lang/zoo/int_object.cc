@@ -36,7 +36,7 @@ IntObject::IntObject(int64 n)
     : n_(n) {
 }
 
-VersionedLocalObject* IntObject::Clone() const {
+LocalObject* IntObject::Clone() const {
   return new IntObject(n_);
 }
 

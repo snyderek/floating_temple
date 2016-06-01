@@ -66,7 +66,7 @@ class PendingTransaction {
   std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
       modified_objects_;
 
-  bool committed_;
+  bool committing_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingTransaction);
 };

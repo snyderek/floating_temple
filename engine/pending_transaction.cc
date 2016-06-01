@@ -27,6 +27,9 @@
 #include "engine/transaction_store_internal_interface.h"
 
 using std::shared_ptr;
+using std::unique_ptr;
+using std::unordered_map;
+using std::vector;
 
 namespace floating_temple {
 namespace engine {
@@ -36,7 +39,7 @@ PendingTransaction::PendingTransaction(
     const TransactionId& base_transaction_id)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       base_transaction_id_(base_transaction_id),
-      committed_(false) {
+      committing_(false) {
 }
 
 PendingTransaction::~PendingTransaction() {
@@ -44,7 +47,6 @@ PendingTransaction::~PendingTransaction() {
 
 shared_ptr<LiveObject> PendingTransaction::GetLiveObject(
     ObjectReferenceImpl* object_reference) {
-  CHECK(!committed_);
   CHECK(object_reference != nullptr);
 
   shared_ptr<LiveObject>& live_object = modified_objects_[object_reference];
@@ -71,7 +73,6 @@ bool PendingTransaction::IsObjectKnown(ObjectReferenceImpl* object_reference) {
 void PendingTransaction::AddLiveObject(
     ObjectReferenceImpl* object_reference,
     const shared_ptr<LiveObject>& live_object) {
-  CHECK(!committed_);
   CHECK(object_reference != nullptr);
   CHECK(live_object.get() != nullptr);
 
@@ -83,22 +84,39 @@ void PendingTransaction::AddLiveObject(
 }
 
 void PendingTransaction::AddEvent(PendingEvent* event) {
-  CHECK(!committed_);
   CHECK(event != nullptr);
 
   events_.emplace_back(event);
 }
 
 void PendingTransaction::Commit(TransactionId* transaction_id) {
-  CHECK(!committed_);
+  CHECK(transaction_id != nullptr);
 
-  if (!events_.empty()) {
-    transaction_store_->CreateTransaction(events_, transaction_id,
-                                          modified_objects_,
+  // Prevent infinite recursion.
+  // TODO(dss): Is this still necessary?
+  if (committing_) {
+    return;
+  }
+  committing_ = true;
+
+  TransactionId committed_transaction_id;
+  while (!events_.empty()) {
+    vector<unique_ptr<PendingEvent>> events_to_commit;
+    unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>
+        modified_objects_to_commit;
+    events_to_commit.swap(events_);
+    modified_objects_to_commit.swap(modified_objects_);
+
+    transaction_store_->CreateTransaction(events_to_commit,
+                                          &committed_transaction_id,
+                                          modified_objects_to_commit,
                                           GetSequencePoint());
   }
 
-  committed_ = true;
+  CHECK(committing_);
+  committing_ = false;
+
+  transaction_id->Swap(&committed_transaction_id);
 }
 
 const SequencePoint* PendingTransaction::GetSequencePoint() {

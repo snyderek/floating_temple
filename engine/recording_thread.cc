@@ -66,7 +66,6 @@ RecordingThread::RecordingThread(
       pending_transaction_(new PendingTransaction(transaction_store,
                                                   MIN_TRANSACTION_ID)),
       transaction_level_(0),
-      committing_transaction_(false),
       current_object_reference_(nullptr),
       rejected_transaction_id_(MIN_TRANSACTION_ID) {
 }
@@ -396,21 +395,10 @@ void RecordingThread::AddTransactionEvent(PendingEvent* event) {
 }
 
 void RecordingThread::CommitTransaction() {
-  // Prevent infinite recursion.
-  // TODO(dss): Is this still necessary?
-  if (committing_transaction_) {
-    return;
-  }
-
-  committing_transaction_ = true;
-
-  TransactionId committed_transaction_id;
-  pending_transaction_->Commit(&committed_transaction_id);
+  TransactionId transaction_id;
+  pending_transaction_->Commit(&transaction_id);
   pending_transaction_.reset(new PendingTransaction(transaction_store_,
-                                                    committed_transaction_id));
-
-  CHECK(committing_transaction_);
-  committing_transaction_ = false;
+                                                    transaction_id));
 }
 
 void RecordingThread::CheckIfValueIsNew(

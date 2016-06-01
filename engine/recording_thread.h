@@ -107,7 +107,6 @@ class RecordingThread : public Thread {
   std::unique_ptr<PendingTransaction> pending_transaction_;
   int transaction_level_;
   std::unordered_map<ObjectReferenceImpl*, NewObject> new_objects_;
-  bool committing_transaction_;
 
   ObjectReferenceImpl* current_object_reference_;
   std::shared_ptr<LiveObject> current_live_object_;

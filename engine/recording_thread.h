@@ -40,7 +40,7 @@ namespace engine {
 class LiveObject;
 class ObjectReferenceImpl;
 class PendingEvent;
-class SequencePoint;
+class PendingTransaction;
 class TransactionStoreInternalInterface;
 
 // TODO(dss): Make this class inherit privately from class Thread.
@@ -85,10 +85,6 @@ class RecordingThread : public Thread {
   bool WaitForBlockingThreads_Locked(
       const TransactionId& method_call_transaction_id) const;
 
-  std::shared_ptr<LiveObject> GetLiveObject(
-      ObjectReferenceImpl* object_reference);
-  const SequencePoint* GetSequencePoint();
-
   void AddTransactionEvent(PendingEvent* event);
   void CommitTransaction();
 
@@ -108,19 +104,13 @@ class RecordingThread : public Thread {
 
   TransactionStoreInternalInterface* const transaction_store_;
 
+  std::unique_ptr<PendingTransaction> pending_transaction_;
   int transaction_level_;
-  std::vector<std::unique_ptr<PendingEvent>> events_;
   std::unordered_map<ObjectReferenceImpl*, NewObject> new_objects_;
-  std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
-      modified_objects_;
-  std::unique_ptr<SequencePoint> sequence_point_;
   bool committing_transaction_;
 
   ObjectReferenceImpl* current_object_reference_;
   std::shared_ptr<LiveObject> current_live_object_;
-
-  // ID of the last transaction that was committed by this thread.
-  TransactionId current_transaction_id_;
 
   // If rejected_transaction_id_ is valid, then all transactions starting with
   // (and including) that transaction ID have been rejected. This thread should

@@ -90,6 +90,7 @@ engine_lib = ft_env.Library(
         engine/peer_id.cc
         engine/peer_impl.cc
         engine/pending_event.cc
+        engine/pending_transaction.cc
         engine/playback_thread.cc
         engine/recording_thread.cc
         engine/sequence_point_impl.cc

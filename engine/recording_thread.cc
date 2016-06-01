@@ -30,8 +30,8 @@
 #include "engine/live_object.h"
 #include "engine/object_reference_impl.h"
 #include "engine/pending_event.h"
+#include "engine/pending_transaction.h"
 #include "engine/proto/transaction_id.pb.h"
-#include "engine/sequence_point.h"
 #include "engine/shared_object.h"
 #include "engine/transaction_id_util.h"
 #include "engine/transaction_store_internal_interface.h"
@@ -39,7 +39,6 @@
 
 using std::shared_ptr;
 using std::string;
-using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -64,10 +63,11 @@ ObjectReferenceImpl* GetObjectReferenceForEvent(
 RecordingThread::RecordingThread(
     TransactionStoreInternalInterface* transaction_store)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
+      pending_transaction_(new PendingTransaction(transaction_store,
+                                                  MIN_TRANSACTION_ID)),
       transaction_level_(0),
       committing_transaction_(false),
       current_object_reference_(nullptr),
-      current_transaction_id_(MIN_TRANSACTION_ID),
       rejected_transaction_id_(MIN_TRANSACTION_ID) {
 }
 
@@ -147,7 +147,6 @@ bool RecordingThread::BeginTransaction() {
   }
 
   if (current_object_reference_ != nullptr) {
-    modified_objects_[current_object_reference_] = current_live_object_;
     AddTransactionEvent(
         new BeginTransactionPendingEvent(current_object_reference_));
   }
@@ -165,14 +164,13 @@ bool RecordingThread::EndTransaction() {
   }
 
   if (current_object_reference_ != nullptr) {
-    modified_objects_[current_object_reference_] = current_live_object_;
     AddTransactionEvent(
         new EndTransactionPendingEvent(current_object_reference_));
   }
 
   --transaction_level_;
 
-  if (transaction_level_ == 0 && !events_.empty()) {
+  if (transaction_level_ == 0) {
     CommitTransaction();
   }
 
@@ -210,12 +208,7 @@ ObjectReference* RecordingThread::CreateObject(LocalObject* initial_version,
       // Check if the named object is already known to this peer. As a side
       // effect, send a GET_OBJECT message to remote peers so that the content
       // of the named object can eventually be synchronized with other peers.
-      const shared_ptr<const LiveObject> existing_live_object =
-          transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
-                                                           GetSequencePoint(),
-                                                           false);
-
-      if (existing_live_object.get() != nullptr) {
+      if (pending_transaction_->IsObjectKnown(object_reference)) {
         // The named object was already known to this peer. Remove the map entry
         // that was just added.
         const unordered_map<ObjectReferenceImpl*, NewObject>::iterator
@@ -243,10 +236,8 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
     return false;
   }
 
-  const vector<unique_ptr<PendingEvent>>::size_type event_count_save =
-      events_.size();
-
-  const TransactionId method_call_transaction_id = current_transaction_id_;
+  const TransactionId method_call_transaction_id =
+      pending_transaction_->base_transaction_id();
 
   ObjectReferenceImpl* const caller_object_reference =
       current_object_reference_;
@@ -268,10 +259,6 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
       CheckIfValueIsNew(parameter, &live_objects, &new_object_references);
     }
 
-    if (caller_object_reference != nullptr) {
-      modified_objects_[caller_object_reference] = current_live_object_;
-    }
-
     AddTransactionEvent(
         new MethodCallPendingEvent(
             live_objects, new_object_references,
@@ -288,17 +275,10 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
                         &callee_live_object, return_value)) {
     // The current method is being rewound.
 
-    // If the METHOD_CALL event has not been committed yet, delete the event.
-    // (If the event has been committed, then the transaction store is
-    // responsible for deleting it.)
-    if (current_transaction_id_ == method_call_transaction_id) {
-      CHECK_GE(events_.size(), event_count_save);
-      events_.resize(event_count_save);
-    }
-
     // TODO(dss): Set transaction_level_ to the value it had when
     // RecordingThread::CallMethod was called.
 
+    // TODO(dss): Delete the pending transaction.
     return false;
   }
 
@@ -309,7 +289,6 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
     unordered_set<ObjectReferenceImpl*> new_object_references;
 
     CheckIfValueIsNew(*return_value, &live_objects, &new_object_references);
-    modified_objects_[callee_object_reference] = callee_live_object;
 
     AddTransactionEvent(
         new MethodReturnPendingEvent(
@@ -344,8 +323,8 @@ bool RecordingThread::CallMethodHelper(
     // the method was called, rewind.
 
     const shared_ptr<LiveObject> caller_live_object = current_live_object_;
-    const shared_ptr<LiveObject> callee_live_object_temp = GetLiveObject(
-        callee_object_reference);
+    const shared_ptr<LiveObject> callee_live_object_temp =
+        pending_transaction_->GetLiveObject(callee_object_reference);
 
     current_object_reference_ = callee_object_reference;
     current_live_object_ = callee_live_object_temp;
@@ -398,41 +377,17 @@ bool RecordingThread::WaitForBlockingThreads_Locked(
   }
 }
 
-shared_ptr<LiveObject> RecordingThread::GetLiveObject(
-    ObjectReferenceImpl* object_reference) {
-  CHECK(object_reference != nullptr);
-  // If the object was in new_objects_, it already should have been moved to
-  // modified_objects_ by RecordingThread::CheckIfObjectIsNew.
-  CHECK(new_objects_.find(object_reference) == new_objects_.end());
-
-  shared_ptr<LiveObject>& live_object = modified_objects_[object_reference];
-
-  if (live_object.get() == nullptr) {
-    const shared_ptr<const LiveObject> existing_live_object =
-        transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
-                                                         GetSequencePoint(),
-                                                         true);
-    live_object = existing_live_object->Clone();
-  }
-
-  return live_object;
-}
-
-const SequencePoint* RecordingThread::GetSequencePoint() {
-  if (sequence_point_.get() == nullptr) {
-    sequence_point_.reset(transaction_store_->GetCurrentSequencePoint());
-  }
-
-  return sequence_point_.get();
-}
-
 void RecordingThread::AddTransactionEvent(PendingEvent* event) {
   CHECK_GE(transaction_level_, 0);
   CHECK(event != nullptr);
 
-  const bool first_event = events_.empty();
+  const bool first_event = !pending_transaction_->EventAdded();
 
-  events_.emplace_back(event);
+  if (current_object_reference_ != nullptr) {
+    pending_transaction_->AddLiveObject(current_object_reference_,
+                                        current_live_object_);
+  }
+  pending_transaction_->AddEvent(event);
 
   if (transaction_level_ == 0 &&
       !(first_event && event->prev_object_reference() == nullptr)) {
@@ -441,32 +396,18 @@ void RecordingThread::AddTransactionEvent(PendingEvent* event) {
 }
 
 void RecordingThread::CommitTransaction() {
-  CHECK(!events_.empty());
-
   // Prevent infinite recursion.
+  // TODO(dss): Is this still necessary?
   if (committing_transaction_) {
     return;
   }
 
   committing_transaction_ = true;
 
-  while (!events_.empty()) {
-    vector<unique_ptr<PendingEvent>> events_to_commit;
-    unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>
-        modified_objects_to_commit;
-    events_to_commit.swap(events_);
-    modified_objects_to_commit.swap(modified_objects_);
-
-    transaction_store_->CreateTransaction(events_to_commit,
-                                          &current_transaction_id_,
-                                          modified_objects_to_commit,
-                                          GetSequencePoint());
-
-    // TODO(dss): [Optimization] Set sequence_point_ to NULL here and only call
-    // transaction_store_->GetCurrentSequencePoint when the sequence point is
-    // actually needed.
-    sequence_point_.reset(transaction_store_->GetCurrentSequencePoint());
-  }
+  TransactionId committed_transaction_id;
+  pending_transaction_->Commit(&committed_transaction_id);
+  pending_transaction_.reset(new PendingTransaction(transaction_store_,
+                                                    committed_transaction_id));
 
   CHECK(committing_transaction_);
   committing_transaction_ = false;
@@ -509,8 +450,8 @@ void RecordingThread::CheckIfObjectIsNew(
       // Make the object available to other methods in the same transaction.
       // Subsequent transactions will be able to fetch the object from the
       // transaction store.
-      CHECK(modified_objects_.emplace(object_reference,
-                                      live_object->Clone()).second);
+      pending_transaction_->AddLiveObject(object_reference,
+                                          live_object->Clone());
 
       new_objects_.erase(it);
     }

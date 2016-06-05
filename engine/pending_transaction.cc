@@ -111,6 +111,8 @@ void PendingTransaction::Commit(TransactionId* transaction_id) {
                                           &committed_transaction_id,
                                           modified_objects_to_commit,
                                           GetSequencePoint());
+
+    sequence_point_.reset(nullptr);
   }
 
   CHECK(committing_);

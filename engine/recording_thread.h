@@ -76,11 +76,8 @@ class RecordingThread : public Thread {
   };
 
   bool CallMethodHelper(const TransactionId& method_call_transaction_id,
-                        ObjectReferenceImpl* caller_object_reference,
-                        ObjectReferenceImpl* callee_object_reference,
                         const std::string& method_name,
                         const std::vector<Value>& parameters,
-                        std::shared_ptr<LiveObject>* callee_live_object,
                         Value* return_value);
   bool WaitForBlockingThreads_Locked(
       const TransactionId& method_call_transaction_id) const;

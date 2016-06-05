@@ -266,18 +266,30 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
             method_name, parameters));
   }
 
+  const shared_ptr<LiveObject> caller_live_object = current_live_object_;
+
+  current_object_reference_ = callee_object_reference;
+  current_live_object_ = pending_transaction_->GetLiveObject(
+      callee_object_reference);
+
   // Repeatedly try to call the method until either 1) the method succeeds, or
   // 2) a rewind action is requested.
-  shared_ptr<LiveObject> callee_live_object;
-  if (!CallMethodHelper(method_call_transaction_id, caller_object_reference,
-                        callee_object_reference, method_name, parameters,
-                        &callee_live_object, return_value)) {
+  if (!CallMethodHelper(method_call_transaction_id, method_name, parameters,
+                        return_value)) {
     // The current method is being rewound.
 
     // TODO(dss): Set transaction_level_ to the value it had when
     // RecordingThread::CallMethod was called.
 
     // TODO(dss): Delete the pending transaction.
+
+    // TODO(dss): Automatically restore current_object_reference_ and
+    // current_live_object_ if there's an early return from
+    // RecordingThread::CallMethod.
+
+    current_object_reference_ = caller_object_reference;
+    current_live_object_ = caller_live_object;
+
     return false;
   }
 
@@ -297,6 +309,9 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
             *return_value));
   }
 
+  current_object_reference_ = caller_object_reference;
+  current_live_object_ = caller_live_object;
+
   return true;
 }
 
@@ -309,38 +324,21 @@ bool RecordingThread::ObjectsAreIdentical(const ObjectReference* a,
 
 bool RecordingThread::CallMethodHelper(
     const TransactionId& method_call_transaction_id,
-    ObjectReferenceImpl* caller_object_reference,
-    ObjectReferenceImpl* callee_object_reference,
     const string& method_name,
     const vector<Value>& parameters,
-    shared_ptr<LiveObject>* callee_live_object,
     Value* return_value) {
-  CHECK(callee_live_object != nullptr);
-
   for (;;) {
     // TODO(dss): If the caller object has been modified by another peer since
     // the method was called, rewind.
 
-    const shared_ptr<LiveObject> caller_live_object = current_live_object_;
-    const shared_ptr<LiveObject> callee_live_object_temp =
-        pending_transaction_->GetLiveObject(callee_object_reference);
-
-    current_object_reference_ = callee_object_reference;
-    current_live_object_ = callee_live_object_temp;
-
-    callee_live_object_temp->InvokeMethod(this, callee_object_reference,
-                                          method_name, parameters,
-                                          return_value);
-
-    current_live_object_ = caller_live_object;
-    current_object_reference_ = caller_object_reference;
+    current_live_object_->InvokeMethod(this, current_object_reference_,
+                                       method_name, parameters, return_value);
 
     {
       MutexLock lock(&rejected_transaction_id_mu_);
 
       if (!Rewinding_Locked()) {
         CHECK_EQ(blocking_threads_.size(), 0u);
-        *callee_live_object = callee_live_object_temp;
         return true;
       }
 

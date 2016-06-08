@@ -378,7 +378,7 @@ void RecordingThread::AddTransactionEvent(PendingEvent* event) {
   CHECK_GE(transaction_level_, 0);
   CHECK(event != nullptr);
 
-  const bool first_event = !pending_transaction_->EventAdded();
+  const bool first_event = pending_transaction_->IsEmpty();
 
   if (current_object_reference_ != nullptr) {
     pending_transaction_->UpdateLiveObject(current_object_reference_,

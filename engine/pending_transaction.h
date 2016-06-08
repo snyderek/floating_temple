@@ -42,7 +42,7 @@ class PendingTransaction {
   const TransactionId& base_transaction_id() const
       { return base_transaction_id_; }
 
-  bool EventAdded() const { return !events_.empty(); }
+  bool IsEmpty() const { return events_.empty(); }
 
   std::shared_ptr<LiveObject> GetLiveObject(
       ObjectReferenceImpl* object_reference);

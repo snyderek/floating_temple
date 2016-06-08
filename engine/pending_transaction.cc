@@ -38,8 +38,7 @@ PendingTransaction::PendingTransaction(
     TransactionStoreInternalInterface* transaction_store,
     const TransactionId& base_transaction_id)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
-      base_transaction_id_(base_transaction_id),
-      committing_(false) {
+      base_transaction_id_(base_transaction_id) {
 }
 
 PendingTransaction::~PendingTransaction() {
@@ -92,13 +91,6 @@ void PendingTransaction::AddEvent(PendingEvent* event) {
 void PendingTransaction::Commit(TransactionId* transaction_id) {
   CHECK(transaction_id != nullptr);
 
-  // Prevent infinite recursion.
-  // TODO(dss): Is this still necessary?
-  if (committing_) {
-    return;
-  }
-  committing_ = true;
-
   TransactionId committed_transaction_id;
   while (!events_.empty()) {
     vector<unique_ptr<PendingEvent>> events_to_commit;
@@ -114,9 +106,6 @@ void PendingTransaction::Commit(TransactionId* transaction_id) {
 
     sequence_point_.reset(nullptr);
   }
-
-  CHECK(committing_);
-  committing_ = false;
 
   transaction_id->Swap(&committed_transaction_id);
 }

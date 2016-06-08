@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/logging.h"
@@ -29,6 +30,7 @@
 using std::shared_ptr;
 using std::unique_ptr;
 using std::unordered_map;
+using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
@@ -69,7 +71,25 @@ bool PendingTransaction::IsObjectKnown(ObjectReferenceImpl* object_reference) {
   return existing_live_object.get() != nullptr;
 }
 
-void PendingTransaction::AddLiveObject(
+bool PendingTransaction::AddNewObject(
+    ObjectReferenceImpl* object_reference,
+    const shared_ptr<const LiveObject>& live_object) {
+  CHECK(object_reference != nullptr);
+  CHECK(live_object.get() != nullptr);
+
+  if (!new_objects_.insert(object_reference).second) {
+    return false;
+  }
+
+  // Make the object available to other methods in the same transaction. (Later
+  // transactions will be able to fetch the object from the transaction store.)
+  const shared_ptr<LiveObject> modified_object = live_object->Clone();
+  CHECK(modified_objects_.emplace(object_reference, modified_object).second);
+
+  return true;
+}
+
+void PendingTransaction::UpdateLiveObject(
     ObjectReferenceImpl* object_reference,
     const shared_ptr<LiveObject>& live_object) {
   CHECK(object_reference != nullptr);
@@ -88,8 +108,11 @@ void PendingTransaction::AddEvent(PendingEvent* event) {
   events_.emplace_back(event);
 }
 
-void PendingTransaction::Commit(TransactionId* transaction_id) {
+void PendingTransaction::Commit(
+    TransactionId* transaction_id,
+    unordered_set<ObjectReferenceImpl*>* new_objects) {
   CHECK(transaction_id != nullptr);
+  CHECK(new_objects != nullptr);
 
   TransactionId committed_transaction_id;
   while (!events_.empty()) {
@@ -108,6 +131,7 @@ void PendingTransaction::Commit(TransactionId* transaction_id) {
   }
 
   transaction_id->Swap(&committed_transaction_id);
+  new_objects->swap(new_objects_);
 }
 
 const SequencePoint* PendingTransaction::GetSequencePoint() {

@@ -381,8 +381,8 @@ void RecordingThread::AddTransactionEvent(PendingEvent* event) {
   const bool first_event = !pending_transaction_->EventAdded();
 
   if (current_object_reference_ != nullptr) {
-    pending_transaction_->AddLiveObject(current_object_reference_,
-                                        current_live_object_);
+    pending_transaction_->UpdateLiveObject(current_object_reference_,
+                                           current_live_object_);
   }
   pending_transaction_->AddEvent(event);
 
@@ -394,7 +394,13 @@ void RecordingThread::AddTransactionEvent(PendingEvent* event) {
 
 void RecordingThread::CommitTransaction() {
   TransactionId transaction_id;
-  pending_transaction_->Commit(&transaction_id);
+  unordered_set<ObjectReferenceImpl*> transaction_new_objects;
+  pending_transaction_->Commit(&transaction_id, &transaction_new_objects);
+
+  for (ObjectReferenceImpl* const object_reference : transaction_new_objects) {
+    CHECK_EQ(new_objects_.erase(object_reference), 1u);
+  }
+
   pending_transaction_.reset(new PendingTransaction(transaction_store_,
                                                     transaction_id));
 }
@@ -427,19 +433,13 @@ void RecordingThread::CheckIfObjectIsNew(
       const NewObject& new_object = it->second;
       const shared_ptr<const LiveObject>& live_object = new_object.live_object;
 
-      live_objects->emplace(object_reference, live_object);
+      if (pending_transaction_->AddNewObject(object_reference, live_object)) {
+        live_objects->emplace(object_reference, live_object);
 
-      if (!new_object.object_is_named) {
-        new_object_references->insert(object_reference);
+        if (!new_object.object_is_named) {
+          new_object_references->insert(object_reference);
+        }
       }
-
-      // Make the object available to other methods in the same transaction.
-      // Subsequent transactions will be able to fetch the object from the
-      // transaction store.
-      pending_transaction_->AddLiveObject(object_reference,
-                                          live_object->Clone());
-
-      new_objects_.erase(it);
     }
   }
 }

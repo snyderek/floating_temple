@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -47,11 +48,15 @@ class PendingTransaction {
       ObjectReferenceImpl* object_reference);
   bool IsObjectKnown(ObjectReferenceImpl* object_reference);
 
-  void AddLiveObject(ObjectReferenceImpl* object_reference,
-                     const std::shared_ptr<LiveObject>& live_object);
+  bool AddNewObject(ObjectReferenceImpl* object_reference,
+                    const std::shared_ptr<const LiveObject>& live_object);
+  void UpdateLiveObject(ObjectReferenceImpl* object_reference,
+                        const std::shared_ptr<LiveObject>& live_object);
+
   void AddEvent(PendingEvent* event);
 
-  void Commit(TransactionId* transaction_id);
+  void Commit(TransactionId* transaction_id,
+              std::unordered_set<ObjectReferenceImpl*>* new_objects);
 
  private:
   const SequencePoint* GetSequencePoint();
@@ -65,6 +70,7 @@ class PendingTransaction {
   std::vector<std::unique_ptr<PendingEvent>> events_;
   std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
       modified_objects_;
+  std::unordered_set<ObjectReferenceImpl*> new_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingTransaction);
 };

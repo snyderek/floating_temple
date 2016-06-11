@@ -25,12 +25,10 @@
 #include "base/macros.h"
 #include "engine/live_object.h"
 #include "engine/mock_local_object.h"
-#include "engine/make_transaction_id.h"
 #include "engine/mock_sequence_point.h"
 #include "engine/mock_transaction_store.h"
 #include "engine/object_reference_impl.h"
 #include "engine/pending_event.h"
-#include "engine/proto/transaction_id.pb.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/local_object.h"
 #include "include/c++/thread.h"
@@ -122,23 +120,6 @@ class ValueSetter {
   DISALLOW_COPY_AND_ASSIGN(ValueSetter);
 };
 
-class TransactionIdSetter {
- public:
-  explicit TransactionIdSetter(const TransactionId& transaction_id)
-      : transaction_id_(transaction_id) {
-  }
-
-  void CopyTransactionId(TransactionId* transaction_id) const {
-    CHECK(transaction_id != nullptr);
-    *transaction_id = transaction_id_;
-  }
-
- private:
-  const TransactionId transaction_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransactionIdSetter);
-};
-
 TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
   ObjectReferenceImpl object_reference;
   MockTransactionStoreCore transaction_store_core;
@@ -158,11 +139,7 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
   EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
-  const TransactionIdSetter transaction_id_setter(MakeTransactionId(30, 0, 0));
-
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .WillOnce(WithArg<1>(Invoke(&transaction_id_setter,
-                                  &TransactionIdSetter::CopyTransactionId)));
+  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _));
 
   ASSERT_TRUE(thread.BeginTransaction());
   CallAppendMethod(&thread, &object_reference, "b");
@@ -217,17 +194,12 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
                             WithArg<4>(Invoke(&value_setter,
                                               &ValueSetter::SetValue))));
 
-  const TransactionIdSetter transaction_id_setter(
-      MakeTransactionId(1235, 0, 0));
-
   // The implicit transaction that should be created.
   EXPECT_CALL(
       transaction_store_core,
       CreateTransaction(ElementsAre(IsMethodCallPendingEvent("test-method"),
                                     IsBeginTransactionPendingEvent()),
-                        _, _, _))
-      .WillOnce(WithArg<1>(Invoke(&transaction_id_setter,
-                                  &TransactionIdSetter::CopyTransactionId)));
+                        _, _, _));
 
   // Call the "test-method" method. The method calls Thread::BeginTransaction,
   // creates a new object, and returns the new object reference. The
@@ -278,11 +250,6 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
                             WithArg<4>(Invoke(&value_setter,
                                               &ValueSetter::SetValue))));
 
-  const TransactionIdSetter transaction_id_setter1(
-      MakeTransactionId(1235, 0, 0));
-  const TransactionIdSetter transaction_id_setter2(
-      MakeTransactionId(1236, 0, 0));
-
   {
     InSequence s;
 
@@ -291,16 +258,12 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(ElementsAre(IsMethodCallPendingEvent("test-method"),
                                       IsEndTransactionPendingEvent()),
-                          _, _, _))
-        .WillOnce(WithArg<1>(Invoke(&transaction_id_setter1,
-                                    &TransactionIdSetter::CopyTransactionId)));
+                          _, _, _));
 
     // The implicit transaction that should be created.
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsMethodReturnPendingEvent()), _, _, _))
-        .WillOnce(WithArg<1>(Invoke(&transaction_id_setter2,
-                                    &TransactionIdSetter::CopyTransactionId)));
+        CreateTransaction(ElementsAre(IsMethodReturnPendingEvent()), _, _, _));
   }
 
   // Start an explicit transaction.
@@ -344,22 +307,8 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
   EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
       .Times(0);
 
-  const TransactionIdSetter transaction_id_setter1(MakeTransactionId(20, 0, 0));
-  const TransactionIdSetter transaction_id_setter2(MakeTransactionId(30, 0, 0));
-
-  {
-    InSequence s;
-
-    // Transaction #1
-    EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-        .WillOnce(WithArg<1>(Invoke(&transaction_id_setter1,
-                                    &TransactionIdSetter::CopyTransactionId)));
-
-    // Transaction #2
-    EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-        .WillOnce(WithArg<1>(Invoke(&transaction_id_setter2,
-                                    &TransactionIdSetter::CopyTransactionId)));
-  }
+  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
+      .Times(2);
 
   ASSERT_TRUE(thread.BeginTransaction());
   ObjectReference* const object_reference1 = thread.CreateObject(

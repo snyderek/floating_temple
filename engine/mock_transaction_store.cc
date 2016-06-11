@@ -22,6 +22,7 @@
 
 #include "base/logging.h"
 #include "engine/object_reference_impl.h"
+#include "engine/proto/transaction_id.pb.h"
 
 using std::shared_ptr;
 using std::string;
@@ -34,7 +35,8 @@ namespace engine {
 
 MockTransactionStore::MockTransactionStore(
     const MockTransactionStoreCore* core)
-    : core_(CHECK_NOTNULL(core)) {
+    : core_(CHECK_NOTNULL(core)),
+      next_id_(1) {
 }
 
 MockTransactionStore::~MockTransactionStore() {
@@ -87,8 +89,16 @@ void MockTransactionStore::CreateTransaction(
     const unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>&
         modified_objects,
     const SequencePoint* prev_sequence_point) {
+  CHECK(transaction_id != nullptr);
+
   core_->CreateTransaction(events, transaction_id, modified_objects,
                            prev_sequence_point);
+
+  transaction_id->Clear();
+  transaction_id->set_a(next_id_);
+  transaction_id->set_b(0);
+  transaction_id->set_c(0);
+  ++next_id_;
 }
 
 bool MockTransactionStore::ObjectsAreIdentical(

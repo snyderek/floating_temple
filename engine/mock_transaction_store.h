@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/integral_types.h"
 #include "base/macros.h"
 #include "engine/transaction_store_internal_interface.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
@@ -89,6 +90,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   std::vector<std::unique_ptr<ObjectReferenceImpl>> unnamed_objects_;
   std::unordered_map<std::string, std::unique_ptr<ObjectReferenceImpl>>
       named_objects_;
+  uint64 next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);
 };

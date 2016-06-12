@@ -19,12 +19,17 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
+#include "engine/live_object.h"
+#include "engine/object_reference_impl.h"
 #include "include/c++/value.h"
+#include "util/dump_context.h"
 #include "util/stl_util.h"
 
+using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;
@@ -61,6 +66,53 @@ void PendingEvent::GetMethodReturn(ObjectReferenceImpl** next_object_reference,
              << static_cast<int>(this->type()) << ")";
 }
 
+#define CHECK_EVENT_TYPE(event_type) \
+  case PendingEvent::event_type: \
+    do { \
+      return #event_type; \
+    } while (false)
+
+// static
+string PendingEvent::GetTypeString(Type event_type) {
+  switch (event_type) {
+    CHECK_EVENT_TYPE(BEGIN_TRANSACTION);
+    CHECK_EVENT_TYPE(END_TRANSACTION);
+    CHECK_EVENT_TYPE(METHOD_CALL);
+    CHECK_EVENT_TYPE(METHOD_RETURN);
+
+    default:
+      LOG(FATAL) << "Invalid event type: " << static_cast<int>(event_type);
+  }
+
+  return "";
+}
+
+#undef CHECK_EVENT_TYPE
+
+void PendingEvent::DumpAffectedObjects(DumpContext* dc) const {
+  dc->AddString("live_objects");
+  dc->BeginList();
+  for (const pair<ObjectReferenceImpl*, shared_ptr<const LiveObject>>&
+           live_object_pair : live_objects_) {
+    dc->BeginList();
+    live_object_pair.first->Dump(dc);
+    live_object_pair.second->Dump(dc);
+    dc->End();
+  }
+  dc->End();
+
+  dc->AddString("new_object_references");
+  dc->BeginList();
+  for (const ObjectReferenceImpl* const object_reference :
+           new_object_references_) {
+    object_reference->Dump(dc);
+  }
+  dc->End();
+
+  dc->AddString("prev_object_reference");
+  prev_object_reference_->Dump(dc);
+}
+
 BeginTransactionPendingEvent::BeginTransactionPendingEvent(
     ObjectReferenceImpl* prev_object_reference)
     : PendingEvent(
@@ -69,12 +121,38 @@ BeginTransactionPendingEvent::BeginTransactionPendingEvent(
           CHECK_NOTNULL(prev_object_reference)) {
 }
 
+void BeginTransactionPendingEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("BEGIN_TRANSACTION");
+
+  DumpAffectedObjects(dc);
+
+  dc->End();
+}
+
 EndTransactionPendingEvent::EndTransactionPendingEvent(
     ObjectReferenceImpl* prev_object_reference)
     : PendingEvent(
           unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>(),
           unordered_set<ObjectReferenceImpl*>(),
           CHECK_NOTNULL(prev_object_reference)) {
+}
+
+void EndTransactionPendingEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("END_TRANSACTION");
+
+  DumpAffectedObjects(dc);
+
+  dc->End();
 }
 
 MethodCallPendingEvent::MethodCallPendingEvent(
@@ -104,6 +182,32 @@ void MethodCallPendingEvent::GetMethodCall(
   *parameters = &parameters_;
 }
 
+void MethodCallPendingEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("METHOD_CALL");
+
+  dc->AddString("next_object_reference");
+  next_object_reference_->Dump(dc);
+
+  dc->AddString("method_name");
+  dc->AddString(method_name_);
+
+  dc->AddString("parameters");
+  dc->BeginList();
+  for (const Value& value : parameters_) {
+    value.Dump(dc);
+  }
+  dc->End();
+
+  DumpAffectedObjects(dc);
+
+  dc->End();
+}
+
 MethodReturnPendingEvent::MethodReturnPendingEvent(
     const unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>&
         live_objects,
@@ -124,6 +228,25 @@ void MethodReturnPendingEvent::GetMethodReturn(
 
   *next_object_reference = next_object_reference_;
   *return_value = &return_value_;
+}
+
+void MethodReturnPendingEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("METHOD_RETURN");
+
+  dc->AddString("next_object_reference");
+  next_object_reference_->Dump(dc);
+
+  dc->AddString("return_value");
+  return_value_.Dump(dc);
+
+  DumpAffectedObjects(dc);
+
+  dc->End();
 }
 
 }  // namespace engine

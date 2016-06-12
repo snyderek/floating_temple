@@ -26,6 +26,9 @@
 #include "include/c++/value.h"
 
 namespace floating_temple {
+
+class DumpContext;
+
 namespace engine {
 
 class LiveObject;
@@ -64,6 +67,13 @@ class PendingEvent {
   virtual void GetMethodReturn(ObjectReferenceImpl** next_object_reference,
                                const Value** return_value) const;
 
+  virtual void Dump(DumpContext* dc) const = 0;
+
+  static std::string GetTypeString(Type event_type);
+
+ protected:
+  void DumpAffectedObjects(DumpContext* dc) const;
+
  private:
   const std::unordered_map<ObjectReferenceImpl*,
                            std::shared_ptr<const LiveObject>> live_objects_;
@@ -78,6 +88,7 @@ class BeginTransactionPendingEvent : public PendingEvent {
       ObjectReferenceImpl* prev_object_reference);
 
   Type type() const override { return BEGIN_TRANSACTION; }
+  void Dump(DumpContext* dc) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BeginTransactionPendingEvent);
@@ -90,6 +101,7 @@ class EndTransactionPendingEvent : public PendingEvent {
       ObjectReferenceImpl* prev_object_reference);
 
   Type type() const override { return END_TRANSACTION; }
+  void Dump(DumpContext* dc) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EndTransactionPendingEvent);
@@ -111,6 +123,7 @@ class MethodCallPendingEvent : public PendingEvent {
   void GetMethodCall(ObjectReferenceImpl** next_object_reference,
                      const std::string** method_name,
                      const std::vector<Value>** parameters) const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   ObjectReferenceImpl* const next_object_reference_;
@@ -134,6 +147,7 @@ class MethodReturnPendingEvent : public PendingEvent {
   Type type() const override { return METHOD_RETURN; }
   void GetMethodReturn(ObjectReferenceImpl** next_object_reference,
                        const Value** return_value) const override;
+  void Dump(DumpContext* dc) const override;
 
  private:
   ObjectReferenceImpl* const next_object_reference_;

@@ -16,10 +16,12 @@
 #include "engine/pending_transaction.h"
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "base/escape.h"
 #include "base/logging.h"
 #include "engine/live_object.h"
 #include "engine/pending_event.h"
@@ -28,6 +30,7 @@
 #include "engine/transaction_store_internal_interface.h"
 
 using std::shared_ptr;
+using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
@@ -116,6 +119,8 @@ void PendingTransaction::Commit(
 
   TransactionId committed_transaction_id;
   while (!events_.empty()) {
+    LogDebugInfo();
+
     vector<unique_ptr<PendingEvent>> events_to_commit;
     unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>
         modified_objects_to_commit;
@@ -139,6 +144,35 @@ const SequencePoint* PendingTransaction::GetSequencePoint() {
     sequence_point_.reset(transaction_store_->GetCurrentSequencePoint());
   }
   return sequence_point_.get();
+}
+
+void PendingTransaction::LogDebugInfo() const {
+  const vector<unique_ptr<PendingEvent>>::size_type event_count =
+      events_.size();
+
+  VLOG(2) << "Creating local transaction with " << event_count << " events.";
+
+  if (VLOG_IS_ON(3)) {
+    for (vector<unique_ptr<PendingEvent>>::size_type i = 0; i < event_count;
+         ++i) {
+      const PendingEvent* const event = events_[i].get();
+      const PendingEvent::Type type = event->type();
+      const string type_string = PendingEvent::GetTypeString(type);
+
+      if (type == PendingEvent::METHOD_CALL) {
+        ObjectReferenceImpl* next_object_reference = nullptr;
+        const string* method_name = nullptr;
+        const vector<Value>* parameters = nullptr;
+
+        event->GetMethodCall(&next_object_reference, &method_name, &parameters);
+
+        VLOG(3) << "Event " << i << ": " << type_string << " \""
+                << CEscape(*method_name) << "\"";
+      } else {
+        VLOG(3) << "Event " << i << ": " << type_string;
+      }
+    }
+  }
 }
 
 }  // namespace engine

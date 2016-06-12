@@ -61,6 +61,8 @@ class PendingTransaction {
  private:
   const SequencePoint* GetSequencePoint();
 
+  void LogDebugInfo() const;
+
   TransactionStoreInternalInterface* const transaction_store_;
   // ID of the committed transaction that this pending transaction is based on.
   const TransactionId base_transaction_id_;

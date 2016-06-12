@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "base/cond_var.h"
-#include "base/escape.h"
 #include "base/integral_types.h"
 #include "base/logging.h"
 #include "base/mutex.h"
@@ -295,51 +294,6 @@ void TransactionStore::CreateTransaction(
   transaction_sequencer_.ReserveTransaction(&transaction_id_temp);
 
   const vector<unique_ptr<PendingEvent>>::size_type event_count = events.size();
-
-  VLOG(2) << "Creating local transaction "
-          << TransactionIdToString(transaction_id_temp) << " with "
-          << event_count << " events.";
-
-  if (VLOG_IS_ON(3)) {
-    for (vector<unique_ptr<PendingEvent>>::size_type i = 0; i < event_count;
-         ++i) {
-      const PendingEvent* const event = events[i].get();
-      const PendingEvent::Type type = event->type();
-
-      switch (type) {
-        case PendingEvent::BEGIN_TRANSACTION:
-          VLOG(3) << "Event " << i << ": BEGIN_TRANSACTION";
-          break;
-
-        case PendingEvent::END_TRANSACTION:
-          VLOG(3) << "Event " << i << ": END_TRANSACTION";
-          break;
-
-        case PendingEvent::METHOD_CALL: {
-          ObjectReferenceImpl* next_object_reference = nullptr;
-          const string* method_name = nullptr;
-          const vector<Value>* parameters = nullptr;
-
-          event->GetMethodCall(&next_object_reference, &method_name,
-                               &parameters);
-
-          VLOG(3) << "Event " << i << ": METHOD_CALL \""
-                  << CEscape(*method_name) << "\"";
-
-          break;
-        }
-
-        case PendingEvent::METHOD_RETURN:
-          VLOG(3) << "Event " << i << ": METHOD_RETURN";
-          break;
-
-        default:
-          LOG(FATAL) << "Invalid pending event type: "
-                     << static_cast<int>(type);
-      }
-    }
-  }
-
   unordered_map<SharedObject*, unique_ptr<SharedObjectTransaction>>
       shared_object_transactions;
 

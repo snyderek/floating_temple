@@ -95,21 +95,6 @@ TEST(PlaybackThreadTest, SubMethodCallWithoutReturn) {
   shared_ptr<LiveObject> live_object1(
       new LiveObject(new MockLocalObject(&local_object_core1)));
 
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
-      .Times(0);
-
-  EXPECT_CALL(local_object_core1, Serialize(_))
-      .Times(0);
   EXPECT_CALL(local_object_core1, InvokeMethod(_, _, "test_method1", _, _))
       .WillRepeatedly(WithArgs<0, 3, 4>(Invoke(&TestMethod1)));
 
@@ -147,24 +132,9 @@ TEST(PlaybackThreadTest, FlushEvents) {
   shared_ptr<LiveObject> live_object(
       new LiveObject(new MockLocalObject(&local_object_core)));
 
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   Value canned_return_value;
   canned_return_value.set_empty(0);
 
-  EXPECT_CALL(local_object_core, Serialize(_))
-      .Times(0);
   EXPECT_CALL(local_object_core, InvokeMethod(_, _, "test_method2", _, _))
       .WillRepeatedly(SetArgPointee<4>(canned_return_value));
 
@@ -202,19 +172,6 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   SharedObject shared_object(&transaction_store, MakeUuid(222));
   FakeLocalObject* const local_object = new FakeLocalObject("snap.");
   shared_ptr<LiveObject> live_object(new LiveObject(local_object));
-
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
-      .Times(0);
 
   const unordered_set<SharedObject*> new_shared_objects;
 
@@ -265,19 +222,6 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   SharedObject shared_object(&transaction_store, MakeUuid(333));
   shared_ptr<LiveObject> live_object(
       new LiveObject(new FakeLocalObject("peter.")));
-
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
-      .Times(0);
 
   const unordered_set<SharedObject*> new_shared_objects;
 
@@ -343,24 +287,9 @@ TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
   shared_ptr<LiveObject> live_object(
       new LiveObject(new MockLocalObject(&local_object_core)));
 
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   Value canned_return_value;
   canned_return_value.set_empty(0);
 
-  EXPECT_CALL(local_object_core, Serialize(_))
-      .Times(0);
   EXPECT_CALL(local_object_core, InvokeMethod(_, _, "test_method1", _, _))
       .WillRepeatedly(SetArgPointee<4>(canned_return_value));
   // The sequence of events to be replayed ends with a method call to
@@ -402,21 +331,6 @@ TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
   shared_ptr<LiveObject> live_object(
       new LiveObject(new MockLocalObject(&local_object_core)));
 
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
-      .Times(0);
-
-  EXPECT_CALL(local_object_core, Serialize(_))
-      .Times(0);
   EXPECT_CALL(local_object_core, InvokeMethod(_, _, "test_method1", _, _))
       .WillRepeatedly(WithArgs<0, 3, 4>(Invoke(&TestMethod1)));
   // The sequence of events to be replayed ends with a method call to
@@ -483,21 +397,6 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
   shared_ptr<LiveObject> live_object1(
       new LiveObject(new MockLocalObject(&local_object_core1)));
 
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
-      .Times(0);
-
-  EXPECT_CALL(local_object_core1, Serialize(_))
-      .Times(0);
   EXPECT_CALL(local_object_core1, InvokeMethod(_, _, "test_method3", _, _))
       .WillOnce(WithArgs<0, 3, 4>(Invoke(&TestMethod3)));
 
@@ -584,21 +483,6 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
   shared_ptr<LiveObject> live_object1(
       new LiveObject(new MockLocalObject(&local_object_core1)));
 
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(transaction_store_core, ObjectsAreIdentical(_, _))
-      .Times(0);
-
-  EXPECT_CALL(local_object_core1, Serialize(_))
-      .Times(0);
   EXPECT_CALL(local_object_core1, InvokeMethod(_, _, "test_method5", _, _))
       .WillOnce(WithArgs<0, 3, 4>(Invoke(&TestMethod5)));
 

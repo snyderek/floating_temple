@@ -54,7 +54,6 @@ using std::vector;
 using testing::AnyNumber;
 using testing::InitGoogleMock;
 using testing::Test;
-using testing::_;
 
 namespace floating_temple {
 namespace engine {
@@ -193,19 +192,6 @@ class SharedObjectTest : public Test {
 };
 
 TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
-  EXPECT_CALL(*transaction_store_core_, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   const CanonicalPeer canonical_peer1("peer_a");
   const CanonicalPeer canonical_peer2("peer_b");
 
@@ -258,19 +244,6 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
 }
 
 TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
-  EXPECT_CALL(*transaction_store_core_, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   const CanonicalPeer canonical_peer1("peer_a");
   const CanonicalPeer canonical_peer2("peer_b");
 
@@ -358,19 +331,6 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
 }
 
 TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
-  EXPECT_CALL(*transaction_store_core_, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   const CanonicalPeer canonical_peer1("peer_a");
   const CanonicalPeer canonical_peer2("peer_b");
   const CanonicalPeer canonical_peer3("peer_c");
@@ -455,19 +415,6 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
 }
 
 TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
-  EXPECT_CALL(*transaction_store_core_, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   const CanonicalPeer canonical_peer("peer_a");
 
   {
@@ -525,19 +472,6 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
 }
 
 TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
-  EXPECT_CALL(*transaction_store_core_, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   const CanonicalPeer canonical_peer("peer_a");
 
   {
@@ -610,19 +544,6 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
 }
 
 TEST_F(SharedObjectTest, BackingUp) {
-  EXPECT_CALL(*transaction_store_core_, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   const CanonicalPeer canonical_peer("peer_a");
 
   // Insert three consecutive transactions. When replaying the transactions, the
@@ -728,19 +649,6 @@ TEST_F(SharedObjectTest, BackingUp) {
 }
 
 TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
-  EXPECT_CALL(*transaction_store_core_, GetCurrentSequencePoint())
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateUnboundObjectReference())
-      .Times(AnyNumber());
-  EXPECT_CALL(*transaction_store_core_, CreateBoundObjectReference(_))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, CreateTransaction(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*transaction_store_core_, ObjectsAreIdentical(_, _))
-      .Times(0);
-
   const CanonicalPeer canonical_peer1("peer_a");
   const CanonicalPeer canonical_peer2("peer_b");
 

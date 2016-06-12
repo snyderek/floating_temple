@@ -176,9 +176,6 @@ TEST_F(ProtocolConnectionImplTest, SendMessage) {
         .WillRepeatedly(Return(false));
   }
 
-  EXPECT_CALL(handler1_, NotifyMessageReceived(_))
-      .Times(0);
-
   EXPECT_CALL(handler2_, GetNextOutputMessage(_))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(handler2_,
@@ -220,9 +217,6 @@ TEST_F(ProtocolConnectionImplTest, SendTwoMessages) {
     EXPECT_CALL(handler1_, GetNextOutputMessage(_))
         .WillRepeatedly(Return(false));
   }
-
-  EXPECT_CALL(handler1_, NotifyMessageReceived(_))
-      .Times(0);
 
   EXPECT_CALL(handler2_, GetNextOutputMessage(_))
       .WillRepeatedly(Return(false));
@@ -290,9 +284,6 @@ TEST_F(ProtocolConnectionImplTest, SendMessagesFromDifferentThreads) {
     EXPECT_CALL(handler1_, GetNextOutputMessage(_))
         .WillRepeatedly(Return(false));
   }
-
-  EXPECT_CALL(handler1_, NotifyMessageReceived(_))
-      .Times(0);
 
   EXPECT_CALL(handler2_, GetNextOutputMessage(_))
       .WillRepeatedly(Return(false));

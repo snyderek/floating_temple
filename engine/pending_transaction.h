@@ -41,6 +41,7 @@ class PendingTransaction {
 
   const TransactionId& base_transaction_id() const
       { return base_transaction_id_; }
+  int transaction_level() const { return transaction_level_; }
 
   bool IsEmpty() const { return events_.empty(); }
 
@@ -54,6 +55,9 @@ class PendingTransaction {
                         const std::shared_ptr<LiveObject>& live_object);
 
   void AddEvent(PendingEvent* event);
+
+  void IncrementTransactionLevel();
+  bool DecrementTransactionLevel();
 
   void Commit(TransactionId* transaction_id,
               std::unordered_set<ObjectReferenceImpl*>* new_objects);
@@ -73,6 +77,8 @@ class PendingTransaction {
   std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
       modified_objects_;
   std::unordered_set<ObjectReferenceImpl*> new_objects_;
+
+  int transaction_level_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingTransaction);
 };

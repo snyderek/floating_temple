@@ -32,6 +32,7 @@
 #include "engine/pending_event.h"
 #include "engine/pending_transaction.h"
 #include "engine/proto/transaction_id.pb.h"
+#include "engine/recording_method_context.h"
 #include "engine/shared_object.h"
 #include "engine/transaction_id_util.h"
 #include "engine/transaction_store_internal_interface.h"
@@ -65,8 +66,6 @@ RecordingThread::RecordingThread(
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       pending_transaction_(new PendingTransaction(transaction_store,
                                                   MIN_TRANSACTION_ID)),
-      transaction_level_(0),
-      current_object_reference_(nullptr),
       rejected_transaction_id_(MIN_TRANSACTION_ID) {
 }
 
@@ -79,11 +78,12 @@ void RecordingThread::RunProgram(LocalObject* local_object,
                                  bool linger) {
   CHECK(return_value != nullptr);
 
-  ObjectReference* const object_reference = CreateObject(local_object, "");
+  ObjectReferenceImpl* const object_reference = CreateObject(local_object, "");
 
   for (;;) {
     Value return_value_temp;
-    if (CallMethod(object_reference, method_name, vector<Value>(),
+    if (CallMethod(MIN_TRANSACTION_ID, nullptr, shared_ptr<LiveObject>(nullptr),
+                   object_reference, method_name, vector<Value>(),
                    &return_value_temp)) {
       if (!linger) {
         *return_value = return_value_temp;
@@ -138,46 +138,46 @@ void RecordingThread::Resume() {
   }
 }
 
-bool RecordingThread::BeginTransaction() {
-  CHECK_GE(transaction_level_, 0);
-
+bool RecordingThread::BeginTransaction(
+    ObjectReferenceImpl* caller_object_reference,
+    const shared_ptr<LiveObject>& caller_live_object) {
   if (Rewinding()) {
     return false;
   }
 
-  if (current_object_reference_ != nullptr) {
+  if (caller_object_reference != nullptr) {
     AddTransactionEvent(
-        new BeginTransactionPendingEvent(current_object_reference_));
+        new BeginTransactionPendingEvent(caller_object_reference),
+        caller_object_reference, caller_live_object);
   }
 
-  ++transaction_level_;
+  pending_transaction_->IncrementTransactionLevel();
 
   return true;
 }
 
-bool RecordingThread::EndTransaction() {
-  CHECK_GT(transaction_level_, 0);
-
+bool RecordingThread::EndTransaction(
+    ObjectReferenceImpl* caller_object_reference,
+    const shared_ptr<LiveObject>& caller_live_object) {
   if (Rewinding()) {
     return false;
   }
 
-  if (current_object_reference_ != nullptr) {
+  if (caller_object_reference != nullptr) {
     AddTransactionEvent(
-        new EndTransactionPendingEvent(current_object_reference_));
+        new EndTransactionPendingEvent(caller_object_reference),
+        caller_object_reference, caller_live_object);
   }
 
-  --transaction_level_;
-
-  if (transaction_level_ == 0) {
+  if (pending_transaction_->DecrementTransactionLevel()) {
     CommitTransaction();
   }
 
   return true;
 }
 
-ObjectReference* RecordingThread::CreateObject(LocalObject* initial_version,
-                                               const string& name) {
+ObjectReferenceImpl* RecordingThread::CreateObject(LocalObject* initial_version,
+                                                   const string& name) {
   // Take ownership of *initial_version.
   shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
 
@@ -223,25 +223,21 @@ ObjectReference* RecordingThread::CreateObject(LocalObject* initial_version,
   return object_reference;
 }
 
-bool RecordingThread::CallMethod(ObjectReference* object_reference,
-                                 const string& method_name,
-                                 const vector<Value>& parameters,
-                                 Value* return_value) {
-  CHECK(object_reference != nullptr);
+bool RecordingThread::CallMethod(
+    const TransactionId& base_transaction_id,
+    ObjectReferenceImpl* caller_object_reference,
+    const shared_ptr<LiveObject>& caller_live_object,
+    ObjectReferenceImpl* callee_object_reference,
+    const string& method_name,
+    const vector<Value>& parameters,
+    Value* return_value) {
+  CHECK(callee_object_reference != nullptr);
   CHECK(!method_name.empty());
   CHECK(return_value != nullptr);
 
   if (Rewinding()) {
     return false;
   }
-
-  const TransactionId method_call_transaction_id =
-      pending_transaction_->base_transaction_id();
-
-  ObjectReferenceImpl* const caller_object_reference =
-      current_object_reference_;
-  ObjectReferenceImpl* const callee_object_reference =
-      static_cast<ObjectReferenceImpl*>(object_reference);
 
   // Record the METHOD_CALL event.
   {
@@ -258,38 +254,22 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
       CheckIfValueIsNew(parameter, &live_objects, &new_object_references);
     }
 
-    AddTransactionEvent(
-        new MethodCallPendingEvent(
-            live_objects, new_object_references,
-            GetObjectReferenceForEvent(caller_object_reference),
-            GetObjectReferenceForEvent(callee_object_reference),
-            method_name, parameters));
+    PendingEvent* const pending_event = new MethodCallPendingEvent(
+        live_objects, new_object_references,
+        GetObjectReferenceForEvent(caller_object_reference),
+        GetObjectReferenceForEvent(callee_object_reference), method_name,
+        parameters);
+    AddTransactionEvent(pending_event, caller_object_reference,
+                        caller_live_object);
   }
-
-  const shared_ptr<LiveObject> caller_live_object = current_live_object_;
-
-  current_object_reference_ = callee_object_reference;
-  current_live_object_ = pending_transaction_->GetLiveObject(
-      callee_object_reference);
 
   // Repeatedly try to call the method until either 1) the method succeeds, or
   // 2) a rewind action is requested.
-  if (!CallMethodHelper(method_call_transaction_id, method_name, parameters,
-                        return_value)) {
+  shared_ptr<LiveObject> callee_live_object;
+  if (!CallMethodHelper(base_transaction_id, callee_object_reference,
+                        method_name, parameters, return_value,
+                        &callee_live_object)) {
     // The current method is being rewound.
-
-    // TODO(dss): Set transaction_level_ to the value it had when
-    // RecordingThread::CallMethod was called.
-
-    // TODO(dss): Delete the pending transaction.
-
-    // TODO(dss): Automatically restore current_object_reference_ and
-    // current_live_object_ if there's an early return from
-    // RecordingThread::CallMethod.
-
-    current_object_reference_ = caller_object_reference;
-    current_live_object_ = caller_live_object;
-
     return false;
   }
 
@@ -301,55 +281,70 @@ bool RecordingThread::CallMethod(ObjectReference* object_reference,
 
     CheckIfValueIsNew(*return_value, &live_objects, &new_object_references);
 
-    AddTransactionEvent(
-        new MethodReturnPendingEvent(
-            live_objects, new_object_references,
-            GetObjectReferenceForEvent(callee_object_reference),
-            GetObjectReferenceForEvent(caller_object_reference),
-            *return_value));
+    PendingEvent* const pending_event = new MethodReturnPendingEvent(
+        live_objects, new_object_references,
+        GetObjectReferenceForEvent(callee_object_reference),
+        GetObjectReferenceForEvent(caller_object_reference), *return_value);
+    AddTransactionEvent(pending_event, callee_object_reference,
+                        callee_live_object);
   }
-
-  current_object_reference_ = caller_object_reference;
-  current_live_object_ = caller_live_object;
 
   return true;
 }
 
-bool RecordingThread::ObjectsAreIdentical(const ObjectReference* a,
-                                          const ObjectReference* b) const {
-  return transaction_store_->ObjectsAreIdentical(
-      static_cast<const ObjectReferenceImpl*>(a),
-      static_cast<const ObjectReferenceImpl*>(b));
+bool RecordingThread::ObjectsAreIdentical(const ObjectReferenceImpl* a,
+                                          const ObjectReferenceImpl* b) const {
+  return transaction_store_->ObjectsAreIdentical(a, b);
 }
 
 bool RecordingThread::CallMethodHelper(
-    const TransactionId& method_call_transaction_id,
+    const TransactionId& base_transaction_id,
+    ObjectReferenceImpl* callee_object_reference,
     const string& method_name,
     const vector<Value>& parameters,
-    Value* return_value) {
+    Value* return_value,
+    shared_ptr<LiveObject>* callee_live_object) {
+  CHECK(callee_live_object != nullptr);
+
   for (;;) {
     // TODO(dss): If the caller object has been modified by another peer since
     // the method was called, rewind.
 
-    current_live_object_->InvokeMethod(this, current_object_reference_,
-                                       method_name, parameters, return_value);
+    const shared_ptr<LiveObject> callee_live_object_temp =
+        pending_transaction_->GetLiveObject(callee_object_reference);
+    RecordingMethodContext method_context(
+        this, pending_transaction_->base_transaction_id(),
+        callee_object_reference, callee_live_object_temp);
+
+    callee_live_object_temp->InvokeMethod(&method_context,
+                                          callee_object_reference, method_name,
+                                          parameters, return_value);
 
     {
       MutexLock lock(&rejected_transaction_id_mu_);
 
       if (!Rewinding_Locked()) {
         CHECK_EQ(blocking_threads_.size(), 0u);
+        *callee_live_object = callee_live_object_temp;
         return true;
       }
 
-      if (!WaitForBlockingThreads_Locked(method_call_transaction_id)) {
+      if (!WaitForBlockingThreads_Locked(base_transaction_id)) {
         return false;
       }
 
       // A rewind action was requested, but the rewind does not include the
       // current method call. Clear the rejected_transaction_id_ member variable
       // and call the method again.
+      //
+      // TODO(dss): Replace method calls with mocks until execution has
+      // proceeded past the last unreverted transaction.
       rejected_transaction_id_ = MIN_TRANSACTION_ID;
+
+      const TransactionId base_transaction_id =
+          pending_transaction_->base_transaction_id();
+      pending_transaction_.reset(new PendingTransaction(transaction_store_,
+                                                        base_transaction_id));
     }
   }
 
@@ -360,9 +355,9 @@ bool RecordingThread::CallMethodHelper(
 // execution. Returns true if blocking_threads_ is empty. Returns false if
 // another thread initiates a rewind operation during the wait.
 bool RecordingThread::WaitForBlockingThreads_Locked(
-    const TransactionId& method_call_transaction_id) const {
+    const TransactionId& base_transaction_id) const {
   for (;;) {
-    if (rejected_transaction_id_ <= method_call_transaction_id) {
+    if (rejected_transaction_id_ <= base_transaction_id) {
       return false;
     }
 
@@ -374,19 +369,20 @@ bool RecordingThread::WaitForBlockingThreads_Locked(
   }
 }
 
-void RecordingThread::AddTransactionEvent(PendingEvent* event) {
-  CHECK_GE(transaction_level_, 0);
+void RecordingThread::AddTransactionEvent(
+    PendingEvent* event, ObjectReferenceImpl* current_object_reference,
+    const shared_ptr<LiveObject>& current_live_object) {
   CHECK(event != nullptr);
 
   const bool first_event = pending_transaction_->IsEmpty();
 
-  if (current_object_reference_ != nullptr) {
-    pending_transaction_->UpdateLiveObject(current_object_reference_,
-                                           current_live_object_);
+  if (current_object_reference != nullptr) {
+    pending_transaction_->UpdateLiveObject(current_object_reference,
+                                           current_live_object);
   }
   pending_transaction_->AddEvent(event);
 
-  if (transaction_level_ == 0 &&
+  if (pending_transaction_->transaction_level() == 0 &&
       !(first_event && event->prev_object_reference() == nullptr)) {
     CommitTransaction();
   }

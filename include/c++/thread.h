@@ -30,6 +30,8 @@ class ObjectReference;
 // perform any operations that require assistance from the peer during the
 // duration of a method call. The local interpreter should not store a pointer
 // to the Thread instance beyond the duration of the method call.
+//
+// TODO(dss): Rename this class to MethodContext.
 class Thread {
  public:
   virtual ~Thread() {}

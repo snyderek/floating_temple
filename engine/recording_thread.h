@@ -28,6 +28,7 @@
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "engine/proto/transaction_id.pb.h"
+#include "engine/recording_thread_internal_interface.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
 
@@ -43,8 +44,7 @@ class PendingEvent;
 class PendingTransaction;
 class TransactionStoreInternalInterface;
 
-// TODO(dss): Make this class inherit privately from class Thread.
-class RecordingThread : public Thread {
+class RecordingThread : private RecordingThreadInternalInterface {
  public:
   explicit RecordingThread(
       TransactionStoreInternalInterface* transaction_store);
@@ -58,31 +58,42 @@ class RecordingThread : public Thread {
   void Rewind(const TransactionId& rejected_transaction_id);
   void Resume();
 
-  bool BeginTransaction() override;
-  bool EndTransaction() override;
-  ObjectReference* CreateObject(LocalObject* initial_version,
-                                const std::string& name) override;
-  bool CallMethod(ObjectReference* object_reference,
-                  const std::string& method_name,
-                  const std::vector<Value>& parameters,
-                  Value* return_value) override;
-  bool ObjectsAreIdentical(const ObjectReference* a,
-                           const ObjectReference* b) const override;
-
  private:
   struct NewObject {
     std::shared_ptr<const LiveObject> live_object;
     bool object_is_named;
   };
 
-  bool CallMethodHelper(const TransactionId& method_call_transaction_id,
+  bool BeginTransaction(
+      ObjectReferenceImpl* caller_object_reference,
+      const std::shared_ptr<LiveObject>& caller_live_object) override;
+  bool EndTransaction(
+      ObjectReferenceImpl* caller_object_reference,
+      const std::shared_ptr<LiveObject>& caller_live_object) override;
+  ObjectReferenceImpl* CreateObject(LocalObject* initial_version,
+                                    const std::string& name) override;
+  bool CallMethod(const TransactionId& base_transaction_id,
+                  ObjectReferenceImpl* caller_object_reference,
+                  const std::shared_ptr<LiveObject>& caller_live_object,
+                  ObjectReferenceImpl* callee_object_reference,
+                  const std::string& method_name,
+                  const std::vector<Value>& parameters,
+                  Value* return_value) override;
+  bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
+                           const ObjectReferenceImpl* b) const override;
+
+  bool CallMethodHelper(const TransactionId& base_transaction_id,
+                        ObjectReferenceImpl* callee_object_reference,
                         const std::string& method_name,
                         const std::vector<Value>& parameters,
-                        Value* return_value);
+                        Value* return_value,
+                        std::shared_ptr<LiveObject>* callee_live_object);
   bool WaitForBlockingThreads_Locked(
-      const TransactionId& method_call_transaction_id) const;
+      const TransactionId& base_transaction_id) const;
 
-  void AddTransactionEvent(PendingEvent* event);
+  void AddTransactionEvent(
+      PendingEvent* event, ObjectReferenceImpl* current_object_reference,
+      const std::shared_ptr<LiveObject>& current_live_object);
   void CommitTransaction();
 
   void CheckIfValueIsNew(
@@ -102,11 +113,7 @@ class RecordingThread : public Thread {
   TransactionStoreInternalInterface* const transaction_store_;
 
   std::unique_ptr<PendingTransaction> pending_transaction_;
-  int transaction_level_;
   std::unordered_map<ObjectReferenceImpl*, NewObject> new_objects_;
-
-  ObjectReferenceImpl* current_object_reference_;
-  std::shared_ptr<LiveObject> current_live_object_;
 
   // If rejected_transaction_id_ is valid, then all transactions starting with
   // (and including) that transaction ID have been rejected. This thread should

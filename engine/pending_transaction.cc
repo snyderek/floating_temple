@@ -43,7 +43,8 @@ PendingTransaction::PendingTransaction(
     TransactionStoreInternalInterface* transaction_store,
     const TransactionId& base_transaction_id)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
-      base_transaction_id_(base_transaction_id) {
+      base_transaction_id_(base_transaction_id),
+      transaction_level_(0) {
 }
 
 PendingTransaction::~PendingTransaction() {
@@ -109,6 +110,17 @@ void PendingTransaction::AddEvent(PendingEvent* event) {
   CHECK(event != nullptr);
 
   events_.emplace_back(event);
+}
+
+void PendingTransaction::IncrementTransactionLevel() {
+  CHECK_GE(transaction_level_, 0);
+  ++transaction_level_;
+}
+
+bool PendingTransaction::DecrementTransactionLevel() {
+  CHECK_GT(transaction_level_, 0);
+  --transaction_level_;
+  return transaction_level_ == 0;
 }
 
 void PendingTransaction::Commit(

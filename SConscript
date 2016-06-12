@@ -92,6 +92,7 @@ engine_lib = ft_env.Library(
         engine/pending_event.cc
         engine/pending_transaction.cc
         engine/playback_thread.cc
+        engine/recording_method_context.cc
         engine/recording_thread.cc
         engine/sequence_point_impl.cc
         engine/serialization_context_impl.cc

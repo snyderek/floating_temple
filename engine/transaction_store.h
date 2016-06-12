@@ -111,6 +111,8 @@ class TransactionStore : public ConnectionHandler,
       const SequencePoint* prev_sequence_point) override;
   bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
                            const ObjectReferenceImpl* b) const override;
+  bool IsRewinding(const TransactionId& base_transaction_id) override;
+  void WaitForRewind() override;
 
   void HandleApplyTransactionMessage(
       const CanonicalPeer* remote_peer,
@@ -212,6 +214,17 @@ class TransactionStore : public ConnectionHandler,
 
   RecordingThread* recording_thread_;
   mutable Mutex recording_thread_mu_;
+
+  // If rejected_transaction_id_ != MIN_TRANSACTION_ID, then all transactions
+  // starting with (and including) that transaction ID have been rejected. The
+  // recording thread should rewind past the start of the first rejected
+  // transaction and then resume execution.
+  //
+  // To clear rejected_transaction_id_, set it equal to MIN_TRANSACTION_ID
+  // (declared in "engine/transaction_id_util.h").
+  TransactionId rejected_transaction_id_;
+  mutable CondVar rewinding_cond_;
+  mutable Mutex rejected_transaction_id_mu_;
 
   SharedObjectMap shared_objects_;
   mutable Mutex shared_objects_mu_;

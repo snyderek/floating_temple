@@ -38,6 +38,8 @@ void FakePeer::RunProgram(LocalObject* local_object,
                           Value* return_value,
                           bool linger) {
   CHECK(local_object != nullptr);
+  // TODO(dss): Simulate linger mode by just sleeping forever after the program
+  // completes.
   CHECK(!linger) << "Linger mode isn't supported for the fake peer.";
 
   FakeThread thread;

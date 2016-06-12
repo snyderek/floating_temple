@@ -33,8 +33,7 @@ using std::vector;
 namespace floating_temple {
 namespace engine {
 
-MockTransactionStore::MockTransactionStore(
-    const MockTransactionStoreCore* core)
+MockTransactionStore::MockTransactionStore(MockTransactionStoreCore* core)
     : core_(CHECK_NOTNULL(core)),
       next_id_(1) {
 }
@@ -104,6 +103,15 @@ void MockTransactionStore::CreateTransaction(
 bool MockTransactionStore::ObjectsAreIdentical(
     const ObjectReferenceImpl* a, const ObjectReferenceImpl* b) const {
   return core_->ObjectsAreIdentical(a, b);
+}
+
+bool MockTransactionStore::IsRewinding(
+    const TransactionId& base_transaction_id) {
+  return core_->IsRewinding(base_transaction_id);
+}
+
+void MockTransactionStore::WaitForRewind() {
+  core_->WaitForRewind();
 }
 
 }  // namespace engine

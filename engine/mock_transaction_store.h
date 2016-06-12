@@ -58,6 +58,8 @@ class MockTransactionStoreCore {
   MOCK_CONST_METHOD2(ObjectsAreIdentical,
                      bool(const ObjectReferenceImpl* a,
                           const ObjectReferenceImpl* b));
+  MOCK_METHOD1(IsRewinding, bool(const TransactionId& base_transaction_id));
+  MOCK_METHOD0(WaitForRewind, void ());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStoreCore);
@@ -65,7 +67,7 @@ class MockTransactionStoreCore {
 
 class MockTransactionStore : public TransactionStoreInternalInterface {
  public:
-  explicit MockTransactionStore(const MockTransactionStoreCore* core);
+  explicit MockTransactionStore(MockTransactionStoreCore* core);
   ~MockTransactionStore() override;
 
   SequencePoint* GetCurrentSequencePoint() const override;
@@ -83,9 +85,11 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
       const SequencePoint* prev_sequence_point) override;
   bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
                            const ObjectReferenceImpl* b) const override;
+  bool IsRewinding(const TransactionId& base_transaction_id) override;
+  void WaitForRewind() override;
 
  private:
-  const MockTransactionStoreCore* const core_;
+  MockTransactionStoreCore* const core_;
 
   std::vector<std::unique_ptr<ObjectReferenceImpl>> unnamed_objects_;
   std::unordered_map<std::string, std::unique_ptr<ObjectReferenceImpl>>

@@ -16,18 +16,13 @@
 #ifndef ENGINE_RECORDING_THREAD_H_
 #define ENGINE_RECORDING_THREAD_H_
 
-#include <pthread.h>
-
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include "base/cond_var.h"
 #include "base/macros.h"
-#include "base/mutex.h"
-#include "engine/proto/transaction_id.pb.h"
 #include "engine/recording_thread_internal_interface.h"
 #include "include/c++/thread.h"
 #include "include/c++/value.h"
@@ -42,6 +37,7 @@ class LiveObject;
 class ObjectReferenceImpl;
 class PendingEvent;
 class PendingTransaction;
+class TransactionId;
 class TransactionStoreInternalInterface;
 
 class RecordingThread : private RecordingThreadInternalInterface {
@@ -54,9 +50,6 @@ class RecordingThread : private RecordingThreadInternalInterface {
                   const std::string& method_name,
                   Value* return_value,
                   bool linger);
-
-  void Rewind(const TransactionId& rejected_transaction_id);
-  void Resume();
 
  private:
   struct NewObject {
@@ -88,8 +81,6 @@ class RecordingThread : private RecordingThreadInternalInterface {
                         const std::vector<Value>& parameters,
                         Value* return_value,
                         std::shared_ptr<LiveObject>* callee_live_object);
-  bool WaitForBlockingThreads_Locked(
-      const TransactionId& base_transaction_id) const;
 
   void AddTransactionEvent(
       PendingEvent* event, ObjectReferenceImpl* current_object_reference,
@@ -107,26 +98,12 @@ class RecordingThread : private RecordingThreadInternalInterface {
                          std::shared_ptr<const LiveObject>>* live_objects,
       std::unordered_set<ObjectReferenceImpl*>* new_object_references);
 
-  bool Rewinding() const;
-  bool Rewinding_Locked() const;
+  bool Rewinding();
 
   TransactionStoreInternalInterface* const transaction_store_;
 
   std::unique_ptr<PendingTransaction> pending_transaction_;
   std::unordered_map<ObjectReferenceImpl*, NewObject> new_objects_;
-
-  // If rejected_transaction_id_ is valid, then all transactions starting with
-  // (and including) that transaction ID have been rejected. This thread should
-  // rewind past the start of the first rejected transaction, clear
-  // rejected_transaction_id_, and then resume execution.
-  //
-  // To clear rejected_transaction_id_, set it equal to MIN_TRANSACTION_ID
-  // (declared in "engine/transaction_id_util.h").
-  TransactionId rejected_transaction_id_;
-  std::unordered_set<pthread_t> blocking_threads_;
-  mutable CondVar rewinding_cond_;
-  mutable CondVar blocking_threads_empty_cond_;
-  mutable Mutex rejected_transaction_id_mu_;
 
   DISALLOW_COPY_AND_ASSIGN(RecordingThread);
 };

@@ -15,18 +15,13 @@
 
 #include "engine/recording_thread.h"
 
-#include <pthread.h>
-
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include "base/cond_var.h"
 #include "base/logging.h"
-#include "base/mutex.h"
-#include "base/mutex_lock.h"
 #include "engine/live_object.h"
 #include "engine/object_reference_impl.h"
 #include "engine/pending_event.h"
@@ -65,8 +60,7 @@ RecordingThread::RecordingThread(
     TransactionStoreInternalInterface* transaction_store)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       pending_transaction_(new PendingTransaction(transaction_store,
-                                                  MIN_TRANSACTION_ID)),
-      rejected_transaction_id_(MIN_TRANSACTION_ID) {
+                                                  MIN_TRANSACTION_ID)) {
 }
 
 RecordingThread::~RecordingThread() {
@@ -90,51 +84,11 @@ void RecordingThread::RunProgram(LocalObject* local_object,
         return;
       }
 
-      // TODO(dss): The following code is similar to code in
-      // RecordingThread::CallMethodHelper. Consider merging the duplicate
-      // functionality.
-
-      MutexLock lock(&rejected_transaction_id_mu_);
-
       // The program completed successfully. Enter linger mode. This allows
       // execution of the current thread to be rewound if another peer rejects a
       // transaction from this peer.
-      while (!Rewinding_Locked()) {
-        // TODO(dss): Exit if the process receives SIGTERM.
-        rewinding_cond_.WaitPatiently(&rejected_transaction_id_mu_);
-      }
-
-      // A rewind operation was requested. Wait for each blocking thread to call
-      // RecordingThread::Resume before continuing.
-      while (!blocking_threads_.empty()) {
-        blocking_threads_empty_cond_.Wait(&rejected_transaction_id_mu_);
-      }
-
-      // Clear the rewind state.
-      rejected_transaction_id_ = MIN_TRANSACTION_ID;
+      transaction_store_->WaitForRewind();
     }
-  }
-}
-
-void RecordingThread::Rewind(const TransactionId& rejected_transaction_id) {
-  MutexLock lock(&rejected_transaction_id_mu_);
-
-  if (!Rewinding_Locked() ||
-      rejected_transaction_id < rejected_transaction_id_) {
-    rejected_transaction_id_ = rejected_transaction_id;
-    rewinding_cond_.Broadcast();
-  }
-
-  CHECK(blocking_threads_.insert(pthread_self()).second);
-}
-
-void RecordingThread::Resume() {
-  MutexLock lock(&rejected_transaction_id_mu_);
-
-  CHECK_EQ(blocking_threads_.erase(pthread_self()), 1u);
-
-  if (blocking_threads_.empty()) {
-    blocking_threads_empty_cond_.Broadcast();
   }
 }
 
@@ -320,53 +274,23 @@ bool RecordingThread::CallMethodHelper(
                                           callee_object_reference, method_name,
                                           parameters, return_value);
 
-    {
-      MutexLock lock(&rejected_transaction_id_mu_);
-
-      if (!Rewinding_Locked()) {
-        CHECK_EQ(blocking_threads_.size(), 0u);
-        *callee_live_object = callee_live_object_temp;
-        return true;
-      }
-
-      if (!WaitForBlockingThreads_Locked(base_transaction_id)) {
-        return false;
-      }
-
-      // A rewind action was requested, but the rewind does not include the
-      // current method call. Clear the rejected_transaction_id_ member variable
-      // and call the method again.
-      //
-      // TODO(dss): Replace method calls with mocks until execution has
-      // proceeded past the last unreverted transaction.
-      rejected_transaction_id_ = MIN_TRANSACTION_ID;
-
+    if (Rewinding()) {
       const TransactionId base_transaction_id =
           pending_transaction_->base_transaction_id();
       pending_transaction_.reset(new PendingTransaction(transaction_store_,
                                                         base_transaction_id));
-    }
-  }
 
-  return false;
-}
+      // TODO(dss): Replace method calls with mocks until execution has
+      // proceeded past the last unreverted transaction.
 
-// Waits for blocking_threads_ to be empty, which indicates it's safe to resume
-// execution. Returns true if blocking_threads_ is empty. Returns false if
-// another thread initiates a rewind operation during the wait.
-bool RecordingThread::WaitForBlockingThreads_Locked(
-    const TransactionId& base_transaction_id) const {
-  for (;;) {
-    if (rejected_transaction_id_ <= base_transaction_id) {
       return false;
     }
 
-    if (blocking_threads_.empty()) {
-      return true;
-    }
-
-    blocking_threads_empty_cond_.Wait(&rejected_transaction_id_mu_);
+    *callee_live_object = callee_live_object_temp;
+    return true;
   }
+
+  return false;
 }
 
 void RecordingThread::AddTransactionEvent(
@@ -440,13 +364,9 @@ void RecordingThread::CheckIfObjectIsNew(
   }
 }
 
-bool RecordingThread::Rewinding() const {
-  MutexLock lock(&rejected_transaction_id_mu_);
-  return Rewinding_Locked();
-}
-
-bool RecordingThread::Rewinding_Locked() const {
-  return rejected_transaction_id_ > MIN_TRANSACTION_ID;
+bool RecordingThread::Rewinding() {
+  return transaction_store_->IsRewinding(
+      pending_transaction_->base_transaction_id());
 }
 
 }  // namespace engine

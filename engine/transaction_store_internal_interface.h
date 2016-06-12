@@ -54,6 +54,9 @@ class TransactionStoreInternalInterface {
 
   virtual bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
                                    const ObjectReferenceImpl* b) const = 0;
+
+  virtual bool IsRewinding(const TransactionId& base_transaction_id) = 0;
+  virtual void WaitForRewind() = 0;
 };
 
 }  // namespace engine

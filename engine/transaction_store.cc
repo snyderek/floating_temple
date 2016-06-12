@@ -87,6 +87,7 @@ TransactionStore::TransactionStore(CanonicalPeerMap* canonical_peer_map,
       transaction_sequencer_(canonical_peer_map, peer_message_sender,
                              &transaction_id_generator_, local_peer),
       recording_thread_(nullptr),
+      rejected_transaction_id_(MIN_TRANSACTION_ID),
       version_number_(1) {
   TransactionId initial_transaction_id;
   transaction_id_generator_.Generate(&initial_transaction_id);
@@ -343,6 +344,30 @@ bool TransactionStore::ObjectsAreIdentical(const ObjectReferenceImpl* a,
   const SharedObject* const b_shared_object = b->shared_object();
 
   return a_shared_object != nullptr && a_shared_object == b_shared_object;
+}
+
+bool TransactionStore::IsRewinding(const TransactionId& base_transaction_id) {
+  MutexLock lock(&rejected_transaction_id_mu_);
+
+  if (rejected_transaction_id_ != MIN_TRANSACTION_ID &&
+      base_transaction_id >= rejected_transaction_id_) {
+    return true;
+  }
+
+  // Clear the rewind state.
+  rejected_transaction_id_ = MIN_TRANSACTION_ID;
+  return false;
+}
+
+void TransactionStore::WaitForRewind() {
+  MutexLock lock(&rejected_transaction_id_mu_);
+
+  while (rejected_transaction_id_ == MIN_TRANSACTION_ID) {
+    rewinding_cond_.WaitPatiently(&rejected_transaction_id_mu_);
+  }
+
+  // Clear the rewind state.
+  rejected_transaction_id_ = MIN_TRANSACTION_ID;
 }
 
 void TransactionStore::HandleApplyTransactionMessage(
@@ -823,23 +848,11 @@ void TransactionStore::RejectTransactions(
   }
 
   if (invalidate_start_transaction_id < MAX_TRANSACTION_ID) {
-    RecordingThread* recording_thread_temp = nullptr;
     {
-      MutexLock lock(&recording_thread_mu_);
-      recording_thread_temp = recording_thread_;
+      MutexLock lock(&rejected_transaction_id_mu_);
+      rejected_transaction_id_ = invalidate_start_transaction_id;
+      rewinding_cond_.Broadcast();
     }
-
-    // TODO(dss): There's a race condition here. If the recording thread is
-    // created after the recording_thread_ member variable is copied, then
-    // execution will not be suspended on the new thread as it should be.
-    //
-    // This is not currently a problem, because the remote peers should have no
-    // reason to reject the local peer's transactions until after the recording
-    // thread has started executing. Nonetheless, it would be nice to fix the
-    // race condition.
-
-    recording_thread_temp->Rewind(invalidate_start_transaction_id);
-    recording_thread_temp->Resume();
 
     PeerMessage peer_message;
     InvalidateTransactionsMessage* const invalidate_transactions_message =

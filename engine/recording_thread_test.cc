@@ -22,6 +22,7 @@
 
 #include <gflags/gflags.h>
 
+#include "base/escape.h"
 #include "base/logging.h"
 #include "engine/live_object.h"
 #include "engine/mock_local_object.h"
@@ -50,6 +51,7 @@ using testing::InSequence;
 using testing::InitGoogleMock;
 using testing::Return;
 using testing::ReturnNew;
+using testing::Sequence;
 using testing::_;
 
 namespace floating_temple {
@@ -456,6 +458,126 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
   RecordingThread recording_thread(&transaction_store);
   LocalObject* const program_object =
       new CreateObjectInDifferentTransaction_ProgramObject();
+
+  Value return_value;
+  recording_thread.RunProgram(program_object, "run", &return_value, false);
+}
+
+//------------------------------------------------------------------------------
+
+class RewindInPendingTransaction_FakeLocalObject : public TestLocalObject {
+ public:
+  LocalObject* Clone() const override {
+    return new RewindInPendingTransaction_FakeLocalObject();
+  }
+
+  void InvokeMethod(Thread* thread,
+                    ObjectReference* object_reference,
+                    const string& method_name,
+                    const vector<Value>& parameters,
+                    Value* return_value) override {
+    if (method_name == "a") {
+      if (!thread->BeginTransaction()) {
+        return;
+      }
+
+      Value return_value;
+      if (!thread->CallMethod(object_reference, "b", vector<Value>(),
+                              &return_value)) {
+        return;
+      }
+
+      if (!thread->EndTransaction()) {
+        return;
+      }
+    } else if (method_name == "b") {
+      // Do nothing.
+    } else {
+      LOG(FATAL) << "Invalid method name: \"" << CEscape(method_name) << "\"";
+    }
+  }
+};
+
+class RewindInPendingTransaction_ProgramObject : public TestLocalObject {
+ public:
+  LocalObject* Clone() const override {
+    return new RewindInPendingTransaction_ProgramObject();
+  }
+
+  void InvokeMethod(Thread* thread,
+                    ObjectReference* object_reference,
+                    const string& method_name,
+                    const vector<Value>& parameters,
+                    Value* return_value) override {
+    ObjectReference* const fake_local_object_reference = thread->CreateObject(
+        new RewindInPendingTransaction_FakeLocalObject(), "");
+
+    Value method_return_value;
+    CHECK(thread->CallMethod(fake_local_object_reference, "a", vector<Value>(),
+                             &method_return_value));
+  }
+};
+
+// TODO(dss): Enable this test once execution rewinding is working correctly.
+TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
+  MockTransactionStoreCore transaction_store_core;
+  MockTransactionStore transaction_store(&transaction_store_core);
+
+  const shared_ptr<const LiveObject> fake_live_object(
+      new LiveObject(new RewindInPendingTransaction_FakeLocalObject()));
+
+  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
+      .WillRepeatedly(ReturnNew<MockSequencePoint>());
+  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
+      .WillRepeatedly(Return(fake_live_object));
+  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
+      .Times(AnyNumber());
+
+  Sequence s1, s2;
+
+  EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
+      .InSequence(s2)
+      .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
+
+  EXPECT_CALL(
+      transaction_store_core,
+      CreateTransaction(ElementsAre(IsMethodCallPendingEvent("run"),
+                                    IsMethodCallPendingEvent("a")),
+                        _, _, _))
+      .InSequence(s1);
+
+  EXPECT_CALL(
+      transaction_store_core,
+      CreateTransaction(ElementsAre(IsBeginTransactionPendingEvent()),
+                        _, _, _))
+      .InSequence(s1);
+
+  EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
+      .InSequence(s1, s2)
+      .WillOnce(Return(TransactionStoreInternalInterface::REWIND))
+      .WillOnce(Return(TransactionStoreInternalInterface::RESUME));
+
+  EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
+      .InSequence(s2)
+      .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
+
+  EXPECT_CALL(
+      transaction_store_core,
+      CreateTransaction(ElementsAre(IsMethodCallPendingEvent("b"),
+                                    IsMethodReturnPendingEvent(),
+                                    IsEndTransactionPendingEvent()),
+                        _, _, _))
+      .InSequence(s1);
+
+  EXPECT_CALL(
+      transaction_store_core,
+      CreateTransaction(ElementsAre(IsMethodReturnPendingEvent()), _, _, _))
+      .Times(2)
+      .InSequence(s1);
+
+  RecordingThread recording_thread(&transaction_store);
+  LocalObject* const program_object =
+      new RewindInPendingTransaction_ProgramObject();
 
   Value return_value;
   recording_thread.RunProgram(program_object, "run", &return_value, false);

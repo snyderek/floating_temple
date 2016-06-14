@@ -111,7 +111,8 @@ class TransactionStore : public ConnectionHandler,
       const SequencePoint* prev_sequence_point) override;
   bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
                            const ObjectReferenceImpl* b) const override;
-  bool IsRewinding(const TransactionId& base_transaction_id) override;
+  ExecutionPhase GetExecutionPhase(
+      const TransactionId& base_transaction_id) override;
   void WaitForRewind() override;
 
   void HandleApplyTransactionMessage(

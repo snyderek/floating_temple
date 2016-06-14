@@ -32,6 +32,8 @@ class TransactionId;
 
 class TransactionStoreInternalInterface {
  public:
+  enum ExecutionPhase { NORMAL, REWIND, RESUME };
+
   virtual ~TransactionStoreInternalInterface() {}
 
   // The caller must take ownership of the returned SequencePoint instance.
@@ -55,7 +57,8 @@ class TransactionStoreInternalInterface {
   virtual bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
                                    const ObjectReferenceImpl* b) const = 0;
 
-  virtual bool IsRewinding(const TransactionId& base_transaction_id) = 0;
+  virtual ExecutionPhase GetExecutionPhase(
+      const TransactionId& base_transaction_id) = 0;
   virtual void WaitForRewind() = 0;
 };
 

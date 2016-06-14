@@ -29,6 +29,7 @@
 #include "engine/mock_transaction_store.h"
 #include "engine/pending_event.h"
 #include "engine/proto/transaction_id.pb.h"
+#include "engine/transaction_store_internal_interface.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/local_object.h"
 #include "include/c++/thread.h"
@@ -149,8 +150,8 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, IsRewinding(_))
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
+      .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
   {
     InSequence s;
@@ -247,8 +248,8 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
       .WillRepeatedly(Return(fake_live_object));
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, IsRewinding(_))
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
+      .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
   {
     InSequence s;
@@ -349,8 +350,8 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
       .WillRepeatedly(Return(fake_live_object));
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, IsRewinding(_))
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
+      .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
   {
     InSequence s;
@@ -446,8 +447,8 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
       .Times(0);
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
-  EXPECT_CALL(transaction_store_core, IsRewinding(_))
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
+      .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
   EXPECT_CALL(transaction_store_core, CreateTransaction(_, _, _, _))
       .Times(AtLeast(2));

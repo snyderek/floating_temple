@@ -37,7 +37,6 @@ class LiveObject;
 class ObjectReferenceImpl;
 class PendingEvent;
 class PendingTransaction;
-class TransactionId;
 class TransactionStoreInternalInterface;
 
 class RecordingThread : private RecordingThreadInternalInterface {
@@ -65,8 +64,7 @@ class RecordingThread : private RecordingThreadInternalInterface {
       const std::shared_ptr<LiveObject>& caller_live_object) override;
   ObjectReferenceImpl* CreateObject(LocalObject* initial_version,
                                     const std::string& name) override;
-  bool CallMethod(const TransactionId& base_transaction_id,
-                  ObjectReferenceImpl* caller_object_reference,
+  bool CallMethod(ObjectReferenceImpl* caller_object_reference,
                   const std::shared_ptr<LiveObject>& caller_live_object,
                   ObjectReferenceImpl* callee_object_reference,
                   const std::string& method_name,
@@ -75,8 +73,7 @@ class RecordingThread : private RecordingThreadInternalInterface {
   bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
                            const ObjectReferenceImpl* b) const override;
 
-  bool CallMethodHelper(const TransactionId& base_transaction_id,
-                        ObjectReferenceImpl* callee_object_reference,
+  bool CallMethodHelper(ObjectReferenceImpl* callee_object_reference,
                         const std::string& method_name,
                         const std::vector<Value>& parameters,
                         Value* return_value,

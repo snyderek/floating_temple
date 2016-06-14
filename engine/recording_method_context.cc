@@ -22,7 +22,6 @@
 #include "base/logging.h"
 #include "engine/live_object.h"
 #include "engine/object_reference_impl.h"
-#include "engine/proto/transaction_id.pb.h"
 #include "engine/recording_thread_internal_interface.h"
 
 using std::shared_ptr;
@@ -34,11 +33,9 @@ namespace engine {
 
 RecordingMethodContext::RecordingMethodContext(
     RecordingThreadInternalInterface* recording_thread,
-    const TransactionId& base_transaction_id,
     ObjectReferenceImpl* current_object_reference,
     const shared_ptr<LiveObject>& current_live_object)
     : recording_thread_(CHECK_NOTNULL(recording_thread)),
-      base_transaction_id_(base_transaction_id),
       current_object_reference_(current_object_reference),
       current_live_object_(current_live_object) {
   CHECK(current_live_object.get() != nullptr);
@@ -67,7 +64,7 @@ bool RecordingMethodContext::CallMethod(ObjectReference* object_reference,
                                         const vector<Value>& parameters,
                                         Value* return_value) {
   return recording_thread_->CallMethod(
-      base_transaction_id_, current_object_reference_, current_live_object_,
+      current_object_reference_, current_live_object_,
       static_cast<ObjectReferenceImpl*>(object_reference), method_name,
       parameters, return_value);
 }

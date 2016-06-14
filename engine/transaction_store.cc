@@ -346,17 +346,21 @@ bool TransactionStore::ObjectsAreIdentical(const ObjectReferenceImpl* a,
   return a_shared_object != nullptr && a_shared_object == b_shared_object;
 }
 
-bool TransactionStore::IsRewinding(const TransactionId& base_transaction_id) {
+TransactionStoreInternalInterface::ExecutionPhase
+TransactionStore::GetExecutionPhase(const TransactionId& base_transaction_id) {
   MutexLock lock(&rejected_transaction_id_mu_);
 
-  if (rejected_transaction_id_ != MIN_TRANSACTION_ID &&
-      base_transaction_id >= rejected_transaction_id_) {
-    return true;
+  if (rejected_transaction_id_ == MIN_TRANSACTION_ID) {
+    return NORMAL;
+  } else {
+    if (base_transaction_id >= rejected_transaction_id_) {
+      return REWIND;
+    } else {
+      // Clear the rewind state.
+      rejected_transaction_id_ = MIN_TRANSACTION_ID;
+      return RESUME;
+    }
   }
-
-  // Clear the rewind state.
-  rejected_transaction_id_ = MIN_TRANSACTION_ID;
-  return false;
 }
 
 void TransactionStore::WaitForRewind() {

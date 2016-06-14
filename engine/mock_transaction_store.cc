@@ -105,9 +105,10 @@ bool MockTransactionStore::ObjectsAreIdentical(
   return core_->ObjectsAreIdentical(a, b);
 }
 
-bool MockTransactionStore::IsRewinding(
+TransactionStoreInternalInterface::ExecutionPhase
+MockTransactionStore::GetExecutionPhase(
     const TransactionId& base_transaction_id) {
-  return core_->IsRewinding(base_transaction_id);
+  return core_->GetExecutionPhase(base_transaction_id);
 }
 
 void MockTransactionStore::WaitForRewind() {

@@ -76,9 +76,8 @@ void RecordingThread::RunProgram(LocalObject* local_object,
 
   for (;;) {
     Value return_value_temp;
-    if (CallMethod(MIN_TRANSACTION_ID, nullptr, shared_ptr<LiveObject>(nullptr),
-                   object_reference, method_name, vector<Value>(),
-                   &return_value_temp)) {
+    if (CallMethod(nullptr, shared_ptr<LiveObject>(nullptr), object_reference,
+                   method_name, vector<Value>(), &return_value_temp)) {
       if (!linger) {
         *return_value = return_value_temp;
         return;
@@ -178,7 +177,6 @@ ObjectReferenceImpl* RecordingThread::CreateObject(LocalObject* initial_version,
 }
 
 bool RecordingThread::CallMethod(
-    const TransactionId& base_transaction_id,
     ObjectReferenceImpl* caller_object_reference,
     const shared_ptr<LiveObject>& caller_live_object,
     ObjectReferenceImpl* callee_object_reference,
@@ -220,9 +218,8 @@ bool RecordingThread::CallMethod(
   // Repeatedly try to call the method until either 1) the method succeeds, or
   // 2) a rewind action is requested.
   shared_ptr<LiveObject> callee_live_object;
-  if (!CallMethodHelper(base_transaction_id, callee_object_reference,
-                        method_name, parameters, return_value,
-                        &callee_live_object)) {
+  if (!CallMethodHelper(callee_object_reference, method_name, parameters,
+                        return_value, &callee_live_object)) {
     // The current method is being rewound.
     return false;
   }
@@ -252,7 +249,6 @@ bool RecordingThread::ObjectsAreIdentical(const ObjectReferenceImpl* a,
 }
 
 bool RecordingThread::CallMethodHelper(
-    const TransactionId& base_transaction_id,
     ObjectReferenceImpl* callee_object_reference,
     const string& method_name,
     const vector<Value>& parameters,
@@ -260,34 +256,49 @@ bool RecordingThread::CallMethodHelper(
     shared_ptr<LiveObject>* callee_live_object) {
   CHECK(callee_live_object != nullptr);
 
+  const TransactionId method_base_transaction_id =
+      pending_transaction_->base_transaction_id();
+
   for (;;) {
     // TODO(dss): If the caller object has been modified by another peer since
     // the method was called, rewind.
 
     const shared_ptr<LiveObject> callee_live_object_temp =
         pending_transaction_->GetLiveObject(callee_object_reference);
-    RecordingMethodContext method_context(
-        this, pending_transaction_->base_transaction_id(),
-        callee_object_reference, callee_live_object_temp);
+    RecordingMethodContext method_context(this, callee_object_reference,
+                                          callee_live_object_temp);
 
     callee_live_object_temp->InvokeMethod(&method_context,
                                           callee_object_reference, method_name,
                                           parameters, return_value);
 
-    if (Rewinding()) {
-      const TransactionId base_transaction_id =
-          pending_transaction_->base_transaction_id();
-      pending_transaction_.reset(new PendingTransaction(transaction_store_,
-                                                        base_transaction_id));
+    const TransactionStoreInternalInterface::ExecutionPhase execution_phase =
+        transaction_store_->GetExecutionPhase(method_base_transaction_id);
 
-      // TODO(dss): Replace method calls with mocks until execution has
-      // proceeded past the last unreverted transaction.
+    switch (execution_phase) {
+      case TransactionStoreInternalInterface::NORMAL:
+        *callee_live_object = callee_live_object_temp;
+        return true;
 
-      return false;
+      case TransactionStoreInternalInterface::REWIND:
+        return false;
+
+      case TransactionStoreInternalInterface::RESUME:
+        // A rewind action was requested, but the rewind does not include the
+        // current method call. Discard the old pending transaction and call
+        // the child method again.
+        pending_transaction_.reset(
+            new PendingTransaction(transaction_store_,
+                                   method_base_transaction_id));
+
+        // TODO(dss): Replace method calls with mocks until execution has
+        // proceeded past the last unreverted transaction.
+        break;
+
+      default:
+        LOG(FATAL) << "Invalid execution phase: "
+                   << static_cast<int>(execution_phase);
     }
-
-    *callee_live_object = callee_live_object_temp;
-    return true;
   }
 
   return false;
@@ -365,8 +376,9 @@ void RecordingThread::CheckIfObjectIsNew(
 }
 
 bool RecordingThread::Rewinding() {
-  return transaction_store_->IsRewinding(
-      pending_transaction_->base_transaction_id());
+  return transaction_store_->GetExecutionPhase(
+      pending_transaction_->base_transaction_id()) !=
+      TransactionStoreInternalInterface::NORMAL;
 }
 
 }  // namespace engine

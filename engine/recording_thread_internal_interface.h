@@ -30,7 +30,6 @@ namespace engine {
 
 class LiveObject;
 class ObjectReferenceImpl;
-class TransactionId;
 
 class RecordingThreadInternalInterface {
  public:
@@ -44,8 +43,7 @@ class RecordingThreadInternalInterface {
       const std::shared_ptr<LiveObject>& caller_live_object) = 0;
   virtual ObjectReferenceImpl* CreateObject(LocalObject* initial_version,
                                             const std::string& name) = 0;
-  virtual bool CallMethod(const TransactionId& base_transaction_id,
-                          ObjectReferenceImpl* caller_object_reference,
+  virtual bool CallMethod(ObjectReferenceImpl* caller_object_reference,
                           const std::shared_ptr<LiveObject>& caller_live_object,
                           ObjectReferenceImpl* callee_object_reference,
                           const std::string& method_name,

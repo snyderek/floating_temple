@@ -19,7 +19,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "engine/proto/transaction_id.pb.h"
 #include "include/c++/thread.h"
 
 namespace floating_temple {
@@ -33,7 +32,6 @@ class RecordingMethodContext : public Thread {
  public:
   RecordingMethodContext(
       RecordingThreadInternalInterface* recording_thread,
-      const TransactionId& base_transaction_id,
       ObjectReferenceImpl* current_object_reference,
       const std::shared_ptr<LiveObject>& current_live_object);
   ~RecordingMethodContext() override;
@@ -51,7 +49,6 @@ class RecordingMethodContext : public Thread {
 
  private:
   RecordingThreadInternalInterface* const recording_thread_;
-  const TransactionId base_transaction_id_;
   ObjectReferenceImpl* const current_object_reference_;
   const std::shared_ptr<LiveObject> current_live_object_;
 

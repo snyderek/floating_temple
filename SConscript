@@ -18,27 +18,23 @@
 Import('base_env run_tests')
 
 common_warnings = Split("""
-    -Wall -Wextra -Werror -Wcast-align -Wcast-qual -Wdisabled-optimization
-    -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations
-    -Wmissing-format-attribute -Wno-missing-field-initializers
-    -Wno-unused-parameter -Wredundant-decls -Wstrict-overflow=5 -Wuninitialized
+    -Wall -Wextra -Werror -Wno-sign-compare -Wno-unused-function
+    -Wno-unused-parameter
   """)
 c_warnings = Split("""
   """)
 cxx_warnings = Split("""
-    -Woverloaded-virtual -Wstrict-null-sentinel
   """)
 
 ft_env = base_env.Clone()
 ft_env.Append(
     CPPFLAGS = Split("""
-        -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
       """),
     CFLAGS = common_warnings + c_warnings,
     CXXFLAGS = common_warnings + cxx_warnings,
   )
 ft_env.Prepend(
-    LIBS = Split('gflags glog protobuf rt uuid'),
+    LIBS = Split('gflags glog m protobuf rt uuid'),
   )
 
 # "base" subdirectory

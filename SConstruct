@@ -154,8 +154,6 @@ mode = ARGUMENTS.get('mode', 'dbg')
 use_tcmalloc = int(ARGUMENTS.get('use_tcmalloc', 0))
 
 disable_builtin_alloc = Split("""
-    -fno-builtin-calloc -fno-builtin-free -fno-builtin-malloc
-    -fno-builtin-realloc
   """)
 
 common_flags = ['-pthread']
@@ -165,14 +163,21 @@ if use_tcmalloc:
 base_env = Environment(
     SOURCE_DIR = Dir('.'),
 
+    CC = 'clang',
+    CXX = 'clang',
+    LINK = 'clang',
+
     TAR = 'tar',
     UNZIP = 'unzip',
     MAKE = 'make',
     PROTOC = 'protoc',
 
     CFLAGS = common_flags,
-    CXXFLAGS = common_flags + ['-fno-exceptions', '-std=c++11'],
+    CXXFLAGS = common_flags + Split("""
+        -fno-exceptions -std=c++11 -stdlib=libstdc++
+      """),
     LINKFLAGS = common_flags,
+    LIBS = ['stdc++'],
 
     # TODO(dss): Use either -I or -iquote as appropriate.
     CPPPATH = Split("""

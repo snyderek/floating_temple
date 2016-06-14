@@ -36,21 +36,21 @@ namespace floating_temple {
 
 // Returns the result.
 std::string StringPrintf(const char* format, ...)
-    FORMAT_ATTRIBUTE(__gnu_printf__, 1, 2);
+    FORMAT_ATTRIBUTE(__printf__, 1, 2);
 // Stores the result in *str.
 void SStringPrintf(std::string* str, const char* format, ...)
-    FORMAT_ATTRIBUTE(__gnu_printf__, 2, 3);
+    FORMAT_ATTRIBUTE(__printf__, 2, 3);
 // Appends the result to *str.
 void StringAppendF(std::string* str, const char* format, ...)
-    FORMAT_ATTRIBUTE(__gnu_printf__, 2, 3);
+    FORMAT_ATTRIBUTE(__printf__, 2, 3);
 
 // Same as the above, except that these functions accept a va_list.
 std::string StringPrintfV(const char* format, std::va_list arg_list)
-    FORMAT_ATTRIBUTE(__gnu_printf__, 1, 0);
+    FORMAT_ATTRIBUTE(__printf__, 1, 0);
 void SStringPrintfV(std::string* str, const char* format, std::va_list arg_list)
-    FORMAT_ATTRIBUTE(__gnu_printf__, 2, 0);
+    FORMAT_ATTRIBUTE(__printf__, 2, 0);
 void StringAppendFV(std::string* str, const char* format, std::va_list arg_list)
-    FORMAT_ATTRIBUTE(__gnu_printf__, 2, 0);
+    FORMAT_ATTRIBUTE(__printf__, 2, 0);
 
 }  // namespace floating_temple
 

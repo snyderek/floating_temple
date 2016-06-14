@@ -6,9 +6,9 @@ Build Instructions
 
 # Install prerequisites. The following command works on Ubuntu 14.04.1 (Trusty
 # Tahr):
-sudo apt-get install binutils coreutils g++ gawk gcc git google-perftools \
-  libgflags-dev libgoogle-glog-dev libgoogle-perftools-dev libprotobuf-dev \
-  make protobuf-compiler scons tar
+sudo apt-get install binutils clang coreutils g++ gawk gcc git \
+  google-perftools libgflags-dev libgoogle-glog-dev libgoogle-perftools-dev \
+  libprotobuf-dev make protobuf-compiler scons tar
 
 # Check out the floating_temple source.
 mkdir -p ~/projects

@@ -222,8 +222,6 @@ int GetUnusedPortForTesting() {
       return port;
     }
   }
-
-  return -1;
 }
 
 }  // namespace floating_temple

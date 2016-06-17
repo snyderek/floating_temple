@@ -78,9 +78,6 @@ Expression* Parser::ParseExpression() {
     default:
       LOG(FATAL) << "Unexpected token type: " << static_cast<int>(token_type);
   }
-
-  LOG(FATAL) << "Execution should not reach this point.";
-  return nullptr;
 }
 
 Expression* Parser::ParseIntLiteral() {

@@ -300,8 +300,6 @@ bool RecordingThread::CallMethodHelper(
                    << static_cast<int>(execution_phase);
     }
   }
-
-  return false;
 }
 
 void RecordingThread::AddTransactionEvent(

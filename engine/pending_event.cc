@@ -83,8 +83,6 @@ string PendingEvent::GetTypeString(Type event_type) {
     default:
       LOG(FATAL) << "Invalid event type: " << static_cast<int>(event_type);
   }
-
-  return "";
 }
 
 #undef CHECK_EVENT_TYPE

@@ -172,8 +172,6 @@ LocalObjectImpl* LocalObjectImpl::Deserialize(const void* buffer,
     default:
       LOG(FATAL) << "Unexpected object type: " << static_cast<int>(object_type);
   }
-
-  return nullptr;
 }
 
 }  // namespace toy_lang

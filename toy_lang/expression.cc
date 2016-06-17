@@ -106,8 +106,6 @@ Expression* Expression::ParseExpressionProto(
       LOG(FATAL) << "Unexpected expression type: "
                  << static_cast<int>(expression_type);
   }
-
-  return nullptr;
 }
 
 IntExpression::IntExpression(int64 n)

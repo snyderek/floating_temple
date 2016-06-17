@@ -84,8 +84,6 @@ bool ValueProtosEqual(const ValueProto& a, const ValueProto& b) {
     default:
       LOG(FATAL) << "Unexpected value type: " << static_cast<int>(a_type);
   }
-
-  return false;
 }
 
 #undef COMPARE_FIELDS

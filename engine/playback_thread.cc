@@ -464,8 +464,6 @@ bool PlaybackThread::ValueMatches(
       LOG(FATAL) << "Unexpected committed value type: "
                  << static_cast<int>(committed_value_type);
   }
-
-  return false;
 }
 
 #undef COMPARE_FIELDS

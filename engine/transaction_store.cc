@@ -1455,8 +1455,6 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
     default:
       LOG(FATAL) << "Invalid event type: " << static_cast<int>(type);
   }
-
-  return nullptr;
 }
 
 #define CONVERT_VALUE(enum_const, setter_method, getter_method) \

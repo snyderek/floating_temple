@@ -214,9 +214,6 @@ ProtocolConnection* ConnectionManager::ConnectToPeer(
                << "again in " << kConnectionRetryTimeoutSec << " seconds.";
     sleep(static_cast<unsigned>(kConnectionRetryTimeoutSec));
   }
-
-  LOG(FATAL) << "Execution should not reach this point.";
-  return nullptr;
 }
 
 void ConnectionManager::GetAllOpenConnections(

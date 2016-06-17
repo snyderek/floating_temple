@@ -20,7 +20,7 @@ Import('base_env run_tests')
 ft_env = base_env.Clone()
 ft_env.Append(
     CXXFLAGS = Split("""
-        -Wall -Wextra -Werror -Wno-sign-compare -Wno-unused-function
+        -Wall -Wextra -Werror -Wshadow -Wno-sign-compare -Wno-unused-function
         -Wno-unused-parameter
       """),
   )

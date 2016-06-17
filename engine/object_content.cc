@@ -178,8 +178,9 @@ void ObjectContent::StoreTransactions(
   if (should_replay_transactions) {
     // TODO(dss): Use the 'new_object_references' parameter here instead of
     // creating a temporary map?
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-    GetWorkingVersion_Locked(version_map_, &new_object_references,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>
+        new_object_references_temp;
+    GetWorkingVersion_Locked(version_map_, &new_object_references_temp,
                              transactions_to_reject);
   }
 }
@@ -209,8 +210,9 @@ void ObjectContent::InsertTransaction(
   if (transaction_id <= max_requested_transaction_id_) {
     // TODO(dss): Use the 'new_object_references' parameter here instead of
     // creating a temporary map?
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-    GetWorkingVersion_Locked(version_map_, &new_object_references,
+    unordered_map<SharedObject*, ObjectReferenceImpl*>
+        new_object_references_temp;
+    GetWorkingVersion_Locked(version_map_, &new_object_references_temp,
                              transactions_to_reject);
   } else {
     if (transaction_is_local) {
@@ -288,8 +290,6 @@ shared_ptr<const LiveObject> ObjectContent::GetWorkingVersion_Locked(
       return playback_thread.live_object();
     }
   }
-
-  return shared_ptr<const LiveObject>(nullptr);
 }
 
 bool ObjectContent::ApplyTransactionsToWorkingVersion_Locked(

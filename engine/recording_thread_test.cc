@@ -109,7 +109,6 @@ class TestLocalObject : public LocalObject {
   size_t Serialize(void* buffer, size_t buffer_size,
                    SerializationContext* context) const override {
     LOG(FATAL) << "Not implemented.";
-    return 0;
   }
 
   void Dump(DumpContext* dc) const override {
@@ -481,9 +480,9 @@ class RewindInPendingTransaction_FakeLocalObject : public TestLocalObject {
         return;
       }
 
-      Value return_value;
+      Value sub_method_return_value;
       if (!thread->CallMethod(self_object_reference, "b", vector<Value>(),
-                              &return_value)) {
+                              &sub_method_return_value)) {
         return;
       }
 

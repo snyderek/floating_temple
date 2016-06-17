@@ -17,21 +17,12 @@
 
 Import('base_env run_tests')
 
-common_warnings = Split("""
-    -Wall -Wextra -Werror -Wno-sign-compare -Wno-unused-function
-    -Wno-unused-parameter
-  """)
-c_warnings = Split("""
-  """)
-cxx_warnings = Split("""
-  """)
-
 ft_env = base_env.Clone()
 ft_env.Append(
-    CPPFLAGS = Split("""
+    CXXFLAGS = Split("""
+        -Wall -Wextra -Werror -Wno-sign-compare -Wno-unused-function
+        -Wno-unused-parameter
       """),
-    CFLAGS = common_warnings + c_warnings,
-    CXXFLAGS = common_warnings + cxx_warnings,
   )
 ft_env.Prepend(
     LIBS = Split('gflags glog m protobuf rt uuid'),

@@ -51,7 +51,7 @@ void LiveObjectNode::Serialize(
 
 LiveObjectNode* LiveObjectNode::InvokeMethod(
     Thread* thread,
-    ObjectReferenceImpl* object_reference,
+    ObjectReferenceImpl* self_object_reference,
     const string& method_name,
     const vector<Value>& parameters,
     Value* return_value) {
@@ -64,14 +64,14 @@ LiveObjectNode* LiveObjectNode::InvokeMethod(
     LocalObject* const new_local_object = local_object_->Clone();
     CHECK(new_local_object != nullptr);
     VLOG(4) << "Before: " << GetJsonString(*new_local_object);
-    new_local_object->InvokeMethod(thread, object_reference, method_name,
+    new_local_object->InvokeMethod(thread, self_object_reference, method_name,
                                    parameters, return_value);
     VLOG(4) << "After: " << GetJsonString(*new_local_object);
 
     return new LiveObjectNode(new_local_object);
   } else {
     VLOG(4) << "Before: " << GetJsonString(*local_object_);
-    local_object_->InvokeMethod(thread, object_reference, method_name,
+    local_object_->InvokeMethod(thread, self_object_reference, method_name,
                                 parameters, return_value);
     VLOG(4) << "After: " << GetJsonString(*local_object_);
 

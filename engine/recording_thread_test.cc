@@ -126,7 +126,7 @@ class CallMethodInNestedTransactions_ProgramObject : public TestLocalObject {
   }
 
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
@@ -200,7 +200,7 @@ class CallBeginTransactionFromWithinMethod_FakeLocalObject
   }
 
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
@@ -300,7 +300,7 @@ class CallEndTransactionFromWithinMethod_FakeLocalObject
   }
 
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
@@ -323,7 +323,7 @@ class CallEndTransactionFromWithinMethod_ProgramObject
   }
 
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
@@ -410,7 +410,7 @@ class CreateObjectInDifferentTransaction_ProgramObject
   }
 
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
@@ -472,7 +472,7 @@ class RewindInPendingTransaction_FakeLocalObject : public TestLocalObject {
   }
 
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
@@ -482,7 +482,7 @@ class RewindInPendingTransaction_FakeLocalObject : public TestLocalObject {
       }
 
       Value return_value;
-      if (!thread->CallMethod(object_reference, "b", vector<Value>(),
+      if (!thread->CallMethod(self_object_reference, "b", vector<Value>(),
                               &return_value)) {
         return;
       }
@@ -505,7 +505,7 @@ class RewindInPendingTransaction_ProgramObject : public TestLocalObject {
   }
 
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {

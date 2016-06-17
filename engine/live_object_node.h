@@ -43,7 +43,7 @@ class LiveObjectNode {
   void Serialize(std::string* data,
                  std::vector<ObjectReferenceImpl*>* object_references) const;
   LiveObjectNode* InvokeMethod(Thread* thread,
-                               ObjectReferenceImpl* object_reference,
+                               ObjectReferenceImpl* self_object_reference,
                                const std::string& method_name,
                                const std::vector<Value>& parameters,
                                Value* return_value);

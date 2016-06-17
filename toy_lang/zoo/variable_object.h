@@ -36,7 +36,7 @@ class VariableObject : public LocalObjectImpl {
 
   LocalObject* Clone() const override;
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;

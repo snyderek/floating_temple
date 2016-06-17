@@ -92,7 +92,7 @@ class Thread {
   //
   // IMPORTANT: If CallMethod returns false, the caller must immediately return
   // from LocalObject::InvokeMethod.
-  virtual bool CallMethod(ObjectReference* object_reference,
+  virtual bool CallMethod(ObjectReference* self_object_reference,
                           const std::string& method_name,
                           const std::vector<Value>& parameters,
                           Value* return_value) = 0;

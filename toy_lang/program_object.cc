@@ -75,7 +75,7 @@ LocalObject* ProgramObject::Clone() const {
 }
 
 void ProgramObject::InvokeMethod(Thread* thread,
-                                 ObjectReference* object_reference,
+                                 ObjectReference* self_object_reference,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {

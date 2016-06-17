@@ -68,7 +68,7 @@ class LocalObject {
   //
   // TODO(dss): Support exceptions.
   virtual void InvokeMethod(Thread* thread,
-                            ObjectReference* object_reference,
+                            ObjectReference* self_object_reference,
                             const std::string& method_name,
                             const std::vector<Value>& parameters,
                             Value* return_value) = 0;

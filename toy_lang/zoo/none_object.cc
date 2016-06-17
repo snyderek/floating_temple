@@ -37,7 +37,7 @@ LocalObject* NoneObject::Clone() const {
 }
 
 void NoneObject::InvokeMethod(Thread* thread,
-                              ObjectReference* object_reference,
+                              ObjectReference* self_object_reference,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {

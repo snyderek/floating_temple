@@ -56,7 +56,7 @@ LocalObject* ListObject::Clone() const {
 }
 
 void ListObject::InvokeMethod(Thread* thread,
-                              ObjectReference* object_reference,
+                              ObjectReference* self_object_reference,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {

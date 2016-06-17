@@ -66,7 +66,7 @@ class TestProgramObject : public LocalObject {
   size_t Serialize(void* buffer, size_t buffer_size,
                    SerializationContext* context) const override;
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override;
@@ -93,7 +93,7 @@ size_t TestProgramObject::Serialize(void* buffer, size_t buffer_size,
 }
 
 void TestProgramObject::InvokeMethod(Thread* thread,
-                                     ObjectReference* object_reference,
+                                     ObjectReference* self_object_reference,
                                      const string& method_name,
                                      const vector<Value>& parameters,
                                      Value* return_value) {

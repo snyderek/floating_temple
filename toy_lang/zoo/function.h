@@ -30,7 +30,7 @@ namespace toy_lang {
 class Function : public LocalObjectImpl {
  public:
   void InvokeMethod(Thread* thread,
-                    ObjectReference* object_reference,
+                    ObjectReference* self_object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
                     Value* return_value) override;

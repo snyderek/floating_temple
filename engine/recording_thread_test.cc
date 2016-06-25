@@ -532,10 +532,30 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
 
+  // Expected sequence:
+  //
+  //   Transaction 1:
+  //     METHOD_CALL "run"
+  //     METHOD_CALL "a"
+  //
+  //   Transaction 2:
+  //     BEGIN_TRANSACTION
+  //
+  //   <Rewind Execution; Resume Execution>
+  //
+  //   Transaction 3:
+  //     METHOD_CALL "b"
+  //     METHOD_RETURN
+  //     END_TRANSACTION
+  //
+  //   Transaction 4:
+  //     METHOD_RETURN
+  //     METHOD_RETURN
+
   Sequence s1, s2;
 
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
-      .InSequence(s2)
+      .InSequence(s1)
       .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
   EXPECT_CALL(
@@ -543,13 +563,13 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
       CreateTransaction(ElementsAre(IsMethodCallPendingEvent("run"),
                                     IsMethodCallPendingEvent("a")),
                         _, _, _))
-      .InSequence(s1);
+      .InSequence(s2);
 
   EXPECT_CALL(
       transaction_store_core,
       CreateTransaction(ElementsAre(IsBeginTransactionPendingEvent()),
                         _, _, _))
-      .InSequence(s1);
+      .InSequence(s2);
 
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
       .InSequence(s1, s2)
@@ -557,7 +577,7 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
       .WillOnce(Return(TransactionStoreInternalInterface::RESUME));
 
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
-      .InSequence(s2)
+      .InSequence(s1)
       .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
   EXPECT_CALL(
@@ -566,13 +586,13 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
                                     IsMethodReturnPendingEvent(),
                                     IsEndTransactionPendingEvent()),
                         _, _, _))
-      .InSequence(s1);
+      .InSequence(s2);
 
   EXPECT_CALL(
       transaction_store_core,
       CreateTransaction(ElementsAre(IsMethodReturnPendingEvent()), _, _, _))
       .Times(2)
-      .InSequence(s1);
+      .InSequence(s2);
 
   RecordingThread recording_thread(&transaction_store);
   LocalObject* const program_object =

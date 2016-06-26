@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/proto/serialization.pb.h"
@@ -74,81 +74,82 @@ LocalObject* ProgramObject::Clone() const {
   return new ProgramObject(external_symbols_, expression_);
 }
 
-void ProgramObject::InvokeMethod(Thread* thread,
+void ProgramObject::InvokeMethod(MethodContext* method_context,
                                  ObjectReference* self_object_reference,
                                  const string& method_name,
                                  const vector<Value>& parameters,
                                  Value* return_value) {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
   CHECK_EQ(method_name, "run");
   CHECK(return_value != nullptr);
 
   unordered_map<int, ObjectReference*> symbol_bindings;
   symbol_bindings.reserve(external_symbols_.size());
 
-  if (!thread->BeginTransaction()) {
+  if (!method_context->BeginTransaction()) {
     return;
   }
 
-  ResolveExternalSymbol(thread, "get", false, new GetVariableFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "set", false, new SetVariableFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "for", false, new ForFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "while", false, new WhileFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "false", true, new BoolObject(false),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "true", true, new BoolObject(true),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "list", true, new ListFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "range", true, new RangeFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "print", true, new PrintFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "add", true, new AddFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "begin_tran", true, new BeginTranFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "end_tran", true, new EndTranFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "if", true, new IfFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "not", true, new NotFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "lt", true, new LessThanFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "len", true, new LenFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "list.append", true, new ListAppendFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "list.get", true, new ListGetFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "map.is_set", true, new MapIsSetFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "map.get", true, new MapGetFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "map.set", true, new MapSetFunction(),
-                        &symbol_bindings);
-  ResolveExternalSymbol(thread, "shared", true, new MapObject(),
-                        &symbol_bindings);
+  ResolveExternalSymbol(method_context, "get", false,
+                        new GetVariableFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "set", false,
+                        new SetVariableFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "for", false,
+                        new ForFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "while", false,
+                        new WhileFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "false", true,
+                        new BoolObject(false), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "true", true,
+                        new BoolObject(true), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "list", true,
+                        new ListFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "range", true,
+                        new RangeFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "print", true,
+                        new PrintFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "add", true,
+                        new AddFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "begin_tran", true,
+                        new BeginTranFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "end_tran", true,
+                        new EndTranFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "if", true,
+                        new IfFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "not", true,
+                        new NotFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "lt", true,
+                        new LessThanFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "len", true,
+                        new LenFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "list.append", true,
+                        new ListAppendFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "list.get", true,
+                        new ListGetFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "map.is_set", true,
+                        new MapIsSetFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "map.get", true,
+                        new MapGetFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "map.set", true,
+                        new MapSetFunction(), &symbol_bindings);
+  ResolveExternalSymbol(method_context, "shared", true,
+                        new MapObject(), &symbol_bindings);
 
-  if (!thread->EndTransaction()) {
+  if (!method_context->EndTransaction()) {
     return;
   }
 
   ObjectReference* const code_block_object = expression_->Evaluate(
-      symbol_bindings, thread);
+      symbol_bindings, method_context);
 
-  ObjectReference* const list_object = thread->CreateObject(
+  ObjectReference* const list_object = method_context->CreateObject(
       new ListObject(vector<ObjectReference*>()), "");
   vector<Value> eval_parameters(1);
   eval_parameters[0].set_object_reference(0, list_object);
 
   Value dummy;
-  if (!thread->CallMethod(code_block_object, "eval", eval_parameters, &dummy)) {
+  if (!method_context->CallMethod(code_block_object, "eval", eval_parameters,
+                                  &dummy)) {
     return;
   }
 
@@ -207,12 +208,12 @@ void ProgramObject::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 void ProgramObject::ResolveExternalSymbol(
-    Thread* thread,
+    MethodContext* method_context,
     const string& symbol_name,
     bool visible,
     LocalObject* local_object,
     unordered_map<int, ObjectReference*>* symbol_bindings) const {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
   CHECK(!symbol_name.empty());
   CHECK(symbol_bindings != nullptr);
 
@@ -220,13 +221,13 @@ void ProgramObject::ResolveExternalSymbol(
   CHECK(it != external_symbols_.end());
   const int symbol_id = it->second;
 
-  ObjectReference* const built_in_object = thread->CreateObject(local_object,
-                                                                symbol_name);
+  ObjectReference* const built_in_object = method_context->CreateObject(
+      local_object, symbol_name);
 
   ObjectReference* object_reference = nullptr;
   if (visible) {
-    object_reference = thread->CreateObject(new VariableObject(built_in_object),
-                                            "");
+    object_reference = method_context->CreateObject(
+        new VariableObject(built_in_object), "");
   } else {
     object_reference = built_in_object;
   }

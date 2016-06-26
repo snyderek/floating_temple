@@ -22,7 +22,7 @@
 #include "base/escape.h"
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/code_block.h"
 #include "toy_lang/proto/serialization.pb.h"
@@ -48,7 +48,7 @@ LocalObject* CodeBlockObject::Clone() const {
   return new CodeBlockObject(code_block_->Clone());
 }
 
-void CodeBlockObject::InvokeMethod(Thread* thread,
+void CodeBlockObject::InvokeMethod(MethodContext* method_context,
                                    ObjectReference* self_object_reference,
                                    const string& method_name,
                                    const vector<Value>& parameters,
@@ -62,8 +62,8 @@ void CodeBlockObject::InvokeMethod(Thread* thread,
         parameters[0].object_reference();
 
     Value length_value;
-    if (!thread->CallMethod(parameter_list_object, "length", vector<Value>(),
-                            &length_value)) {
+    if (!method_context->CallMethod(parameter_list_object, "length",
+                                    vector<Value>(), &length_value)) {
       return;
     }
 
@@ -75,8 +75,8 @@ void CodeBlockObject::InvokeMethod(Thread* thread,
       get_at_params[0].set_int64_value(0, i);
 
       Value list_item_value;
-      if (!thread->CallMethod(parameter_list_object, "get_at", get_at_params,
-                              &list_item_value)) {
+      if (!method_context->CallMethod(parameter_list_object, "get_at",
+                                      get_at_params, &list_item_value)) {
         return;
       }
 
@@ -84,7 +84,7 @@ void CodeBlockObject::InvokeMethod(Thread* thread,
     }
 
     ObjectReference* const object_reference = code_block_->Evaluate(
-        parameter_object_references, thread);
+        parameter_object_references, method_context);
     if (object_reference == nullptr) {
       return;
     }

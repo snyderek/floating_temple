@@ -28,7 +28,7 @@
 #include "engine/committed_event.h"
 #include "engine/committed_value.h"
 #include "engine/event_queue.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "util/bool_variable.h"
 #include "util/state_variable.h"
@@ -46,7 +46,7 @@ class ObjectReferenceImpl;
 class SharedObject;
 class TransactionStoreInternalInterface;
 
-class PlaybackThread : private Thread {
+class PlaybackThread : private MethodContext {
  public:
   PlaybackThread();
   ~PlaybackThread() override;

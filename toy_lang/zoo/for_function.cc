@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
@@ -57,8 +57,9 @@ void ForFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* ForFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   ObjectReference* const iter = parameters[0];
@@ -66,7 +67,8 @@ ObjectReference* ForFunction::Call(
 
   for (;;) {
     Value has_next;
-    if (!thread->CallMethod(iter, "has_next", vector<Value>(), &has_next)) {
+    if (!method_context->CallMethod(iter, "has_next", vector<Value>(),
+                                    &has_next)) {
       return nullptr;
     }
 
@@ -75,25 +77,27 @@ ObjectReference* ForFunction::Call(
     }
 
     Value iter_value;
-    if (!thread->CallMethod(iter, "get_next", vector<Value>(), &iter_value)) {
+    if (!method_context->CallMethod(iter, "get_next", vector<Value>(),
+                                    &iter_value)) {
       return nullptr;
     }
 
-    ObjectReference* const iter_variable = thread->CreateObject(
+    ObjectReference* const iter_variable = method_context->CreateObject(
         new VariableObject(iter_value.object_reference()), "");
     const vector<ObjectReference*> block_parameters(1, iter_variable);
 
     vector<Value> eval_parameters(1);
     eval_parameters[0].set_object_reference(
-        0, thread->CreateObject(new ListObject(block_parameters), ""));
+        0, method_context->CreateObject(new ListObject(block_parameters), ""));
 
     Value dummy;
-    if (!thread->CallMethod(code_block, "eval", eval_parameters, &dummy)) {
+    if (!method_context->CallMethod(code_block, "eval", eval_parameters,
+                                    &dummy)) {
       return nullptr;
     }
   }
 
-  return MakeNoneObject(thread);
+  return MakeNoneObject(method_context);
 }
 
 }  // namespace toy_lang

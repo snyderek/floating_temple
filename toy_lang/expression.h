@@ -26,8 +26,8 @@
 
 namespace floating_temple {
 
+class MethodContext;
 class ObjectReference;
-class Thread;
 
 namespace toy_lang {
 
@@ -45,7 +45,7 @@ class Expression {
 
   virtual ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
-      Thread* thread) const = 0;
+      MethodContext* method_context) const = 0;
   virtual void PopulateExpressionProto(
       ExpressionProto* expression_proto) const = 0;
 
@@ -61,7 +61,7 @@ class IntExpression : public Expression {
 
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
-      Thread* thread) const override;
+      MethodContext* method_context) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -81,7 +81,7 @@ class StringExpression : public Expression {
 
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
-      Thread* thread) const override;
+      MethodContext* method_context) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -101,7 +101,7 @@ class SymbolExpression : public Expression {
 
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
-      Thread* thread) const override;
+      MethodContext* method_context) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -123,7 +123,7 @@ class BlockExpression : public Expression {
 
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
-      Thread* thread) const override;
+      MethodContext* method_context) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -146,7 +146,7 @@ class FunctionCallExpression : public Expression {
 
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
-      Thread* thread) const override;
+      MethodContext* method_context) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;
@@ -167,7 +167,7 @@ class ListExpression : public Expression {
 
   ObjectReference* Evaluate(
       const std::unordered_map<int, ObjectReference*>& symbol_bindings,
-      Thread* thread) const override;
+      MethodContext* method_context) const override;
   void PopulateExpressionProto(
       ExpressionProto* expression_proto) const override;
   std::string DebugString() const override;

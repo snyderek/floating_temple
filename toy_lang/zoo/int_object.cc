@@ -40,7 +40,7 @@ LocalObject* IntObject::Clone() const {
   return new IntObject(n_);
 }
 
-void IntObject::InvokeMethod(Thread* thread,
+void IntObject::InvokeMethod(MethodContext* method_context,
                              ObjectReference* self_object_reference,
                              const string& method_name,
                              const vector<Value>& parameters,

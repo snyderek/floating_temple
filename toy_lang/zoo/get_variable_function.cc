@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "util/dump_context.h"
@@ -50,12 +50,14 @@ void GetVariableFunction::PopulateObjectProto(
 }
 
 ObjectReference* GetVariableFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
   Value value;
-  if (!thread->CallMethod(parameters[0], "get", vector<Value>(), &value)) {
+  if (!method_context->CallMethod(parameters[0], "get", vector<Value>(),
+                                  &value)) {
     return nullptr;
   }
 

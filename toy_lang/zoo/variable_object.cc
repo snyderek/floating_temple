@@ -43,7 +43,7 @@ LocalObject* VariableObject::Clone() const {
   return new VariableObject(GetObjectReference());
 }
 
-void VariableObject::InvokeMethod(Thread* thread,
+void VariableObject::InvokeMethod(MethodContext* method_context,
                                   ObjectReference* self_object_reference,
                                   const string& method_name,
                                   const vector<Value>& parameters,

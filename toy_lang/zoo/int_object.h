@@ -30,7 +30,7 @@ class IntObject : public LocalObjectImpl {
   explicit IntObject(int64 n);
 
   LocalObject* Clone() const override;
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,

@@ -26,8 +26,8 @@
 namespace floating_temple {
 
 class DumpContext;
-class Thread;
 class LocalObject;
+class MethodContext;
 
 namespace engine {
 
@@ -42,7 +42,7 @@ class LiveObjectNode {
 
   void Serialize(std::string* data,
                  std::vector<ObjectReferenceImpl*>* object_references) const;
-  LiveObjectNode* InvokeMethod(Thread* thread,
+  LiveObjectNode* InvokeMethod(MethodContext* method_context,
                                ObjectReferenceImpl* self_object_reference,
                                const std::string& method_name,
                                const std::vector<Value>& parameters,

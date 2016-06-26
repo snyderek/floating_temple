@@ -24,8 +24,8 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "include/c++/deserialization_context.h"
+#include "include/c++/method_context.h"
 #include "include/c++/serialization_context.h"
-#include "include/c++/thread.h"
 #include "toy_lang/expression.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/zoo/variable_object.h"
@@ -55,8 +55,8 @@ CodeBlock::~CodeBlock() {
 }
 
 ObjectReference* CodeBlock::Evaluate(const vector<ObjectReference*>& parameters,
-                                     Thread* thread) const {
-  CHECK(thread != nullptr);
+                                     MethodContext* method_context) const {
+  CHECK(method_context != nullptr);
 
   const vector<ObjectReference*>::size_type parameter_count = parameters.size();
   CHECK_EQ(parameter_count, parameter_symbol_ids_.size());
@@ -73,12 +73,12 @@ ObjectReference* CodeBlock::Evaluate(const vector<ObjectReference*>& parameters,
   // Create the local variables, all initially unset.
   for (int symbol_id : local_symbol_ids_) {
     LocalObject* const variable_object = new VariableObject(nullptr);
-    ObjectReference* const object_reference = thread->CreateObject(
+    ObjectReference* const object_reference = method_context->CreateObject(
         variable_object, "");
     CHECK(symbol_bindings.emplace(symbol_id, object_reference).second);
   }
 
-  return expression_->Evaluate(symbol_bindings, thread);
+  return expression_->Evaluate(symbol_bindings, method_context);
 }
 
 CodeBlock* CodeBlock::Clone() const {

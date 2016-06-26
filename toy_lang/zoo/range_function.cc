@@ -19,7 +19,7 @@
 
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
 #include "toy_lang/zoo/range_iterator_object.h"
@@ -52,16 +52,17 @@ void RangeFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* RangeFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
   int64 limit = 0;
-  if (!UnwrapInt(thread, parameters[0], &limit)) {
+  if (!UnwrapInt(method_context, parameters[0], &limit)) {
     return nullptr;
   }
 
-  return thread->CreateObject(new RangeIteratorObject(limit, 0), "");
+  return method_context->CreateObject(new RangeIteratorObject(limit, 0), "");
 }
 
 }  // namespace toy_lang

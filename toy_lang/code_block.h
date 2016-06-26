@@ -26,9 +26,9 @@
 namespace floating_temple {
 
 class DeserializationContext;
+class MethodContext;
 class ObjectReference;
 class SerializationContext;
-class Thread;
 
 namespace toy_lang {
 
@@ -45,7 +45,7 @@ class CodeBlock {
   ~CodeBlock();
 
   ObjectReference* Evaluate(const std::vector<ObjectReference*>& parameters,
-                            Thread* thread) const;
+                            MethodContext* method_context) const;
   CodeBlock* Clone() const;
   void PopulateCodeBlockProto(CodeBlockProto* code_block_proto,
                               SerializationContext* context) const;

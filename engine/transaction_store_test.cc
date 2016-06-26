@@ -31,7 +31,7 @@
 #include "fake_interpreter/fake_interpreter.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/local_object.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
@@ -65,7 +65,7 @@ class TestProgramObject : public LocalObject {
   LocalObject* Clone() const override;
   size_t Serialize(void* buffer, size_t buffer_size,
                    SerializationContext* context) const override;
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
@@ -92,25 +92,25 @@ size_t TestProgramObject::Serialize(void* buffer, size_t buffer_size,
   return length;
 }
 
-void TestProgramObject::InvokeMethod(Thread* thread,
+void TestProgramObject::InvokeMethod(MethodContext* method_context,
                                      ObjectReference* self_object_reference,
                                      const string& method_name,
                                      const vector<Value>& parameters,
                                      Value* return_value) {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
   CHECK_EQ(method_name, "run");
   CHECK_EQ(parameters.size(), 0);
   CHECK(return_value != nullptr);
 
-  if (!thread->BeginTransaction()) {
+  if (!method_context->BeginTransaction()) {
     return;
   }
 
-  thread->CreateObject(new FakeLocalObject(""), "athos");
-  thread->CreateObject(new FakeLocalObject(""), "porthos");
-  thread->CreateObject(new FakeLocalObject(""), "aramis");
+  method_context->CreateObject(new FakeLocalObject(""), "athos");
+  method_context->CreateObject(new FakeLocalObject(""), "porthos");
+  method_context->CreateObject(new FakeLocalObject(""), "aramis");
 
-  if (!thread->EndTransaction()) {
+  if (!method_context->EndTransaction()) {
     return;
   }
 

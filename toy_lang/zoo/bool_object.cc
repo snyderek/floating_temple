@@ -37,7 +37,7 @@ LocalObject* BoolObject::Clone() const {
   return new BoolObject(b_);
 }
 
-void BoolObject::InvokeMethod(Thread* thread,
+void BoolObject::InvokeMethod(MethodContext* method_context,
                               ObjectReference* self_object_reference,
                               const string& method_name,
                               const vector<Value>& parameters,

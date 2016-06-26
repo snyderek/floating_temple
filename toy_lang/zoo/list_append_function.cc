@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
@@ -51,8 +51,9 @@ void ListAppendFunction::PopulateObjectProto(
 }
 
 ObjectReference* ListAppendFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   ObjectReference* const the_list = parameters[0];
@@ -62,11 +63,11 @@ ObjectReference* ListAppendFunction::Call(
   append_params[0].set_object_reference(0, object);
 
   Value dummy;
-  if (!thread->CallMethod(the_list, "append", append_params, &dummy)) {
+  if (!method_context->CallMethod(the_list, "append", append_params, &dummy)) {
     return nullptr;
   }
 
-  return MakeNoneObject(thread);
+  return MakeNoneObject(method_context);
 }
 
 }  // namespace toy_lang

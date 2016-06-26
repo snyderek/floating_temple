@@ -50,19 +50,20 @@ void AddFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* AddFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
   int64 sum = 0;
 
   for (ObjectReference* const object_reference : parameters) {
     int64 number = 0;
-    if (!UnwrapInt(thread, object_reference, &number)) {
+    if (!UnwrapInt(method_context, object_reference, &number)) {
       return nullptr;
     }
 
     sum += number;
   }
 
-  return WrapInt(thread, sum);
+  return WrapInt(method_context, sum);
 }
 
 }  // namespace toy_lang

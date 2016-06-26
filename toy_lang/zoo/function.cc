@@ -21,7 +21,7 @@
 #include "base/escape.h"
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 
 using std::string;
@@ -30,12 +30,12 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-void Function::InvokeMethod(Thread* thread,
+void Function::InvokeMethod(MethodContext* method_context,
                             ObjectReference* self_object_reference,
                             const string& method_name,
                             const vector<Value>& parameters,
                             Value* return_value) {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
   CHECK(return_value != nullptr);
 
   if (method_name == "call") {
@@ -45,8 +45,8 @@ void Function::InvokeMethod(Thread* thread,
         parameters[0].object_reference();
 
     Value length_value;
-    if (!thread->CallMethod(parameter_list_object, "length", vector<Value>(),
-                            &length_value)) {
+    if (!method_context->CallMethod(parameter_list_object, "length",
+                                    vector<Value>(), &length_value)) {
       return;
     }
 
@@ -58,15 +58,15 @@ void Function::InvokeMethod(Thread* thread,
       get_at_params[0].set_int64_value(0, i);
 
       Value list_item_value;
-      if (!thread->CallMethod(parameter_list_object, "get_at", get_at_params,
-                              &list_item_value)) {
+      if (!method_context->CallMethod(parameter_list_object, "get_at",
+                                      get_at_params, &list_item_value)) {
         return;
       }
 
       param_objects[i] = list_item_value.object_reference();
     }
 
-    ObjectReference* const return_object = Call(thread, param_objects);
+    ObjectReference* const return_object = Call(method_context, param_objects);
     if (return_object == nullptr) {
       return;
     }

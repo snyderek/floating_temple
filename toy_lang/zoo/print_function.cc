@@ -53,7 +53,8 @@ void PrintFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* PrintFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
   for (vector<ObjectReference*>::const_iterator it = parameters.begin();
        it != parameters.end(); ++it) {
     if (it != parameters.begin()) {
@@ -61,7 +62,7 @@ ObjectReference* PrintFunction::Call(
     }
 
     string str;
-    if (!UnwrapString(thread, *it, &str)) {
+    if (!UnwrapString(method_context, *it, &str)) {
       return nullptr;
     }
 
@@ -70,7 +71,7 @@ ObjectReference* PrintFunction::Call(
 
   printf("\n");
 
-  return MakeNoneObject(thread);
+  return MakeNoneObject(method_context);
 }
 
 }  // namespace toy_lang

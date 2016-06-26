@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
 #include "util/dump_context.h"
@@ -50,15 +50,16 @@ void EndTranFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* EndTranFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 0u);
 
-  if (!thread->EndTransaction()) {
+  if (!method_context->EndTransaction()) {
     return nullptr;
   }
 
-  return MakeNoneObject(thread);
+  return MakeNoneObject(method_context);
 }
 
 }  // namespace toy_lang

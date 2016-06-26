@@ -26,9 +26,9 @@
 
 namespace floating_temple {
 
+class MethodContext;
 class ObjectReference;
 class SerializationContext;
-class Thread;
 
 namespace engine {
 
@@ -38,7 +38,7 @@ class MockLocalObjectCore {
 
   MOCK_CONST_METHOD1(Serialize, std::string(SerializationContext* context));
   MOCK_CONST_METHOD5(InvokeMethod,
-                     void(Thread* thread,
+                     void(MethodContext* method_context,
                           ObjectReference* self_object_reference,
                           const std::string& method_name,
                           const std::vector<Value>& parameters,
@@ -55,7 +55,7 @@ class MockLocalObject : public LocalObject {
   LocalObject* Clone() const override;
   std::size_t Serialize(void* buffer, std::size_t buffer_size,
                         SerializationContext* context) const override;
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,

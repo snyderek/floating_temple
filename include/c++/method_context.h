@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef INCLUDE_CPP_THREAD_H_
-#define INCLUDE_CPP_THREAD_H_
+#ifndef INCLUDE_CPP_METHOD_CONTEXT_H_
+#define INCLUDE_CPP_METHOD_CONTEXT_H_
 
 #include <string>
 #include <vector>
@@ -29,15 +29,13 @@ class ObjectReference;
 // This interface is implemented by the peer. The local interpreter uses it to
 // perform any operations that require assistance from the peer during the
 // duration of a method call. The local interpreter should not store a pointer
-// to the Thread instance beyond the duration of the method call.
-//
-// TODO(dss): Rename this class to MethodContext.
-class Thread {
+// to the MethodContext instance beyond the duration of the method call.
+class MethodContext {
  public:
-  virtual ~Thread() {}
+  virtual ~MethodContext() {}
 
-  // Begins a transaction in this thread. Transactions may be nested by calling
-  // BeginTransaction more than once without an intervening call to
+  // Begins a transaction in the current thread. Transactions may be nested by
+  // calling BeginTransaction more than once without an intervening call to
   // EndTransaction. Method calls executed within a transaction will not be
   // propagated to remote peers until the outermost transaction is committed.
   // ("Method calls" in this context refers to methods in the interpreted
@@ -103,4 +101,4 @@ class Thread {
 
 }  // namespace floating_temple
 
-#endif  // INCLUDE_CPP_THREAD_H_
+#endif  // INCLUDE_CPP_METHOD_CONTEXT_H_

@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
@@ -51,16 +51,18 @@ void LenFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* LenFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 1u);
 
   Value length;
-  if (!thread->CallMethod(parameters[0], "length", vector<Value>(), &length)) {
+  if (!method_context->CallMethod(parameters[0], "length", vector<Value>(),
+                                  &length)) {
     return nullptr;
   }
 
-  return WrapInt(thread, length.int64_value());
+  return WrapInt(method_context, length.int64_value());
 }
 
 }  // namespace toy_lang

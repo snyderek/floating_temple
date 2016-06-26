@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fake_engine/fake_thread.h"
+#include "fake_engine/fake_method_context.h"
 
 #include <memory>
 #include <string>
@@ -31,11 +31,11 @@ using std::vector;
 
 namespace floating_temple {
 
-FakeThread::FakeThread()
+FakeMethodContext::FakeMethodContext()
     : transaction_depth_(0) {
 }
 
-FakeThread::~FakeThread() {
+FakeMethodContext::~FakeMethodContext() {
   for (unique_ptr<ObjectReference>& object_reference : object_references_) {
     VLOG(1) << "Deleting object reference "
             << StringPrintf("%p", object_reference.get());
@@ -43,20 +43,20 @@ FakeThread::~FakeThread() {
   }
 }
 
-bool FakeThread::BeginTransaction() {
+bool FakeMethodContext::BeginTransaction() {
   ++transaction_depth_;
   CHECK_GT(transaction_depth_, 0);
   return true;
 }
 
-bool FakeThread::EndTransaction() {
+bool FakeMethodContext::EndTransaction() {
   CHECK_GT(transaction_depth_, 0);
   --transaction_depth_;
   return true;
 }
 
-ObjectReference* FakeThread::CreateObject(LocalObject* initial_version,
-                                          const string& name) {
+ObjectReference* FakeMethodContext::CreateObject(LocalObject* initial_version,
+                                                 const string& name) {
   // TODO(dss): If an object with the given name was already created, return a
   // pointer to the existing ObjectReference instance.
 
@@ -70,10 +70,10 @@ ObjectReference* FakeThread::CreateObject(LocalObject* initial_version,
   return object_reference;
 }
 
-bool FakeThread::CallMethod(ObjectReference* object_reference,
-                            const string& method_name,
-                            const vector<Value>& parameters,
-                            Value* return_value) {
+bool FakeMethodContext::CallMethod(ObjectReference* object_reference,
+                                   const string& method_name,
+                                   const vector<Value>& parameters,
+                                   Value* return_value) {
   CHECK(object_reference != nullptr);
   CHECK(!method_name.empty());
   CHECK(return_value != nullptr);
@@ -94,8 +94,8 @@ bool FakeThread::CallMethod(ObjectReference* object_reference,
   return true;
 }
 
-bool FakeThread::ObjectsAreIdentical(const ObjectReference* a,
-                                     const ObjectReference* b) const {
+bool FakeMethodContext::ObjectsAreIdentical(const ObjectReference* a,
+                                            const ObjectReference* b) const {
   CHECK(a != nullptr);
   CHECK(b != nullptr);
 

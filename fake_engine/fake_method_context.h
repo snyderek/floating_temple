@@ -13,24 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FAKE_ENGINE_FAKE_THREAD_H_
-#define FAKE_ENGINE_FAKE_THREAD_H_
+#ifndef FAKE_ENGINE_FAKE_METHOD_CONTEXT_H_
+#define FAKE_ENGINE_FAKE_METHOD_CONTEXT_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 
 namespace floating_temple {
 
 class ObjectReference;
 
-class FakeThread : public Thread {
+class FakeMethodContext : public MethodContext {
  public:
-  FakeThread();
-  ~FakeThread() override;
+  FakeMethodContext();
+  ~FakeMethodContext() override;
 
   bool BeginTransaction() override;
   bool EndTransaction() override;
@@ -47,9 +47,9 @@ class FakeThread : public Thread {
   std::vector<std::unique_ptr<ObjectReference>> object_references_;
   int transaction_depth_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeThread);
+  DISALLOW_COPY_AND_ASSIGN(FakeMethodContext);
 };
 
 }  // namespace floating_temple
 
-#endif  // FAKE_ENGINE_FAKE_THREAD_H_
+#endif  // FAKE_ENGINE_FAKE_METHOD_CONTEXT_H_

@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "fake_engine/fake_thread.h"
+#include "fake_engine/fake_method_context.h"
 #include "include/c++/local_object.h"
 #include "include/c++/value.h"
 
@@ -42,11 +42,11 @@ void FakePeer::RunProgram(LocalObject* local_object,
   // completes.
   CHECK(!linger) << "Linger mode isn't supported for the fake peer.";
 
-  FakeThread thread;
-  ObjectReference* const object_reference = thread.CreateObject(local_object,
-                                                                "");
+  FakeMethodContext method_context;
+  ObjectReference* const object_reference = method_context.CreateObject(
+      local_object, "");
 
-  local_object->InvokeMethod(&thread, object_reference, method_name,
+  local_object->InvokeMethod(&method_context, object_reference, method_name,
                              vector<Value>(), return_value);
 }
 

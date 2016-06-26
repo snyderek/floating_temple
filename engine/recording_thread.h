@@ -24,7 +24,7 @@
 
 #include "base/macros.h"
 #include "engine/recording_thread_internal_interface.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 
 namespace floating_temple {

@@ -118,7 +118,7 @@ class ObjectContent {
   MaxVersionMap version_map_;
   std::unordered_set<const CanonicalPeer*> up_to_date_peers_;
   // TODO(dss): Rename this member variable. It's the max transaction ID
-  // committed by an interpreter thread on the local peer.
+  // committed by a recording thread on the local peer.
   TransactionId max_requested_transaction_id_;
   std::shared_ptr<const LiveObject> cached_live_object_;
   SequencePointImpl cached_sequence_point_;

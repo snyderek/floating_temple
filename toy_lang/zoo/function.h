@@ -22,14 +22,14 @@
 
 namespace floating_temple {
 
+class MethodContext;
 class ObjectReference;
-class Thread;
 
 namespace toy_lang {
 
 class Function : public LocalObjectImpl {
  public:
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
@@ -37,7 +37,7 @@ class Function : public LocalObjectImpl {
 
  protected:
   virtual ObjectReference* Call(
-      Thread* thread,
+      MethodContext* method_context,
       const std::vector<ObjectReference*>& parameters) const = 0;
 };
 

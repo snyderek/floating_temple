@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
@@ -56,13 +56,14 @@ void IfFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* IfFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_GE(parameters.size(), 2u);
   CHECK_LE(parameters.size(), 3u);
 
   bool condition = false;
-  if (!UnwrapBool(thread, parameters[0], &condition)) {
+  if (!UnwrapBool(method_context, parameters[0], &condition)) {
     return nullptr;
   }
 
@@ -72,7 +73,7 @@ ObjectReference* IfFunction::Call(
     code_block = parameters[1];
   } else {
     if (parameters.size() < 3u) {
-      return MakeNoneObject(thread);
+      return MakeNoneObject(method_context);
     }
 
     code_block = parameters[2];
@@ -80,10 +81,13 @@ ObjectReference* IfFunction::Call(
 
   vector<Value> eval_parameters(1);
   eval_parameters[0].set_object_reference(
-      0, thread->CreateObject(new ListObject(vector<ObjectReference*>()), ""));
+      0,
+      method_context->CreateObject(new ListObject(vector<ObjectReference*>()),
+                                   ""));
 
   Value result;
-  if (!thread->CallMethod(code_block, "eval", eval_parameters, &result)) {
+  if (!method_context->CallMethod(code_block, "eval", eval_parameters,
+                                  &result)) {
     return nullptr;
   }
 

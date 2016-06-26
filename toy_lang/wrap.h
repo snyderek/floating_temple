@@ -22,21 +22,24 @@
 
 namespace floating_temple {
 
+class MethodContext;
 class ObjectReference;
-class Thread;
 
 namespace toy_lang {
 
-ObjectReference* MakeNoneObject(Thread* thread);
+ObjectReference* MakeNoneObject(MethodContext* method_context);
 
-ObjectReference* WrapBool(Thread* thread, bool b);
-ObjectReference* WrapInt(Thread* thread, int64 n);
-ObjectReference* WrapString(Thread* thread, const std::string& s);
+ObjectReference* WrapBool(MethodContext* method_context, bool b);
+ObjectReference* WrapInt(MethodContext* method_context, int64 n);
+ObjectReference* WrapString(MethodContext* method_context,
+                            const std::string& s);
 
-bool UnwrapBool(Thread* thread, ObjectReference* object_reference, bool* b);
-bool UnwrapInt(Thread* thread, ObjectReference* object_reference, int64* n);
-bool UnwrapString(Thread* thread, ObjectReference* object_reference,
-                  std::string* s);
+bool UnwrapBool(MethodContext* method_context,
+                ObjectReference* object_reference, bool* b);
+bool UnwrapInt(MethodContext* method_context, ObjectReference* object_reference,
+               int64* n);
+bool UnwrapString(MethodContext* method_context,
+                  ObjectReference* object_reference, std::string* s);
 
 }  // namespace toy_lang
 }  // namespace floating_temple

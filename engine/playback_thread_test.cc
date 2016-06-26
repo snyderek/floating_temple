@@ -34,7 +34,7 @@
 #include "engine/proto/uuid.pb.h"
 #include "engine/shared_object.h"
 #include "fake_interpreter/fake_local_object.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
@@ -69,15 +69,16 @@ Uuid MakeUuid(int n) {
   return uuid;
 }
 
-void TestMethod1(Thread* thread, const vector<Value>& parameters,
+void TestMethod1(MethodContext* method_context, const vector<Value>& parameters,
                  Value* return_value) {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 1u);
   CHECK(return_value != nullptr);
 
   Value sub_return_value;
-  if (!thread->CallMethod(parameters[0].object_reference(), "test_method2",
-                          vector<Value>(), &sub_return_value)) {
+  if (!method_context->CallMethod(parameters[0].object_reference(),
+                                  "test_method2", vector<Value>(),
+                                  &sub_return_value)) {
     return;
   }
 
@@ -363,23 +364,24 @@ TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
   EXPECT_FALSE(playback_thread.conflict_detected());
 }
 
-void TestMethod3(Thread* thread, const vector<Value>& parameters,
+void TestMethod3(MethodContext* method_context, const vector<Value>& parameters,
                  Value* return_value) {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 1u);
   CHECK(return_value != nullptr);
 
-  if (!thread->BeginTransaction()) {
+  if (!method_context->BeginTransaction()) {
     return;
   }
 
   Value sub_return_value;
-  if (!thread->CallMethod(parameters[0].object_reference(), "test_method4",
-                          vector<Value>(), &sub_return_value)) {
+  if (!method_context->CallMethod(parameters[0].object_reference(),
+                                  "test_method4", vector<Value>(),
+                                  &sub_return_value)) {
     return;
   }
 
-  if (!thread->EndTransaction()) {
+  if (!method_context->EndTransaction()) {
     return;
   }
 
@@ -446,27 +448,27 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
   EXPECT_FALSE(playback_thread.conflict_detected());
 }
 
-void TestMethod5(Thread* thread, const vector<Value>& parameters,
+void TestMethod5(MethodContext* method_context, const vector<Value>& parameters,
                  Value* return_value) {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 0u);
   CHECK(return_value != nullptr);
 
-  ObjectReference* const object_reference = thread->CreateObject(
+  ObjectReference* const object_reference = method_context->CreateObject(
       new FakeLocalObject(""), "");
 
   {
     Value sub_return_value;
-    if (!thread->CallMethod(object_reference, "test_method6", vector<Value>(),
-                            &sub_return_value)) {
+    if (!method_context->CallMethod(object_reference, "test_method6",
+                                    vector<Value>(), &sub_return_value)) {
       return;
     }
   }
 
   {
     Value sub_return_value;
-    if (!thread->CallMethod(object_reference, "test_method7", vector<Value>(),
-                            &sub_return_value)) {
+    if (!method_context->CallMethod(object_reference, "test_method7",
+                                    vector<Value>(), &sub_return_value)) {
       return;
     }
   }

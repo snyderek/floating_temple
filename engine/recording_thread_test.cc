@@ -33,7 +33,7 @@
 #include "engine/transaction_store_internal_interface.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/local_object.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
@@ -88,17 +88,18 @@ MATCHER(IsMethodReturnPendingEvent, "") {
   return arg->type() == PendingEvent::METHOD_RETURN;
 }
 
-void CallAppendMethod(Thread* thread, ObjectReference* object_reference,
+void CallAppendMethod(MethodContext* method_context,
+                      ObjectReference* object_reference,
                       const string& string_to_append) {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
 
   vector<Value> parameters(1);
   parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
                                  string_to_append);
 
   Value return_value;
-  CHECK(thread->CallMethod(object_reference, "append", parameters,
-                           &return_value));
+  CHECK(method_context->CallMethod(object_reference, "append", parameters,
+                                   &return_value));
 
   CHECK_EQ(return_value.local_type(), FakeLocalObject::kVoidLocalType);
   CHECK_EQ(return_value.type(), Value::EMPTY);
@@ -124,22 +125,22 @@ class CallMethodInNestedTransactions_ProgramObject : public TestLocalObject {
     return new CallMethodInNestedTransactions_ProgramObject();
   }
 
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
     LocalObject* const fake_local_object = new FakeLocalObject("a");
-    ObjectReference* const fake_local_object_reference = thread->CreateObject(
-        fake_local_object, "");
+    ObjectReference* const fake_local_object_reference =
+        method_context->CreateObject(fake_local_object, "");
 
-    CHECK(thread->BeginTransaction());
-    CallAppendMethod(thread, fake_local_object_reference, "b");
-    CHECK(thread->BeginTransaction());
-    CallAppendMethod(thread, fake_local_object_reference, "c");
-    CHECK(thread->EndTransaction());
-    CallAppendMethod(thread, fake_local_object_reference, "d");
-    CHECK(thread->EndTransaction());
+    CHECK(method_context->BeginTransaction());
+    CallAppendMethod(method_context, fake_local_object_reference, "b");
+    CHECK(method_context->BeginTransaction());
+    CallAppendMethod(method_context, fake_local_object_reference, "c");
+    CHECK(method_context->EndTransaction());
+    CallAppendMethod(method_context, fake_local_object_reference, "d");
+    CHECK(method_context->EndTransaction());
   }
 };
 
@@ -198,14 +199,14 @@ class CallBeginTransactionFromWithinMethod_FakeLocalObject
     return new CallBeginTransactionFromWithinMethod_FakeLocalObject();
   }
 
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
-    CHECK(thread->BeginTransaction());
+    CHECK(method_context->BeginTransaction());
 
-    ObjectReference* const new_object_reference = thread->CreateObject(
+    ObjectReference* const new_object_reference = method_context->CreateObject(
         new MockLocalObject(&mock_local_object_core_), "");
     return_value->set_object_reference(0, new_object_reference);
   }
@@ -221,17 +222,18 @@ class CallBeginTransactionFromWithinMethod_ProgramObject
     return new CallBeginTransactionFromWithinMethod_ProgramObject();
   }
 
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
-    ObjectReference* const fake_local_object_reference = thread->CreateObject(
-        new CallBeginTransactionFromWithinMethod_FakeLocalObject(), "");
+    ObjectReference* const fake_local_object_reference =
+        method_context->CreateObject(
+            new CallBeginTransactionFromWithinMethod_FakeLocalObject(), "");
 
     Value method_return_value;
-    CHECK(thread->CallMethod(fake_local_object_reference, "test-method",
-                             vector<Value>(), &method_return_value));
+    CHECK(method_context->CallMethod(fake_local_object_reference, "test-method",
+                                     vector<Value>(), &method_return_value));
   }
 };
 
@@ -272,9 +274,10 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
       new CallBeginTransactionFromWithinMethod_ProgramObject();
 
   // Run the program, which creates a fake local object and calls the
-  // "test-method" method on it. That method calls Thread::BeginTransaction,
-  // creates a new object, and returns the new object reference. The
-  // RecordingThread instance should create two implicit transactions:
+  // "test-method" method on it. That method calls
+  // MethodContext::BeginTransaction, creates a new object, and returns the new
+  // object reference. The RecordingThread instance should create two implicit
+  // transactions:
   //
   // The first transaction should contain the start of the "run" call, up to the
   // call to "test-method".
@@ -298,14 +301,14 @@ class CallEndTransactionFromWithinMethod_FakeLocalObject
     return new CallEndTransactionFromWithinMethod_FakeLocalObject();
   }
 
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
-    CHECK(thread->EndTransaction());
+    CHECK(method_context->EndTransaction());
 
-    ObjectReference* const new_object_reference = thread->CreateObject(
+    ObjectReference* const new_object_reference = method_context->CreateObject(
         new MockLocalObject(&mock_local_object_core_), "");
     return_value->set_object_reference(0, new_object_reference);
   }
@@ -321,20 +324,21 @@ class CallEndTransactionFromWithinMethod_ProgramObject
     return new CallEndTransactionFromWithinMethod_ProgramObject();
   }
 
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
   // Start an explicit transaction.
-    CHECK(thread->BeginTransaction());
+    CHECK(method_context->BeginTransaction());
 
-    ObjectReference* const fake_local_object_reference = thread->CreateObject(
-        new CallEndTransactionFromWithinMethod_FakeLocalObject(), "");
+    ObjectReference* const fake_local_object_reference =
+        method_context->CreateObject(
+            new CallEndTransactionFromWithinMethod_FakeLocalObject(), "");
 
     Value method_return_value;
-    CHECK(thread->CallMethod(fake_local_object_reference, "test-method",
-                             vector<Value>(), &method_return_value));
+    CHECK(method_context->CallMethod(fake_local_object_reference, "test-method",
+                                     vector<Value>(), &method_return_value));
   }
 };
 
@@ -381,8 +385,9 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
 
   // Run the program, which begins an explicit transaction, creates a fake local
   // object, and calls the "test-method" method on the object. That method calls
-  // Thread::EndTransaction, creates a new object, and returns the new object
-  // reference. The RecordingThread instance should create four transactions:
+  // MethodContext::EndTransaction, creates a new object, and returns the new
+  // object reference. The RecordingThread instance should create four
+  // transactions:
   //
   // The first transaction (implicit) should contain the start of the "run"
   // call, up to the call to BeginTransaction.
@@ -408,7 +413,7 @@ class CreateObjectInDifferentTransaction_ProgramObject
     return new CreateObjectInDifferentTransaction_ProgramObject();
   }
 
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
@@ -418,20 +423,20 @@ class CreateObjectInDifferentTransaction_ProgramObject
     // transaction, even though the content of the object was never committed.
     // (An object is not committed until it's involved in a method call.)
 
-    CHECK(thread->BeginTransaction());
-    ObjectReference* const object_reference1 = thread->CreateObject(
+    CHECK(method_context->BeginTransaction());
+    ObjectReference* const object_reference1 = method_context->CreateObject(
         new FakeLocalObject("lucy."), "");
-    ObjectReference* const object_reference2 = thread->CreateObject(
+    ObjectReference* const object_reference2 = method_context->CreateObject(
         new FakeLocalObject("ethel."), "");
     // This method call is here only to force a transaction to be created.
-    CallAppendMethod(thread, object_reference1, "ricky.");
-    CHECK(thread->EndTransaction());
+    CallAppendMethod(method_context, object_reference1, "ricky.");
+    CHECK(method_context->EndTransaction());
 
-    CHECK(thread->BeginTransaction());
+    CHECK(method_context->BeginTransaction());
     // object_reference2 should still be available, even though it was created
     // in an earlier transaction.
-    CallAppendMethod(thread, object_reference2, "fred.");
-    CHECK(thread->EndTransaction());
+    CallAppendMethod(method_context, object_reference2, "fred.");
+    CHECK(method_context->EndTransaction());
   }
 };
 
@@ -470,23 +475,24 @@ class RewindInPendingTransaction_FakeLocalObject : public TestLocalObject {
     return new RewindInPendingTransaction_FakeLocalObject();
   }
 
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
     if (method_name == "a") {
-      if (!thread->BeginTransaction()) {
+      if (!method_context->BeginTransaction()) {
         return;
       }
 
       Value sub_method_return_value;
-      if (!thread->CallMethod(self_object_reference, "b", vector<Value>(),
-                              &sub_method_return_value)) {
+      if (!method_context->CallMethod(self_object_reference, "b",
+                                      vector<Value>(),
+                                      &sub_method_return_value)) {
         return;
       }
 
-      if (!thread->EndTransaction()) {
+      if (!method_context->EndTransaction()) {
         return;
       }
     } else if (method_name == "b") {
@@ -503,17 +509,18 @@ class RewindInPendingTransaction_ProgramObject : public TestLocalObject {
     return new RewindInPendingTransaction_ProgramObject();
   }
 
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
-    ObjectReference* const fake_local_object_reference = thread->CreateObject(
-        new RewindInPendingTransaction_FakeLocalObject(), "");
+    ObjectReference* const fake_local_object_reference =
+        method_context->CreateObject(
+            new RewindInPendingTransaction_FakeLocalObject(), "");
 
     Value method_return_value;
-    CHECK(thread->CallMethod(fake_local_object_reference, "a", vector<Value>(),
-                             &method_return_value));
+    CHECK(method_context->CallMethod(fake_local_object_reference, "a",
+                                     vector<Value>(), &method_return_value));
   }
 };
 

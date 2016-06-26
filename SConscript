@@ -130,9 +130,9 @@ fake_engine_lib = ft_env.Library(
     target = 'fake_engine/fake_engine',
     source = Split("""
         fake_engine/create_standalone_peer.cc
+        fake_engine/fake_method_context.cc
         fake_engine/fake_object_reference.cc
         fake_engine/fake_peer.cc
-        fake_engine/fake_thread.cc
       """),
   )
 

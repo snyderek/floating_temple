@@ -20,7 +20,7 @@
 
 #include "base/integral_types.h"
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/zoo/bool_object.h"
 #include "toy_lang/zoo/int_object.h"
@@ -33,34 +33,35 @@ using std::vector;
 namespace floating_temple {
 namespace toy_lang {
 
-ObjectReference* MakeNoneObject(Thread* thread) {
-  CHECK(thread != nullptr);
+ObjectReference* MakeNoneObject(MethodContext* method_context) {
+  CHECK(method_context != nullptr);
   // TODO(dss): Consider having just a single instance of the "none" object.
-  return thread->CreateObject(new NoneObject(), "");
+  return method_context->CreateObject(new NoneObject(), "");
 }
 
-ObjectReference* WrapBool(Thread* thread, bool b) {
-  CHECK(thread != nullptr);
-  return thread->CreateObject(new BoolObject(b), "");
+ObjectReference* WrapBool(MethodContext* method_context, bool b) {
+  CHECK(method_context != nullptr);
+  return method_context->CreateObject(new BoolObject(b), "");
 }
 
-ObjectReference* WrapInt(Thread* thread, int64 n) {
-  CHECK(thread != nullptr);
-  return thread->CreateObject(new IntObject(n), "");
+ObjectReference* WrapInt(MethodContext* method_context, int64 n) {
+  CHECK(method_context != nullptr);
+  return method_context->CreateObject(new IntObject(n), "");
 }
 
-ObjectReference* WrapString(Thread* thread, const string& s) {
-  CHECK(thread != nullptr);
-  return thread->CreateObject(new StringObject(s), "");
+ObjectReference* WrapString(MethodContext* method_context, const string& s) {
+  CHECK(method_context != nullptr);
+  return method_context->CreateObject(new StringObject(s), "");
 }
 
-bool UnwrapBool(Thread* thread, ObjectReference* object_reference, bool* b) {
-  CHECK(thread != nullptr);
+bool UnwrapBool(MethodContext* method_context,
+                ObjectReference* object_reference, bool* b) {
+  CHECK(method_context != nullptr);
   CHECK(b != nullptr);
 
   Value value;
-  if (!thread->CallMethod(object_reference, "get_bool", vector<Value>(),
-                          &value)) {
+  if (!method_context->CallMethod(object_reference, "get_bool", vector<Value>(),
+                                  &value)) {
     return false;
   }
 
@@ -68,13 +69,14 @@ bool UnwrapBool(Thread* thread, ObjectReference* object_reference, bool* b) {
   return true;
 }
 
-bool UnwrapInt(Thread* thread, ObjectReference* object_reference, int64* n) {
-  CHECK(thread != nullptr);
+bool UnwrapInt(MethodContext* method_context, ObjectReference* object_reference,
+               int64* n) {
+  CHECK(method_context != nullptr);
   CHECK(n != nullptr);
 
   Value value;
-  if (!thread->CallMethod(object_reference, "get_int", vector<Value>(),
-                          &value)) {
+  if (!method_context->CallMethod(object_reference, "get_int", vector<Value>(),
+                                  &value)) {
     return false;
   }
 
@@ -82,14 +84,14 @@ bool UnwrapInt(Thread* thread, ObjectReference* object_reference, int64* n) {
   return true;
 }
 
-bool UnwrapString(Thread* thread, ObjectReference* object_reference,
-                  string* s) {
-  CHECK(thread != nullptr);
+bool UnwrapString(MethodContext* method_context,
+                  ObjectReference* object_reference, string* s) {
+  CHECK(method_context != nullptr);
   CHECK(s != nullptr);
 
   Value value;
-  if (!thread->CallMethod(object_reference, "get_string", vector<Value>(),
-                          &value)) {
+  if (!method_context->CallMethod(object_reference, "get_string",
+                                  vector<Value>(), &value)) {
     return false;
   }
 

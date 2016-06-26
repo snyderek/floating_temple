@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/zoo/list_object.h"
 #include "util/dump_context.h"
@@ -50,11 +50,12 @@ void ListFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* ListFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
 
   LocalObjectImpl* const local_object = new ListObject(parameters);
-  return thread->CreateObject(local_object, "");
+  return method_context->CreateObject(local_object, "");
 }
 
 }  // namespace toy_lang

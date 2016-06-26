@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
@@ -53,12 +53,13 @@ void MapIsSetFunction::PopulateObjectProto(
 }
 
 ObjectReference* MapIsSetFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   string key;
-  if (!UnwrapString(thread, parameters[1], &key)) {
+  if (!UnwrapString(method_context, parameters[1], &key)) {
     return nullptr;
   }
 
@@ -66,11 +67,12 @@ ObjectReference* MapIsSetFunction::Call(
   is_set_params[0].set_string_value(0, key);
 
   Value result;
-  if (!thread->CallMethod(parameters[0], "is_set", is_set_params, &result)) {
+  if (!method_context->CallMethod(parameters[0], "is_set", is_set_params,
+                                  &result)) {
     return nullptr;
   }
 
-  return WrapBool(thread, result.bool_value());
+  return WrapBool(method_context, result.bool_value());
 }
 
 }  // namespace toy_lang

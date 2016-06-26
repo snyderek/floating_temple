@@ -33,7 +33,7 @@ class MapSetFunction : public Function {
   void PopulateObjectProto(ObjectProto* object_proto,
                            SerializationContext* context) const override;
   ObjectReference* Call(
-      Thread* thread,
+      MethodContext* method_context,
       const std::vector<ObjectReference*>& parameters) const override;
 
  private:

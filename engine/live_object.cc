@@ -56,13 +56,14 @@ void LiveObject::Serialize(
   GetNode()->Serialize(data, object_references);
 }
 
-void LiveObject::InvokeMethod(Thread* thread,
+void LiveObject::InvokeMethod(MethodContext* method_context,
                               ObjectReferenceImpl* self_object_reference,
                               const string& method_name,
                               const vector<Value>& parameters,
                               Value* return_value) {
   LiveObjectNode* const new_node = GetNode()->InvokeMethod(
-      thread, self_object_reference, method_name, parameters, return_value);
+      method_context, self_object_reference, method_name, parameters,
+      return_value);
 
   LiveObjectNode* old_node = nullptr;
   {

@@ -25,9 +25,9 @@
 namespace floating_temple {
 
 class DumpContext;
+class MethodContext;
 class ObjectReference;
 class SerializationContext;
-class Thread;
 
 // TODO(dss): Rewrite the following paragraph. It's confusing.
 //
@@ -61,13 +61,13 @@ class LocalObject {
   //
   // If the method execution is successful, the return value from the method
   // will be placed in *return_value. If the method execution is not successful
-  // (because a call to Thread::CallMethod returned false), *return_value will
-  // be left unchanged.
+  // (because a call to MethodContext::CallMethod returned false), *return_value
+  // will be left unchanged.
   //
-  // This object does not store the Thread pointer.
+  // This object does not store the MethodContext pointer.
   //
   // TODO(dss): Support exceptions.
-  virtual void InvokeMethod(Thread* thread,
+  virtual void InvokeMethod(MethodContext* method_context,
                             ObjectReference* self_object_reference,
                             const std::string& method_name,
                             const std::vector<Value>& parameters,

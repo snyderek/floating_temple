@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 
 namespace floating_temple {
 namespace engine {
@@ -28,7 +28,7 @@ class LiveObject;
 class ObjectReferenceImpl;
 class RecordingThreadInternalInterface;
 
-class RecordingMethodContext : public Thread {
+class RecordingMethodContext : public MethodContext {
  public:
   RecordingMethodContext(
       RecordingThreadInternalInterface* recording_thread,

@@ -49,7 +49,7 @@ LocalObject* RangeIteratorObject::Clone() const {
   return new RangeIteratorObject(limit_, i_temp);
 }
 
-void RangeIteratorObject::InvokeMethod(Thread* thread,
+void RangeIteratorObject::InvokeMethod(MethodContext* method_context,
                                        ObjectReference* self_object_reference,
                                        const string& method_name,
                                        const vector<Value>& parameters,
@@ -67,7 +67,7 @@ void RangeIteratorObject::InvokeMethod(Thread* thread,
 
     MutexLock lock(&i_mu_);
     CHECK_LT(i_, limit_);
-    return_value->set_object_reference(0, WrapInt(thread, i_));
+    return_value->set_object_reference(0, WrapInt(method_context, i_));
     ++i_;
   } else {
     LOG(FATAL) << "Unsupported method: \"" << CEscape(method_name) << "\"";

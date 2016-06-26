@@ -50,17 +50,18 @@ void LessThanFunction::PopulateObjectProto(
 }
 
 ObjectReference* LessThanFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
   CHECK_EQ(parameters.size(), 2u);
 
   int64 operands[2];
   for (int i = 0; i < 2; ++i) {
-    if (!UnwrapInt(thread, parameters[i], &operands[i])) {
+    if (!UnwrapInt(method_context, parameters[i], &operands[i])) {
       return nullptr;
     }
   }
 
-  return WrapBool(thread, operands[0] < operands[1]);
+  return WrapBool(method_context, operands[0] < operands[1]);
 }
 
 }  // namespace toy_lang

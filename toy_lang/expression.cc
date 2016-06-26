@@ -25,7 +25,7 @@
 #include "base/integral_types.h"
 #include "base/logging.h"
 #include "base/string_printf.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/code_block.h"
 #include "toy_lang/get_serialized_expression_type.h"
@@ -45,16 +45,17 @@ namespace toy_lang {
 namespace {
 
 ObjectReference* EvaluateExpressionList(
-    const unordered_map<int, ObjectReference*>& symbol_bindings, Thread* thread,
+    const unordered_map<int, ObjectReference*>& symbol_bindings,
+    MethodContext* method_context,
     const vector<unique_ptr<Expression>>& expressions) {
-  CHECK(thread != nullptr);
+  CHECK(method_context != nullptr);
 
   const vector<unique_ptr<Expression>>::size_type size = expressions.size();
   vector<ObjectReference*> object_references(size);
 
   for (vector<unique_ptr<Expression>>::size_type i = 0; i < size; ++i) {
     ObjectReference* const object_reference = expressions[i]->Evaluate(
-        symbol_bindings, thread);
+        symbol_bindings, method_context);
 
     if (object_reference == nullptr) {
       return nullptr;
@@ -63,7 +64,7 @@ ObjectReference* EvaluateExpressionList(
     object_references[i] = object_reference;
   }
 
-  return thread->CreateObject(new ListObject(object_references), "");
+  return method_context->CreateObject(new ListObject(object_references), "");
 }
 
 }  // namespace
@@ -114,8 +115,8 @@ IntExpression::IntExpression(int64 n)
 
 ObjectReference* IntExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
-    Thread* thread) const {
-  return WrapInt(thread, n_);
+    MethodContext* method_context) const {
+  return WrapInt(method_context, n_);
 }
 
 void IntExpression::PopulateExpressionProto(
@@ -140,8 +141,8 @@ StringExpression::StringExpression(const string& s)
 
 ObjectReference* StringExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
-    Thread* thread) const {
-  return WrapString(thread, s_);
+    MethodContext* method_context) const {
+  return WrapString(method_context, s_);
 }
 
 void StringExpression::PopulateExpressionProto(
@@ -167,7 +168,7 @@ SymbolExpression::SymbolExpression(int symbol_id)
 
 ObjectReference* SymbolExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
-    Thread* thread) const {
+    MethodContext* method_context) const {
   const auto it = symbol_bindings.find(symbol_id_);
   CHECK(it != symbol_bindings.end());
   return it->second;
@@ -200,15 +201,15 @@ BlockExpression::BlockExpression(const shared_ptr<const Expression>& expression,
 
 ObjectReference* BlockExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
-    Thread* thread) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context) const {
+  CHECK(method_context != nullptr);
 
   CodeBlock* const code_block = new CodeBlock(expression_, symbol_bindings,
                                               parameter_symbol_ids_,
                                               local_symbol_ids_);
   LocalObject* const code_block_object = new CodeBlockObject(
       code_block);
-  return thread->CreateObject(code_block_object, "");
+  return method_context->CreateObject(code_block_object, "");
 }
 
 void BlockExpression::PopulateExpressionProto(
@@ -268,18 +269,18 @@ FunctionCallExpression::FunctionCallExpression(
 
 ObjectReference* FunctionCallExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
-    Thread* thread) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context) const {
+  CHECK(method_context != nullptr);
 
   ObjectReference* const function_object = function_->Evaluate(symbol_bindings,
-                                                               thread);
+                                                               method_context);
 
   if (function_object == nullptr) {
     return nullptr;
   }
 
   ObjectReference* const parameter_list_object = EvaluateExpressionList(
-      symbol_bindings, thread, parameters_);
+      symbol_bindings, method_context, parameters_);
 
   if (parameter_list_object == nullptr) {
     return nullptr;
@@ -289,8 +290,8 @@ ObjectReference* FunctionCallExpression::Evaluate(
   parameter_values[0].set_object_reference(0, parameter_list_object);
 
   Value return_value;
-  if (!thread->CallMethod(function_object, "call", parameter_values,
-                          &return_value)) {
+  if (!method_context->CallMethod(function_object, "call", parameter_values,
+                                  &return_value)) {
     return nullptr;
   }
 
@@ -355,8 +356,8 @@ ListExpression::ListExpression(const vector<Expression*>& list_items)
 
 ObjectReference* ListExpression::Evaluate(
     const unordered_map<int, ObjectReference*>& symbol_bindings,
-    Thread* thread) const {
-  return EvaluateExpressionList(symbol_bindings, thread, list_items_);
+    MethodContext* method_context) const {
+  return EvaluateExpressionList(symbol_bindings, method_context, list_items_);
 }
 
 void ListExpression::PopulateExpressionProto(

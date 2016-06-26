@@ -28,8 +28,8 @@ namespace floating_temple {
 
 class DeserializationContext;
 class LocalObject;
+class MethodContext;
 class ObjectReference;
-class Thread;
 
 namespace toy_lang {
 
@@ -43,7 +43,7 @@ class ProgramObject : public LocalObjectImpl {
   ~ProgramObject() override;
 
   LocalObject* Clone() const override;
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReference* self_object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,
@@ -59,7 +59,7 @@ class ProgramObject : public LocalObjectImpl {
 
  private:
   void ResolveExternalSymbol(
-      Thread* thread,
+      MethodContext* method_context,
       const std::string& symbol_name,
       bool visible,
       LocalObject* local_object,

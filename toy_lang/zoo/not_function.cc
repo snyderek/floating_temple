@@ -49,15 +49,16 @@ void NotFunction::PopulateObjectProto(ObjectProto* object_proto,
 }
 
 ObjectReference* NotFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
   CHECK_EQ(parameters.size(), 1u);
 
   bool condition = false;
-  if (!UnwrapBool(thread, parameters[0], &condition)) {
+  if (!UnwrapBool(method_context, parameters[0], &condition)) {
     return nullptr;
   }
 
-  return WrapBool(thread, !condition);
+  return WrapBool(method_context, !condition);
 }
 
 }  // namespace toy_lang

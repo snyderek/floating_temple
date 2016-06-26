@@ -56,7 +56,7 @@ size_t FakeLocalObject::Serialize(void* buffer, size_t buffer_size,
   return static_cast<size_t>(length);
 }
 
-void FakeLocalObject::InvokeMethod(Thread* thread,
+void FakeLocalObject::InvokeMethod(MethodContext* method_context,
                                    ObjectReference* self_object_reference,
                                    const string& method_name,
                                    const vector<Value>& parameters,

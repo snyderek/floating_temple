@@ -24,9 +24,9 @@
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
 #include "include/c++/deserialization_context.h"
+#include "include/c++/method_context.h"
 #include "include/c++/object_reference.h"
 #include "include/c++/serialization_context.h"
-#include "include/c++/thread.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
@@ -55,7 +55,7 @@ LocalObject* ListObject::Clone() const {
   return new ListObject(items_);
 }
 
-void ListObject::InvokeMethod(Thread* thread,
+void ListObject::InvokeMethod(MethodContext* method_context,
                               ObjectReference* self_object_reference,
                               const string& method_name,
                               const vector<Value>& parameters,
@@ -99,7 +99,7 @@ void ListObject::InvokeMethod(Thread* thread,
         }
 
         string item_str;
-        if (!UnwrapString(thread, *it, &item_str)) {
+        if (!UnwrapString(method_context, *it, &item_str)) {
           return;
         }
 

@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "include/c++/thread.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "toy_lang/proto/serialization.pb.h"
 #include "toy_lang/wrap.h"
@@ -51,19 +51,21 @@ void SetVariableFunction::PopulateObjectProto(
 }
 
 ObjectReference* SetVariableFunction::Call(
-    Thread* thread, const vector<ObjectReference*>& parameters) const {
-  CHECK(thread != nullptr);
+    MethodContext* method_context,
+    const vector<ObjectReference*>& parameters) const {
+  CHECK(method_context != nullptr);
   CHECK_EQ(parameters.size(), 2u);
 
   vector<Value> set_parameters(1);
   set_parameters[0].set_object_reference(0, parameters[1]);
 
   Value dummy;
-  if (!thread->CallMethod(parameters[0], "set", set_parameters, &dummy)) {
+  if (!method_context->CallMethod(parameters[0], "set", set_parameters,
+                                  &dummy)) {
     return nullptr;
   }
 
-  return MakeNoneObject(thread);
+  return MakeNoneObject(method_context);
 }
 
 }  // namespace toy_lang

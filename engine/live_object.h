@@ -28,7 +28,7 @@ namespace floating_temple {
 
 class DumpContext;
 class LocalObject;
-class Thread;
+class MethodContext;
 
 namespace engine {
 
@@ -45,7 +45,7 @@ class LiveObject {
   std::shared_ptr<LiveObject> Clone() const;
   void Serialize(std::string* data,
                  std::vector<ObjectReferenceImpl*>* object_references) const;
-  void InvokeMethod(Thread* thread,
+  void InvokeMethod(MethodContext* method_context,
                     ObjectReferenceImpl* self_object_reference,
                     const std::string& method_name,
                     const std::vector<Value>& parameters,

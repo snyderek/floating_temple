@@ -55,13 +55,13 @@ size_t MockLocalObject::Serialize(void* buffer, size_t buffer_size,
   return data_size;
 }
 
-void MockLocalObject::InvokeMethod(Thread* thread,
+void MockLocalObject::InvokeMethod(MethodContext* method_context,
                                    ObjectReference* self_object_reference,
                                    const string& method_name,
                                    const vector<Value>& parameters,
                                    Value* return_value) {
-  core_->InvokeMethod(thread, self_object_reference, method_name, parameters,
-                      return_value);
+  core_->InvokeMethod(method_context, self_object_reference, method_name,
+                      parameters, return_value);
 }
 
 void MockLocalObject::Dump(DumpContext* dc) const {

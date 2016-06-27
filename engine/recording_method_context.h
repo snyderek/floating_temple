@@ -28,6 +28,8 @@ class LiveObject;
 class ObjectReferenceImpl;
 class RecordingThreadInternalInterface;
 
+// TODO(dss): Rename this class. It's no longer used by just the RecordingThread
+// class.
 class RecordingMethodContext : public MethodContext {
  public:
   RecordingMethodContext(

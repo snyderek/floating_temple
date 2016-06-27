@@ -31,6 +31,8 @@ namespace engine {
 class LiveObject;
 class ObjectReferenceImpl;
 
+// TODO(dss): Rename this interface. It's no longer implemented by just the
+// RecordingThread class.
 class RecordingThreadInternalInterface {
  public:
   virtual ~RecordingThreadInternalInterface() {}

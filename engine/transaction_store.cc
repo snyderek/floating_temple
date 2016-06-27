@@ -333,6 +333,8 @@ void TransactionStore::CreateTransaction(
 
 bool TransactionStore::ObjectsAreIdentical(const ObjectReferenceImpl* a,
                                            const ObjectReferenceImpl* b) const {
+  // TODO(dss): Move this code to PlaybackThread::ObjectsAreIdentical.
+
   CHECK(a != nullptr);
   CHECK(b != nullptr);
 

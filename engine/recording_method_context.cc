@@ -44,6 +44,12 @@ RecordingMethodContext::RecordingMethodContext(
 RecordingMethodContext::~RecordingMethodContext() {
 }
 
+void RecordingMethodContext::set_recording_thread(
+    RecordingThreadInternalInterface* recording_thread) {
+  CHECK(recording_thread != nullptr);
+  recording_thread_ = recording_thread;
+}
+
 bool RecordingMethodContext::BeginTransaction() {
   return recording_thread_->BeginTransaction(current_object_reference_,
                                              current_live_object_);

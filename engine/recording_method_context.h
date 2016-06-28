@@ -38,6 +38,8 @@ class RecordingMethodContext : public MethodContext {
       const std::shared_ptr<LiveObject>& current_live_object);
   ~RecordingMethodContext() override;
 
+  void set_recording_thread(RecordingThreadInternalInterface* recording_thread);
+
   bool BeginTransaction() override;
   bool EndTransaction() override;
   ObjectReference* CreateObject(LocalObject* initial_version,
@@ -50,7 +52,7 @@ class RecordingMethodContext : public MethodContext {
                            const ObjectReference* b) const override;
 
  private:
-  RecordingThreadInternalInterface* const recording_thread_;
+  RecordingThreadInternalInterface* recording_thread_;
   ObjectReferenceImpl* const current_object_reference_;
   const std::shared_ptr<LiveObject> current_live_object_;
 

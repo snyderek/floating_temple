@@ -548,7 +548,13 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
   //   Transaction 2:
   //     BEGIN_TRANSACTION
   //
+  //   Aborted Transaction:
+  //     METHOD_CALL "b"
+  //
   //   <Rewind Execution; Resume Execution>
+  //
+  //   Replay Transaction:
+  //     BEGIN_TRANSACTION
   //
   //   Transaction 3:
   //     METHOD_CALL "b"

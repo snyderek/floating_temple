@@ -28,7 +28,7 @@
 #include "engine/committed_event.h"
 #include "engine/committed_value.h"
 #include "engine/event_queue.h"
-#include "engine/recording_thread_internal_interface.h"
+#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 #include "util/bool_variable.h"
 #include "util/state_variable.h"
@@ -45,7 +45,7 @@ class ObjectReferenceImpl;
 class SharedObject;
 class TransactionStoreInternalInterface;
 
-class PlaybackThread : private RecordingThreadInternalInterface {
+class PlaybackThread : private MethodContext {
  public:
   PlaybackThread();
   ~PlaybackThread() override;
@@ -111,22 +111,16 @@ class PlaybackThread : private RecordingThreadInternalInterface {
 
   void SetConflictDetected(const std::string& description);
 
-  bool BeginTransaction(
-      ObjectReferenceImpl* caller_object_reference,
-      const std::shared_ptr<LiveObject>& caller_live_object) override;
-  bool EndTransaction(
-      ObjectReferenceImpl* caller_object_reference,
-      const std::shared_ptr<LiveObject>& caller_live_object) override;
-  ObjectReferenceImpl* CreateObject(LocalObject* initial_version,
-                                    const std::string& name) override;
-  bool CallMethod(ObjectReferenceImpl* caller_object_reference,
-                  const std::shared_ptr<LiveObject>& caller_live_object,
-                  ObjectReferenceImpl* callee_object_reference,
+  bool BeginTransaction() override;
+  bool EndTransaction() override;
+  ObjectReference* CreateObject(LocalObject* initial_version,
+                                const std::string& name) override;
+  bool CallMethod(ObjectReference* object_reference,
                   const std::string& method_name,
                   const std::vector<Value>& parameters,
                   Value* return_value) override;
-  bool ObjectsAreIdentical(const ObjectReferenceImpl* a,
-                           const ObjectReferenceImpl* b) const override;
+  bool ObjectsAreIdentical(const ObjectReference* a,
+                           const ObjectReference* b) const override;
 
   static void* ReplayThreadMain(void* playback_thread_raw);
 

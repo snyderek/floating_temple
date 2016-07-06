@@ -34,7 +34,6 @@
 #include "engine/event_queue.h"
 #include "engine/live_object.h"
 #include "engine/object_reference_impl.h"
-#include "engine/recording_method_context.h"
 #include "engine/shared_object.h"
 #include "engine/transaction_store_internal_interface.h"
 #include "include/c++/local_object.h"
@@ -178,11 +177,9 @@ void PlaybackThread::DoMethodCall() {
   ObjectReferenceImpl* const object_reference =
       shared_object_->GetOrCreateObjectReference();
 
-  RecordingMethodContext method_context(this, object_reference, live_object_);
-
   Value return_value;
-  live_object_->InvokeMethod(&method_context, object_reference, method_name,
-                             parameters, &return_value);
+  live_object_->InvokeMethod(this, object_reference, method_name, parameters,
+                             &return_value);
 
   if (conflict_detected_.Get() ||
       !CheckNextEventType(CommittedEvent::METHOD_RETURN)) {
@@ -242,10 +239,8 @@ void PlaybackThread::DoSelfMethodCall(ObjectReferenceImpl* object_reference,
     return;
   }
 
-  RecordingMethodContext method_context(this, object_reference, live_object_);
-
-  live_object_->InvokeMethod(&method_context, object_reference, method_name,
-                             parameters, return_value);
+  live_object_->InvokeMethod(this, object_reference, method_name, parameters,
+                             return_value);
 
   if (conflict_detected_.Get() ||
       !CheckNextEventType(CommittedEvent::SELF_METHOD_RETURN)) {
@@ -522,9 +517,7 @@ void PlaybackThread::SetConflictDetected(const string& description) {
   conflict_detected_.Set(true);
 }
 
-bool PlaybackThread::BeginTransaction(
-    ObjectReferenceImpl* caller_object_reference,
-    const shared_ptr<LiveObject>& caller_live_object) {
+bool PlaybackThread::BeginTransaction() {
   if (conflict_detected_.Get() ||
       !CheckNextEventType(CommittedEvent::BEGIN_TRANSACTION)) {
     return false;
@@ -534,9 +527,7 @@ bool PlaybackThread::BeginTransaction(
   return HasNextEvent();
 }
 
-bool PlaybackThread::EndTransaction(
-    ObjectReferenceImpl* caller_object_reference,
-    const shared_ptr<LiveObject>& caller_live_object) {
+bool PlaybackThread::EndTransaction() {
   if (conflict_detected_.Get() ||
       !CheckNextEventType(CommittedEvent::END_TRANSACTION)) {
     return false;
@@ -546,8 +537,8 @@ bool PlaybackThread::EndTransaction(
   return HasNextEvent();
 }
 
-ObjectReferenceImpl* PlaybackThread::CreateObject(LocalObject* initial_version,
-                                                  const string& name) {
+ObjectReference* PlaybackThread::CreateObject(LocalObject* initial_version,
+                                              const string& name) {
   CHECK(initial_version != nullptr);
 
   delete initial_version;
@@ -562,18 +553,18 @@ ObjectReferenceImpl* PlaybackThread::CreateObject(LocalObject* initial_version,
   }
 }
 
-bool PlaybackThread::CallMethod(
-    ObjectReferenceImpl* caller_object_reference,
-    const shared_ptr<LiveObject>& caller_live_object,
-    ObjectReferenceImpl* callee_object_reference,
-    const string& method_name,
-    const vector<Value>& parameters,
-    Value* return_value) {
+bool PlaybackThread::CallMethod(ObjectReference* object_reference,
+                                const string& method_name,
+                                const vector<Value>& parameters,
+                                Value* return_value) {
   CHECK(!method_name.empty());
 
   if (conflict_detected_.Get() || !HasNextEvent()) {
     return false;
   }
+
+  ObjectReferenceImpl* const callee_object_reference =
+      static_cast<ObjectReferenceImpl*>(object_reference);
 
   if (shared_object_->HasObjectReference(callee_object_reference)) {
     DoSelfMethodCall(callee_object_reference, method_name, parameters,
@@ -586,9 +577,11 @@ bool PlaybackThread::CallMethod(
   return !conflict_detected_.Get() && HasNextEvent();
 }
 
-bool PlaybackThread::ObjectsAreIdentical(const ObjectReferenceImpl* a,
-                                         const ObjectReferenceImpl* b) const {
-  return transaction_store_->ObjectsAreIdentical(a, b);
+bool PlaybackThread::ObjectsAreIdentical(const ObjectReference* a,
+                                         const ObjectReference* b) const {
+  return transaction_store_->ObjectsAreIdentical(
+      static_cast<const ObjectReferenceImpl*>(a),
+      static_cast<const ObjectReferenceImpl*>(b));
 }
 
 // static

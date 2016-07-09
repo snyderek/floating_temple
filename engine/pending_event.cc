@@ -119,6 +119,10 @@ BeginTransactionPendingEvent::BeginTransactionPendingEvent(
           CHECK_NOTNULL(prev_object_reference)) {
 }
 
+PendingEvent* BeginTransactionPendingEvent::Clone() const {
+  return new BeginTransactionPendingEvent(prev_object_reference());
+}
+
 void BeginTransactionPendingEvent::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
@@ -138,6 +142,10 @@ EndTransactionPendingEvent::EndTransactionPendingEvent(
           unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>(),
           unordered_set<ObjectReferenceImpl*>(),
           CHECK_NOTNULL(prev_object_reference)) {
+}
+
+PendingEvent* EndTransactionPendingEvent::Clone() const {
+  return new EndTransactionPendingEvent(prev_object_reference());
 }
 
 void EndTransactionPendingEvent::Dump(DumpContext* dc) const {
@@ -178,6 +186,13 @@ void MethodCallPendingEvent::GetMethodCall(
   *next_object_reference = next_object_reference_;
   *method_name = &method_name_;
   *parameters = &parameters_;
+}
+
+PendingEvent* MethodCallPendingEvent::Clone() const {
+  return new MethodCallPendingEvent(live_objects(), new_object_references(),
+                                    prev_object_reference(),
+                                    next_object_reference_, method_name_,
+                                    parameters_);
 }
 
 void MethodCallPendingEvent::Dump(DumpContext* dc) const {
@@ -226,6 +241,12 @@ void MethodReturnPendingEvent::GetMethodReturn(
 
   *next_object_reference = next_object_reference_;
   *return_value = &return_value_;
+}
+
+PendingEvent* MethodReturnPendingEvent::Clone() const {
+  return new MethodReturnPendingEvent(live_objects(), new_object_references(),
+                                      prev_object_reference(),
+                                      next_object_reference_, return_value_);
 }
 
 void MethodReturnPendingEvent::Dump(DumpContext* dc) const {

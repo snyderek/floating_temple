@@ -67,6 +67,7 @@ class PendingEvent {
   virtual void GetMethodReturn(ObjectReferenceImpl** next_object_reference,
                                const Value** return_value) const;
 
+  virtual PendingEvent* Clone() const = 0;
   virtual void Dump(DumpContext* dc) const = 0;
 
   static std::string GetTypeString(Type event_type);
@@ -88,6 +89,7 @@ class BeginTransactionPendingEvent : public PendingEvent {
       ObjectReferenceImpl* prev_object_reference);
 
   Type type() const override { return BEGIN_TRANSACTION; }
+  PendingEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
@@ -101,6 +103,7 @@ class EndTransactionPendingEvent : public PendingEvent {
       ObjectReferenceImpl* prev_object_reference);
 
   Type type() const override { return END_TRANSACTION; }
+  PendingEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
@@ -123,6 +126,7 @@ class MethodCallPendingEvent : public PendingEvent {
   void GetMethodCall(ObjectReferenceImpl** next_object_reference,
                      const std::string** method_name,
                      const std::vector<Value>** parameters) const override;
+  PendingEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
@@ -147,6 +151,7 @@ class MethodReturnPendingEvent : public PendingEvent {
   Type type() const override { return METHOD_RETURN; }
   void GetMethodReturn(ObjectReferenceImpl** next_object_reference,
                        const Value** return_value) const override;
+  PendingEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:

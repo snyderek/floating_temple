@@ -246,9 +246,6 @@ bool RecordingThread::CallMethodHelper(
       pending_transaction_->base_transaction_id();
 
   for (;;) {
-    // TODO(dss): If the caller object has been modified by another peer since
-    // the method was called, rewind.
-
     const shared_ptr<LiveObject> callee_live_object_temp =
         pending_transaction_->GetLiveObject(callee_object_reference);
     RecordingMethodContext method_context(this, callee_object_reference,

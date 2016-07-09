@@ -44,17 +44,6 @@ namespace floating_temple {
 class ObjectReference;
 
 namespace engine {
-namespace {
-
-ObjectReferenceImpl* GetObjectReferenceForEvent(
-    ObjectReferenceImpl* object_reference) {
-  if (object_reference != nullptr) {
-    return object_reference;
-  }
-  return nullptr;
-}
-
-}  // namespace
 
 RecordingThread::RecordingThread(
     TransactionStoreInternalInterface* transaction_store)
@@ -207,10 +196,8 @@ bool RecordingThread::CallMethod(
     }
 
     PendingEvent* const pending_event = new MethodCallPendingEvent(
-        live_objects, new_object_references,
-        GetObjectReferenceForEvent(caller_object_reference),
-        GetObjectReferenceForEvent(callee_object_reference), method_name,
-        parameters);
+        live_objects, new_object_references, caller_object_reference,
+        callee_object_reference, method_name, parameters);
     AddTransactionEvent(pending_event, caller_object_reference,
                         caller_live_object);
   }
@@ -233,9 +220,8 @@ bool RecordingThread::CallMethod(
     CheckIfValueIsNew(*return_value, &live_objects, &new_object_references);
 
     PendingEvent* const pending_event = new MethodReturnPendingEvent(
-        live_objects, new_object_references,
-        GetObjectReferenceForEvent(callee_object_reference),
-        GetObjectReferenceForEvent(caller_object_reference), *return_value);
+        live_objects, new_object_references, callee_object_reference,
+        caller_object_reference, *return_value);
     AddTransactionEvent(pending_event, callee_object_reference,
                         callee_live_object);
   }

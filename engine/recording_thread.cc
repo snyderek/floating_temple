@@ -48,8 +48,10 @@ namespace engine {
 RecordingThread::RecordingThread(
     TransactionStoreInternalInterface* transaction_store)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
-      pending_transaction_(new PendingTransaction(transaction_store,
-                                                  MIN_TRANSACTION_ID)) {
+      pending_transaction_(
+          new PendingTransaction(
+              transaction_store, MIN_TRANSACTION_ID,
+              transaction_store->GetCurrentSequencePoint())) {
 }
 
 RecordingThread::~RecordingThread() {
@@ -271,8 +273,9 @@ bool RecordingThread::CallMethodHelper(
         // current method call. Discard the old pending transaction and call
         // the child method again.
         pending_transaction_.reset(
-            new PendingTransaction(transaction_store_,
-                                   method_base_transaction_id));
+            new PendingTransaction(
+                transaction_store_, method_base_transaction_id,
+                transaction_store_->GetCurrentSequencePoint()));
 
         // TODO(dss): Replace method calls with mocks until execution has
         // proceeded past the last unreverted transaction.
@@ -313,8 +316,9 @@ void RecordingThread::CommitTransaction() {
     CHECK_EQ(new_objects_.erase(object_reference), 1u);
   }
 
-  pending_transaction_.reset(new PendingTransaction(transaction_store_,
-                                                    transaction_id));
+  pending_transaction_.reset(
+      new PendingTransaction(transaction_store_, transaction_id,
+                             transaction_store_->GetCurrentSequencePoint()));
 }
 
 void RecordingThread::CheckIfValueIsNew(

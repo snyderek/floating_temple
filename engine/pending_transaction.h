@@ -35,8 +35,11 @@ class TransactionStoreInternalInterface;
 
 class PendingTransaction {
  public:
+  // Does not take ownership of *transaction_store. Takes ownership of
+  // *sequence_point.
   PendingTransaction(TransactionStoreInternalInterface* transaction_store,
-                     const TransactionId& base_transaction_id);
+                     const TransactionId& base_transaction_id,
+                     SequencePoint* sequence_point);
   ~PendingTransaction();
 
   const TransactionId& base_transaction_id() const
@@ -63,15 +66,12 @@ class PendingTransaction {
               std::unordered_set<ObjectReferenceImpl*>* new_objects);
 
  private:
-  const SequencePoint* GetSequencePoint();
-
   void LogDebugInfo() const;
 
   TransactionStoreInternalInterface* const transaction_store_;
   // ID of the committed transaction that this pending transaction is based on.
   const TransactionId base_transaction_id_;
-
-  std::unique_ptr<SequencePoint> sequence_point_;
+  const std::unique_ptr<SequencePoint> sequence_point_;
 
   std::vector<std::unique_ptr<PendingEvent>> events_;
   std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>

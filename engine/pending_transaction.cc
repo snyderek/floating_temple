@@ -41,9 +41,10 @@ namespace engine {
 
 PendingTransaction::PendingTransaction(
     TransactionStoreInternalInterface* transaction_store,
-    const TransactionId& base_transaction_id)
+    const TransactionId& base_transaction_id, SequencePoint* sequence_point)
     : transaction_store_(CHECK_NOTNULL(transaction_store)),
       base_transaction_id_(base_transaction_id),
+      sequence_point_(CHECK_NOTNULL(sequence_point)),
       transaction_level_(0) {
 }
 
@@ -59,7 +60,7 @@ shared_ptr<LiveObject> PendingTransaction::GetLiveObject(
   if (live_object.get() == nullptr) {
     const shared_ptr<const LiveObject> existing_live_object =
         transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
-                                                         GetSequencePoint(),
+                                                         sequence_point_.get(),
                                                          true);
     live_object = existing_live_object->Clone();
   }
@@ -70,7 +71,7 @@ shared_ptr<LiveObject> PendingTransaction::GetLiveObject(
 bool PendingTransaction::IsObjectKnown(ObjectReferenceImpl* object_reference) {
   const shared_ptr<const LiveObject> existing_live_object =
       transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
-                                                       GetSequencePoint(),
+                                                       sequence_point_.get(),
                                                        false);
   return existing_live_object.get() != nullptr;
 }
@@ -142,20 +143,11 @@ void PendingTransaction::Commit(
     transaction_store_->CreateTransaction(events_to_commit,
                                           &committed_transaction_id,
                                           modified_objects_to_commit,
-                                          GetSequencePoint());
-
-    sequence_point_.reset(nullptr);
+                                          sequence_point_.get());
   }
 
   transaction_id->Swap(&committed_transaction_id);
   new_objects->swap(new_objects_);
-}
-
-const SequencePoint* PendingTransaction::GetSequencePoint() {
-  if (sequence_point_.get() == nullptr) {
-    sequence_point_.reset(transaction_store_->GetCurrentSequencePoint());
-  }
-  return sequence_point_.get();
 }
 
 void PendingTransaction::LogDebugInfo() const {

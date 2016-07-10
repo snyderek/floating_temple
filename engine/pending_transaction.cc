@@ -151,49 +151,6 @@ void PendingTransaction::Commit(
   new_objects->swap(new_objects_);
 }
 
-PendingTransaction* PendingTransaction::Clone() const {
-  vector<unique_ptr<PendingEvent>> events_copy;
-  events_copy.reserve(events_.size());
-  for (const auto& event : events_) {
-    events_copy.emplace_back(event->Clone());
-  }
-
-  unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>
-      modified_objects_copy;
-  modified_objects_copy.reserve(modified_objects_.size());
-  for (const auto& modified_object_pair : modified_objects_) {
-    modified_objects_copy.emplace(modified_object_pair.first,
-                                  modified_object_pair.second->Clone());
-  }
-
-  return new PendingTransaction(transaction_store_, base_transaction_id_,
-                                sequence_point_->Clone(), &events_copy,
-                                &modified_objects_copy, new_objects_,
-                                transaction_level_);
-}
-
-PendingTransaction::PendingTransaction(
-    TransactionStoreInternalInterface* transaction_store,
-    const TransactionId& base_transaction_id,
-    SequencePoint* sequence_point,
-    vector<unique_ptr<PendingEvent>>* events,
-    unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>*
-        modified_objects,
-    const unordered_set<ObjectReferenceImpl*>& new_objects,
-    int transaction_level)
-    : transaction_store_(CHECK_NOTNULL(transaction_store)),
-      base_transaction_id_(base_transaction_id),
-      sequence_point_(CHECK_NOTNULL(sequence_point)),
-      new_objects_(new_objects),
-      transaction_level_(transaction_level) {
-  CHECK(events != nullptr);
-  CHECK(modified_objects != nullptr);
-  CHECK_GE(transaction_level, 0);
-
-  events_.swap(*events);
-  modified_objects_.swap(*modified_objects);
-}
-
 void PendingTransaction::LogDebugInfo() const {
   const vector<unique_ptr<PendingEvent>>::size_type event_count =
       events_.size();

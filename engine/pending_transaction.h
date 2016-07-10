@@ -65,19 +65,7 @@ class PendingTransaction {
   void Commit(TransactionId* transaction_id,
               std::unordered_set<ObjectReferenceImpl*>* new_objects);
 
-  PendingTransaction* Clone() const;
-
  private:
-  PendingTransaction(
-      TransactionStoreInternalInterface* transaction_store,
-      const TransactionId& base_transaction_id,
-      SequencePoint* sequence_point,
-      std::vector<std::unique_ptr<PendingEvent>>* events,
-      std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>*
-          modified_objects,
-      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
-      int transaction_level);
-
   void LogDebugInfo() const;
 
   TransactionStoreInternalInterface* const transaction_store_;

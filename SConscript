@@ -60,7 +60,6 @@ engine_lib = ft_env.Library(
         engine/canonical_peer.cc
         engine/canonical_peer_map.cc
         engine/committed_event.cc
-        engine/committed_value.cc
         engine/connection_manager.cc
         engine/convert_value.cc
         engine/create_network_peer.cc

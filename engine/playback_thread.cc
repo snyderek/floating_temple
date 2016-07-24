@@ -29,7 +29,6 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "engine/committed_event.h"
-#include "engine/committed_value.h"
 #include "engine/convert_value.h"
 #include "engine/event_queue.h"
 #include "engine/live_object.h"
@@ -155,7 +154,7 @@ void PlaybackThread::DoMethodCall() {
   {
     SharedObject* caller = nullptr;
     const string* method_name_temp = nullptr;
-    const vector<CommittedValue>* committed_parameters = nullptr;
+    const vector<Value>* committed_parameters = nullptr;
 
     GetNextEvent()->GetMethodCall(&caller, &method_name_temp,
                                   &committed_parameters);
@@ -163,11 +162,7 @@ void PlaybackThread::DoMethodCall() {
     method_name = *method_name_temp;
     VLOG(2) << "method_name == \"" << CEscape(method_name) << "\"";
 
-    parameters.resize(committed_parameters->size());
-    for (vector<CommittedValue>::size_type i = 0;
-         i < committed_parameters->size(); ++i) {
-      ConvertCommittedValueToValue((*committed_parameters)[i], &parameters[i]);
-    }
+    parameters = *committed_parameters;
   }
 
   if (!HasNextEvent()) {
@@ -188,7 +183,7 @@ void PlaybackThread::DoMethodCall() {
 
   {
     SharedObject* caller = nullptr;
-    const CommittedValue* expected_return_value = nullptr;
+    const Value* expected_return_value = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
     event->GetMethodReturn(&caller, &expected_return_value);
@@ -221,7 +216,7 @@ void PlaybackThread::DoSelfMethodCall(ObjectReferenceImpl* object_reference,
 
   {
     const string* expected_method_name = nullptr;
-    const vector<CommittedValue>* expected_parameters = nullptr;
+    const vector<Value>* expected_parameters = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
     event->GetSelfMethodCall(&expected_method_name, &expected_parameters);
@@ -248,7 +243,7 @@ void PlaybackThread::DoSelfMethodCall(ObjectReferenceImpl* object_reference,
   }
 
   {
-    const CommittedValue* expected_return_value = nullptr;
+    const Value* expected_return_value = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
     event->GetSelfMethodReturn(&expected_return_value);
@@ -267,6 +262,7 @@ void PlaybackThread::DoSubMethodCall(ObjectReferenceImpl* object_reference,
                                      const vector<Value>& parameters,
                                      Value* return_value) {
   CHECK(!conflict_detected_.Get());
+  CHECK(return_value != nullptr);
 
   if (!CheckNextEventType(CommittedEvent::SUB_METHOD_CALL)) {
     return;
@@ -275,7 +271,7 @@ void PlaybackThread::DoSubMethodCall(ObjectReferenceImpl* object_reference,
   {
     SharedObject* callee = nullptr;
     const string* expected_method_name = nullptr;
-    const vector<CommittedValue>* expected_parameters = nullptr;
+    const vector<Value>* expected_parameters = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
     event->GetSubMethodCall(&callee, &expected_method_name,
@@ -310,11 +306,11 @@ void PlaybackThread::DoSubMethodCall(ObjectReferenceImpl* object_reference,
 
   {
     SharedObject* callee = nullptr;
-    const CommittedValue* expected_return_value = nullptr;
+    const Value* expected_return_value = nullptr;
 
     GetNextEvent()->GetSubMethodReturn(&callee, &expected_return_value);
 
-    ConvertCommittedValueToValue(*expected_return_value, return_value);
+    *return_value = *expected_return_value;
   }
 }
 
@@ -388,7 +384,7 @@ bool PlaybackThread::CheckNextEventType(
 bool PlaybackThread::MethodCallMatches(
     SharedObject* expected_shared_object,
     const string& expected_method_name,
-    const vector<CommittedValue>& expected_parameters,
+    const vector<Value>& expected_parameters,
     ObjectReferenceImpl* object_reference,
     const string& method_name,
     const vector<Value>& parameters,
@@ -413,9 +409,8 @@ bool PlaybackThread::MethodCallMatches(
     return false;
   }
 
-  for (vector<CommittedValue>::size_type i = 0; i < expected_parameters.size();
-       ++i) {
-    const CommittedValue& expected_parameter = expected_parameters[i];
+  for (vector<Value>::size_type i = 0; i < expected_parameters.size(); ++i) {
+    const Value& expected_parameter = expected_parameters[i];
 
     if (!ValueMatches(expected_parameter, parameters[i], new_shared_objects)) {
       VLOG(2) << "Parameter " << i << ": values don't match.";
@@ -427,23 +422,26 @@ bool PlaybackThread::MethodCallMatches(
 }
 
 #define COMPARE_FIELDS(enum_const, getter_method) \
-  case CommittedValue::enum_const: \
-    return pending_value_type == Value::enum_const && \
-        committed_value.getter_method() == pending_value.getter_method();
+  case Value::enum_const: \
+    return committed_value.getter_method() == pending_value.getter_method();
 
 bool PlaybackThread::ValueMatches(
-    const CommittedValue& committed_value, const Value& pending_value,
+    const Value& committed_value, const Value& pending_value,
     const unordered_set<SharedObject*>& new_shared_objects) {
   if (committed_value.local_type() != pending_value.local_type()) {
     return false;
   }
 
-  const CommittedValue::Type committed_value_type = committed_value.type();
+  const Value::Type committed_value_type = committed_value.type();
   const Value::Type pending_value_type = pending_value.type();
 
+  if (committed_value_type != pending_value_type) {
+    return false;
+  }
+
   switch (committed_value_type) {
-    case CommittedValue::EMPTY:
-      return pending_value_type == Value::EMPTY;
+    case Value::EMPTY:
+      return true;
 
     COMPARE_FIELDS(DOUBLE, double_value);
     COMPARE_FIELDS(FLOAT, float_value);
@@ -453,12 +451,12 @@ bool PlaybackThread::ValueMatches(
     COMPARE_FIELDS(STRING, string_value);
     COMPARE_FIELDS(BYTES, bytes_value);
 
-    case CommittedValue::SHARED_OBJECT:
-      return pending_value_type == Value::OBJECT_REFERENCE &&
-          ObjectMatches(committed_value.shared_object(),
-                        static_cast<ObjectReferenceImpl*>(
-                            pending_value.object_reference()),
-                        new_shared_objects);
+    case Value::OBJECT_REFERENCE:
+      return ObjectMatches(
+          static_cast<ObjectReferenceImpl*>(committed_value.object_reference())
+              ->shared_object(),
+          static_cast<ObjectReferenceImpl*>(pending_value.object_reference()),
+          new_shared_objects);
 
     default:
       LOG(FATAL) << "Unexpected committed value type: "

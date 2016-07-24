@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "engine/committed_value.h"
+#include "include/c++/value.h"
 
 namespace floating_temple {
 
@@ -58,20 +58,19 @@ class CommittedEvent {
 
   virtual void GetObjectCreation(
       std::shared_ptr<const LiveObject>* live_object) const;
-  virtual void GetMethodCall(
-      SharedObject** caller, const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const;
+  virtual void GetMethodCall(SharedObject** caller,
+                             const std::string** method_name,
+                             const std::vector<Value>** parameters) const;
   virtual void GetMethodReturn(SharedObject** caller,
-                               const CommittedValue** return_value) const;
-  virtual void GetSubMethodCall(
-      SharedObject** callee, const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const;
+                               const Value** return_value) const;
+  virtual void GetSubMethodCall(SharedObject** callee,
+                                const std::string** method_name,
+                                const std::vector<Value>** parameters) const;
   virtual void GetSubMethodReturn(SharedObject** callee,
-                                  const CommittedValue** return_value) const;
-  virtual void GetSelfMethodCall(
-      const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const;
-  virtual void GetSelfMethodReturn(const CommittedValue** return_value) const;
+                                  const Value** return_value) const;
+  virtual void GetSelfMethodCall(const std::string** method_name,
+                                 const std::vector<Value>** parameters) const;
+  virtual void GetSelfMethodReturn(const Value** return_value) const;
 
   virtual CommittedEvent* Clone() const = 0;
 
@@ -130,19 +129,18 @@ class EndTransactionCommittedEvent : public CommittedEvent {
 class MethodCallCommittedEvent : public CommittedEvent {
  public:
   MethodCallCommittedEvent(SharedObject* caller, const std::string& method_name,
-                           const std::vector<CommittedValue>& parameters);
+                           const std::vector<Value>& parameters);
 
   Type type() const override { return METHOD_CALL; }
-  void GetMethodCall(
-      SharedObject** caller, const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const override;
+  void GetMethodCall(SharedObject** caller, const std::string** method_name,
+                     const std::vector<Value>** parameters) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* const caller_;
   const std::string method_name_;
-  const std::vector<CommittedValue> parameters_;
+  const std::vector<Value> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(MethodCallCommittedEvent);
 };
@@ -151,18 +149,17 @@ class MethodReturnCommittedEvent : public CommittedEvent {
  public:
   MethodReturnCommittedEvent(
       const std::unordered_set<SharedObject*>& new_shared_objects,
-      SharedObject* caller,
-      const CommittedValue& return_value);
+      SharedObject* caller, const Value& return_value);
 
   Type type() const override { return METHOD_RETURN; }
   void GetMethodReturn(SharedObject** caller,
-                       const CommittedValue** return_value) const override;
+                       const Value** return_value) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* const caller_;
-  const CommittedValue return_value_;
+  const Value return_value_;
 
   DISALLOW_COPY_AND_ASSIGN(MethodReturnCommittedEvent);
 };
@@ -173,19 +170,18 @@ class SubMethodCallCommittedEvent : public CommittedEvent {
       const std::unordered_set<SharedObject*>& new_shared_objects,
       SharedObject* callee,
       const std::string& method_name,
-      const std::vector<CommittedValue>& parameters);
+      const std::vector<Value>& parameters);
 
   Type type() const override { return SUB_METHOD_CALL; }
-  void GetSubMethodCall(
-      SharedObject** callee, const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const override;
+  void GetSubMethodCall(SharedObject** callee, const std::string** method_name,
+                        const std::vector<Value>** parameters) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* const callee_;
   const std::string method_name_;
-  const std::vector<CommittedValue> parameters_;
+  const std::vector<Value> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(SubMethodCallCommittedEvent);
 };
@@ -193,17 +189,17 @@ class SubMethodCallCommittedEvent : public CommittedEvent {
 class SubMethodReturnCommittedEvent : public CommittedEvent {
  public:
   SubMethodReturnCommittedEvent(SharedObject* callee,
-                                const CommittedValue& return_value);
+                                const Value& return_value);
 
   Type type() const override { return SUB_METHOD_RETURN; }
   void GetSubMethodReturn(SharedObject** callee,
-                          const CommittedValue** return_value) const override;
+                          const Value** return_value) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
   SharedObject* const callee_;
-  const CommittedValue return_value_;
+  const Value return_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SubMethodReturnCommittedEvent);
 };
@@ -212,19 +208,17 @@ class SelfMethodCallCommittedEvent : public CommittedEvent {
  public:
   SelfMethodCallCommittedEvent(
       const std::unordered_set<SharedObject*>& new_shared_objects,
-      const std::string& method_name,
-      const std::vector<CommittedValue>& parameters);
+      const std::string& method_name, const std::vector<Value>& parameters);
 
   Type type() const override { return SELF_METHOD_CALL; }
-  void GetSelfMethodCall(
-      const std::string** method_name,
-      const std::vector<CommittedValue>** parameters) const override;
+  void GetSelfMethodCall(const std::string** method_name,
+                         const std::vector<Value>** parameters) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
   const std::string method_name_;
-  const std::vector<CommittedValue> parameters_;
+  const std::vector<Value> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(SelfMethodCallCommittedEvent);
 };
@@ -233,15 +227,15 @@ class SelfMethodReturnCommittedEvent : public CommittedEvent {
  public:
   SelfMethodReturnCommittedEvent(
       const std::unordered_set<SharedObject*>& new_shared_objects,
-      const CommittedValue& return_value);
+      const Value& return_value);
 
   Type type() const override { return SELF_METHOD_RETURN; }
-  void GetSelfMethodReturn(const CommittedValue** return_value) const override;
+  void GetSelfMethodReturn(const Value** return_value) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
-  const CommittedValue return_value_;
+  const Value return_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SelfMethodReturnCommittedEvent);
 };

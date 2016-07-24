@@ -47,6 +47,7 @@ class SharedObjectTransaction;
 class TransactionStoreInternalInterface;
 class Uuid;
 
+// TODO(dss): Rename this class to "ObjectHistory".
 class ObjectContent {
  public:
   ObjectContent(TransactionStoreInternalInterface* transaction_store,

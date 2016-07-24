@@ -22,12 +22,9 @@ class Value;
 
 namespace engine {
 
-class CommittedValue;
 class ValueProto;
 
-void ConvertCommittedValueToValueProto(const CommittedValue& in,
-                                       ValueProto* out);
-void ConvertCommittedValueToValue(const CommittedValue& in, Value* out);
+void ConvertValueToValueProto(const Value& in, ValueProto* out);
 
 }  // namespace engine
 }  // namespace floating_temple

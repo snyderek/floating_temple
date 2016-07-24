@@ -49,7 +49,6 @@ class ApplyTransactionMessage;
 class CanonicalPeer;
 class CanonicalPeerMap;
 class CommittedEvent;
-class CommittedValue;
 class EventProto;
 class GetObjectMessage;
 class InvalidateTransactionsMessage;
@@ -187,15 +186,14 @@ class TransactionStore : public ConnectionHandler,
       std::unordered_map<SharedObject*,
                          std::unique_ptr<SharedObjectTransaction>>*
           shared_object_transactions);
-  void ConvertValueToCommittedValue(const Value& in, CommittedValue* out);
+  void EnsureSharedObjectExists(const Value& value);
 
   void ConvertCommittedEventToEventProto(const CommittedEvent* in,
                                          EventProto* out);
 
   CommittedEvent* ConvertEventProtoToCommittedEvent(
       const EventProto& event_proto);
-  void ConvertValueProtoToCommittedValue(const ValueProto& in,
-                                         CommittedValue* out);
+  void ConvertValueProtoToValue(const ValueProto& in, Value* out);
 
   static void AddEventToSharedObjectTransactions(
       SharedObject* shared_object,

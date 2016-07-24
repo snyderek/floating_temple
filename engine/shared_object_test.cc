@@ -27,7 +27,6 @@
 #include "base/logging.h"
 #include "engine/canonical_peer.h"
 #include "engine/committed_event.h"
-#include "engine/committed_value.h"
 #include "engine/live_object.h"
 #include "engine/make_transaction_id.h"
 #include "engine/max_version_map.h"
@@ -39,6 +38,7 @@
 #include "fake_interpreter/fake_interpreter.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/interpreter.h"
+#include "include/c++/value.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
 
@@ -106,13 +106,12 @@ class SharedObjectTest : public Test {
                                const string& string_to_append) {
     vector<unique_ptr<CommittedEvent>> events;
 
-    vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
-    parameters[0].set_string_value(string_to_append);
+    vector<Value> parameters(1);
+    parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
+                                   string_to_append);
 
-    CommittedValue return_value;
-    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
-    return_value.set_empty();
+    Value return_value;
+    return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
     const unordered_set<SharedObject*> new_shared_objects;
 
@@ -139,13 +138,12 @@ class SharedObjectTest : public Test {
     const unordered_set<SharedObject*> new_shared_objects;
 
     {
-      vector<CommittedValue> parameters(1);
-      parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
-      parameters[0].set_string_value(string_to_append);
+      vector<Value> parameters(1);
+      parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
+                                     string_to_append);
 
-      CommittedValue return_value;
-      return_value.set_local_type(FakeLocalObject::kVoidLocalType);
-      return_value.set_empty();
+      Value return_value;
+      return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
       AddEventToVector(
           new MethodCallCommittedEvent(nullptr, "append", parameters),
@@ -157,13 +155,12 @@ class SharedObjectTest : public Test {
     }
 
     {
-      CommittedValue return_value;
-      return_value.set_local_type(FakeLocalObject::kStringLocalType);
-      return_value.set_string_value(expected_result_string);
+      Value return_value;
+      return_value.set_string_value(FakeLocalObject::kStringLocalType,
+                                    expected_result_string);
 
       AddEventToVector(
-          new MethodCallCommittedEvent(nullptr, "get",
-                                       vector<CommittedValue>()),
+          new MethodCallCommittedEvent(nullptr, "get", vector<Value>()),
           &events);
       AddEventToVector(
           new MethodReturnCommittedEvent(new_shared_objects, nullptr,
@@ -420,13 +417,12 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
   {
     vector<unique_ptr<CommittedEvent>> events;
 
-    vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
-    parameters[0].set_string_value("whatcha playin'?");
+    vector<Value> parameters(1);
+    parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
+                                   "whatcha playin'?");
 
-    CommittedValue return_value;
-    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
-    return_value.set_empty();
+    Value return_value;
+    return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
     const unordered_set<SharedObject*> new_shared_objects;
 
@@ -480,9 +476,9 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     shared_ptr<const LiveObject> initial_live_object = MakeLocalObject(
         "I don't know. ");
 
-    vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
-    parameters[0].set_string_value("Third base.");
+    vector<Value> parameters(1);
+    parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
+                                   "Third base.");
 
     AddEventToVector(
         new ObjectCreationCommittedEvent(initial_live_object),
@@ -502,9 +498,8 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
   {
     vector<unique_ptr<CommittedEvent>> events;
 
-    CommittedValue return_value;
-    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
-    return_value.set_empty();
+    Value return_value;
+    return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
     const unordered_set<SharedObject*> new_shared_objects;
 
@@ -556,9 +551,8 @@ TEST_F(SharedObjectTest, BackingUp) {
     shared_ptr<const LiveObject> initial_live_object = MakeLocalObject(
         "Game. ");
 
-    vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
-    parameters[0].set_string_value("Set. ");
+    vector<Value> parameters(1);
+    parameters[0].set_string_value(FakeLocalObject::kStringLocalType, "Set. ");
 
     AddEventToVector(
         new ObjectCreationCommittedEvent(initial_live_object),
@@ -578,15 +572,13 @@ TEST_F(SharedObjectTest, BackingUp) {
   {
     vector<unique_ptr<CommittedEvent>> events;
 
-    CommittedValue return_value;
-    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
-    return_value.set_empty();
+    Value return_value;
+    return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
     const unordered_set<SharedObject*> new_shared_objects;
 
-    vector<CommittedValue> parameters(1);
-    parameters[0].set_local_type(FakeLocalObject::kStringLocalType);
-    parameters[0].set_string_value("Match.");
+    vector<Value> parameters(1);
+    parameters[0].set_string_value(FakeLocalObject::kStringLocalType, "Match.");
 
     AddEventToVector(
         new MethodReturnCommittedEvent(new_shared_objects, nullptr,
@@ -607,9 +599,8 @@ TEST_F(SharedObjectTest, BackingUp) {
   {
     vector<unique_ptr<CommittedEvent>> events;
 
-    CommittedValue return_value;
-    return_value.set_local_type(FakeLocalObject::kVoidLocalType);
-    return_value.set_empty();
+    Value return_value;
+    return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
     const unordered_set<SharedObject*> new_shared_objects;
 

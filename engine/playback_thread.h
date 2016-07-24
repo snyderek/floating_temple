@@ -26,7 +26,6 @@
 
 #include "base/macros.h"
 #include "engine/committed_event.h"
-#include "engine/committed_value.h"
 #include "engine/event_queue.h"
 #include "include/c++/method_context.h"
 #include "include/c++/value.h"
@@ -97,13 +96,13 @@ class PlaybackThread : private MethodContext {
   bool MethodCallMatches(
       SharedObject* expected_shared_object,
       const std::string& expected_method_name,
-      const std::vector<CommittedValue>& expected_parameters,
+      const std::vector<Value>& expected_parameters,
       ObjectReferenceImpl* object_reference,
       const std::string& method_name,
       const std::vector<Value>& parameters,
       const std::unordered_set<SharedObject*>& new_shared_objects);
   bool ValueMatches(
-      const CommittedValue& committed_value, const Value& pending_value,
+      const Value& committed_value, const Value& pending_value,
       const std::unordered_set<SharedObject*>& new_shared_objects);
   bool ObjectMatches(
       SharedObject* shared_object, ObjectReferenceImpl* object_reference,

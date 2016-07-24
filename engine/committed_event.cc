@@ -22,10 +22,10 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
-#include "engine/committed_value.h"
 #include "engine/live_object.h"
 #include "engine/shared_object.h"
 #include "engine/uuid_util.h"
+#include "include/c++/value.h"
 #include "util/dump_context.h"
 #include "util/stl_util.h"
 
@@ -49,41 +49,39 @@ void CommittedEvent::GetObjectCreation(
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetMethodCall(
-    SharedObject** caller, const string** method_name,
-    const vector<CommittedValue>** parameters) const {
+void CommittedEvent::GetMethodCall(SharedObject** caller,
+                                   const string** method_name,
+                                   const vector<Value>** parameters) const {
   LOG(FATAL) << "Invalid call to GetMethodCall (type == "
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetMethodReturn(
-    SharedObject** caller, const CommittedValue** return_value) const {
+void CommittedEvent::GetMethodReturn(SharedObject** caller,
+                                     const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetSubMethodCall(
-    SharedObject** callee, const string** method_name,
-    const vector<CommittedValue>** parameters) const {
+void CommittedEvent::GetSubMethodCall(SharedObject** callee,
+                                      const string** method_name,
+                                      const vector<Value>** parameters) const {
   LOG(FATAL) << "Invalid call to GetSubMethodCall (type == "
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetSubMethodReturn(
-    SharedObject** callee, const CommittedValue** return_value) const {
+void CommittedEvent::GetSubMethodReturn(SharedObject** callee,
+                                        const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetSubMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetSelfMethodCall(
-    const string** method_name,
-    const vector<CommittedValue>** parameters) const {
+void CommittedEvent::GetSelfMethodCall(const string** method_name,
+                                       const vector<Value>** parameters) const {
   LOG(FATAL) << "Invalid call to GetSelfMethodCall (type == "
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetSelfMethodReturn(
-    const CommittedValue** return_value) const {
+void CommittedEvent::GetSelfMethodReturn(const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetSelfMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
 }
@@ -204,7 +202,7 @@ void EndTransactionCommittedEvent::Dump(DumpContext* dc) const {
 
 MethodCallCommittedEvent::MethodCallCommittedEvent(
     SharedObject* caller, const string& method_name,
-    const vector<CommittedValue>& parameters)
+    const vector<Value>& parameters)
     : CommittedEvent(unordered_set<SharedObject*>()),
       caller_(caller),
       method_name_(method_name),
@@ -214,7 +212,7 @@ MethodCallCommittedEvent::MethodCallCommittedEvent(
 
 void MethodCallCommittedEvent::GetMethodCall(
     SharedObject** caller, const string** method_name,
-    const vector<CommittedValue>** parameters) const {
+    const vector<Value>** parameters) const {
   CHECK(caller != nullptr);
   CHECK(method_name != nullptr);
   CHECK(parameters != nullptr);
@@ -251,7 +249,7 @@ void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("parameters");
   dc->BeginList();
-  for (const CommittedValue& parameter : parameters_) {
+  for (const Value& parameter : parameters_) {
     parameter.Dump(dc);
   }
   dc->End();
@@ -261,15 +259,14 @@ void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
 MethodReturnCommittedEvent::MethodReturnCommittedEvent(
     const unordered_set<SharedObject*>& new_shared_objects,
-    SharedObject* caller,
-    const CommittedValue& return_value)
+    SharedObject* caller, const Value& return_value)
     : CommittedEvent(new_shared_objects),
       caller_(caller),
       return_value_(return_value) {
 }
 
 void MethodReturnCommittedEvent::GetMethodReturn(
-    SharedObject** caller, const CommittedValue** return_value) const {
+    SharedObject** caller, const Value** return_value) const {
   CHECK(caller != nullptr);
   CHECK(return_value != nullptr);
 
@@ -310,7 +307,7 @@ SubMethodCallCommittedEvent::SubMethodCallCommittedEvent(
     const unordered_set<SharedObject*>& new_shared_objects,
     SharedObject* callee,
     const string& method_name,
-    const vector<CommittedValue>& parameters)
+    const vector<Value>& parameters)
     : CommittedEvent(new_shared_objects),
       callee_(CHECK_NOTNULL(callee)),
       method_name_(method_name),
@@ -320,7 +317,7 @@ SubMethodCallCommittedEvent::SubMethodCallCommittedEvent(
 
 void SubMethodCallCommittedEvent::GetSubMethodCall(
     SharedObject** callee, const string** method_name,
-    const vector<CommittedValue>** parameters) const {
+    const vector<Value>** parameters) const {
   CHECK(callee != nullptr);
   CHECK(method_name != nullptr);
   CHECK(parameters != nullptr);
@@ -354,7 +351,7 @@ void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("parameters");
   dc->BeginList();
-  for (const CommittedValue& parameter : parameters_) {
+  for (const Value& parameter : parameters_) {
     parameter.Dump(dc);
   }
   dc->End();
@@ -363,14 +360,14 @@ void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SubMethodReturnCommittedEvent::SubMethodReturnCommittedEvent(
-    SharedObject* callee, const CommittedValue& return_value)
+    SharedObject* callee, const Value& return_value)
     : CommittedEvent(unordered_set<SharedObject*>()),
       callee_(CHECK_NOTNULL(callee)),
       return_value_(return_value) {
 }
 
 void SubMethodReturnCommittedEvent::GetSubMethodReturn(
-    SharedObject** callee, const CommittedValue** return_value) const {
+    SharedObject** callee, const Value** return_value) const {
   CHECK(callee != nullptr);
   CHECK(return_value != nullptr);
 
@@ -404,8 +401,7 @@ void SubMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
 
 SelfMethodCallCommittedEvent::SelfMethodCallCommittedEvent(
     const unordered_set<SharedObject*>& new_shared_objects,
-    const string& method_name,
-    const vector<CommittedValue>& parameters)
+    const string& method_name, const vector<Value>& parameters)
     : CommittedEvent(new_shared_objects),
       method_name_(method_name),
       parameters_(parameters) {
@@ -414,7 +410,7 @@ SelfMethodCallCommittedEvent::SelfMethodCallCommittedEvent(
 
 void SelfMethodCallCommittedEvent::GetSelfMethodCall(
     const string** method_name,
-    const vector<CommittedValue>** parameters) const {
+    const vector<Value>** parameters) const {
   CHECK(method_name != nullptr);
   CHECK(parameters != nullptr);
 
@@ -443,7 +439,7 @@ void SelfMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("parameters");
   dc->BeginList();
-  for (const CommittedValue& parameter : parameters_) {
+  for (const Value& parameter : parameters_) {
     parameter.Dump(dc);
   }
   dc->End();
@@ -453,13 +449,13 @@ void SelfMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
 SelfMethodReturnCommittedEvent::SelfMethodReturnCommittedEvent(
     const unordered_set<SharedObject*>& new_shared_objects,
-    const CommittedValue& return_value)
+    const Value& return_value)
     : CommittedEvent(new_shared_objects),
       return_value_(return_value) {
 }
 
 void SelfMethodReturnCommittedEvent::GetSelfMethodReturn(
-    const CommittedValue** return_value) const {
+    const Value** return_value) const {
   CHECK(return_value != nullptr);
   *return_value = &return_value_;
 }

@@ -1040,8 +1040,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
         if (next_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               next_shared_object, origin_peer,
-              new MethodCallCommittedEvent(prev_shared_object, *method_name,
-                                           *parameters),
+              new MethodCallCommittedEvent(*method_name, *parameters),
               shared_object_transactions);
         }
       }
@@ -1071,16 +1070,14 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
         if (prev_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               prev_shared_object, origin_peer,
-              new MethodReturnCommittedEvent(new_shared_objects,
-                                             next_shared_object, *return_value),
+              new MethodReturnCommittedEvent(new_shared_objects, *return_value),
               shared_object_transactions);
         }
 
         if (next_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               next_shared_object, origin_peer,
-              new SubMethodReturnCommittedEvent(prev_shared_object,
-                                                *return_value),
+              new SubMethodReturnCommittedEvent(*return_value),
               shared_object_transactions);
         }
       }
@@ -1137,11 +1134,10 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       break;
 
     case CommittedEvent::METHOD_CALL: {
-      SharedObject* caller = nullptr;
       const string* method_name = nullptr;
       const vector<Value>* parameters = nullptr;
 
-      in->GetMethodCall(&caller, &method_name, &parameters);
+      in->GetMethodCall(&method_name, &parameters);
 
       MethodCallEventProto* const method_call_event_proto =
           out->mutable_method_call();
@@ -1152,29 +1148,18 @@ void TransactionStore::ConvertCommittedEventToEventProto(
                                  method_call_event_proto->add_parameter());
       }
 
-      if (caller != nullptr) {
-        method_call_event_proto->mutable_caller_object_id()->CopyFrom(
-            caller->object_id());
-      }
-
       break;
     }
 
     case CommittedEvent::METHOD_RETURN: {
-      SharedObject* caller = nullptr;
       const Value* return_value = nullptr;
 
-      in->GetMethodReturn(&caller, &return_value);
+      in->GetMethodReturn(&return_value);
 
       MethodReturnEventProto* const method_return_event_proto =
           out->mutable_method_return();
       ConvertValueToValueProto(
           *return_value, method_return_event_proto->mutable_return_value());
-
-      if (caller != nullptr) {
-        method_return_event_proto->mutable_caller_object_id()->CopyFrom(
-            caller->object_id());
-      }
 
       break;
     }
@@ -1202,18 +1187,14 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     }
 
     case CommittedEvent::SUB_METHOD_RETURN: {
-      SharedObject* callee = nullptr;
       const Value* return_value = nullptr;
 
-      in->GetSubMethodReturn(&callee, &return_value);
+      in->GetSubMethodReturn(&return_value);
 
       SubMethodReturnEventProto* const sub_method_return_event_proto =
           out->mutable_sub_method_return();
       ConvertValueToValueProto(
           *return_value, sub_method_return_event_proto->mutable_return_value());
-
-      sub_method_return_event_proto->mutable_callee_object_id()->CopyFrom(
-          callee->object_id());
 
       break;
     }
@@ -1312,12 +1293,6 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       const MethodCallEventProto& method_call_event_proto =
           event_proto.method_call();
 
-      SharedObject* caller = nullptr;
-      if (method_call_event_proto.has_caller_object_id()) {
-        caller = GetOrCreateSharedObject(
-            method_call_event_proto.caller_object_id());
-      }
-
       const string& method_name = method_call_event_proto.method_name();
 
       const int parameter_count = method_call_event_proto.parameter_size();
@@ -1328,25 +1303,18 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
                                  &parameters[i]);
       }
 
-      return new MethodCallCommittedEvent(caller, method_name, parameters);
+      return new MethodCallCommittedEvent(method_name, parameters);
     }
 
     case EventProto::METHOD_RETURN: {
       const MethodReturnEventProto& method_return_event_proto =
           event_proto.method_return();
 
-      SharedObject* caller = nullptr;
-      if (method_return_event_proto.has_caller_object_id()) {
-        caller = GetOrCreateSharedObject(
-            method_return_event_proto.caller_object_id());
-      }
-
       Value return_value;
       ConvertValueProtoToValue(method_return_event_proto.return_value(),
                                &return_value);
 
-      return new MethodReturnCommittedEvent(new_shared_objects, caller,
-                                            return_value);
+      return new MethodReturnCommittedEvent(new_shared_objects, return_value);
     }
 
     case EventProto::SUB_METHOD_CALL: {
@@ -1375,14 +1343,11 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       const SubMethodReturnEventProto& sub_method_return_event_proto =
           event_proto.sub_method_return();
 
-      SharedObject* const callee = GetOrCreateSharedObject(
-          sub_method_return_event_proto.callee_object_id());
-
       Value return_value;
       ConvertValueProtoToValue(sub_method_return_event_proto.return_value(),
                                &return_value);
 
-      return new SubMethodReturnCommittedEvent(callee, return_value);
+      return new SubMethodReturnCommittedEvent(return_value);
     }
 
     case EventProto::SELF_METHOD_CALL: {

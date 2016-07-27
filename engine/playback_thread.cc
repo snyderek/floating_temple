@@ -152,12 +152,10 @@ void PlaybackThread::DoMethodCall() {
   string method_name;
   vector<Value> parameters;
   {
-    SharedObject* caller = nullptr;
     const string* method_name_temp = nullptr;
     const vector<Value>* committed_parameters = nullptr;
 
-    GetNextEvent()->GetMethodCall(&caller, &method_name_temp,
-                                  &committed_parameters);
+    GetNextEvent()->GetMethodCall(&method_name_temp, &committed_parameters);
 
     method_name = *method_name_temp;
     VLOG(2) << "method_name == \"" << CEscape(method_name) << "\"";
@@ -182,17 +180,10 @@ void PlaybackThread::DoMethodCall() {
   }
 
   {
-    SharedObject* caller = nullptr;
     const Value* expected_return_value = nullptr;
 
     const CommittedEvent* const event = GetNextEvent();
-    event->GetMethodReturn(&caller, &expected_return_value);
-
-    if (caller == shared_object_) {
-      SetConflictDetected("Caller is the same as callee, but a self method "
-                          "return was not expected.");
-      return;
-    }
+    event->GetMethodReturn(&expected_return_value);
 
     if (!ValueMatches(*expected_return_value, return_value,
                       event->new_shared_objects())) {
@@ -305,10 +296,8 @@ void PlaybackThread::DoSubMethodCall(ObjectReferenceImpl* object_reference,
   }
 
   {
-    SharedObject* callee = nullptr;
     const Value* expected_return_value = nullptr;
-
-    GetNextEvent()->GetSubMethodReturn(&callee, &expected_return_value);
+    GetNextEvent()->GetSubMethodReturn(&expected_return_value);
 
     *return_value = *expected_return_value;
   }

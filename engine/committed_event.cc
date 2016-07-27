@@ -49,15 +49,13 @@ void CommittedEvent::GetObjectCreation(
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetMethodCall(SharedObject** caller,
-                                   const string** method_name,
+void CommittedEvent::GetMethodCall(const string** method_name,
                                    const vector<Value>** parameters) const {
   LOG(FATAL) << "Invalid call to GetMethodCall (type == "
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetMethodReturn(SharedObject** caller,
-                                     const Value** return_value) const {
+void CommittedEvent::GetMethodReturn(const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
 }
@@ -69,8 +67,7 @@ void CommittedEvent::GetSubMethodCall(SharedObject** callee,
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetSubMethodReturn(SharedObject** callee,
-                                        const Value** return_value) const {
+void CommittedEvent::GetSubMethodReturn(const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetSubMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
 }
@@ -201,29 +198,24 @@ void EndTransactionCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 MethodCallCommittedEvent::MethodCallCommittedEvent(
-    SharedObject* caller, const string& method_name,
-    const vector<Value>& parameters)
+    const string& method_name, const vector<Value>& parameters)
     : CommittedEvent(unordered_set<SharedObject*>()),
-      caller_(caller),
       method_name_(method_name),
       parameters_(parameters) {
   CHECK(!method_name.empty());
 }
 
 void MethodCallCommittedEvent::GetMethodCall(
-    SharedObject** caller, const string** method_name,
-    const vector<Value>** parameters) const {
-  CHECK(caller != nullptr);
+    const string** method_name, const vector<Value>** parameters) const {
   CHECK(method_name != nullptr);
   CHECK(parameters != nullptr);
 
-  *caller = caller_;
   *method_name = &method_name_;
   *parameters = &parameters_;
 }
 
 CommittedEvent* MethodCallCommittedEvent::Clone() const {
-  return new MethodCallCommittedEvent(caller_, method_name_, parameters_);
+  return new MethodCallCommittedEvent(method_name_, parameters_);
 }
 
 void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
@@ -236,13 +228,6 @@ void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("new_shared_objects");
   DumpNewSharedObjects(dc);
-
-  dc->AddString("caller");
-  if (caller_== nullptr) {
-    dc->AddNull();
-  } else {
-    dc->AddString(UuidToString(caller_->object_id()));
-  }
 
   dc->AddString("method_name");
   dc->AddString(method_name_);
@@ -259,24 +244,19 @@ void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
 MethodReturnCommittedEvent::MethodReturnCommittedEvent(
     const unordered_set<SharedObject*>& new_shared_objects,
-    SharedObject* caller, const Value& return_value)
+    const Value& return_value)
     : CommittedEvent(new_shared_objects),
-      caller_(caller),
       return_value_(return_value) {
 }
 
 void MethodReturnCommittedEvent::GetMethodReturn(
-    SharedObject** caller, const Value** return_value) const {
-  CHECK(caller != nullptr);
+    const Value** return_value) const {
   CHECK(return_value != nullptr);
-
-  *caller = caller_;
   *return_value = &return_value_;
 }
 
 CommittedEvent* MethodReturnCommittedEvent::Clone() const {
-  return new MethodReturnCommittedEvent(new_shared_objects(), caller_,
-                                        return_value_);
+  return new MethodReturnCommittedEvent(new_shared_objects(), return_value_);
 }
 
 void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
@@ -289,13 +269,6 @@ void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("new_shared_objects");
   DumpNewSharedObjects(dc);
-
-  dc->AddString("caller");
-  if (caller_== nullptr) {
-    dc->AddNull();
-  } else {
-    dc->AddString(UuidToString(caller_->object_id()));
-  }
 
   dc->AddString("return_value");
   return_value_.Dump(dc);
@@ -360,23 +333,19 @@ void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SubMethodReturnCommittedEvent::SubMethodReturnCommittedEvent(
-    SharedObject* callee, const Value& return_value)
+    const Value& return_value)
     : CommittedEvent(unordered_set<SharedObject*>()),
-      callee_(CHECK_NOTNULL(callee)),
       return_value_(return_value) {
 }
 
 void SubMethodReturnCommittedEvent::GetSubMethodReturn(
-    SharedObject** callee, const Value** return_value) const {
-  CHECK(callee != nullptr);
+    const Value** return_value) const {
   CHECK(return_value != nullptr);
-
-  *callee = callee_;
   *return_value = &return_value_;
 }
 
 CommittedEvent* SubMethodReturnCommittedEvent::Clone() const {
-  return new SubMethodReturnCommittedEvent(callee_, return_value_);
+  return new SubMethodReturnCommittedEvent(return_value_);
 }
 
 void SubMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
@@ -389,9 +358,6 @@ void SubMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("new_shared_objects");
   DumpNewSharedObjects(dc);
-
-  dc->AddString("callee");
-  dc->AddString(UuidToString(callee_->object_id()));
 
   dc->AddString("return_value");
   return_value_.Dump(dc);

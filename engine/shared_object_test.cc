@@ -116,11 +116,10 @@ class SharedObjectTest : public Test {
     const unordered_set<SharedObject*> new_shared_objects;
 
     AddEventToVector(
-        new MethodCallCommittedEvent(nullptr, "append", parameters),
+        new MethodCallCommittedEvent("append", parameters),
         &events);
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
-                                       return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, return_value),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -146,11 +145,10 @@ class SharedObjectTest : public Test {
       return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
       AddEventToVector(
-          new MethodCallCommittedEvent(nullptr, "append", parameters),
+          new MethodCallCommittedEvent("append", parameters),
           &events);
       AddEventToVector(
-          new MethodReturnCommittedEvent(new_shared_objects, nullptr,
-                                         return_value),
+          new MethodReturnCommittedEvent(new_shared_objects, return_value),
           &events);
     }
 
@@ -160,11 +158,10 @@ class SharedObjectTest : public Test {
                                     expected_result_string);
 
       AddEventToVector(
-          new MethodCallCommittedEvent(nullptr, "get", vector<Value>()),
+          new MethodCallCommittedEvent("get", vector<Value>()),
           &events);
       AddEventToVector(
-          new MethodReturnCommittedEvent(new_shared_objects, nullptr,
-                                         return_value),
+          new MethodReturnCommittedEvent(new_shared_objects, return_value),
           &events);
     }
 
@@ -427,11 +424,10 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
     const unordered_set<SharedObject*> new_shared_objects;
 
     AddEventToVector(
-        new MethodCallCommittedEvent(nullptr, "append", parameters),
+        new MethodCallCommittedEvent("append", parameters),
         &events);
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
-                                       return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, return_value),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -484,7 +480,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
         new ObjectCreationCommittedEvent(initial_live_object),
         &events);
     AddEventToVector(
-        new MethodCallCommittedEvent(nullptr, "append", parameters),
+        new MethodCallCommittedEvent("append", parameters),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -504,8 +500,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     const unordered_set<SharedObject*> new_shared_objects;
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
-                                       return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, return_value),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -558,7 +553,7 @@ TEST_F(SharedObjectTest, BackingUp) {
         new ObjectCreationCommittedEvent(initial_live_object),
         &events);
     AddEventToVector(
-        new MethodCallCommittedEvent(nullptr, "append", parameters),
+        new MethodCallCommittedEvent("append", parameters),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -581,11 +576,10 @@ TEST_F(SharedObjectTest, BackingUp) {
     parameters[0].set_string_value(FakeLocalObject::kStringLocalType, "Match.");
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
-                                       return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, return_value),
         &events);
     AddEventToVector(
-        new MethodCallCommittedEvent(nullptr, "append", parameters),
+        new MethodCallCommittedEvent("append", parameters),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -605,8 +599,7 @@ TEST_F(SharedObjectTest, BackingUp) {
     const unordered_set<SharedObject*> new_shared_objects;
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, nullptr,
-                                       return_value),
+        new MethodReturnCommittedEvent(new_shared_objects, return_value),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;

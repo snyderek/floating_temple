@@ -58,16 +58,13 @@ class CommittedEvent {
 
   virtual void GetObjectCreation(
       std::shared_ptr<const LiveObject>* live_object) const;
-  virtual void GetMethodCall(SharedObject** caller,
-                             const std::string** method_name,
+  virtual void GetMethodCall(const std::string** method_name,
                              const std::vector<Value>** parameters) const;
-  virtual void GetMethodReturn(SharedObject** caller,
-                               const Value** return_value) const;
+  virtual void GetMethodReturn(const Value** return_value) const;
   virtual void GetSubMethodCall(SharedObject** callee,
                                 const std::string** method_name,
                                 const std::vector<Value>** parameters) const;
-  virtual void GetSubMethodReturn(SharedObject** callee,
-                                  const Value** return_value) const;
+  virtual void GetSubMethodReturn(const Value** return_value) const;
   virtual void GetSelfMethodCall(const std::string** method_name,
                                  const std::vector<Value>** parameters) const;
   virtual void GetSelfMethodReturn(const Value** return_value) const;
@@ -128,17 +125,16 @@ class EndTransactionCommittedEvent : public CommittedEvent {
 
 class MethodCallCommittedEvent : public CommittedEvent {
  public:
-  MethodCallCommittedEvent(SharedObject* caller, const std::string& method_name,
+  MethodCallCommittedEvent(const std::string& method_name,
                            const std::vector<Value>& parameters);
 
   Type type() const override { return METHOD_CALL; }
-  void GetMethodCall(SharedObject** caller, const std::string** method_name,
+  void GetMethodCall(const std::string** method_name,
                      const std::vector<Value>** parameters) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
-  SharedObject* const caller_;
   const std::string method_name_;
   const std::vector<Value> parameters_;
 
@@ -149,16 +145,14 @@ class MethodReturnCommittedEvent : public CommittedEvent {
  public:
   MethodReturnCommittedEvent(
       const std::unordered_set<SharedObject*>& new_shared_objects,
-      SharedObject* caller, const Value& return_value);
+      const Value& return_value);
 
   Type type() const override { return METHOD_RETURN; }
-  void GetMethodReturn(SharedObject** caller,
-                       const Value** return_value) const override;
+  void GetMethodReturn(const Value** return_value) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
-  SharedObject* const caller_;
   const Value return_value_;
 
   DISALLOW_COPY_AND_ASSIGN(MethodReturnCommittedEvent);
@@ -188,17 +182,14 @@ class SubMethodCallCommittedEvent : public CommittedEvent {
 
 class SubMethodReturnCommittedEvent : public CommittedEvent {
  public:
-  SubMethodReturnCommittedEvent(SharedObject* callee,
-                                const Value& return_value);
+  explicit SubMethodReturnCommittedEvent(const Value& return_value);
 
   Type type() const override { return SUB_METHOD_RETURN; }
-  void GetSubMethodReturn(SharedObject** callee,
-                          const Value** return_value) const override;
+  void GetSubMethodReturn(const Value** return_value) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
-  SharedObject* const callee_;
   const Value return_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SubMethodReturnCommittedEvent);

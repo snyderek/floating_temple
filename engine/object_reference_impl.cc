@@ -20,9 +20,12 @@
 #include "base/logging.h"
 #include "base/mutex.h"
 #include "base/mutex_lock.h"
+#include "base/string_printf.h"
 #include "engine/shared_object.h"
 #include "engine/uuid_util.h"
 #include "util/dump_context.h"
+
+using std::string;
 
 namespace floating_temple {
 namespace engine {
@@ -45,6 +48,16 @@ SharedObject* ObjectReferenceImpl::SetSharedObjectIfUnset(
   }
 
   return shared_object_;
+}
+
+string ObjectReferenceImpl::DebugString() const {
+  string s;
+  SStringPrintf(&s, "Object reference %p", this);
+  if (shared_object_ != nullptr) {
+    StringAppendF(&s, " (object id: %s)",
+                  UuidToString(shared_object_->object_id()).c_str());
+  }
+  return s;
 }
 
 void ObjectReferenceImpl::Dump(DumpContext* dc) const {

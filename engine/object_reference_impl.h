@@ -16,6 +16,8 @@
 #ifndef ENGINE_OBJECT_REFERENCE_IMPL_H_
 #define ENGINE_OBJECT_REFERENCE_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/mutex.h"
 #include "include/c++/object_reference.h"
@@ -34,6 +36,8 @@ class ObjectReferenceImpl : public ObjectReference {
   SharedObject* shared_object() { return PrivateGetSharedObject(); }
 
   SharedObject* SetSharedObjectIfUnset(SharedObject* shared_object);
+
+  std::string DebugString() const;
 
   void Dump(DumpContext* dc) const override;
 

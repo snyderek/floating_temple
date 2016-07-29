@@ -93,6 +93,21 @@ bool SharedObject::HasObjectReference(
   return false;
 }
 
+bool SharedObject::HasAnyObjectReference(
+    const unordered_set<ObjectReferenceImpl*>& object_references) const {
+  MutexLock lock(&object_references_mu_);
+
+  for (ObjectReferenceImpl* const matching_object_reference :
+           object_references_) {
+    if (object_references.find(matching_object_reference) !=
+            object_references.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void SharedObject::AddObjectReference(
     ObjectReferenceImpl* new_object_reference) {
   CHECK(new_object_reference != nullptr);

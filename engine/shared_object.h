@@ -58,6 +58,9 @@ class SharedObject {
   void AddInterestedPeer(const CanonicalPeer* interested_peer);
 
   bool HasObjectReference(const ObjectReferenceImpl* object_reference) const;
+  bool HasAnyObjectReference(
+      const std::unordered_set<ObjectReferenceImpl*>& object_references) const;
+
   void AddObjectReference(ObjectReferenceImpl* new_object_reference);
   ObjectReferenceImpl* GetOrCreateObjectReference();
 

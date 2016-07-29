@@ -960,19 +960,21 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
         shared_object_transactions) {
   CHECK(pending_event != nullptr);
 
-  unordered_set<SharedObject*> new_shared_objects;
-  for (ObjectReferenceImpl* const object_reference :
-           pending_event->new_object_references()) {
-    SharedObject* const shared_object = GetSharedObjectForObjectReference(
-        object_reference);
-    CHECK(new_shared_objects.insert(shared_object).second);
+  const std::unordered_set<ObjectReferenceImpl*>& new_object_references =
+      pending_event->new_object_references();
+  ObjectReferenceImpl* const prev_object_reference =
+      pending_event->prev_object_reference();
+
+  CHECK(new_object_references.find(prev_object_reference) ==
+            new_object_references.end());
+
+  // Create shared objects for the new object references.
+  for (ObjectReferenceImpl* const object_reference : new_object_references) {
+    GetSharedObjectForObjectReference(object_reference);
   }
 
   SharedObject* const prev_shared_object = GetSharedObjectForObjectReference(
       pending_event->prev_object_reference());
-
-  CHECK(new_shared_objects.find(prev_shared_object) ==
-            new_shared_objects.end());
 
   for (const auto& live_object_pair : pending_event->live_objects()) {
     ObjectReferenceImpl* const object_reference = live_object_pair.first;
@@ -991,14 +993,14 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
 
   switch (type) {
     case PendingEvent::BEGIN_TRANSACTION:
-      CHECK_EQ(new_shared_objects.size(), 0u);
+      CHECK_EQ(new_object_references.size(), 0u);
       AddEventToSharedObjectTransactions(prev_shared_object, origin_peer,
                                          new BeginTransactionCommittedEvent(),
                                          shared_object_transactions);
       break;
 
     case PendingEvent::END_TRANSACTION:
-      CHECK_EQ(new_shared_objects.size(), 0u);
+      CHECK_EQ(new_object_references.size(), 0u);
       AddEventToSharedObjectTransactions(prev_shared_object, origin_peer,
                                          new EndTransactionCommittedEvent(),
                                          shared_object_transactions);
@@ -1023,17 +1025,17 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
         if (prev_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               prev_shared_object, origin_peer,
-              new SelfMethodCallCommittedEvent(new_shared_objects, *method_name,
-                                               *parameters),
+              new SelfMethodCallCommittedEvent(new_object_references,
+                                               *method_name, *parameters),
               shared_object_transactions);
         }
       } else {
         if (prev_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               prev_shared_object, origin_peer,
-              new SubMethodCallCommittedEvent(new_shared_objects,
-                                              next_shared_object, *method_name,
-                                              *parameters),
+              new SubMethodCallCommittedEvent(new_object_references,
+                                              next_object_reference,
+                                              *method_name, *parameters),
               shared_object_transactions);
         }
 
@@ -1062,7 +1064,7 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
         if (prev_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               prev_shared_object, origin_peer,
-              new SelfMethodReturnCommittedEvent(new_shared_objects,
+              new SelfMethodReturnCommittedEvent(new_object_references,
                                                  *return_value),
               shared_object_transactions);
         }
@@ -1070,7 +1072,8 @@ void TransactionStore::ConvertPendingEventToCommittedEvents(
         if (prev_shared_object != nullptr) {
           AddEventToSharedObjectTransactions(
               prev_shared_object, origin_peer,
-              new MethodReturnCommittedEvent(new_shared_objects, *return_value),
+              new MethodReturnCommittedEvent(new_object_references,
+                                             *return_value),
               shared_object_transactions);
         }
 
@@ -1165,7 +1168,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     }
 
     case CommittedEvent::SUB_METHOD_CALL: {
-      SharedObject* callee = nullptr;
+      ObjectReferenceImpl* callee = nullptr;
       const string* method_name = nullptr;
       const vector<Value>* parameters = nullptr;
 
@@ -1180,8 +1183,11 @@ void TransactionStore::ConvertCommittedEventToEventProto(
                                  sub_method_call_event_proto->add_parameter());
       }
 
+      const SharedObject* const callee_shared_object =
+          GetSharedObjectForObjectReference(callee);
+      CHECK(callee_shared_object != nullptr);
       sub_method_call_event_proto->mutable_callee_object_id()->CopyFrom(
-          callee->object_id());
+          callee_shared_object->object_id());
 
       break;
     }
@@ -1235,24 +1241,27 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       LOG(FATAL) << "Invalid committed event type: " << static_cast<int>(type);
   }
 
-  for (const SharedObject* const shared_object : in->new_shared_objects()) {
+  for (ObjectReferenceImpl* const object_reference : in->new_objects()) {
+    const SharedObject* const shared_object = GetSharedObjectForObjectReference(
+        object_reference);
     out->add_new_object_id()->CopyFrom(shared_object->object_id());
   }
 }
 
 CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
     const EventProto& event_proto) {
-  unordered_set<SharedObject*> new_shared_objects;
+  unordered_set<ObjectReferenceImpl*> new_objects;
   for (int i = 0; i < event_proto.new_object_id_size(); ++i) {
-    new_shared_objects.insert(
-        GetOrCreateSharedObject(event_proto.new_object_id(i)));
+    const Uuid& object_id = event_proto.new_object_id(i);
+    SharedObject* const shared_object = GetOrCreateSharedObject(object_id);
+    new_objects.insert(shared_object->GetOrCreateObjectReference());
   }
 
   const EventProto::Type type = GetEventProtoType(event_proto);
 
   switch (type) {
     case EventProto::OBJECT_CREATION: {
-      CHECK_EQ(new_shared_objects.size(), 0u);
+      CHECK_EQ(new_objects.size(), 0u);
 
       const ObjectCreationEventProto& object_creation_event_proto =
           event_proto.object_creation();
@@ -1280,15 +1289,15 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
     }
 
     case EventProto::BEGIN_TRANSACTION:
-      CHECK_EQ(new_shared_objects.size(), 0u);
+      CHECK_EQ(new_objects.size(), 0u);
       return new BeginTransactionCommittedEvent();
 
     case EventProto::END_TRANSACTION:
-      CHECK_EQ(new_shared_objects.size(), 0u);
+      CHECK_EQ(new_objects.size(), 0u);
       return new EndTransactionCommittedEvent();
 
     case EventProto::METHOD_CALL: {
-      CHECK_EQ(new_shared_objects.size(), 0u);
+      CHECK_EQ(new_objects.size(), 0u);
 
       const MethodCallEventProto& method_call_event_proto =
           event_proto.method_call();
@@ -1314,7 +1323,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       ConvertValueProtoToValue(method_return_event_proto.return_value(),
                                &return_value);
 
-      return new MethodReturnCommittedEvent(new_shared_objects, return_value);
+      return new MethodReturnCommittedEvent(new_objects, return_value);
     }
 
     case EventProto::SUB_METHOD_CALL: {
@@ -1333,12 +1342,13 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
                                  &parameters[i]);
       }
 
-      return new SubMethodCallCommittedEvent(new_shared_objects, callee,
-                                             method_name, parameters);
+      return new SubMethodCallCommittedEvent(
+          new_objects, callee->GetOrCreateObjectReference(), method_name,
+          parameters);
     }
 
     case EventProto::SUB_METHOD_RETURN: {
-      CHECK_EQ(new_shared_objects.size(), 0u);
+      CHECK_EQ(new_objects.size(), 0u);
 
       const SubMethodReturnEventProto& sub_method_return_event_proto =
           event_proto.sub_method_return();
@@ -1364,7 +1374,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
                                  &parameters[i]);
       }
 
-      return new SelfMethodCallCommittedEvent(new_shared_objects, method_name,
+      return new SelfMethodCallCommittedEvent(new_objects, method_name,
                                               parameters);
     }
 
@@ -1376,8 +1386,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       ConvertValueProtoToValue(self_method_return_event_proto.return_value(),
                                &return_value);
 
-      return new SelfMethodReturnCommittedEvent(new_shared_objects,
-                                                return_value);
+      return new SelfMethodReturnCommittedEvent(new_objects, return_value);
     }
 
     default:

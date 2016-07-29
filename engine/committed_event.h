@@ -31,7 +31,7 @@ class DumpContext;
 namespace engine {
 
 class LiveObject;
-class SharedObject;
+class ObjectReferenceImpl;
 
 class CommittedEvent {
  public:
@@ -48,11 +48,11 @@ class CommittedEvent {
   };
 
   explicit CommittedEvent(
-      const std::unordered_set<SharedObject*>& new_shared_objects);
+      const std::unordered_set<ObjectReferenceImpl*>& new_objects);
   virtual ~CommittedEvent() {}
 
-  const std::unordered_set<SharedObject*>& new_shared_objects() const
-      { return new_shared_objects_; }
+  const std::unordered_set<ObjectReferenceImpl*>& new_objects() const
+      { return new_objects_; }
 
   virtual Type type() const = 0;
 
@@ -61,7 +61,7 @@ class CommittedEvent {
   virtual void GetMethodCall(const std::string** method_name,
                              const std::vector<Value>** parameters) const;
   virtual void GetMethodReturn(const Value** return_value) const;
-  virtual void GetSubMethodCall(SharedObject** callee,
+  virtual void GetSubMethodCall(ObjectReferenceImpl** callee,
                                 const std::string** method_name,
                                 const std::vector<Value>** parameters) const;
   virtual void GetSubMethodReturn(const Value** return_value) const;
@@ -76,10 +76,10 @@ class CommittedEvent {
   static std::string GetTypeString(Type event_type);
 
  protected:
-  void DumpNewSharedObjects(DumpContext* dc) const;
+  void DumpNewObjects(DumpContext* dc) const;
 
  private:
-  const std::unordered_set<SharedObject*> new_shared_objects_;
+  const std::unordered_set<ObjectReferenceImpl*> new_objects_;
 };
 
 class ObjectCreationCommittedEvent : public CommittedEvent {
@@ -144,7 +144,7 @@ class MethodCallCommittedEvent : public CommittedEvent {
 class MethodReturnCommittedEvent : public CommittedEvent {
  public:
   MethodReturnCommittedEvent(
-      const std::unordered_set<SharedObject*>& new_shared_objects,
+      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
       const Value& return_value);
 
   Type type() const override { return METHOD_RETURN; }
@@ -161,19 +161,20 @@ class MethodReturnCommittedEvent : public CommittedEvent {
 class SubMethodCallCommittedEvent : public CommittedEvent {
  public:
   SubMethodCallCommittedEvent(
-      const std::unordered_set<SharedObject*>& new_shared_objects,
-      SharedObject* callee,
+      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
+      ObjectReferenceImpl* callee,
       const std::string& method_name,
       const std::vector<Value>& parameters);
 
   Type type() const override { return SUB_METHOD_CALL; }
-  void GetSubMethodCall(SharedObject** callee, const std::string** method_name,
+  void GetSubMethodCall(ObjectReferenceImpl** callee,
+                        const std::string** method_name,
                         const std::vector<Value>** parameters) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
-  SharedObject* const callee_;
+  ObjectReferenceImpl* const callee_;
   const std::string method_name_;
   const std::vector<Value> parameters_;
 
@@ -198,7 +199,7 @@ class SubMethodReturnCommittedEvent : public CommittedEvent {
 class SelfMethodCallCommittedEvent : public CommittedEvent {
  public:
   SelfMethodCallCommittedEvent(
-      const std::unordered_set<SharedObject*>& new_shared_objects,
+      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
       const std::string& method_name, const std::vector<Value>& parameters);
 
   Type type() const override { return SELF_METHOD_CALL; }
@@ -217,7 +218,7 @@ class SelfMethodCallCommittedEvent : public CommittedEvent {
 class SelfMethodReturnCommittedEvent : public CommittedEvent {
  public:
   SelfMethodReturnCommittedEvent(
-      const std::unordered_set<SharedObject*>& new_shared_objects,
+      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
       const Value& return_value);
 
   Type type() const override { return SELF_METHOD_RETURN; }

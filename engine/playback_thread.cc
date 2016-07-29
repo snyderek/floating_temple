@@ -53,6 +53,22 @@ DEFINE_bool(treat_conflicts_as_fatal_for_debugging, false,
 
 namespace floating_temple {
 namespace engine {
+namespace {
+
+void GetNewSharedObjectsForEvent(const CommittedEvent* event,
+                                 unordered_set<SharedObject*>* shared_objects) {
+  CHECK(event != nullptr);
+  CHECK(shared_objects != nullptr);
+
+  for (ObjectReferenceImpl* const object_reference : event->new_objects()) {
+    CHECK(object_reference != nullptr);
+    SharedObject* const shared_object = object_reference->shared_object();
+    CHECK(shared_object != nullptr);
+    CHECK(shared_objects->insert(shared_object).second);
+  }
+}
+
+}  // namespace
 
 PlaybackThread::PlaybackThread()
     : transaction_store_(nullptr),
@@ -185,8 +201,11 @@ void PlaybackThread::DoMethodCall() {
     const CommittedEvent* const event = GetNextEvent();
     event->GetMethodReturn(&expected_return_value);
 
+    unordered_set<SharedObject*> new_shared_objects;
+    GetNewSharedObjectsForEvent(event, &new_shared_objects);
+
     if (!ValueMatches(*expected_return_value, return_value,
-                      event->new_shared_objects())) {
+                      new_shared_objects)) {
       SetConflictDetected("Return value doesn't match expected return value.");
       return;
     }
@@ -212,9 +231,12 @@ void PlaybackThread::DoSelfMethodCall(ObjectReferenceImpl* object_reference,
     const CommittedEvent* const event = GetNextEvent();
     event->GetSelfMethodCall(&expected_method_name, &expected_parameters);
 
+    unordered_set<SharedObject*> new_shared_objects;
+    GetNewSharedObjectsForEvent(event, &new_shared_objects);
+
     if (!MethodCallMatches(shared_object_, *expected_method_name,
                            *expected_parameters, object_reference, method_name,
-                           parameters, event->new_shared_objects())) {
+                           parameters, new_shared_objects)) {
       SetConflictDetected("Self method call doesn't match expected method "
                           "call.");
       return;
@@ -239,8 +261,11 @@ void PlaybackThread::DoSelfMethodCall(ObjectReferenceImpl* object_reference,
     const CommittedEvent* const event = GetNextEvent();
     event->GetSelfMethodReturn(&expected_return_value);
 
+    unordered_set<SharedObject*> new_shared_objects;
+    GetNewSharedObjectsForEvent(event, &new_shared_objects);
+
     if (!ValueMatches(*expected_return_value, *return_value,
-                      event->new_shared_objects())) {
+                      new_shared_objects)) {
       SetConflictDetected("Return value from self method call doesn't match "
                           "expected value.");
       return;
@@ -260,7 +285,7 @@ void PlaybackThread::DoSubMethodCall(ObjectReferenceImpl* object_reference,
   }
 
   {
-    SharedObject* callee = nullptr;
+    ObjectReferenceImpl* callee = nullptr;
     const string* expected_method_name = nullptr;
     const vector<Value>* expected_parameters = nullptr;
 
@@ -268,15 +293,21 @@ void PlaybackThread::DoSubMethodCall(ObjectReferenceImpl* object_reference,
     event->GetSubMethodCall(&callee, &expected_method_name,
                             &expected_parameters);
 
-    if (callee == shared_object_) {
+    SharedObject* const callee_shared_object = callee->shared_object();
+    CHECK(callee_shared_object != nullptr);
+
+    if (callee_shared_object == shared_object_) {
       SetConflictDetected("Callee is the same as caller, but a self method "
                           "call was not expected.");
       return;
     }
 
-    if (!MethodCallMatches(callee, *expected_method_name, *expected_parameters,
-                           object_reference, method_name, parameters,
-                           event->new_shared_objects())) {
+    unordered_set<SharedObject*> new_shared_objects;
+    GetNewSharedObjectsForEvent(event, &new_shared_objects);
+
+    if (!MethodCallMatches(callee_shared_object, *expected_method_name,
+                           *expected_parameters, object_reference, method_name,
+                           parameters, new_shared_objects)) {
       SetConflictDetected("Sub method call doesn't match expected method "
                           "call.");
       return;

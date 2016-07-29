@@ -113,13 +113,13 @@ class SharedObjectTest : public Test {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<SharedObject*> new_shared_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects;
 
     AddEventToVector(
         new MethodCallCommittedEvent("append", parameters),
         &events);
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, return_value),
+        new MethodReturnCommittedEvent(new_objects, return_value),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -134,7 +134,7 @@ class SharedObjectTest : public Test {
                                   const string& string_to_append,
                                   const string& expected_result_string) {
     vector<unique_ptr<CommittedEvent>> events;
-    const unordered_set<SharedObject*> new_shared_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects;
 
     {
       vector<Value> parameters(1);
@@ -148,7 +148,7 @@ class SharedObjectTest : public Test {
           new MethodCallCommittedEvent("append", parameters),
           &events);
       AddEventToVector(
-          new MethodReturnCommittedEvent(new_shared_objects, return_value),
+          new MethodReturnCommittedEvent(new_objects, return_value),
           &events);
     }
 
@@ -161,7 +161,7 @@ class SharedObjectTest : public Test {
           new MethodCallCommittedEvent("get", vector<Value>()),
           &events);
       AddEventToVector(
-          new MethodReturnCommittedEvent(new_shared_objects, return_value),
+          new MethodReturnCommittedEvent(new_objects, return_value),
           &events);
     }
 
@@ -421,13 +421,13 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<SharedObject*> new_shared_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects;
 
     AddEventToVector(
         new MethodCallCommittedEvent("append", parameters),
         &events);
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, return_value),
+        new MethodReturnCommittedEvent(new_objects, return_value),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -497,10 +497,10 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<SharedObject*> new_shared_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects;
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, return_value),
+        new MethodReturnCommittedEvent(new_objects, return_value),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -570,13 +570,13 @@ TEST_F(SharedObjectTest, BackingUp) {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<SharedObject*> new_shared_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects;
 
     vector<Value> parameters(1);
     parameters[0].set_string_value(FakeLocalObject::kStringLocalType, "Match.");
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, return_value),
+        new MethodReturnCommittedEvent(new_objects, return_value),
         &events);
     AddEventToVector(
         new MethodCallCommittedEvent("append", parameters),
@@ -596,10 +596,10 @@ TEST_F(SharedObjectTest, BackingUp) {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<SharedObject*> new_shared_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects;
 
     AddEventToVector(
-        new MethodReturnCommittedEvent(new_shared_objects, return_value),
+        new MethodReturnCommittedEvent(new_objects, return_value),
         &events);
 
     unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;

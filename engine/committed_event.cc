@@ -23,8 +23,7 @@
 #include "base/escape.h"
 #include "base/logging.h"
 #include "engine/live_object.h"
-#include "engine/shared_object.h"
-#include "engine/uuid_util.h"
+#include "engine/object_reference_impl.h"
 #include "include/c++/value.h"
 #include "util/dump_context.h"
 #include "util/stl_util.h"
@@ -38,9 +37,9 @@ namespace floating_temple {
 namespace engine {
 
 CommittedEvent::CommittedEvent(
-    const unordered_set<SharedObject*>& new_shared_objects)
-    : new_shared_objects_(new_shared_objects) {
-  CHECK(new_shared_objects.find(nullptr) == new_shared_objects.end());
+    const unordered_set<ObjectReferenceImpl*>& new_objects)
+    : new_objects_(new_objects) {
+  CHECK(new_objects.find(nullptr) == new_objects.end());
 }
 
 void CommittedEvent::GetObjectCreation(
@@ -60,7 +59,7 @@ void CommittedEvent::GetMethodReturn(const Value** return_value) const {
              << static_cast<int>(this->type()) << ")";
 }
 
-void CommittedEvent::GetSubMethodCall(SharedObject** callee,
+void CommittedEvent::GetSubMethodCall(ObjectReferenceImpl** callee,
                                       const string** method_name,
                                       const vector<Value>** parameters) const {
   LOG(FATAL) << "Invalid call to GetSubMethodCall (type == "
@@ -109,19 +108,19 @@ string CommittedEvent::GetTypeString(Type event_type) {
 
 #undef CHECK_EVENT_TYPE
 
-void CommittedEvent::DumpNewSharedObjects(DumpContext* dc) const {
+void CommittedEvent::DumpNewObjects(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   dc->BeginList();
-  for (const SharedObject* const shared_object : new_shared_objects_) {
-    dc->AddString(UuidToString(shared_object->object_id()));
+  for (const ObjectReferenceImpl* const object_reference : new_objects_) {
+    object_reference->Dump(dc);
   }
   dc->End();
 }
 
 ObjectCreationCommittedEvent::ObjectCreationCommittedEvent(
     const shared_ptr<const LiveObject>& live_object)
-    : CommittedEvent(unordered_set<SharedObject*>()),
+    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
       live_object_(live_object) {
   CHECK(live_object.get() != nullptr);
 }
@@ -144,8 +143,8 @@ void ObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("OBJECT_CREATION");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->AddString("live_object");
   live_object_->Dump(dc);
@@ -154,7 +153,7 @@ void ObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 BeginTransactionCommittedEvent::BeginTransactionCommittedEvent()
-    : CommittedEvent(unordered_set<SharedObject*>()) {
+    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()) {
 }
 
 CommittedEvent* BeginTransactionCommittedEvent::Clone() const {
@@ -169,14 +168,14 @@ void BeginTransactionCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("BEGIN_TRANSACTION");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->End();
 }
 
 EndTransactionCommittedEvent::EndTransactionCommittedEvent()
-    : CommittedEvent(unordered_set<SharedObject*>()) {
+    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()) {
 }
 
 CommittedEvent* EndTransactionCommittedEvent::Clone() const {
@@ -191,15 +190,15 @@ void EndTransactionCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("END_TRANSACTION");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->End();
 }
 
 MethodCallCommittedEvent::MethodCallCommittedEvent(
     const string& method_name, const vector<Value>& parameters)
-    : CommittedEvent(unordered_set<SharedObject*>()),
+    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
       method_name_(method_name),
       parameters_(parameters) {
   CHECK(!method_name.empty());
@@ -226,8 +225,8 @@ void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("METHOD_CALL");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->AddString("method_name");
   dc->AddString(method_name_);
@@ -243,9 +242,9 @@ void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 MethodReturnCommittedEvent::MethodReturnCommittedEvent(
-    const unordered_set<SharedObject*>& new_shared_objects,
+    const unordered_set<ObjectReferenceImpl*>& new_objects,
     const Value& return_value)
-    : CommittedEvent(new_shared_objects),
+    : CommittedEvent(new_objects),
       return_value_(return_value) {
 }
 
@@ -256,7 +255,7 @@ void MethodReturnCommittedEvent::GetMethodReturn(
 }
 
 CommittedEvent* MethodReturnCommittedEvent::Clone() const {
-  return new MethodReturnCommittedEvent(new_shared_objects(), return_value_);
+  return new MethodReturnCommittedEvent(new_objects(), return_value_);
 }
 
 void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
@@ -267,8 +266,8 @@ void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("METHOD_RETURN");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->AddString("return_value");
   return_value_.Dump(dc);
@@ -277,11 +276,11 @@ void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SubMethodCallCommittedEvent::SubMethodCallCommittedEvent(
-    const unordered_set<SharedObject*>& new_shared_objects,
-    SharedObject* callee,
+    const unordered_set<ObjectReferenceImpl*>& new_objects,
+    ObjectReferenceImpl* callee,
     const string& method_name,
     const vector<Value>& parameters)
-    : CommittedEvent(new_shared_objects),
+    : CommittedEvent(new_objects),
       callee_(CHECK_NOTNULL(callee)),
       method_name_(method_name),
       parameters_(parameters) {
@@ -289,7 +288,7 @@ SubMethodCallCommittedEvent::SubMethodCallCommittedEvent(
 }
 
 void SubMethodCallCommittedEvent::GetSubMethodCall(
-    SharedObject** callee, const string** method_name,
+    ObjectReferenceImpl** callee, const string** method_name,
     const vector<Value>** parameters) const {
   CHECK(callee != nullptr);
   CHECK(method_name != nullptr);
@@ -301,8 +300,8 @@ void SubMethodCallCommittedEvent::GetSubMethodCall(
 }
 
 CommittedEvent* SubMethodCallCommittedEvent::Clone() const {
-  return new SubMethodCallCommittedEvent(new_shared_objects(), callee_,
-                                         method_name_, parameters_);
+  return new SubMethodCallCommittedEvent(new_objects(), callee_, method_name_,
+                                         parameters_);
 }
 
 void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
@@ -313,11 +312,11 @@ void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("SUB_METHOD_CALL");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->AddString("callee");
-  dc->AddString(UuidToString(callee_->object_id()));
+  callee_->Dump(dc);
 
   dc->AddString("method_name");
   dc->AddString(method_name_);
@@ -334,7 +333,7 @@ void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
 SubMethodReturnCommittedEvent::SubMethodReturnCommittedEvent(
     const Value& return_value)
-    : CommittedEvent(unordered_set<SharedObject*>()),
+    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
       return_value_(return_value) {
 }
 
@@ -356,8 +355,8 @@ void SubMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("SUB_METHOD_RETURN");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->AddString("return_value");
   return_value_.Dump(dc);
@@ -366,9 +365,9 @@ void SubMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SelfMethodCallCommittedEvent::SelfMethodCallCommittedEvent(
-    const unordered_set<SharedObject*>& new_shared_objects,
+    const unordered_set<ObjectReferenceImpl*>& new_objects,
     const string& method_name, const vector<Value>& parameters)
-    : CommittedEvent(new_shared_objects),
+    : CommittedEvent(new_objects),
       method_name_(method_name),
       parameters_(parameters) {
   CHECK(!method_name.empty());
@@ -385,7 +384,7 @@ void SelfMethodCallCommittedEvent::GetSelfMethodCall(
 }
 
 CommittedEvent* SelfMethodCallCommittedEvent::Clone() const {
-  return new SelfMethodCallCommittedEvent(new_shared_objects(), method_name_,
+  return new SelfMethodCallCommittedEvent(new_objects(), method_name_,
                                           parameters_);
 }
 
@@ -397,8 +396,8 @@ void SelfMethodCallCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("SELF_METHOD_CALL");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->AddString("method_name");
   dc->AddString(method_name_);
@@ -414,9 +413,9 @@ void SelfMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SelfMethodReturnCommittedEvent::SelfMethodReturnCommittedEvent(
-    const unordered_set<SharedObject*>& new_shared_objects,
+    const unordered_set<ObjectReferenceImpl*>& new_objects,
     const Value& return_value)
-    : CommittedEvent(new_shared_objects),
+    : CommittedEvent(new_objects),
       return_value_(return_value) {
 }
 
@@ -427,8 +426,7 @@ void SelfMethodReturnCommittedEvent::GetSelfMethodReturn(
 }
 
 CommittedEvent* SelfMethodReturnCommittedEvent::Clone() const {
-  return new SelfMethodReturnCommittedEvent(new_shared_objects(),
-                                            return_value_);
+  return new SelfMethodReturnCommittedEvent(new_objects(), return_value_);
 }
 
 void SelfMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
@@ -439,8 +437,8 @@ void SelfMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("SELF_METHOD_RETURN");
 
-  dc->AddString("new_shared_objects");
-  DumpNewSharedObjects(dc);
+  dc->AddString("new_objects");
+  DumpNewObjects(dc);
 
   dc->AddString("return_value");
   return_value_.Dump(dc);

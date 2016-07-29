@@ -182,6 +182,10 @@ bool TransactionStore::UuidEquals::operator()(const Uuid& a,
   return CompareUuids(a, b) == 0;
 }
 
+const CanonicalPeer* TransactionStore::GetLocalPeer() const {
+  return local_peer_;
+}
+
 SequencePoint* TransactionStore::GetCurrentSequencePoint() const {
   MutexLock lock(&current_sequence_point_mu_);
   return current_sequence_point_.Clone();

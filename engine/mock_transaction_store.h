@@ -29,6 +29,7 @@
 namespace floating_temple {
 namespace engine {
 
+class CanonicalPeer;
 class LiveObject;
 class ObjectReferenceImpl;
 class PendingEvent;
@@ -39,6 +40,7 @@ class MockTransactionStoreCore {
  public:
   MockTransactionStoreCore() {}
 
+  MOCK_CONST_METHOD0(GetLocalPeer, const CanonicalPeer*());
   MOCK_CONST_METHOD0(GetCurrentSequencePoint, SequencePoint*());
   MOCK_CONST_METHOD3(
       GetLiveObjectAtSequencePoint,
@@ -72,6 +74,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   explicit MockTransactionStore(MockTransactionStoreCore* core);
   ~MockTransactionStore() override;
 
+  const CanonicalPeer* GetLocalPeer() const override;
   SequencePoint* GetCurrentSequencePoint() const override;
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       ObjectReferenceImpl* object_reference,

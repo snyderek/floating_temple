@@ -41,6 +41,10 @@ MockTransactionStore::MockTransactionStore(MockTransactionStoreCore* core)
 MockTransactionStore::~MockTransactionStore() {
 }
 
+const CanonicalPeer* MockTransactionStore::GetLocalPeer() const {
+  return core_->GetLocalPeer();
+}
+
 SequencePoint* MockTransactionStore::GetCurrentSequencePoint() const {
   return core_->GetCurrentSequencePoint();
 }

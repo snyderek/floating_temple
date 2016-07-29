@@ -24,6 +24,7 @@
 namespace floating_temple {
 namespace engine {
 
+class CanonicalPeer;
 class LiveObject;
 class ObjectReferenceImpl;
 class PendingEvent;
@@ -35,6 +36,8 @@ class TransactionStoreInternalInterface {
   enum ExecutionPhase { NORMAL, REWIND, RESUME };
 
   virtual ~TransactionStoreInternalInterface() {}
+
+  virtual const CanonicalPeer* GetLocalPeer() const = 0;
 
   // The caller must take ownership of the returned SequencePoint instance.
   virtual SequencePoint* GetCurrentSequencePoint() const = 0;

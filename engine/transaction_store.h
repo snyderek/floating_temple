@@ -95,6 +95,7 @@ class TransactionStore : public ConnectionHandler,
   typedef std::unordered_map<Uuid, std::unique_ptr<SharedObject>,
                              UuidHasher, UuidEquals> SharedObjectMap;
 
+  const CanonicalPeer* GetLocalPeer() const override;
   SequencePoint* GetCurrentSequencePoint() const override;
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       ObjectReferenceImpl* object_reference,

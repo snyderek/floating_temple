@@ -32,8 +32,8 @@ namespace engine {
 class CanonicalPeer;
 class LiveObject;
 class ObjectReferenceImpl;
-class PendingEvent;
 class SequencePoint;
+class SharedObjectTransaction;
 class TransactionId;
 
 class MockTransactionStoreCore {
@@ -51,7 +51,9 @@ class MockTransactionStoreCore {
   MOCK_CONST_METHOD1(CreateBoundObjectReference, void(const std::string& name));
   MOCK_CONST_METHOD4(
       CreateTransaction,
-      void(const std::vector<std::unique_ptr<PendingEvent>>& events,
+      void(const std::unordered_map<ObjectReferenceImpl*,
+                                    std::unique_ptr<SharedObjectTransaction>>&
+               object_transactions,
            TransactionId* transaction_id,
            const std::unordered_map<ObjectReferenceImpl*,
                                     std::shared_ptr<LiveObject>>&
@@ -83,7 +85,9 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   ObjectReferenceImpl* CreateBoundObjectReference(
       const std::string& name) override;
   void CreateTransaction(
-      const std::vector<std::unique_ptr<PendingEvent>>& events,
+      const std::unordered_map<ObjectReferenceImpl*,
+                               std::unique_ptr<SharedObjectTransaction>>&
+          object_transactions,
       TransactionId* transaction_id,
       const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<LiveObject>>& modified_objects,

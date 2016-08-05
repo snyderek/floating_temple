@@ -19,7 +19,6 @@
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
 
 #include "base/macros.h"
 #include "engine/proto/transaction_id.pb.h"
@@ -27,10 +26,11 @@
 namespace floating_temple {
 namespace engine {
 
+class CommittedEvent;
 class LiveObject;
 class ObjectReferenceImpl;
-class PendingEvent;
 class SequencePoint;
+class SharedObjectTransaction;
 class TransactionStoreInternalInterface;
 
 class PendingTransaction {
@@ -46,7 +46,7 @@ class PendingTransaction {
       { return base_transaction_id_; }
   int transaction_level() const { return transaction_level_; }
 
-  bool IsEmpty() const { return events_.empty(); }
+  bool IsEmpty() const { return object_transactions_.empty(); }
 
   std::shared_ptr<LiveObject> GetLiveObject(
       ObjectReferenceImpl* object_reference);
@@ -57,7 +57,7 @@ class PendingTransaction {
   void UpdateLiveObject(ObjectReferenceImpl* object_reference,
                         const std::shared_ptr<LiveObject>& live_object);
 
-  void AddEvent(PendingEvent* event);
+  void AddEvent(ObjectReferenceImpl* object_reference, CommittedEvent* event);
 
   void IncrementTransactionLevel();
   bool DecrementTransactionLevel();
@@ -73,7 +73,9 @@ class PendingTransaction {
   const TransactionId base_transaction_id_;
   const std::unique_ptr<SequencePoint> sequence_point_;
 
-  std::vector<std::unique_ptr<PendingEvent>> events_;
+  std::unordered_map<ObjectReferenceImpl*,
+                     std::unique_ptr<SharedObjectTransaction>>
+      object_transactions_;
   std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
       modified_objects_;
   std::unordered_set<ObjectReferenceImpl*> new_objects_;

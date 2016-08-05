@@ -40,7 +40,6 @@
 #include "engine/min_version_map.h"
 #include "engine/object_reference_impl.h"
 #include "engine/peer_message_sender.h"
-#include "engine/pending_event.h"
 #include "engine/proto/event.pb.h"
 #include "engine/proto/peer.pb.h"
 #include "engine/proto/transaction_id.pb.h"
@@ -286,7 +285,9 @@ ObjectReferenceImpl* TransactionStore::CreateBoundObjectReference(
 }
 
 void TransactionStore::CreateTransaction(
-    const vector<unique_ptr<PendingEvent>>& events,
+    const unordered_map<ObjectReferenceImpl*,
+                        unique_ptr<SharedObjectTransaction>>&
+        object_transactions,
     TransactionId* transaction_id,
     const unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>&
         modified_objects,
@@ -297,14 +298,24 @@ void TransactionStore::CreateTransaction(
   TransactionId transaction_id_temp;
   transaction_sequencer_.ReserveTransaction(&transaction_id_temp);
 
-  const vector<unique_ptr<PendingEvent>>::size_type event_count = events.size();
   unordered_map<SharedObject*, unique_ptr<SharedObjectTransaction>>
       shared_object_transactions;
+  shared_object_transactions.reserve(object_transactions.size());
+  for (const auto& transaction_pair : object_transactions) {
+    ObjectReferenceImpl* const object_reference = transaction_pair.first;
+    const SharedObjectTransaction* const transaction =
+        transaction_pair.second.get();
 
-  for (vector<unique_ptr<PendingEvent>>::size_type i = 0; i < event_count;
-       ++i) {
-    ConvertPendingEventToCommittedEvents(events[i].get(), local_peer_,
-                                         &shared_object_transactions);
+    SharedObject* const shared_object = GetSharedObjectForObjectReference(
+        object_reference);
+    EnsureSharedObjectsInTransactionExist(transaction);
+
+    unique_ptr<SharedObjectTransaction>& transaction_clone =
+        shared_object_transactions[shared_object];
+    CHECK(transaction_clone.get() == nullptr);
+    // TODO(dss): Cloning the SharedObjectTransaction instance here seems
+    // unnecessarily inefficient.
+    transaction_clone.reset(transaction->Clone());
   }
 
   ApplyTransactionAndSendMessage(transaction_id_temp,
@@ -958,145 +969,103 @@ SharedObject* TransactionStore::GetSharedObjectForObjectReference(
   return shared_object;
 }
 
-void TransactionStore::ConvertPendingEventToCommittedEvents(
-    const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
-    unordered_map<SharedObject*, unique_ptr<SharedObjectTransaction>>*
-        shared_object_transactions) {
-  CHECK(pending_event != nullptr);
+void TransactionStore::EnsureSharedObjectsInTransactionExist(
+    const SharedObjectTransaction* transaction) {
+  CHECK(transaction != nullptr);
 
-  const std::unordered_set<ObjectReferenceImpl*>& new_object_references =
-      pending_event->new_object_references();
-  ObjectReferenceImpl* const prev_object_reference =
-      pending_event->prev_object_reference();
-
-  CHECK(new_object_references.find(prev_object_reference) ==
-            new_object_references.end());
-
-  // Create shared objects for the new object references.
-  for (ObjectReferenceImpl* const object_reference : new_object_references) {
-    GetSharedObjectForObjectReference(object_reference);
+  for (const unique_ptr<CommittedEvent>& event : transaction->events()) {
+    EnsureSharedObjectsInEventExist(event.get());
   }
+}
 
-  SharedObject* const prev_shared_object = GetSharedObjectForObjectReference(
-      pending_event->prev_object_reference());
-
-  for (const auto& live_object_pair : pending_event->live_objects()) {
-    ObjectReferenceImpl* const object_reference = live_object_pair.first;
-    const shared_ptr<const LiveObject>& live_object = live_object_pair.second;
-
-    SharedObject* const shared_object = GetSharedObjectForObjectReference(
-        object_reference);
-
-    AddEventToSharedObjectTransactions(
-        shared_object, origin_peer,
-        new ObjectCreationCommittedEvent(live_object),
-        shared_object_transactions);
-  }
-
-  const PendingEvent::Type type = pending_event->type();
+void TransactionStore::EnsureSharedObjectsInEventExist(
+    const CommittedEvent* event) {
+  const CommittedEvent::Type type = event->type();
 
   switch (type) {
-    case PendingEvent::BEGIN_TRANSACTION:
-      CHECK_EQ(new_object_references.size(), 0u);
-      AddEventToSharedObjectTransactions(prev_shared_object, origin_peer,
-                                         new BeginTransactionCommittedEvent(),
-                                         shared_object_transactions);
+    case CommittedEvent::OBJECT_CREATION:
+    case CommittedEvent::BEGIN_TRANSACTION:
+    case CommittedEvent::END_TRANSACTION:
       break;
 
-    case PendingEvent::END_TRANSACTION:
-      CHECK_EQ(new_object_references.size(), 0u);
-      AddEventToSharedObjectTransactions(prev_shared_object, origin_peer,
-                                         new EndTransactionCommittedEvent(),
-                                         shared_object_transactions);
-      break;
-
-    case PendingEvent::METHOD_CALL: {
-      ObjectReferenceImpl* next_object_reference = nullptr;
+    case CommittedEvent::METHOD_CALL: {
       const string* method_name = nullptr;
       const vector<Value>* parameters = nullptr;
 
-      pending_event->GetMethodCall(&next_object_reference, &method_name,
-                                   &parameters);
-
-      SharedObject* const next_shared_object =
-          GetSharedObjectForObjectReference(next_object_reference);
+      event->GetMethodCall(&method_name, &parameters);
 
       for (const Value& parameter : *parameters) {
-        EnsureSharedObjectExists(parameter);
+        EnsureSharedObjectInValueExists(parameter);
       }
 
-      if (prev_shared_object == next_shared_object) {
-        if (prev_shared_object != nullptr) {
-          AddEventToSharedObjectTransactions(
-              prev_shared_object, origin_peer,
-              new SelfMethodCallCommittedEvent(new_object_references,
-                                               *method_name, *parameters),
-              shared_object_transactions);
-        }
-      } else {
-        if (prev_shared_object != nullptr) {
-          AddEventToSharedObjectTransactions(
-              prev_shared_object, origin_peer,
-              new SubMethodCallCommittedEvent(new_object_references,
-                                              next_object_reference,
-                                              *method_name, *parameters),
-              shared_object_transactions);
-        }
-
-        if (next_shared_object != nullptr) {
-          AddEventToSharedObjectTransactions(
-              next_shared_object, origin_peer,
-              new MethodCallCommittedEvent(*method_name, *parameters),
-              shared_object_transactions);
-        }
-      }
       break;
     }
 
-    case PendingEvent::METHOD_RETURN: {
-      ObjectReferenceImpl* next_object_reference = nullptr;
+    case CommittedEvent::METHOD_RETURN: {
       const Value* return_value = nullptr;
+      event->GetMethodReturn(&return_value);
 
-      pending_event->GetMethodReturn(&next_object_reference, &return_value);
+      EnsureSharedObjectInValueExists(*return_value);
 
-      SharedObject* const next_shared_object =
-          GetSharedObjectForObjectReference(next_object_reference);
+      break;
+    }
 
-      EnsureSharedObjectExists(*return_value);
+    case CommittedEvent::SUB_METHOD_CALL: {
+      ObjectReferenceImpl* callee = nullptr;
+      const string* method_name = nullptr;
+      const vector<Value>* parameters = nullptr;
 
-      if (prev_shared_object == next_shared_object) {
-        if (prev_shared_object != nullptr) {
-          AddEventToSharedObjectTransactions(
-              prev_shared_object, origin_peer,
-              new SelfMethodReturnCommittedEvent(new_object_references,
-                                                 *return_value),
-              shared_object_transactions);
-        }
-      } else {
-        if (prev_shared_object != nullptr) {
-          AddEventToSharedObjectTransactions(
-              prev_shared_object, origin_peer,
-              new MethodReturnCommittedEvent(new_object_references,
-                                             *return_value),
-              shared_object_transactions);
-        }
+      event->GetSubMethodCall(&callee, &method_name, &parameters);
 
-        if (next_shared_object != nullptr) {
-          AddEventToSharedObjectTransactions(
-              next_shared_object, origin_peer,
-              new SubMethodReturnCommittedEvent(*return_value),
-              shared_object_transactions);
-        }
+      GetSharedObjectForObjectReference(callee);
+      for (const Value& parameter : *parameters) {
+        EnsureSharedObjectInValueExists(parameter);
       }
+
+      break;
+    }
+
+    case CommittedEvent::SUB_METHOD_RETURN: {
+      const Value* return_value = nullptr;
+      event->GetSubMethodReturn(&return_value);
+
+      EnsureSharedObjectInValueExists(*return_value);
+
+      break;
+    }
+
+    case CommittedEvent::SELF_METHOD_CALL: {
+      const string* method_name = nullptr;
+      const vector<Value>* parameters = nullptr;
+
+      event->GetSelfMethodCall(&method_name, &parameters);
+
+      for (const Value& parameter : *parameters) {
+        EnsureSharedObjectInValueExists(parameter);
+      }
+
+      break;
+    }
+
+    case CommittedEvent::SELF_METHOD_RETURN: {
+      const Value* return_value = nullptr;
+      event->GetSelfMethodReturn(&return_value);
+
+      EnsureSharedObjectInValueExists(*return_value);
+
       break;
     }
 
     default:
-      LOG(FATAL) << "Invalid pending event type: " << static_cast<int>(type);
+      LOG(FATAL) << "Invalid committed event type: " << static_cast<int>(type);
+  }
+
+  for (ObjectReferenceImpl* const object_reference : event->new_objects()) {
+    GetSharedObjectForObjectReference(object_reference);
   }
 }
 
-void TransactionStore::EnsureSharedObjectExists(const Value& value) {
+void TransactionStore::EnsureSharedObjectInValueExists(const Value& value) {
   if (value.type() == Value::OBJECT_REFERENCE) {
     ObjectReferenceImpl* const object_reference =
         static_cast<ObjectReferenceImpl*>(value.object_reference());
@@ -1437,29 +1406,6 @@ void TransactionStore::ConvertValueProtoToValue(const ValueProto& in,
 }
 
 #undef CONVERT_VALUE
-
-// static
-void TransactionStore::AddEventToSharedObjectTransactions(
-    SharedObject* shared_object,
-    const CanonicalPeer* origin_peer,
-    CommittedEvent* event,
-    unordered_map<SharedObject*, unique_ptr<SharedObjectTransaction>>*
-        shared_object_transactions) {
-  CHECK(shared_object != nullptr);
-  CHECK(origin_peer != nullptr);
-  CHECK(event != nullptr);
-  CHECK(shared_object_transactions != nullptr);
-
-  unique_ptr<SharedObjectTransaction>& transaction =
-      (*shared_object_transactions)[shared_object];
-  if (transaction.get() == nullptr) {
-    transaction.reset(new SharedObjectTransaction(origin_peer));
-  } else {
-    CHECK_EQ(transaction->origin_peer(), origin_peer);
-  }
-
-  transaction->AddEvent(event);
-}
 
 }  // namespace engine
 }  // namespace floating_temple

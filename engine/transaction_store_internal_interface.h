@@ -25,10 +25,11 @@ namespace floating_temple {
 namespace engine {
 
 class CanonicalPeer;
+class CommittedEvent;
 class LiveObject;
 class ObjectReferenceImpl;
-class PendingEvent;
 class SequencePoint;
+class SharedObjectTransaction;
 class TransactionId;
 
 class TransactionStoreInternalInterface {
@@ -51,7 +52,9 @@ class TransactionStoreInternalInterface {
       const std::string& name) = 0;
 
   virtual void CreateTransaction(
-      const std::vector<std::unique_ptr<PendingEvent>>& events,
+      const std::unordered_map<ObjectReferenceImpl*,
+                               std::unique_ptr<SharedObjectTransaction>>&
+          object_transactions,
       TransactionId* transaction_id,
       const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<LiveObject>>& modified_objects,

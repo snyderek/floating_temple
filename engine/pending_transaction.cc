@@ -24,10 +24,13 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
+#include "base/string_printf.h"
+#include "engine/committed_event.h"
 #include "engine/live_object.h"
-#include "engine/pending_event.h"
+#include "engine/object_reference_impl.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/sequence_point.h"
+#include "engine/shared_object_transaction.h"
 #include "engine/transaction_store_internal_interface.h"
 
 using std::shared_ptr;
@@ -108,10 +111,18 @@ void PendingTransaction::UpdateLiveObject(
   }
 }
 
-void PendingTransaction::AddEvent(PendingEvent* event) {
-  CHECK(event != nullptr);
+void PendingTransaction::AddEvent(ObjectReferenceImpl* object_reference,
+                                  CommittedEvent* event) {
+  CHECK(object_reference != nullptr);
 
-  events_.emplace_back(event);
+  unique_ptr<SharedObjectTransaction>& object_transaction =
+      object_transactions_[object_reference];
+  if (object_transaction.get() == nullptr) {
+    object_transaction.reset(
+        new SharedObjectTransaction(transaction_store_->GetLocalPeer()));
+  }
+
+  object_transaction->AddEvent(event);
 }
 
 void PendingTransaction::IncrementTransactionLevel() {
@@ -132,16 +143,17 @@ void PendingTransaction::Commit(
   CHECK(new_objects != nullptr);
 
   TransactionId committed_transaction_id;
-  while (!events_.empty()) {
+  while (!object_transactions_.empty()) {
     LogDebugInfo();
 
-    vector<unique_ptr<PendingEvent>> events_to_commit;
+    unordered_map<ObjectReferenceImpl*, unique_ptr<SharedObjectTransaction>>
+        transactions_to_commit;
     unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>
         modified_objects_to_commit;
-    events_to_commit.swap(events_);
+    transactions_to_commit.swap(object_transactions_);
     modified_objects_to_commit.swap(modified_objects_);
 
-    transaction_store_->CreateTransaction(events_to_commit,
+    transaction_store_->CreateTransaction(transactions_to_commit,
                                           &committed_transaction_id,
                                           modified_objects_to_commit,
                                           sequence_point_.get());
@@ -152,30 +164,76 @@ void PendingTransaction::Commit(
 }
 
 void PendingTransaction::LogDebugInfo() const {
-  const vector<unique_ptr<PendingEvent>>::size_type event_count =
-      events_.size();
-
-  VLOG(2) << "Creating local transaction with " << event_count << " events.";
+  VLOG(2) << "Creating local transaction affecting "
+          << object_transactions_.size() << " objects.";
 
   if (VLOG_IS_ON(3)) {
-    for (vector<unique_ptr<PendingEvent>>::size_type i = 0; i < event_count;
-         ++i) {
-      const PendingEvent* const event = events_[i].get();
-      const PendingEvent::Type type = event->type();
-      const string type_string = PendingEvent::GetTypeString(type);
+    int shared_object_index = 0;
+    for (const auto& transaction_pair : object_transactions_) {
+      const ObjectReferenceImpl* const object_reference =
+          transaction_pair.first;
+      const SharedObjectTransaction* const shared_object_transaction =
+          transaction_pair.second.get();
 
-      if (type == PendingEvent::METHOD_CALL) {
-        ObjectReferenceImpl* next_object_reference = nullptr;
-        const string* method_name = nullptr;
-        const vector<Value>* parameters = nullptr;
+      VLOG(3) << "Shared object " << shared_object_index << ": "
+              << object_reference->DebugString();
 
-        event->GetMethodCall(&next_object_reference, &method_name, &parameters);
+      const vector<unique_ptr<CommittedEvent>>& events =
+          shared_object_transaction->events();
+      const vector<unique_ptr<CommittedEvent>>::size_type event_count =
+          events.size();
 
-        VLOG(3) << "Event " << i << ": " << type_string << " \""
-                << CEscape(*method_name) << "\"";
-      } else {
-        VLOG(3) << "Event " << i << ": " << type_string;
+      for (vector<unique_ptr<CommittedEvent>>::size_type event_index = 0;
+           event_index < event_count; ++event_index) {
+        const CommittedEvent* const event = events[event_index].get();
+        const CommittedEvent::Type type = event->type();
+        const string type_string = CommittedEvent::GetTypeString(type);
+
+        string event_string;
+
+        switch (type) {
+          case CommittedEvent::METHOD_CALL: {
+            const string* method_name = nullptr;
+            const vector<Value>* parameters = nullptr;
+
+            event->GetMethodCall(&method_name, &parameters);
+
+            SStringPrintf(&event_string, "%s \"%s\"", type_string.c_str(),
+                          CEscape(*method_name).c_str());
+            break;
+          }
+
+          case CommittedEvent::SUB_METHOD_CALL: {
+            ObjectReferenceImpl* callee = nullptr;
+            const string* method_name = nullptr;
+            const vector<Value>* parameters = nullptr;
+
+            event->GetSubMethodCall(&callee, &method_name, &parameters);
+
+            SStringPrintf(&event_string, "%s \"%s\"", type_string.c_str(),
+                          CEscape(*method_name).c_str());
+            break;
+          }
+
+          case CommittedEvent::SELF_METHOD_CALL: {
+            const string* method_name = nullptr;
+            const vector<Value>* parameters = nullptr;
+
+            event->GetSelfMethodCall(&method_name, &parameters);
+
+            SStringPrintf(&event_string, "%s \"%s\"", type_string.c_str(),
+                          CEscape(*method_name).c_str());
+            break;
+          }
+
+          default:
+            event_string = type_string;
+        }
+
+        VLOG(3) << "Event " << event_index << ": " << event_string;
       }
+
+      ++shared_object_index;
     }
   }
 }

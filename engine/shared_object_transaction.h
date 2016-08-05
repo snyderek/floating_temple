@@ -30,6 +30,8 @@ namespace engine {
 class CanonicalPeer;
 class CommittedEvent;
 
+// TODO(dss): Consider renaming this class. It no longer applies just to
+// SharedObject instances.
 class SharedObjectTransaction {
  public:
   SharedObjectTransaction(

@@ -33,9 +33,9 @@ class LocalObject;
 
 namespace engine {
 
+class CommittedEvent;
 class LiveObject;
 class ObjectReferenceImpl;
-class PendingEvent;
 class PendingTransaction;
 class TransactionStoreInternalInterface;
 
@@ -79,9 +79,21 @@ class RecordingThread : private RecordingThreadInternalInterface {
                         Value* return_value,
                         std::shared_ptr<LiveObject>* callee_live_object);
 
+  // These methods take ownership of the CommittedEvent instances.
   void AddTransactionEvent(
-      PendingEvent* event, ObjectReferenceImpl* current_object_reference,
-      const std::shared_ptr<LiveObject>& current_live_object);
+      ObjectReferenceImpl* event_object_reference,
+      CommittedEvent* event,
+      ObjectReferenceImpl* prev_object_reference,
+      ObjectReferenceImpl* next_object_reference,
+      const std::shared_ptr<LiveObject>& prev_live_object);
+  // TODO(dss): The API of this function is horrible.
+  void AddTransactionEvents(
+      const std::unordered_map<ObjectReferenceImpl*,
+                               std::vector<CommittedEvent*>>& object_events,
+      ObjectReferenceImpl* prev_object_reference,
+      ObjectReferenceImpl* next_object_reference,
+      const std::shared_ptr<LiveObject>& prev_live_object);
+
   void CommitTransaction();
 
   void CheckIfValueIsNew(

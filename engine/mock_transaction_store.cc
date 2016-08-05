@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "engine/object_reference_impl.h"
 #include "engine/proto/transaction_id.pb.h"
+#include "engine/shared_object_transaction.h"
 
 using std::shared_ptr;
 using std::string;
@@ -87,15 +88,17 @@ ObjectReferenceImpl* MockTransactionStore::CreateBoundObjectReference(
 }
 
 void MockTransactionStore::CreateTransaction(
-    const vector<unique_ptr<PendingEvent>>& events,
+    const unordered_map<ObjectReferenceImpl*,
+                        unique_ptr<SharedObjectTransaction>>&
+        object_transactions,
     TransactionId* transaction_id,
     const unordered_map<ObjectReferenceImpl*, shared_ptr<LiveObject>>&
         modified_objects,
     const SequencePoint* prev_sequence_point) {
   CHECK(transaction_id != nullptr);
 
-  core_->CreateTransaction(events, transaction_id, modified_objects,
-                           prev_sequence_point);
+  core_->CreateTransaction(object_transactions, transaction_id,
+                           modified_objects, prev_sequence_point);
 
   transaction_id->Clear();
   transaction_id->set_a(next_id_);

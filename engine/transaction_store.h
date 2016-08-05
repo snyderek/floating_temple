@@ -55,7 +55,6 @@ class InvalidateTransactionsMessage;
 class ObjectReferenceImpl;
 class PeerMessage;
 class PeerMessageSender;
-class PendingEvent;
 class RecordingThread;
 class RejectTransactionMessage;
 class SharedObject;
@@ -104,7 +103,9 @@ class TransactionStore : public ConnectionHandler,
   ObjectReferenceImpl* CreateBoundObjectReference(
       const std::string& name) override;
   void CreateTransaction(
-      const std::vector<std::unique_ptr<PendingEvent>>& events,
+      const std::unordered_map<ObjectReferenceImpl*,
+                               std::unique_ptr<SharedObjectTransaction>>&
+          object_transactions,
       TransactionId* transaction_id,
       const std::unordered_map<ObjectReferenceImpl*,
                                std::shared_ptr<LiveObject>>& modified_objects,
@@ -182,12 +183,10 @@ class TransactionStore : public ConnectionHandler,
   SharedObject* GetSharedObjectForObjectReference(
       ObjectReferenceImpl* object_reference);
 
-  void ConvertPendingEventToCommittedEvents(
-      const PendingEvent* pending_event, const CanonicalPeer* origin_peer,
-      std::unordered_map<SharedObject*,
-                         std::unique_ptr<SharedObjectTransaction>>*
-          shared_object_transactions);
-  void EnsureSharedObjectExists(const Value& value);
+  void EnsureSharedObjectsInTransactionExist(
+      const SharedObjectTransaction* transaction);
+  void EnsureSharedObjectsInEventExist(const CommittedEvent* event);
+  void EnsureSharedObjectInValueExists(const Value& value);
 
   void ConvertCommittedEventToEventProto(const CommittedEvent* in,
                                          EventProto* out);
@@ -195,14 +194,6 @@ class TransactionStore : public ConnectionHandler,
   CommittedEvent* ConvertEventProtoToCommittedEvent(
       const EventProto& event_proto);
   void ConvertValueProtoToValue(const ValueProto& in, Value* out);
-
-  static void AddEventToSharedObjectTransactions(
-      SharedObject* shared_object,
-      const CanonicalPeer* origin_peer,
-      CommittedEvent* event,
-      std::unordered_map<SharedObject*,
-                         std::unique_ptr<SharedObjectTransaction>>*
-          shared_object_transactions);
 
   CanonicalPeerMap* const canonical_peer_map_;
   Interpreter* const interpreter_;

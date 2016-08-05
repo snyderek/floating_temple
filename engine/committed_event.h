@@ -33,6 +33,8 @@ namespace engine {
 class LiveObject;
 class ObjectReferenceImpl;
 
+// TODO(dss): Rename this class to Event. It's no longer used just for committed
+// events.
 class CommittedEvent {
  public:
   enum Type {

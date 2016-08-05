@@ -24,11 +24,11 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
+#include "engine/committed_event.h"
 #include "engine/live_object.h"
 #include "engine/mock_local_object.h"
 #include "engine/mock_sequence_point.h"
 #include "engine/mock_transaction_store.h"
-#include "engine/pending_event.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/transaction_store_internal_interface.h"
 #include "fake_interpreter/fake_local_object.h"

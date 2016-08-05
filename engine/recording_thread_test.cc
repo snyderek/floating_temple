@@ -24,12 +24,14 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
+#include "engine/canonical_peer.h"
 #include "engine/committed_event.h"
 #include "engine/live_object.h"
 #include "engine/mock_local_object.h"
 #include "engine/mock_sequence_point.h"
 #include "engine/mock_transaction_store.h"
 #include "engine/proto/transaction_id.pb.h"
+#include "engine/shared_object_transaction.h"
 #include "engine/transaction_store_internal_interface.h"
 #include "fake_interpreter/fake_local_object.h"
 #include "include/c++/local_object.h"
@@ -49,9 +51,12 @@ using testing::AtLeast;
 using testing::ElementsAre;
 using testing::InSequence;
 using testing::InitGoogleMock;
+using testing::Pair;
+using testing::Pointee;
 using testing::Return;
 using testing::ReturnNew;
 using testing::Sequence;
+using testing::UnorderedElementsAre;
 using testing::_;
 
 namespace floating_temple {
@@ -62,30 +67,68 @@ class ObjectReferenceImpl;
 namespace engine {
 namespace {
 
-MATCHER(IsBeginTransactionPendingEvent, "") {
-  return arg->type() == PendingEvent::BEGIN_TRANSACTION;
+MATCHER(IsObjectCreationEvent, "") {
+  return arg->type() == CommittedEvent::OBJECT_CREATION;
 }
 
-MATCHER(IsEndTransactionPendingEvent, "") {
-  return arg->type() == PendingEvent::END_TRANSACTION;
+MATCHER(IsBeginTransactionEvent, "") {
+  return arg->type() == CommittedEvent::BEGIN_TRANSACTION;
 }
 
-MATCHER_P(IsMethodCallPendingEvent, expected_method_name, "") {
-  if (arg->type() != PendingEvent::METHOD_CALL) {
+MATCHER(IsEndTransactionEvent, "") {
+  return arg->type() == CommittedEvent::END_TRANSACTION;
+}
+
+MATCHER_P(IsMethodCallEvent, expected_method_name, "") {
+  if (arg->type() != CommittedEvent::METHOD_CALL) {
     return false;
   }
 
-  ObjectReferenceImpl* next_object_reference = nullptr;
   const string* method_name = nullptr;
   const vector<Value>* parameters = nullptr;
 
-  arg->GetMethodCall(&next_object_reference, &method_name, &parameters);
+  arg->GetMethodCall(&method_name, &parameters);
 
   return *method_name == expected_method_name;
 }
 
-MATCHER(IsMethodReturnPendingEvent, "") {
-  return arg->type() == PendingEvent::METHOD_RETURN;
+MATCHER(IsMethodReturnEvent, "") {
+  return arg->type() == CommittedEvent::METHOD_RETURN;
+}
+
+MATCHER_P(IsSubMethodCallEvent, expected_method_name, "") {
+  if (arg->type() != CommittedEvent::SUB_METHOD_CALL) {
+    return false;
+  }
+
+  ObjectReferenceImpl* callee = nullptr;
+  const string* method_name = nullptr;
+  const vector<Value>* parameters = nullptr;
+
+  arg->GetSubMethodCall(&callee, &method_name, &parameters);
+
+  return *method_name == expected_method_name;
+}
+
+MATCHER(IsSubMethodReturnEvent, "") {
+  return arg->type() == CommittedEvent::SUB_METHOD_RETURN;
+}
+
+MATCHER_P(IsSelfMethodCallEvent, expected_method_name, "") {
+  if (arg->type() != CommittedEvent::SELF_METHOD_CALL) {
+    return false;
+  }
+
+  const string* method_name = nullptr;
+  const vector<Value>* parameters = nullptr;
+
+  arg->GetSelfMethodCall(&method_name, &parameters);
+
+  return *method_name == expected_method_name;
+}
+
+MATCHER(IsSelfMethodReturnEvent, "") {
+  return arg->type() == CommittedEvent::SELF_METHOD_RETURN;
 }
 
 void CallAppendMethod(MethodContext* method_context,
@@ -145,9 +188,12 @@ class CallMethodInNestedTransactions_ProgramObject : public TestLocalObject {
 };
 
 TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
+  CanonicalPeer fake_local_peer("test-local-peer");
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
 
+  EXPECT_CALL(transaction_store_core, GetLocalPeer())
+      .WillRepeatedly(Return(&fake_local_peer));
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
@@ -160,26 +206,42 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
 
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsMethodCallPendingEvent("run"),
-                                      IsBeginTransactionPendingEvent()),
-                          _, _, _));
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent(),
+                IsMethodCallEvent("run"),
+                IsBeginTransactionEvent())))),
+            _, _, _));
 
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsMethodCallPendingEvent("append"),
-                                      IsMethodReturnPendingEvent(),
-                                      IsBeginTransactionPendingEvent(),
-                                      IsMethodCallPendingEvent("append"),
-                                      IsMethodReturnPendingEvent(),
-                                      IsEndTransactionPendingEvent(),
-                                      IsMethodCallPendingEvent("append"),
-                                      IsMethodReturnPendingEvent(),
-                                      IsEndTransactionPendingEvent()),
-                          _, _, _));
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsSubMethodCallEvent("append"),
+                IsSubMethodReturnEvent(),
+                IsBeginTransactionEvent(),
+                IsSubMethodCallEvent("append"),
+                IsSubMethodReturnEvent(),
+                IsEndTransactionEvent(),
+                IsSubMethodCallEvent("append"),
+                IsSubMethodReturnEvent(),
+                IsEndTransactionEvent()))),
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent(),
+                IsMethodCallEvent("append"),
+                IsMethodReturnEvent(),
+                IsMethodCallEvent("append"),
+                IsMethodReturnEvent(),
+                IsMethodCallEvent("append"),
+                IsMethodReturnEvent())))),
+            _, _, _));
 
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsMethodReturnPendingEvent()), _, _, _));
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsMethodReturnEvent())))),
+            _, _, _));
   }
 
   RecordingThread recording_thread(&transaction_store);
@@ -238,6 +300,7 @@ class CallBeginTransactionFromWithinMethod_ProgramObject
 };
 
 TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
+  CanonicalPeer fake_local_peer("test-local-peer");
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
 
@@ -245,6 +308,8 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
       new LiveObject(
           new CallBeginTransactionFromWithinMethod_FakeLocalObject()));
 
+  EXPECT_CALL(transaction_store_core, GetLocalPeer())
+      .WillRepeatedly(Return(&fake_local_peer));
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
@@ -259,14 +324,22 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
 
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsMethodCallPendingEvent("run"),
-                                      IsMethodCallPendingEvent("test-method")),
-                          _, _, _));
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent(),
+                IsMethodCallEvent("run"),
+                IsSubMethodCallEvent("test-method")))),
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent(),
+                IsMethodCallEvent("test-method"))))),
+            _, _, _));
 
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsBeginTransactionPendingEvent()),
-                          _, _, _));
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsBeginTransactionEvent())))),
+            _, _, _));
   }
 
   RecordingThread recording_thread(&transaction_store);
@@ -343,12 +416,15 @@ class CallEndTransactionFromWithinMethod_ProgramObject
 };
 
 TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
+  CanonicalPeer fake_local_peer("test-local-peer");
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
 
   const shared_ptr<const LiveObject> fake_live_object(
       new LiveObject(new CallEndTransactionFromWithinMethod_FakeLocalObject()));
 
+  EXPECT_CALL(transaction_store_core, GetLocalPeer())
+      .WillRepeatedly(Return(&fake_local_peer));
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
@@ -363,20 +439,41 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
 
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsMethodCallPendingEvent("run"),
-                                      IsBeginTransactionPendingEvent()),
-                          _, _, _));
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent(),
+                IsMethodCallEvent("run"),
+                IsBeginTransactionEvent())))),
+            _, _, _));
 
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsMethodCallPendingEvent("test-method"),
-                                      IsEndTransactionPendingEvent()),
-                          _, _, _));
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsSubMethodCallEvent("test-method")))),
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent(),
+                IsMethodCallEvent("test-method"),
+                IsEndTransactionEvent())))),
+            _, _, _));
 
     EXPECT_CALL(
         transaction_store_core,
-        CreateTransaction(ElementsAre(IsMethodReturnPendingEvent()), _, _, _))
-        .Times(2);
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsMethodReturnEvent()))),
+            Pair(_, Pointee(ElementsAre(
+                IsSubMethodReturnEvent()))),
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent())))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsMethodReturnEvent())))),
+            _, _, _));
   }
 
   RecordingThread recording_thread(&transaction_store);
@@ -441,9 +538,12 @@ class CreateObjectInDifferentTransaction_ProgramObject
 };
 
 TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
+  CanonicalPeer fake_local_peer("test-local-peer");
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
 
+  EXPECT_CALL(transaction_store_core, GetLocalPeer())
+      .WillRepeatedly(Return(&fake_local_peer));
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   // TransactionStoreInternalInterface::GetLiveObjectAtSequencePoint should not
@@ -526,12 +626,15 @@ class RewindInPendingTransaction_ProgramObject : public TestLocalObject {
 
 // TODO(dss): Enable this test once execution rewinding is working correctly.
 TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
+  CanonicalPeer fake_local_peer("test-local-peer");
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
 
   const shared_ptr<const LiveObject> fake_live_object(
       new LiveObject(new RewindInPendingTransaction_FakeLocalObject()));
 
+  EXPECT_CALL(transaction_store_core, GetLocalPeer())
+      .WillRepeatedly(Return(&fake_local_peer));
   EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
       .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
@@ -542,28 +645,28 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
   // Expected sequence:
   //
   //   Transaction 1:
-  //     METHOD_CALL "run"
-  //     METHOD_CALL "a"
+  //     Method Call "run"
+  //     Method Call "a"
   //
   //   Transaction 2:
-  //     BEGIN_TRANSACTION
+  //     Begin Transaction
   //
   //   Aborted Transaction:
-  //     METHOD_CALL "b"
+  //     Method Call "b"
   //
   //   <Rewind Execution; Resume Execution>
   //
   //   Replay Transaction:
-  //     BEGIN_TRANSACTION
+  //     Begin Transaction
   //
   //   Transaction 3:
-  //     METHOD_CALL "b"
-  //     METHOD_RETURN
-  //     END_TRANSACTION
+  //     Method Call "b"
+  //     Method Return
+  //     End Transaction
   //
   //   Transaction 4:
-  //     METHOD_RETURN
-  //     METHOD_RETURN
+  //     Method Return
+  //     Method Return
 
   Sequence s1, s2;
 
@@ -573,15 +676,23 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
 
   EXPECT_CALL(
       transaction_store_core,
-      CreateTransaction(ElementsAre(IsMethodCallPendingEvent("run"),
-                                    IsMethodCallPendingEvent("a")),
-                        _, _, _))
+      CreateTransaction(UnorderedElementsAre(
+          Pair(_, Pointee(ElementsAre(
+              IsObjectCreationEvent(),
+              IsMethodCallEvent("run"),
+              IsSubMethodCallEvent("a")))),
+          Pair(_, Pointee(ElementsAre(
+              IsObjectCreationEvent(),
+              IsMethodCallEvent("a"))))),
+          _, _, _))
       .InSequence(s2);
 
   EXPECT_CALL(
       transaction_store_core,
-      CreateTransaction(ElementsAre(IsBeginTransactionPendingEvent()),
-                        _, _, _))
+      CreateTransaction(UnorderedElementsAre(
+          Pair(_, Pointee(ElementsAre(
+              IsBeginTransactionEvent())))),
+          _, _, _))
       .InSequence(s2);
 
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
@@ -595,16 +706,30 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
 
   EXPECT_CALL(
       transaction_store_core,
-      CreateTransaction(ElementsAre(IsMethodCallPendingEvent("b"),
-                                    IsMethodReturnPendingEvent(),
-                                    IsEndTransactionPendingEvent()),
-                        _, _, _))
+      CreateTransaction(UnorderedElementsAre(
+          Pair(_, Pointee(ElementsAre(
+              IsSelfMethodCallEvent("b"),
+              IsSelfMethodReturnEvent(),
+              IsEndTransactionEvent())))),
+          _, _, _))
       .InSequence(s2);
 
   EXPECT_CALL(
       transaction_store_core,
-      CreateTransaction(ElementsAre(IsMethodReturnPendingEvent()), _, _, _))
-      .Times(2)
+      CreateTransaction(UnorderedElementsAre(
+          Pair(_, Pointee(ElementsAre(
+              IsMethodReturnEvent()))),
+          Pair(_, Pointee(ElementsAre(
+              IsSubMethodReturnEvent())))),
+          _, _, _))
+      .InSequence(s2);
+
+  EXPECT_CALL(
+      transaction_store_core,
+      CreateTransaction(UnorderedElementsAre(
+          Pair(_, Pointee(ElementsAre(
+              IsMethodReturnEvent())))),
+          _, _, _))
       .InSequence(s2);
 
   RecordingThread recording_thread(&transaction_store);

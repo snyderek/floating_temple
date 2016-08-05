@@ -471,24 +471,23 @@ engine_playback_thread_test = ft_env.Program(
       ],
   )
 
-# TODO(dss): Re-enable this test once it compiles.
-#engine_recording_thread_test = ft_env.Program(
-#    target = 'engine/recording_thread_test',
-#    source = Split("""
-#        engine/recording_thread_test.cc
-#      """) + [
-#        engine_testing_lib,
-#        engine_lib,
-#        protocol_server_lib,
-#        fake_interpreter_lib,
-#        value_lib,
-#        engine_proto_lib,
-#        util_lib,
-#        base_lib,
-#        gmock_lib,
-#        gtest_lib,
-#      ],
-#  )
+engine_recording_thread_test = ft_env.Program(
+    target = 'engine/recording_thread_test',
+    source = Split("""
+        engine/recording_thread_test.cc
+      """) + [
+        engine_testing_lib,
+        engine_lib,
+        protocol_server_lib,
+        fake_interpreter_lib,
+        value_lib,
+        engine_proto_lib,
+        util_lib,
+        base_lib,
+        gmock_lib,
+        gtest_lib,
+      ],
+  )
 
 engine_toy_lang_integration_test = ft_env.Program(
     target = 'engine/toy_lang_integration_test',
@@ -640,8 +639,7 @@ cxx_tests = [
     engine_max_version_map_test,
     engine_peer_id_test,
     engine_playback_thread_test,
-    # TODO(dss): Re-enable this test once it compiles.
-    #engine_recording_thread_test,
+    engine_recording_thread_test,
     engine_shared_object_test,
     engine_toy_lang_integration_test,
     engine_transaction_store_test,

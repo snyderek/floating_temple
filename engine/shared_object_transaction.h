@@ -50,6 +50,14 @@ class SharedObjectTransaction {
 
   void Dump(DumpContext* dc) const;
 
+  // These members are defined to allow tests to iterate over the events in the
+  // transaction.
+  typedef std::unique_ptr<CommittedEvent> value_type;
+  typedef std::vector<std::unique_ptr<CommittedEvent>>::const_iterator
+      const_iterator;
+  const_iterator begin() const { return events_.begin(); }
+  const_iterator end() const { return events_.end(); }
+
  private:
   std::vector<std::unique_ptr<CommittedEvent>> events_;
   const CanonicalPeer* const origin_peer_;

@@ -18,9 +18,11 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
+#include "engine/mock_sequence_point.h"
 #include "engine/object_reference_impl.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/shared_object_transaction.h"
@@ -47,7 +49,8 @@ const CanonicalPeer* MockTransactionStore::GetLocalPeer() const {
 }
 
 SequencePoint* MockTransactionStore::GetCurrentSequencePoint() const {
-  return core_->GetCurrentSequencePoint();
+  core_->GetCurrentSequencePoint();
+  return new MockSequencePoint();
 }
 
 shared_ptr<const LiveObject> MockTransactionStore::GetLiveObjectAtSequencePoint(
@@ -55,8 +58,11 @@ shared_ptr<const LiveObject> MockTransactionStore::GetLiveObjectAtSequencePoint(
     bool wait) {
   CHECK(object_reference != nullptr);
 
-  return core_->GetLiveObjectAtSequencePoint(object_reference, sequence_point,
-                                             wait);
+  core_->GetLiveObjectAtSequencePoint(object_reference, sequence_point, wait);
+
+  const auto it = live_objects_.find(object_reference);
+  CHECK(it != live_objects_.end());
+  return it->second;
 }
 
 ObjectReferenceImpl* MockTransactionStore::CreateUnboundObjectReference() {
@@ -99,6 +105,10 @@ void MockTransactionStore::CreateTransaction(
 
   core_->CreateTransaction(object_transactions, transaction_id,
                            modified_objects, prev_sequence_point);
+
+  for (const auto& object_pair : modified_objects) {
+    live_objects_[object_pair.first] = object_pair.second;
+  }
 
   transaction_id->Clear();
   transaction_id->set_a(next_transaction_id_);

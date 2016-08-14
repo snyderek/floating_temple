@@ -41,12 +41,10 @@ class MockTransactionStoreCore {
   MockTransactionStoreCore() {}
 
   MOCK_CONST_METHOD0(GetLocalPeer, const CanonicalPeer*());
-  MOCK_CONST_METHOD0(GetCurrentSequencePoint, SequencePoint*());
-  MOCK_CONST_METHOD3(
-      GetLiveObjectAtSequencePoint,
-      std::shared_ptr<const LiveObject>(ObjectReferenceImpl* object_reference,
-                                        const SequencePoint* sequence_point,
-                                        bool wait));
+  MOCK_CONST_METHOD0(GetCurrentSequencePoint, void());
+  MOCK_CONST_METHOD3(GetLiveObjectAtSequencePoint,
+                     void(ObjectReferenceImpl* object_reference,
+                          const SequencePoint* sequence_point, bool wait));
   MOCK_CONST_METHOD0(CreateUnboundObjectReference, void());
   MOCK_CONST_METHOD1(CreateBoundObjectReference, void(const std::string& name));
   MOCK_CONST_METHOD4(
@@ -104,6 +102,8 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   std::vector<std::unique_ptr<ObjectReferenceImpl>> unnamed_objects_;
   std::unordered_map<std::string, std::unique_ptr<ObjectReferenceImpl>>
       named_objects_;
+  std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
+      live_objects_;
   uint64 next_transaction_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);

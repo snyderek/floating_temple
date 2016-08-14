@@ -16,7 +16,6 @@
 #include "engine/recording_thread.h"
 
 #include <cstddef>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,9 +25,7 @@
 #include "base/logging.h"
 #include "engine/canonical_peer.h"
 #include "engine/committed_event.h"
-#include "engine/live_object.h"
 #include "engine/mock_local_object.h"
-#include "engine/mock_sequence_point.h"
 #include "engine/mock_transaction_store.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/shared_object_transaction.h"
@@ -42,7 +39,6 @@
 
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
-using std::shared_ptr;
 using std::size_t;
 using std::string;
 using std::vector;
@@ -54,7 +50,6 @@ using testing::InitGoogleMock;
 using testing::Pair;
 using testing::Pointee;
 using testing::Return;
-using testing::ReturnNew;
 using testing::Sequence;
 using testing::UnorderedElementsAre;
 using testing::_;
@@ -194,8 +189,6 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
 
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .WillRepeatedly(ReturnNew<MockSequencePoint>());
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
@@ -304,16 +297,8 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
 
-  const shared_ptr<const LiveObject> fake_live_object(
-      new LiveObject(
-          new CallBeginTransactionFromWithinMethod_FakeLocalObject()));
-
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .WillRepeatedly(ReturnNew<MockSequencePoint>());
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .WillRepeatedly(Return(fake_live_object));
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
@@ -420,15 +405,8 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
 
-  const shared_ptr<const LiveObject> fake_live_object(
-      new LiveObject(new CallEndTransactionFromWithinMethod_FakeLocalObject()));
-
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .WillRepeatedly(ReturnNew<MockSequencePoint>());
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .WillRepeatedly(Return(fake_live_object));
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
@@ -544,8 +522,6 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
 
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .WillRepeatedly(ReturnNew<MockSequencePoint>());
   // TransactionStoreInternalInterface::GetLiveObjectAtSequencePoint should not
   // be called, because the thread already has a copy of the object (the only
   // copy, in fact, since the object hasn't been committed).
@@ -630,15 +606,8 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
   MockTransactionStoreCore transaction_store_core;
   MockTransactionStore transaction_store(&transaction_store_core);
 
-  const shared_ptr<const LiveObject> fake_live_object(
-      new LiveObject(new RewindInPendingTransaction_FakeLocalObject()));
-
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, GetCurrentSequencePoint())
-      .WillRepeatedly(ReturnNew<MockSequencePoint>());
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .WillRepeatedly(Return(fake_live_object));
   EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
       .Times(AnyNumber());
 

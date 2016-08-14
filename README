@@ -8,22 +8,12 @@ Build Instructions
 # Tahr):
 sudo apt-get install binutils clang coreutils g++ gawk gcc git \
   google-perftools libgflags-dev libgoogle-glog-dev libgoogle-perftools-dev \
-  libprotobuf-dev make protobuf-compiler scons tar
+  libossp-uuid-dev libprotobuf-dev make protobuf-compiler scons tar
 
 # Check out the floating_temple source.
 mkdir -p ~/projects
 cd ~/projects
 git clone https://github.com/snyderek/floating_temple.git
-
-# Install the OSSP UUID library.
-mkdir -p ~/scratch
-cd ~/scratch
-tar xzf ~/projects/floating_temple/third_party/uuid-1.6.2.tar.gz
-cd uuid-1.6.2
-./configure
-make
-make check
-sudo make install
 
 # Refresh the shared library cache.
 sudo ldconfig

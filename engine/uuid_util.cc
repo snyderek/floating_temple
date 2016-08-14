@@ -21,7 +21,7 @@
 #include <cstddef>
 #include <string>
 
-#include <uuid.h>
+#include <ossp/uuid.h>
 
 #include "base/hex.h"
 #include "base/integral_types.h"

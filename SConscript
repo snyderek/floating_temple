@@ -25,7 +25,7 @@ ft_env.Append(
       """),
   )
 ft_env.Prepend(
-    LIBS = Split('gflags glog m protobuf rt uuid'),
+    LIBS = Split('gflags glog m ossp-uuid protobuf rt'),
   )
 
 # "base" subdirectory

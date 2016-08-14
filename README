@@ -4,7 +4,7 @@ Copyright 2015 Derek S. Snyder
 Build Instructions
 ==================
 
-# Install prerequisites. The following command works on Ubuntu 14.04.1 (Trusty
+# Install prerequisites. The following command works on Ubuntu 14.04.5 (Trusty
 # Tahr):
 sudo apt-get install binutils clang coreutils g++ gawk gcc git \
   google-perftools libgflags-dev libgoogle-glog-dev libgoogle-perftools-dev \

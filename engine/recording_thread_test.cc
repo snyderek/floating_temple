@@ -42,7 +42,6 @@ using google::ParseCommandLineFlags;
 using std::size_t;
 using std::string;
 using std::vector;
-using testing::AnyNumber;
 using testing::AtLeast;
 using testing::ElementsAre;
 using testing::InSequence;
@@ -189,8 +188,6 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
 
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
       .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
@@ -299,8 +296,6 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
 
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
       .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
@@ -407,8 +402,6 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
 
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
       .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
@@ -527,8 +520,6 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
   // copy, in fact, since the object hasn't been committed).
   EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
       .Times(0);
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
       .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
@@ -608,8 +599,6 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
 
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  EXPECT_CALL(transaction_store_core, CreateUnboundObjectReference())
-      .Times(AnyNumber());
 
   // Expected sequence:
   //

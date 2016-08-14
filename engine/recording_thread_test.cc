@@ -167,6 +167,8 @@ class CallMethodInNestedTransactions_ProgramObject : public TestLocalObject {
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
+    CHECK_EQ(method_name, "run");
+
     LocalObject* const fake_local_object = new FakeLocalObject("a");
     ObjectReference* const fake_local_object_reference =
         method_context->CreateObject(fake_local_object, "");
@@ -256,6 +258,8 @@ class CallBeginTransactionFromWithinMethod_FakeLocalObject
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
+    CHECK_EQ(method_name, "test-method");
+
     CHECK(method_context->BeginTransaction());
 
     ObjectReference* const new_object_reference = method_context->CreateObject(
@@ -279,6 +283,8 @@ class CallBeginTransactionFromWithinMethod_ProgramObject
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
+    CHECK_EQ(method_name, "run");
+
     ObjectReference* const fake_local_object_reference =
         method_context->CreateObject(
             new CallBeginTransactionFromWithinMethod_FakeLocalObject(), "");
@@ -359,6 +365,8 @@ class CallEndTransactionFromWithinMethod_FakeLocalObject
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
+    CHECK_EQ(method_name, "test-method");
+
     CHECK(method_context->EndTransaction());
 
     ObjectReference* const new_object_reference = method_context->CreateObject(
@@ -382,7 +390,9 @@ class CallEndTransactionFromWithinMethod_ProgramObject
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
-  // Start an explicit transaction.
+    CHECK_EQ(method_name, "run");
+
+    // Start an explicit transaction.
     CHECK(method_context->BeginTransaction());
 
     ObjectReference* const fake_local_object_reference =
@@ -486,6 +496,8 @@ class CreateObjectInDifferentTransaction_ProgramObject
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
+    CHECK_EQ(method_name, "run");
+
     // Create an object, and then call a method on that object in a different
     // transaction. The object should still be available in the later
     // transaction, even though the content of the object was never committed.
@@ -581,6 +593,8 @@ class RewindInPendingTransaction_ProgramObject : public TestLocalObject {
                     const string& method_name,
                     const vector<Value>& parameters,
                     Value* return_value) override {
+    CHECK_EQ(method_name, "run");
+
     ObjectReference* const fake_local_object_reference =
         method_context->CreateObject(
             new RewindInPendingTransaction_FakeLocalObject(), "");

@@ -65,7 +65,7 @@ class MockTransactionStoreCore {
   MOCK_METHOD1(GetExecutionPhase,
                TransactionStoreInternalInterface::ExecutionPhase(
                    const TransactionId& base_transaction_id));
-  MOCK_METHOD0(WaitForRewind, void ());
+  MOCK_METHOD0(WaitForRewind, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStoreCore);

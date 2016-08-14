@@ -104,7 +104,7 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   std::vector<std::unique_ptr<ObjectReferenceImpl>> unnamed_objects_;
   std::unordered_map<std::string, std::unique_ptr<ObjectReferenceImpl>>
       named_objects_;
-  uint64 next_id_;
+  uint64 next_transaction_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);
 };

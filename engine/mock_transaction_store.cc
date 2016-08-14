@@ -36,7 +36,7 @@ namespace engine {
 
 MockTransactionStore::MockTransactionStore(MockTransactionStoreCore* core)
     : core_(CHECK_NOTNULL(core)),
-      next_id_(1) {
+      next_transaction_id_(1) {
 }
 
 MockTransactionStore::~MockTransactionStore() {
@@ -101,10 +101,10 @@ void MockTransactionStore::CreateTransaction(
                            modified_objects, prev_sequence_point);
 
   transaction_id->Clear();
-  transaction_id->set_a(next_id_);
+  transaction_id->set_a(next_transaction_id_);
   transaction_id->set_b(0);
   transaction_id->set_c(0);
-  ++next_id_;
+  ++next_transaction_id_;
 }
 
 bool MockTransactionStore::ObjectsAreIdentical(

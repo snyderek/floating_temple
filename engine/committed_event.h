@@ -73,6 +73,7 @@ class CommittedEvent {
 
   virtual CommittedEvent* Clone() const = 0;
 
+  virtual std::string DebugString() const;
   virtual void Dump(DumpContext* dc) const = 0;
 
   static std::string GetTypeString(Type event_type);
@@ -134,6 +135,7 @@ class MethodCallCommittedEvent : public CommittedEvent {
   void GetMethodCall(const std::string** method_name,
                      const std::vector<Value>** parameters) const override;
   CommittedEvent* Clone() const override;
+  std::string DebugString() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
@@ -173,6 +175,7 @@ class SubMethodCallCommittedEvent : public CommittedEvent {
                         const std::string** method_name,
                         const std::vector<Value>** parameters) const override;
   CommittedEvent* Clone() const override;
+  std::string DebugString() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
@@ -208,6 +211,7 @@ class SelfMethodCallCommittedEvent : public CommittedEvent {
   void GetSelfMethodCall(const std::string** method_name,
                          const std::vector<Value>** parameters) const override;
   CommittedEvent* Clone() const override;
+  std::string DebugString() const override;
   void Dump(DumpContext* dc) const override;
 
  private:

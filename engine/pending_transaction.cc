@@ -16,15 +16,12 @@
 #include "engine/pending_transaction.h"
 
 #include <memory>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "base/escape.h"
 #include "base/logging.h"
-#include "base/string_printf.h"
 #include "engine/committed_event.h"
 #include "engine/live_object.h"
 #include "engine/object_reference_impl.h"
@@ -34,7 +31,6 @@
 #include "engine/transaction_store_internal_interface.h"
 
 using std::shared_ptr;
-using std::string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
@@ -185,52 +181,8 @@ void PendingTransaction::LogDebugInfo() const {
 
       for (vector<unique_ptr<CommittedEvent>>::size_type event_index = 0;
            event_index < event_count; ++event_index) {
-        const CommittedEvent* const event = events[event_index].get();
-        const CommittedEvent::Type type = event->type();
-        const string type_string = CommittedEvent::GetTypeString(type);
-
-        string event_string;
-
-        switch (type) {
-          case CommittedEvent::METHOD_CALL: {
-            const string* method_name = nullptr;
-            const vector<Value>* parameters = nullptr;
-
-            event->GetMethodCall(&method_name, &parameters);
-
-            SStringPrintf(&event_string, "%s \"%s\"", type_string.c_str(),
-                          CEscape(*method_name).c_str());
-            break;
-          }
-
-          case CommittedEvent::SUB_METHOD_CALL: {
-            ObjectReferenceImpl* callee = nullptr;
-            const string* method_name = nullptr;
-            const vector<Value>* parameters = nullptr;
-
-            event->GetSubMethodCall(&callee, &method_name, &parameters);
-
-            SStringPrintf(&event_string, "%s \"%s\"", type_string.c_str(),
-                          CEscape(*method_name).c_str());
-            break;
-          }
-
-          case CommittedEvent::SELF_METHOD_CALL: {
-            const string* method_name = nullptr;
-            const vector<Value>* parameters = nullptr;
-
-            event->GetSelfMethodCall(&method_name, &parameters);
-
-            SStringPrintf(&event_string, "%s \"%s\"", type_string.c_str(),
-                          CEscape(*method_name).c_str());
-            break;
-          }
-
-          default:
-            event_string = type_string;
-        }
-
-        VLOG(3) << "Event " << event_index << ": " << event_string;
+        VLOG(3) << "Event " << event_index << ": "
+                << events[event_index]->DebugString();
       }
 
       ++shared_object_index;

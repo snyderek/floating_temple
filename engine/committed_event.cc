@@ -22,6 +22,7 @@
 
 #include "base/escape.h"
 #include "base/logging.h"
+#include "base/string_printf.h"
 #include "engine/live_object.h"
 #include "engine/object_reference_impl.h"
 #include "include/c++/value.h"
@@ -80,6 +81,10 @@ void CommittedEvent::GetSelfMethodCall(const string** method_name,
 void CommittedEvent::GetSelfMethodReturn(const Value** return_value) const {
   LOG(FATAL) << "Invalid call to GetSelfMethodReturn (type == "
              << static_cast<int>(this->type()) << ")";
+}
+
+string CommittedEvent::DebugString() const {
+  return GetTypeString(type());
 }
 
 #define CHECK_EVENT_TYPE(event_type) \
@@ -217,6 +222,11 @@ CommittedEvent* MethodCallCommittedEvent::Clone() const {
   return new MethodCallCommittedEvent(method_name_, parameters_);
 }
 
+string MethodCallCommittedEvent::DebugString() const {
+  return StringPrintf("%s \"%s\"", CommittedEvent::DebugString().c_str(),
+                      CEscape(method_name_).c_str());
+}
+
 void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
@@ -304,6 +314,11 @@ CommittedEvent* SubMethodCallCommittedEvent::Clone() const {
                                          parameters_);
 }
 
+string SubMethodCallCommittedEvent::DebugString() const {
+  return StringPrintf("%s \"%s\"", CommittedEvent::DebugString().c_str(),
+                      CEscape(method_name_).c_str());
+}
+
 void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
@@ -386,6 +401,11 @@ void SelfMethodCallCommittedEvent::GetSelfMethodCall(
 CommittedEvent* SelfMethodCallCommittedEvent::Clone() const {
   return new SelfMethodCallCommittedEvent(new_objects(), method_name_,
                                           parameters_);
+}
+
+string SelfMethodCallCommittedEvent::DebugString() const {
+  return StringPrintf("%s \"%s\"", CommittedEvent::DebugString().c_str(),
+                      CEscape(method_name_).c_str());
 }
 
 void SelfMethodCallCommittedEvent::Dump(DumpContext* dc) const {

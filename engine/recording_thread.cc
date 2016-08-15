@@ -111,6 +111,8 @@ void RecordingThread::RunProgram(LocalObject* local_object,
 bool RecordingThread::BeginTransaction(
     ObjectReferenceImpl* caller_object_reference,
     const shared_ptr<LiveObject>& caller_live_object) {
+  VLOG(2) << "RecordingThread::BeginTransaction";
+
   if (Rewinding()) {
     return false;
   }
@@ -130,6 +132,8 @@ bool RecordingThread::BeginTransaction(
 bool RecordingThread::EndTransaction(
     ObjectReferenceImpl* caller_object_reference,
     const shared_ptr<LiveObject>& caller_live_object) {
+  VLOG(2) << "RecordingThread::EndTransaction";
+
   if (Rewinding()) {
     return false;
   }
@@ -393,6 +397,8 @@ void RecordingThread::AddTransactionEvents(
 }
 
 void RecordingThread::CommitTransaction() {
+  VLOG(2) << "RecordingThread::CommitTransaction";
+
   TransactionId transaction_id;
   unordered_set<ObjectReferenceImpl*> transaction_new_objects;
   pending_transaction_->Commit(&transaction_id, &transaction_new_objects);

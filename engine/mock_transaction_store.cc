@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "engine/committed_event.h"
 #include "engine/mock_sequence_point.h"
 #include "engine/object_reference_impl.h"
 #include "engine/proto/transaction_id.pb.h"
@@ -102,6 +103,32 @@ void MockTransactionStore::CreateTransaction(
         modified_objects,
     const SequencePoint* prev_sequence_point) {
   CHECK(transaction_id != nullptr);
+
+  if (VLOG_IS_ON(3)) {
+    int shared_object_index = 0;
+    for (const auto& transaction_pair : object_transactions) {
+      const ObjectReferenceImpl* const object_reference =
+          transaction_pair.first;
+      const SharedObjectTransaction* const shared_object_transaction =
+          transaction_pair.second.get();
+
+      VLOG(3) << "Shared object " << shared_object_index << ": "
+              << object_reference->DebugString();
+
+      const vector<unique_ptr<CommittedEvent>>& events =
+          shared_object_transaction->events();
+      const vector<unique_ptr<CommittedEvent>>::size_type event_count =
+          events.size();
+
+      for (vector<unique_ptr<CommittedEvent>>::size_type event_index = 0;
+           event_index < event_count; ++event_index) {
+        VLOG(3) << "Event " << event_index << ": "
+                << events[event_index]->DebugString();
+      }
+
+      ++shared_object_index;
+    }
+  }
 
   core_->CreateTransaction(object_transactions, transaction_id,
                            modified_objects, prev_sequence_point);

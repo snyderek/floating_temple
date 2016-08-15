@@ -373,8 +373,6 @@ void RecordingThread::AddTransactionEvents(
     const shared_ptr<LiveObject>& prev_live_object) {
   CHECK(!object_events.empty());
 
-  const bool first_event = pending_transaction_->IsEmpty();
-
   if (prev_object_reference != nullptr) {
     pending_transaction_->UpdateLiveObject(prev_object_reference,
                                            prev_live_object);
@@ -389,8 +387,7 @@ void RecordingThread::AddTransactionEvents(
     }
   }
 
-  if (pending_transaction_->transaction_level() == 0 &&
-      !(first_event && prev_object_reference == nullptr)) {
+  if (pending_transaction_->transaction_level() == 0) {
     CommitTransaction();
   }
 }

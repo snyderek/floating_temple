@@ -46,8 +46,6 @@ class PendingTransaction {
       { return base_transaction_id_; }
   int transaction_level() const { return transaction_level_; }
 
-  bool IsEmpty() const { return object_transactions_.empty(); }
-
   std::shared_ptr<LiveObject> GetLiveObject(
       ObjectReferenceImpl* object_reference);
   bool IsObjectKnown(ObjectReferenceImpl* object_reference);

@@ -201,7 +201,13 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
                 IsObjectCreationEvent(),
-                IsMethodCallEvent("run"),
+                IsMethodCallEvent("run"))))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
                 IsBeginTransactionEvent())))),
             _, _, _));
 
@@ -313,7 +319,13 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
                 IsObjectCreationEvent(),
-                IsMethodCallEvent("run"),
+                IsMethodCallEvent("run"))))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
                 IsSubMethodCallEvent("test-method")))),
             Pair(_, Pointee(ElementsAre(
                 IsObjectCreationEvent(),
@@ -423,7 +435,13 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
                 IsObjectCreationEvent(),
-                IsMethodCallEvent("run"),
+                IsMethodCallEvent("run"))))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
                 IsBeginTransactionEvent())))),
             _, _, _));
 
@@ -527,11 +545,6 @@ TEST(RecordingThreadTest, CreateObjectInDifferentTransaction) {
 
   EXPECT_CALL(transaction_store_core, GetLocalPeer())
       .WillRepeatedly(Return(&fake_local_peer));
-  // TransactionStoreInternalInterface::GetLiveObjectAtSequencePoint should not
-  // be called, because the thread already has a copy of the object (the only
-  // copy, in fact, since the object hasn't been committed).
-  EXPECT_CALL(transaction_store_core, GetLiveObjectAtSequencePoint(_, _, _))
-      .Times(0);
   EXPECT_CALL(transaction_store_core, GetExecutionPhase(_))
       .WillRepeatedly(Return(TransactionStoreInternalInterface::NORMAL));
 
@@ -618,9 +631,11 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
   //
   //   Transaction 1:
   //     Method Call "run"
-  //     Method Call "a"
   //
   //   Transaction 2:
+  //     Method Call "a"
+  //
+  //   Transaction 3:
   //     Begin Transaction
   //
   //   Aborted Transaction:
@@ -631,13 +646,15 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
   //   Replay Transaction:
   //     Begin Transaction
   //
-  //   Transaction 3:
+  //   Transaction 4:
   //     Method Call "b"
   //     Method Return
   //     End Transaction
   //
-  //   Transaction 4:
+  //   Transaction 5:
   //     Method Return
+  //
+  //   Transaction 6:
   //     Method Return
 
   Sequence s1, s2;
@@ -651,7 +668,14 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
       CreateTransaction(UnorderedElementsAre(
           Pair(_, Pointee(ElementsAre(
               IsObjectCreationEvent(),
-              IsMethodCallEvent("run"),
+              IsMethodCallEvent("run"))))),
+          _, _, _))
+      .InSequence(s2);
+
+  EXPECT_CALL(
+      transaction_store_core,
+      CreateTransaction(UnorderedElementsAre(
+          Pair(_, Pointee(ElementsAre(
               IsSubMethodCallEvent("a")))),
           Pair(_, Pointee(ElementsAre(
               IsObjectCreationEvent(),

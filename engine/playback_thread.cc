@@ -29,7 +29,7 @@
 #include "base/logging.h"
 #include "base/string_printf.h"
 #include "engine/committed_event.h"
-#include "engine/convert_value.h"
+#include "engine/event_matching.h"
 #include "engine/event_queue.h"
 #include "engine/live_object.h"
 #include "engine/object_reference_impl.h"
@@ -204,8 +204,8 @@ void PlaybackThread::DoMethodCall() {
     unordered_set<SharedObject*> new_shared_objects;
     GetNewSharedObjectsForEvent(event, &new_shared_objects);
 
-    if (!ValueMatches(*expected_return_value, return_value,
-                      new_shared_objects)) {
+    if (!ValueMatches(*expected_return_value, return_value, new_shared_objects,
+                      new_object_references_, &unbound_object_references_)) {
       SetConflictDetected("Return value doesn't match expected return value.");
       return;
     }
@@ -236,7 +236,9 @@ void PlaybackThread::DoSelfMethodCall(ObjectReferenceImpl* object_reference,
 
     if (!MethodCallMatches(shared_object_, *expected_method_name,
                            *expected_parameters, object_reference, method_name,
-                           parameters, new_shared_objects)) {
+                           parameters, new_shared_objects,
+                           new_object_references_,
+                           &unbound_object_references_)) {
       SetConflictDetected("Self method call doesn't match expected method "
                           "call.");
       return;
@@ -264,8 +266,8 @@ void PlaybackThread::DoSelfMethodCall(ObjectReferenceImpl* object_reference,
     unordered_set<SharedObject*> new_shared_objects;
     GetNewSharedObjectsForEvent(event, &new_shared_objects);
 
-    if (!ValueMatches(*expected_return_value, *return_value,
-                      new_shared_objects)) {
+    if (!ValueMatches(*expected_return_value, *return_value, new_shared_objects,
+                      new_object_references_, &unbound_object_references_)) {
       SetConflictDetected("Return value from self method call doesn't match "
                           "expected value.");
       return;
@@ -307,7 +309,9 @@ void PlaybackThread::DoSubMethodCall(ObjectReferenceImpl* object_reference,
 
     if (!MethodCallMatches(callee_shared_object, *expected_method_name,
                            *expected_parameters, object_reference, method_name,
-                           parameters, new_shared_objects)) {
+                           parameters, new_shared_objects,
+                           new_object_references_,
+                           &unbound_object_references_)) {
       SetConflictDetected("Sub method call doesn't match expected method "
                           "call.");
       return;
@@ -399,130 +403,6 @@ bool PlaybackThread::CheckNextEventType(
   }
 
   return true;
-}
-
-bool PlaybackThread::MethodCallMatches(
-    SharedObject* expected_shared_object,
-    const string& expected_method_name,
-    const vector<Value>& expected_parameters,
-    ObjectReferenceImpl* object_reference,
-    const string& method_name,
-    const vector<Value>& parameters,
-    const unordered_set<SharedObject*>& new_shared_objects) {
-  CHECK(object_reference != nullptr);
-
-  if (!ObjectMatches(expected_shared_object, object_reference,
-                     new_shared_objects)) {
-    VLOG(2) << "Objects don't match.";
-    return false;
-  }
-
-  if (expected_method_name != method_name) {
-    VLOG(2) << "Method names don't match (\"" << CEscape(expected_method_name)
-            << "\" != \"" << CEscape(method_name) << "\").";
-    return false;
-  }
-
-  if (expected_parameters.size() != parameters.size()) {
-    VLOG(2) << "Parameter counts don't match (" << expected_parameters.size()
-            << " != " << parameters.size() << ").";
-    return false;
-  }
-
-  for (vector<Value>::size_type i = 0; i < expected_parameters.size(); ++i) {
-    const Value& expected_parameter = expected_parameters[i];
-
-    if (!ValueMatches(expected_parameter, parameters[i], new_shared_objects)) {
-      VLOG(2) << "Parameter " << i << ": values don't match.";
-      return false;
-    }
-  }
-
-  return true;
-}
-
-#define COMPARE_FIELDS(enum_const, getter_method) \
-  case Value::enum_const: \
-    return committed_value.getter_method() == pending_value.getter_method();
-
-bool PlaybackThread::ValueMatches(
-    const Value& committed_value, const Value& pending_value,
-    const unordered_set<SharedObject*>& new_shared_objects) {
-  if (committed_value.local_type() != pending_value.local_type()) {
-    return false;
-  }
-
-  const Value::Type committed_value_type = committed_value.type();
-  const Value::Type pending_value_type = pending_value.type();
-
-  if (committed_value_type != pending_value_type) {
-    return false;
-  }
-
-  switch (committed_value_type) {
-    case Value::EMPTY:
-      return true;
-
-    COMPARE_FIELDS(DOUBLE, double_value);
-    COMPARE_FIELDS(FLOAT, float_value);
-    COMPARE_FIELDS(INT64, int64_value);
-    COMPARE_FIELDS(UINT64, uint64_value);
-    COMPARE_FIELDS(BOOL, bool_value);
-    COMPARE_FIELDS(STRING, string_value);
-    COMPARE_FIELDS(BYTES, bytes_value);
-
-    case Value::OBJECT_REFERENCE:
-      return ObjectMatches(
-          static_cast<ObjectReferenceImpl*>(committed_value.object_reference())
-              ->shared_object(),
-          static_cast<ObjectReferenceImpl*>(pending_value.object_reference()),
-          new_shared_objects);
-
-    default:
-      LOG(FATAL) << "Unexpected committed value type: "
-                 << static_cast<int>(committed_value_type);
-  }
-}
-
-#undef COMPARE_FIELDS
-
-bool PlaybackThread::ObjectMatches(
-    SharedObject* shared_object, ObjectReferenceImpl* object_reference,
-    const unordered_set<SharedObject*>& new_shared_objects) {
-  CHECK(shared_object != nullptr);
-  CHECK(object_reference != nullptr);
-
-  const bool shared_object_is_new =
-      (new_shared_objects.find(shared_object) != new_shared_objects.end());
-
-  const unordered_set<ObjectReferenceImpl*>::iterator unbound_it =
-      unbound_object_references_.find(object_reference);
-  const bool object_reference_is_unbound =
-      (unbound_it != unbound_object_references_.end());
-
-  if (shared_object_is_new && object_reference_is_unbound) {
-    const auto insert_result = new_object_references_->emplace(shared_object,
-                                                               nullptr);
-
-    if (!insert_result.second) {
-      return false;
-    }
-
-    insert_result.first->second = object_reference;
-    unbound_object_references_.erase(unbound_it);
-
-    return true;
-  }
-
-  const unordered_map<SharedObject*, ObjectReferenceImpl*>::const_iterator
-      new_object_reference_it = new_object_references_->find(shared_object);
-
-  if (new_object_reference_it != new_object_references_->end() &&
-      new_object_reference_it->second == object_reference) {
-    return true;
-  }
-
-  return shared_object->HasObjectReference(object_reference);
 }
 
 void PlaybackThread::SetConflictDetected(const string& description) {

@@ -64,6 +64,7 @@ engine_lib = ft_env.Library(
         engine/convert_value.cc
         engine/create_network_peer.cc
         engine/deserialization_context_impl.cc
+        engine/event_matching.cc
         engine/event_queue.cc
         engine/get_event_proto_type.cc
         engine/get_peer_message_type.cc

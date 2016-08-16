@@ -38,7 +38,6 @@ class StateVariableInternalInterface;
 
 namespace engine {
 
-class CommittedEvent;
 class LiveObject;
 class ObjectReferenceImpl;
 class SharedObject;
@@ -92,21 +91,6 @@ class PlaybackThread : private MethodContext {
   CommittedEvent::Type PeekNextEventType();
   const CommittedEvent* GetNextEvent();
   bool CheckNextEventType(CommittedEvent::Type actual_event_type);
-
-  bool MethodCallMatches(
-      SharedObject* expected_shared_object,
-      const std::string& expected_method_name,
-      const std::vector<Value>& expected_parameters,
-      ObjectReferenceImpl* object_reference,
-      const std::string& method_name,
-      const std::vector<Value>& parameters,
-      const std::unordered_set<SharedObject*>& new_shared_objects);
-  bool ValueMatches(
-      const Value& committed_value, const Value& pending_value,
-      const std::unordered_set<SharedObject*>& new_shared_objects);
-  bool ObjectMatches(
-      SharedObject* shared_object, ObjectReferenceImpl* object_reference,
-      const std::unordered_set<SharedObject*>& new_shared_objects);
 
   void SetConflictDetected(const std::string& description);
 

@@ -127,14 +127,12 @@ base_env = Environment(
     SOURCE_DIR = Dir('.'),
 
     PROTOC = 'protoc',
-    CXX = 'clang',
-    LINK = 'clang',
+    CXX = 'clang++',
+    LINK = 'clang++',
 
-    CXXFLAGS = common_flags + Split("""
-        -fno-exceptions -std=c++11 -stdlib=libstdc++
-      """),
+    CXXFLAGS = common_flags + Split('-fno-exceptions -std=c++11'),
     LINKFLAGS = common_flags,
-    LIBS = Split('stdc++'),
+    LIBS = Split(''),
 
     # TODO(dss): Use either -I or -iquote as appropriate.
     CPPPATH = Split("""

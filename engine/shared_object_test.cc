@@ -113,7 +113,7 @@ class SharedObjectTest : public Test {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<ObjectReferenceImpl*> new_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects {};
 
     AddEventToVector(
         new MethodCallCommittedEvent("append", parameters),
@@ -134,7 +134,7 @@ class SharedObjectTest : public Test {
                                   const string& string_to_append,
                                   const string& expected_result_string) {
     vector<unique_ptr<CommittedEvent>> events;
-    const unordered_set<ObjectReferenceImpl*> new_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects {};
 
     {
       vector<Value> parameters(1);
@@ -421,7 +421,7 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<ObjectReferenceImpl*> new_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects {};
 
     AddEventToVector(
         new MethodCallCommittedEvent("append", parameters),
@@ -497,7 +497,7 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<ObjectReferenceImpl*> new_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects {};
 
     AddEventToVector(
         new MethodReturnCommittedEvent(new_objects, return_value),
@@ -570,7 +570,7 @@ TEST_F(SharedObjectTest, BackingUp) {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<ObjectReferenceImpl*> new_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects {};
 
     vector<Value> parameters(1);
     parameters[0].set_string_value(FakeLocalObject::kStringLocalType, "Match.");
@@ -596,7 +596,7 @@ TEST_F(SharedObjectTest, BackingUp) {
     Value return_value;
     return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
-    const unordered_set<ObjectReferenceImpl*> new_objects;
+    const unordered_set<ObjectReferenceImpl*> new_objects {};
 
     AddEventToVector(
         new MethodReturnCommittedEvent(new_objects, return_value),

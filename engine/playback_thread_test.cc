@@ -99,7 +99,7 @@ TEST(PlaybackThreadTest, SubMethodCallWithoutReturn) {
   ObjectReferenceImpl* const object_reference2 =
       shared_object2.GetOrCreateObjectReference();
 
-  const unordered_set<ObjectReferenceImpl*> new_objects;
+  const unordered_set<ObjectReferenceImpl*> new_objects {};
 
   vector<Value> method_parameters(1);
   method_parameters[0].set_object_reference(0, object_reference2);
@@ -136,7 +136,7 @@ TEST(PlaybackThreadTest, FlushEvents) {
   EXPECT_CALL(local_object_core, InvokeMethod(_, _, "test_method2", _, _))
       .WillRepeatedly(SetArgPointee<4>(canned_return_value));
 
-  const unordered_set<ObjectReferenceImpl*> new_objects;
+  const unordered_set<ObjectReferenceImpl*> new_objects {};
 
   const MethodCallCommittedEvent event1("test_method2", vector<Value>());
 
@@ -168,7 +168,7 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   FakeLocalObject* const local_object = new FakeLocalObject("snap.");
   shared_ptr<LiveObject> live_object(new LiveObject(local_object));
 
-  const unordered_set<ObjectReferenceImpl*> new_objects;
+  const unordered_set<ObjectReferenceImpl*> new_objects {};
 
   Value empty_return_value;
   empty_return_value.set_empty(FakeLocalObject::kVoidLocalType);
@@ -215,7 +215,7 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   shared_ptr<LiveObject> live_object(
       new LiveObject(new FakeLocalObject("peter.")));
 
-  const unordered_set<ObjectReferenceImpl*> new_objects;
+  const unordered_set<ObjectReferenceImpl*> new_objects {};
 
   Value empty_return_value;
   empty_return_value.set_empty(FakeLocalObject::kVoidLocalType);
@@ -287,7 +287,7 @@ TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
   Value expected_return_value;
   expected_return_value.set_empty(0);
 
-  const unordered_set<ObjectReferenceImpl*> new_objects;
+  const unordered_set<ObjectReferenceImpl*> new_objects {};
 
   const MethodCallCommittedEvent event1("test_method1", vector<Value>());
   const MethodReturnCommittedEvent event2(new_objects, expected_return_value);
@@ -324,7 +324,7 @@ TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
   ObjectReferenceImpl* const object_reference =
       shared_object.GetOrCreateObjectReference();
 
-  const unordered_set<ObjectReferenceImpl*> new_objects;
+  const unordered_set<ObjectReferenceImpl*> new_objects {};
 
   vector<Value> method_parameters(1);
   method_parameters[0].set_object_reference(0, object_reference);
@@ -388,7 +388,7 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
   ObjectReferenceImpl* const object_reference2 =
       shared_object2.GetOrCreateObjectReference();
 
-  const unordered_set<ObjectReferenceImpl*> new_objects;
+  const unordered_set<ObjectReferenceImpl*> new_objects {};
 
   vector<Value> method_parameters(1);
   method_parameters[0].set_object_reference(0, object_reference2);

@@ -4,8 +4,8 @@ Copyright 2015 Derek S. Snyder
 Build Instructions
 ==================
 
-# Install prerequisites. The following command works on Ubuntu 14.04.5 (Trusty
-# Tahr):
+# Install prerequisites. The following command works on Ubuntu 16.04.1 (Xenial
+# Xerus):
 sudo apt-get install binutils clang coreutils g++ gawk gcc git \
   google-perftools libgflags-dev libgoogle-glog-dev libgoogle-perftools-dev \
   libossp-uuid-dev libprotobuf-dev make protobuf-compiler scons tar
@@ -18,7 +18,7 @@ git clone https://github.com/snyderek/floating_temple.git
 # Refresh the shared library cache.
 sudo ldconfig
 
-# Add the following line to your ~/.bashrc file:
+# (Optional) Add the following line to your ~/.bashrc file:
 export PPROF_PATH=/usr/bin/google-pprof
 
 # Build the floating_temple source.

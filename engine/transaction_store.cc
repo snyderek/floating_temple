@@ -988,6 +988,15 @@ void TransactionStore::EnsureSharedObjectsInEventExist(
     case CommittedEvent::END_TRANSACTION:
       break;
 
+    case CommittedEvent::SUB_OBJECT_CREATION: {
+      ObjectReferenceImpl* new_object = nullptr;
+      event->GetSubObjectCreation(&new_object);
+
+      GetSharedObjectForObjectReference(new_object);
+
+      break;
+    }
+
     case CommittedEvent::METHOD_CALL: {
       const string* method_name = nullptr;
       const vector<Value>* parameters = nullptr;
@@ -1100,6 +1109,10 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       }
       break;
     }
+
+    case CommittedEvent::SUB_OBJECT_CREATION:
+      LOG(FATAL) << "Not implemented yet.";
+      break;
 
     case CommittedEvent::BEGIN_TRANSACTION:
       out->mutable_begin_transaction();

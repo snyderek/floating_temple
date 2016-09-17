@@ -38,14 +38,34 @@ class ObjectReferenceImpl;
 class CommittedEvent {
  public:
   enum Type {
+    // <Object> was created.
     OBJECT_CREATION,
+
+    // <Object> created another object.
+    SUB_OBJECT_CREATION,
+
+    // <Object> began a transaction (possibly nested).
     BEGIN_TRANSACTION,
+
+    // <Object> ended the current transaction (possibly nested).
     END_TRANSACTION,
+
+    // A method was called on <Object>.
     METHOD_CALL,
+
+    // A method on <Object> returned.
     METHOD_RETURN,
+
+    // <Object> called a method on another object.
     SUB_METHOD_CALL,
+
+    // A method on another object returned to <Object>.
     SUB_METHOD_RETURN,
+
+    // <Object> called a method on itself.
     SELF_METHOD_CALL,
+
+    // A self-method call on <Object> returned.
     SELF_METHOD_RETURN
   };
 
@@ -60,6 +80,7 @@ class CommittedEvent {
 
   virtual void GetObjectCreation(
       std::shared_ptr<const LiveObject>* live_object) const;
+  virtual void GetSubObjectCreation(ObjectReferenceImpl** new_object) const;
   virtual void GetMethodCall(const std::string** method_name,
                              const std::vector<Value>** parameters) const;
   virtual void GetMethodReturn(const Value** return_value) const;
@@ -100,6 +121,21 @@ class ObjectCreationCommittedEvent : public CommittedEvent {
   const std::shared_ptr<const LiveObject> live_object_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectCreationCommittedEvent);
+};
+
+class SubObjectCreationCommittedEvent : public CommittedEvent {
+ public:
+  explicit SubObjectCreationCommittedEvent(ObjectReferenceImpl* new_object);
+
+  Type type() const override { return SUB_OBJECT_CREATION; }
+  void GetSubObjectCreation(ObjectReferenceImpl** new_object) const override;
+  CommittedEvent* Clone() const override;
+  void Dump(DumpContext* dc) const override;
+
+ private:
+  ObjectReferenceImpl* const new_object_;
+
+  DISALLOW_COPY_AND_ASSIGN(SubObjectCreationCommittedEvent);
 };
 
 class BeginTransactionCommittedEvent : public CommittedEvent {

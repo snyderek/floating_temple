@@ -65,6 +65,10 @@ MATCHER(IsObjectCreationEvent, "") {
   return arg->type() == CommittedEvent::OBJECT_CREATION;
 }
 
+MATCHER(IsSubObjectCreationEvent, "") {
+  return arg->type() == CommittedEvent::SUB_OBJECT_CREATION;
+}
+
 MATCHER(IsBeginTransactionEvent, "") {
   return arg->type() == CommittedEvent::BEGIN_TRANSACTION;
 }

@@ -49,6 +49,12 @@ void CommittedEvent::GetObjectCreation(
              << static_cast<int>(this->type()) << ")";
 }
 
+void CommittedEvent::GetSubObjectCreation(
+    ObjectReferenceImpl** new_object) const {
+  LOG(FATAL) << "Invalid call to GetSubObjectCreation (type == "
+             << static_cast<int>(this->type()) << ")";
+}
+
 void CommittedEvent::GetMethodCall(const string** method_name,
                                    const vector<Value>** parameters) const {
   LOG(FATAL) << "Invalid call to GetMethodCall (type == "
@@ -97,6 +103,7 @@ string CommittedEvent::DebugString() const {
 string CommittedEvent::GetTypeString(Type event_type) {
   switch (event_type) {
     CHECK_EVENT_TYPE(OBJECT_CREATION);
+    CHECK_EVENT_TYPE(SUB_OBJECT_CREATION);
     CHECK_EVENT_TYPE(BEGIN_TRANSACTION);
     CHECK_EVENT_TYPE(END_TRANSACTION);
     CHECK_EVENT_TYPE(METHOD_CALL);
@@ -153,6 +160,36 @@ void ObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("live_object");
   live_object_->Dump(dc);
+
+  dc->End();
+}
+
+SubObjectCreationCommittedEvent::SubObjectCreationCommittedEvent(
+    ObjectReferenceImpl* new_object)
+    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
+      new_object_(CHECK_NOTNULL(new_object)) {
+}
+
+void SubObjectCreationCommittedEvent::GetSubObjectCreation(
+    ObjectReferenceImpl** new_object) const {
+  CHECK(new_object != nullptr);
+  *new_object = new_object_;
+}
+
+CommittedEvent* SubObjectCreationCommittedEvent::Clone() const {
+  return new SubObjectCreationCommittedEvent(new_object_);
+}
+
+void SubObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
+  CHECK(dc != nullptr);
+
+  dc->BeginMap();
+
+  dc->AddString("type");
+  dc->AddString("SUB_OBJECT_CREATION");
+
+  dc->AddString("new_object");
+  new_object_->Dump(dc);
 
   dc->End();
 }

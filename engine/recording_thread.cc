@@ -159,25 +159,24 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
   // Take ownership of *initial_version.
   shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
 
-  // TODO(dss): Rename this variable to 'new_object_reference'.
-  ObjectReferenceImpl* object_reference = nullptr;
+  ObjectReferenceImpl* new_object_reference = nullptr;
 
   if (name.empty()) {
-    object_reference = transaction_store_->CreateUnboundObjectReference();
+    new_object_reference = transaction_store_->CreateUnboundObjectReference();
 
     NewObject new_object;
     new_object.live_object = new_live_object;
     new_object.object_is_named = false;
 
-    CHECK(new_objects_.emplace(object_reference, new_object).second);
+    CHECK(new_objects_.emplace(new_object_reference, new_object).second);
   } else {
-    object_reference = transaction_store_->CreateBoundObjectReference(name);
+    new_object_reference = transaction_store_->CreateBoundObjectReference(name);
 
     NewObject new_object;
     new_object.live_object = new_live_object;
     new_object.object_is_named = true;
 
-    const auto insert_result = new_objects_.emplace(object_reference,
+    const auto insert_result = new_objects_.emplace(new_object_reference,
                                                     new_object);
 
     if (insert_result.second) {
@@ -186,7 +185,7 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
       // Check if the named object is already known to this peer. As a side
       // effect, send a GET_OBJECT message to remote peers so that the content
       // of the named object can eventually be synchronized with other peers.
-      if (pending_transaction_->IsObjectKnown(object_reference)) {
+      if (pending_transaction_->IsObjectKnown(new_object_reference)) {
         // The named object was already known to this peer. Remove the map entry
         // that was just added.
         const unordered_map<ObjectReferenceImpl*, NewObject>::iterator
@@ -198,15 +197,16 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
     }
   }
 
-  CHECK(object_reference != nullptr);
+  CHECK(new_object_reference != nullptr);
 
   if (caller_object_reference != nullptr) {
-    AddTransactionEvent(caller_object_reference,
-                        new SubObjectCreationCommittedEvent(object_reference),
-                        caller_object_reference, caller_live_object);
+    AddTransactionEvent(
+        caller_object_reference,
+        new SubObjectCreationCommittedEvent(new_object_reference),
+        caller_object_reference, caller_live_object);
   }
 
-  return object_reference;
+  return new_object_reference;
 }
 
 bool RecordingThread::CallMethod(

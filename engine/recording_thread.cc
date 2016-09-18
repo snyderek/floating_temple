@@ -120,8 +120,7 @@ bool RecordingThread::BeginTransaction(
   if (caller_object_reference != nullptr) {
     AddTransactionEvent(caller_object_reference,
                         new BeginTransactionCommittedEvent(),
-                        caller_object_reference, caller_object_reference,
-                        caller_live_object);
+                        caller_object_reference, caller_live_object);
   }
 
   pending_transaction_->IncrementTransactionLevel();
@@ -141,8 +140,7 @@ bool RecordingThread::EndTransaction(
   if (caller_object_reference != nullptr) {
     AddTransactionEvent(caller_object_reference,
                         new EndTransactionCommittedEvent(),
-                        caller_object_reference, caller_object_reference,
-                        caller_live_object);
+                        caller_object_reference, caller_live_object);
   }
 
   if (pending_transaction_->DecrementTransactionLevel()) {
@@ -252,7 +250,7 @@ bool RecordingThread::CallMethod(
     }
 
     AddTransactionEvents(object_events, caller_object_reference,
-                         callee_object_reference, caller_live_object);
+                         caller_live_object);
   }
 
   // Repeatedly try to call the method until either 1) the method succeeds, or
@@ -294,7 +292,7 @@ bool RecordingThread::CallMethod(
     }
 
     AddTransactionEvents(object_events, callee_object_reference,
-                         caller_object_reference, callee_live_object);
+                         callee_live_object);
   }
 
   return true;
@@ -361,19 +359,16 @@ void RecordingThread::AddTransactionEvent(
     ObjectReferenceImpl* event_object_reference,
     CommittedEvent* event,
     ObjectReferenceImpl* prev_object_reference,
-    ObjectReferenceImpl* next_object_reference,
     const shared_ptr<LiveObject>& prev_live_object) {
   unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
   object_events[event_object_reference].push_back(event);
-  AddTransactionEvents(object_events, prev_object_reference,
-                       next_object_reference, prev_live_object);
+  AddTransactionEvents(object_events, prev_object_reference, prev_live_object);
 }
 
 void RecordingThread::AddTransactionEvents(
     const unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>>&
         object_events,
     ObjectReferenceImpl* prev_object_reference,
-    ObjectReferenceImpl* next_object_reference,
     const shared_ptr<LiveObject>& prev_live_object) {
   CHECK(!object_events.empty());
 

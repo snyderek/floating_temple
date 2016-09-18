@@ -84,15 +84,12 @@ class RecordingThread : private RecordingThreadInternalInterface {
       ObjectReferenceImpl* event_object_reference,
       CommittedEvent* event,
       ObjectReferenceImpl* prev_object_reference,
-      ObjectReferenceImpl* next_object_reference,
       const std::shared_ptr<LiveObject>& prev_live_object);
   // TODO(dss): The API of this function is horrible.
-  // TODO(dss): Delete the parameter 'next_object_reference'. It isn't used.
   void AddTransactionEvents(
       const std::unordered_map<ObjectReferenceImpl*,
                                std::vector<CommittedEvent*>>& object_events,
       ObjectReferenceImpl* prev_object_reference,
-      ObjectReferenceImpl* next_object_reference,
       const std::shared_ptr<LiveObject>& prev_live_object);
 
   void CommitTransaction();

@@ -80,7 +80,8 @@ class CommittedEvent {
 
   virtual void GetObjectCreation(
       std::shared_ptr<const LiveObject>* live_object) const;
-  virtual void GetSubObjectCreation(ObjectReferenceImpl** new_object) const;
+  virtual void GetSubObjectCreation(const std::string** new_object_name,
+                                    ObjectReferenceImpl** new_object) const;
   virtual void GetMethodCall(const std::string** method_name,
                              const std::vector<Value>** parameters) const;
   virtual void GetMethodReturn(const Value** return_value) const;
@@ -125,14 +126,17 @@ class ObjectCreationCommittedEvent : public CommittedEvent {
 
 class SubObjectCreationCommittedEvent : public CommittedEvent {
  public:
-  explicit SubObjectCreationCommittedEvent(ObjectReferenceImpl* new_object);
+  SubObjectCreationCommittedEvent(const std::string& new_object_name,
+                                  ObjectReferenceImpl* new_object);
 
   Type type() const override { return SUB_OBJECT_CREATION; }
-  void GetSubObjectCreation(ObjectReferenceImpl** new_object) const override;
+  void GetSubObjectCreation(const std::string** new_object_name,
+                            ObjectReferenceImpl** new_object) const override;
   CommittedEvent* Clone() const override;
   void Dump(DumpContext* dc) const override;
 
  private:
+  const std::string new_object_name_;
   ObjectReferenceImpl* const new_object_;
 
   DISALLOW_COPY_AND_ASSIGN(SubObjectCreationCommittedEvent);

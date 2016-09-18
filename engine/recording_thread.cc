@@ -202,7 +202,7 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
   if (caller_object_reference != nullptr) {
     AddTransactionEvent(
         caller_object_reference,
-        new SubObjectCreationCommittedEvent(new_object_reference),
+        new SubObjectCreationCommittedEvent(name, new_object_reference),
         caller_object_reference, caller_live_object);
   }
 

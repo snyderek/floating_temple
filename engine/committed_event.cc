@@ -50,7 +50,7 @@ void CommittedEvent::GetObjectCreation(
 }
 
 void CommittedEvent::GetSubObjectCreation(
-    ObjectReferenceImpl** new_object) const {
+    const string** new_object_name, ObjectReferenceImpl** new_object) const {
   LOG(FATAL) << "Invalid call to GetSubObjectCreation (type == "
              << static_cast<int>(this->type()) << ")";
 }
@@ -165,19 +165,23 @@ void ObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SubObjectCreationCommittedEvent::SubObjectCreationCommittedEvent(
-    ObjectReferenceImpl* new_object)
+    const string& new_object_name, ObjectReferenceImpl* new_object)
     : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
+      new_object_name_(new_object_name),
       new_object_(CHECK_NOTNULL(new_object)) {
 }
 
 void SubObjectCreationCommittedEvent::GetSubObjectCreation(
-    ObjectReferenceImpl** new_object) const {
+    const string** new_object_name, ObjectReferenceImpl** new_object) const {
+  CHECK(new_object_name != nullptr);
   CHECK(new_object != nullptr);
+
+  *new_object_name = &new_object_name_;
   *new_object = new_object_;
 }
 
 CommittedEvent* SubObjectCreationCommittedEvent::Clone() const {
-  return new SubObjectCreationCommittedEvent(new_object_);
+  return new SubObjectCreationCommittedEvent(new_object_name_, new_object_);
 }
 
 void SubObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
@@ -187,6 +191,9 @@ void SubObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("type");
   dc->AddString("SUB_OBJECT_CREATION");
+
+  dc->AddString("new_object_name");
+  dc->AddString(new_object_name_);
 
   dc->AddString("new_object");
   new_object_->Dump(dc);

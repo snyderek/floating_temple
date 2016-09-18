@@ -989,8 +989,10 @@ void TransactionStore::EnsureSharedObjectsInEventExist(
       break;
 
     case CommittedEvent::SUB_OBJECT_CREATION: {
+      const string* new_object_name = nullptr;
       ObjectReferenceImpl* new_object = nullptr;
-      event->GetSubObjectCreation(&new_object);
+
+      event->GetSubObjectCreation(&new_object_name, &new_object);
 
       GetSharedObjectForObjectReference(new_object);
 
@@ -1111,12 +1113,21 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     }
 
     case CommittedEvent::SUB_OBJECT_CREATION: {
+      const string* new_object_name = nullptr;
       ObjectReferenceImpl* new_object = nullptr;
-      in->GetSubObjectCreation(&new_object);
+
+      in->GetSubObjectCreation(&new_object_name, &new_object);
+
+      SubObjectCreationEventProto* const sub_object_creation_event_proto =
+          out->mutable_sub_object_creation();
+
+      sub_object_creation_event_proto->set_new_object_name(*new_object_name);
+
       const SharedObject* const shared_object =
           GetSharedObjectForObjectReference(new_object);
-      out->mutable_sub_object_creation()->mutable_new_object_id()->CopyFrom(
+      sub_object_creation_event_proto->mutable_new_object_id()->CopyFrom(
           shared_object->object_id());
+
       break;
     }
 
@@ -1281,9 +1292,13 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
     }
 
     case EventProto::SUB_OBJECT_CREATION: {
-      const Uuid& object_id = event_proto.sub_object_creation().new_object_id();
+      const SubObjectCreationEventProto& sub_object_creation_event_proto =
+          event_proto.sub_object_creation();
+      const Uuid& object_id = sub_object_creation_event_proto.new_object_id();
       SharedObject* const shared_object = GetOrCreateSharedObject(object_id);
+
       return new SubObjectCreationCommittedEvent(
+          sub_object_creation_event_proto.new_object_name(),
           shared_object->GetOrCreateObjectReference());
     }
 

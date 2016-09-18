@@ -24,6 +24,7 @@ message ObjectCreationEventProto {
 }
 
 message SubObjectCreationEventProto {
+  required string new_object_name = 2;
   required floating_temple.engine.Uuid new_object_id = 1;
 }
 

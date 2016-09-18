@@ -62,10 +62,10 @@ class MethodContext {
 
   // Returns a reference to a newly created shared object that corresponds to an
   // existing local object. *initial_version is the initial version of the local
-  // object; it may later be cloned via LocalObject::Clone to create
-  // additional versions of the object.
+  // object; it may later be cloned via LocalObject::Clone to create additional
+  // versions of the object.
   //
-  // The peer takes ownership of *initial_version. The caller must not take
+  // The engine takes ownership of *initial_version. The caller must not take
   // ownership of the returned ObjectReference instance.
   //
   // If 'name' is not the empty string, it will be used as the name for the new
@@ -74,7 +74,7 @@ class MethodContext {
   // treated as a single object by the distributed interpreter.
   //
   // TODO(dss): The local interpreter should take ownership of the
-  // ObjectReference instance. Otherwise, the peer has no way of knowing when
+  // ObjectReference instance. Otherwise, the engine has no way of knowing when
   // the local interpreter is done using it.
   virtual ObjectReference* CreateObject(LocalObject* initial_version,
                                         const std::string& name) = 0;
@@ -95,6 +95,8 @@ class MethodContext {
                           const std::vector<Value>& parameters,
                           Value* return_value) = 0;
 
+  // TODO(dss): Remove this method once support for delayed object binding has
+  // been dropped.
   virtual bool ObjectsAreIdentical(const ObjectReference* a,
                                    const ObjectReference* b) const = 0;
 };

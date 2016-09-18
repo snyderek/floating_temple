@@ -214,7 +214,13 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsObjectCreationEvent(),
+                IsObjectCreationEvent())))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
                 IsMethodCallEvent("run"))))),
             _, _, _));
 
@@ -222,7 +228,9 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsSubObjectCreationEvent(""))))),
+                IsSubObjectCreationEvent("")))),
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent())))),
             _, _, _));
 
     EXPECT_CALL(
@@ -246,7 +254,6 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
                 IsSubMethodReturnEvent(),
                 IsEndTransactionEvent()))),
             Pair(_, Pointee(ElementsAre(
-                IsObjectCreationEvent(),
                 IsMethodCallEvent("append"),
                 IsMethodReturnEvent(),
                 IsMethodCallEvent("append"),
@@ -339,7 +346,13 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsObjectCreationEvent(),
+                IsObjectCreationEvent())))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
                 IsMethodCallEvent("run"))))),
             _, _, _));
 
@@ -347,7 +360,9 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsSubObjectCreationEvent(""))))),
+                IsSubObjectCreationEvent("")))),
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent())))),
             _, _, _));
 
     EXPECT_CALL(
@@ -356,7 +371,6 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
             Pair(_, Pointee(ElementsAre(
                 IsSubMethodCallEvent("test-method")))),
             Pair(_, Pointee(ElementsAre(
-                IsObjectCreationEvent(),
                 IsMethodCallEvent("test-method"))))),
             _, _, _));
 
@@ -462,7 +476,13 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsObjectCreationEvent(),
+                IsObjectCreationEvent())))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
                 IsMethodCallEvent("run"))))),
             _, _, _));
 
@@ -489,7 +509,9 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsSubObjectCreationEvent(""))))),
+                IsSubObjectCreationEvent("")))),
+            Pair(_, Pointee(ElementsAre(
+                IsObjectCreationEvent())))),
             _, _, _));
 
     EXPECT_CALL(
@@ -498,9 +520,7 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
             Pair(_, Pointee(ElementsAre(
                 IsMethodReturnEvent()))),
             Pair(_, Pointee(ElementsAre(
-                IsSubMethodReturnEvent()))),
-            Pair(_, Pointee(ElementsAre(
-                IsObjectCreationEvent())))),
+                IsSubMethodReturnEvent())))),
             _, _, _));
 
     EXPECT_CALL(
@@ -703,7 +723,14 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
       transaction_store_core,
       CreateTransaction(UnorderedElementsAre(
           Pair(_, Pointee(ElementsAre(
-              IsObjectCreationEvent(),
+              IsObjectCreationEvent())))),
+          _, _, _))
+      .InSequence(s2);
+
+  EXPECT_CALL(
+      transaction_store_core,
+      CreateTransaction(UnorderedElementsAre(
+          Pair(_, Pointee(ElementsAre(
               IsMethodCallEvent("run"))))),
           _, _, _))
       .InSequence(s2);
@@ -712,7 +739,9 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
       transaction_store_core,
       CreateTransaction(UnorderedElementsAre(
           Pair(_, Pointee(ElementsAre(
-              IsSubObjectCreationEvent(""))))),
+              IsSubObjectCreationEvent("")))),
+          Pair(_, Pointee(ElementsAre(
+              IsObjectCreationEvent())))),
           _, _, _))
       .InSequence(s2);
 
@@ -722,7 +751,6 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
           Pair(_, Pointee(ElementsAre(
               IsSubMethodCallEvent("a")))),
           Pair(_, Pointee(ElementsAre(
-              IsObjectCreationEvent(),
               IsMethodCallEvent("a"))))),
           _, _, _))
       .InSequence(s2);

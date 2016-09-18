@@ -58,20 +58,6 @@ void AddEventToMap(ObjectReferenceImpl* object_reference, CommittedEvent* event,
   (*object_events)[object_reference].push_back(event);
 }
 
-void AddObjectCreationEventsToMap(
-    const unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>&
-        live_objects,
-    unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>>*
-        object_events) {
-  for (const auto& live_object_pair : live_objects) {
-    ObjectReferenceImpl* const object_reference = live_object_pair.first;
-    const shared_ptr<const LiveObject>& live_object = live_object_pair.second;
-
-    AddEventToMap(object_reference,
-                  new ObjectCreationCommittedEvent(live_object), object_events);
-  }
-}
-
 }  // namespace
 
 RecordingThread::RecordingThread(
@@ -202,12 +188,18 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
 
   CHECK(new_object_reference != nullptr);
 
+  unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
   if (caller_object_reference != nullptr) {
-    AddTransactionEvent(
-        caller_object_reference,
-        new SubObjectCreationCommittedEvent(name, new_object_reference),
-        caller_object_reference, caller_live_object);
+    AddEventToMap(caller_object_reference,
+                  new SubObjectCreationCommittedEvent(name,
+                                                      new_object_reference),
+                  &object_events);
   }
+  AddEventToMap(new_object_reference,
+                new ObjectCreationCommittedEvent(new_live_object),
+                &object_events);
+  AddTransactionEvents(object_events, caller_object_reference,
+                       caller_live_object);
 
   return new_object_reference;
 }
@@ -243,7 +235,6 @@ bool RecordingThread::CallMethod(
     }
 
     unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
-    AddObjectCreationEventsToMap(live_objects, &object_events);
 
     if (caller_object_reference == callee_object_reference) {
       AddEventToMap(caller_object_reference,
@@ -286,7 +277,6 @@ bool RecordingThread::CallMethod(
     CheckIfValueIsNew(*return_value, &live_objects, &new_object_references);
 
     unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
-    AddObjectCreationEventsToMap(live_objects, &object_events);
 
     if (caller_object_reference == callee_object_reference) {
       AddEventToMap(caller_object_reference,

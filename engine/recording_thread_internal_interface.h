@@ -41,8 +41,11 @@ class RecordingThreadInternalInterface {
   virtual bool EndTransaction(
       ObjectReferenceImpl* caller_object_reference,
       const std::shared_ptr<LiveObject>& caller_live_object) = 0;
-  virtual ObjectReferenceImpl* CreateObject(LocalObject* initial_version,
-                                            const std::string& name) = 0;
+  virtual ObjectReferenceImpl* CreateObject(
+      ObjectReferenceImpl* caller_object_reference,
+      const std::shared_ptr<LiveObject>& caller_live_object,
+      LocalObject* initial_version,
+      const std::string& name) = 0;
   virtual bool CallMethod(ObjectReferenceImpl* caller_object_reference,
                           const std::shared_ptr<LiveObject>& caller_live_object,
                           ObjectReferenceImpl* callee_object_reference,

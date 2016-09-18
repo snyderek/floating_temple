@@ -62,8 +62,11 @@ class RecordingThread : private RecordingThreadInternalInterface {
   bool EndTransaction(
       ObjectReferenceImpl* caller_object_reference,
       const std::shared_ptr<LiveObject>& caller_live_object) override;
-  ObjectReferenceImpl* CreateObject(LocalObject* initial_version,
-                                    const std::string& name) override;
+  ObjectReferenceImpl* CreateObject(
+      ObjectReferenceImpl* caller_object_reference,
+      const std::shared_ptr<LiveObject>& caller_live_object,
+      LocalObject* initial_version,
+      const std::string& name) override;
   bool CallMethod(ObjectReferenceImpl* caller_object_reference,
                   const std::shared_ptr<LiveObject>& caller_live_object,
                   ObjectReferenceImpl* callee_object_reference,

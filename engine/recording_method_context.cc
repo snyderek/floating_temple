@@ -56,7 +56,9 @@ bool RecordingMethodContext::EndTransaction() {
 
 ObjectReference* RecordingMethodContext::CreateObject(
     LocalObject* initial_version, const string& name) {
-  return recording_thread_->CreateObject(initial_version, name);
+  return recording_thread_->CreateObject(current_object_reference_,
+                                         current_live_object_, initial_version,
+                                         name);
 }
 
 bool RecordingMethodContext::CallMethod(ObjectReference* object_reference,

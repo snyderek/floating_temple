@@ -89,7 +89,8 @@ void RecordingThread::RunProgram(LocalObject* local_object,
                                  bool linger) {
   CHECK(return_value != nullptr);
 
-  ObjectReferenceImpl* const object_reference = CreateObject(local_object, "");
+  ObjectReferenceImpl* const object_reference = CreateObject(
+      nullptr, shared_ptr<LiveObject>(nullptr), local_object, "");
 
   for (;;) {
     Value return_value_temp;
@@ -150,8 +151,11 @@ bool RecordingThread::EndTransaction(
   return true;
 }
 
-ObjectReferenceImpl* RecordingThread::CreateObject(LocalObject* initial_version,
-                                                   const string& name) {
+ObjectReferenceImpl* RecordingThread::CreateObject(
+    ObjectReferenceImpl* caller_object_reference,
+    const shared_ptr<LiveObject>& caller_live_object,
+    LocalObject* initial_version,
+    const string& name) {
   // Take ownership of *initial_version.
   shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
 

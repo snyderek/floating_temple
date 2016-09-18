@@ -65,8 +65,17 @@ MATCHER(IsObjectCreationEvent, "") {
   return arg->type() == CommittedEvent::OBJECT_CREATION;
 }
 
-MATCHER(IsSubObjectCreationEvent, "") {
-  return arg->type() == CommittedEvent::SUB_OBJECT_CREATION;
+MATCHER_P(IsSubObjectCreationEvent, expected_object_name, "") {
+  if (arg->type() != CommittedEvent::SUB_OBJECT_CREATION) {
+    return false;
+  }
+
+  const string* new_object_name = nullptr;
+  ObjectReferenceImpl* new_object = nullptr;
+
+  arg->GetSubObjectCreation(&new_object_name, &new_object);
+
+  return *new_object_name == expected_object_name;
 }
 
 MATCHER(IsBeginTransactionEvent, "") {
@@ -213,7 +222,7 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsSubObjectCreationEvent())))),
+                IsSubObjectCreationEvent(""))))),
             _, _, _));
 
     EXPECT_CALL(
@@ -338,7 +347,7 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsSubObjectCreationEvent())))),
+                IsSubObjectCreationEvent(""))))),
             _, _, _));
 
     EXPECT_CALL(
@@ -468,7 +477,7 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsSubObjectCreationEvent(),
+                IsSubObjectCreationEvent(""),
                 IsSubMethodCallEvent("test-method")))),
             Pair(_, Pointee(ElementsAre(
                 IsObjectCreationEvent(),
@@ -480,7 +489,7 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
-                IsSubObjectCreationEvent())))),
+                IsSubObjectCreationEvent(""))))),
             _, _, _));
 
     EXPECT_CALL(
@@ -703,7 +712,7 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
       transaction_store_core,
       CreateTransaction(UnorderedElementsAre(
           Pair(_, Pointee(ElementsAre(
-              IsSubObjectCreationEvent())))),
+              IsSubObjectCreationEvent(""))))),
           _, _, _))
       .InSequence(s2);
 

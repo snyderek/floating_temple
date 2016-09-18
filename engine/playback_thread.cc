@@ -441,6 +441,8 @@ ObjectReference* PlaybackThread::CreateObject(LocalObject* initial_version,
 
   delete initial_version;
 
+  // TODO(dss): Expect a SUB_OBJECT_CREATION event.
+
   if (name.empty()) {
     ObjectReferenceImpl* const object_reference =
         transaction_store_->CreateUnboundObjectReference();

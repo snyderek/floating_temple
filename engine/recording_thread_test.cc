@@ -154,6 +154,7 @@ class TestLocalObject : public LocalObject {
   }
 
   void Dump(DumpContext* dc) const override {
+    // TODO(dss): Implement this method in case verbose logging is enabled.
     LOG(FATAL) << "Not implemented.";
   }
 };
@@ -206,6 +207,13 @@ TEST(RecordingThreadTest, CallMethodInNestedTransactions) {
             Pair(_, Pointee(ElementsAre(
                 IsObjectCreationEvent(),
                 IsMethodCallEvent("run"))))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsSubObjectCreationEvent())))),
             _, _, _));
 
     EXPECT_CALL(
@@ -324,6 +332,13 @@ TEST(RecordingThreadTest, CallBeginTransactionFromWithinMethod) {
             Pair(_, Pointee(ElementsAre(
                 IsObjectCreationEvent(),
                 IsMethodCallEvent("run"))))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsSubObjectCreationEvent())))),
             _, _, _));
 
     EXPECT_CALL(
@@ -453,11 +468,19 @@ TEST(RecordingThreadTest, CallEndTransactionFromWithinMethod) {
         transaction_store_core,
         CreateTransaction(UnorderedElementsAre(
             Pair(_, Pointee(ElementsAre(
+                IsSubObjectCreationEvent(),
                 IsSubMethodCallEvent("test-method")))),
             Pair(_, Pointee(ElementsAre(
                 IsObjectCreationEvent(),
                 IsMethodCallEvent("test-method"),
                 IsEndTransactionEvent())))),
+            _, _, _));
+
+    EXPECT_CALL(
+        transaction_store_core,
+        CreateTransaction(UnorderedElementsAre(
+            Pair(_, Pointee(ElementsAre(
+                IsSubObjectCreationEvent())))),
             _, _, _));
 
     EXPECT_CALL(
@@ -673,6 +696,14 @@ TEST(RecordingThreadTest, DISABLED_RewindInPendingTransaction) {
           Pair(_, Pointee(ElementsAre(
               IsObjectCreationEvent(),
               IsMethodCallEvent("run"))))),
+          _, _, _))
+      .InSequence(s2);
+
+  EXPECT_CALL(
+      transaction_store_core,
+      CreateTransaction(UnorderedElementsAre(
+          Pair(_, Pointee(ElementsAre(
+              IsSubObjectCreationEvent())))),
           _, _, _))
       .InSequence(s2);
 

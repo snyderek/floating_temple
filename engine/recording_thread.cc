@@ -159,6 +159,7 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
   // Take ownership of *initial_version.
   shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
 
+  // TODO(dss): Rename this variable to 'new_object_reference'.
   ObjectReferenceImpl* object_reference = nullptr;
 
   if (name.empty()) {
@@ -198,6 +199,13 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
   }
 
   CHECK(object_reference != nullptr);
+
+  if (caller_object_reference != nullptr) {
+    AddTransactionEvent(caller_object_reference,
+                        new SubObjectCreationCommittedEvent(object_reference),
+                        caller_object_reference, caller_live_object);
+  }
+
   return object_reference;
 }
 

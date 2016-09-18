@@ -76,6 +76,9 @@ class MethodContext {
   // TODO(dss): The local interpreter should take ownership of the
   // ObjectReference instance. Otherwise, the engine has no way of knowing when
   // the local interpreter is done using it.
+  //
+  // TODO(dss): Consider returning a special value to the caller to indicate
+  // that a conflict has occurred.
   virtual ObjectReference* CreateObject(LocalObject* initial_version,
                                         const std::string& name) = 0;
 

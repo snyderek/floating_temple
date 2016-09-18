@@ -471,23 +471,22 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
   ObjectReferenceImpl* const object_reference2 =
       shared_object2.GetOrCreateObjectReference();
 
-  unordered_set<ObjectReferenceImpl*> new_objects;
-  new_objects.insert(object_reference2);
-
   const vector<Value> method_parameters;
 
   Value empty_return_value;
   empty_return_value.set_empty(0);
 
   const MethodCallCommittedEvent event1("test_method5", method_parameters);
-  const SubMethodCallCommittedEvent event2(new_objects, object_reference2,
-                                           "test_method6", vector<Value>());
-  const SubMethodReturnCommittedEvent event3(empty_return_value);
-  const SubMethodCallCommittedEvent event4(
+  const SubObjectCreationCommittedEvent event2("", object_reference2);
+  const SubMethodCallCommittedEvent event3(
+      unordered_set<ObjectReferenceImpl*>(), object_reference2, "test_method6",
+      vector<Value>());
+  const SubMethodReturnCommittedEvent event4(empty_return_value);
+  const SubMethodCallCommittedEvent event5(
       unordered_set<ObjectReferenceImpl*>(), object_reference2, "test_method7",
       vector<Value>());
-  const SubMethodReturnCommittedEvent event5(empty_return_value);
-  const MethodReturnCommittedEvent event6(unordered_set<ObjectReferenceImpl*>(),
+  const SubMethodReturnCommittedEvent event6(empty_return_value);
+  const MethodReturnCommittedEvent event7(unordered_set<ObjectReferenceImpl*>(),
                                           empty_return_value);
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -502,14 +501,12 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
   playback_thread.QueueEvent(&event4);
   playback_thread.QueueEvent(&event5);
   playback_thread.QueueEvent(&event6);
+  playback_thread.QueueEvent(&event7);
 
   playback_thread.Stop();
 
   EXPECT_FALSE(playback_thread.conflict_detected());
-
-  EXPECT_EQ(1, new_object_references.size());
-  EXPECT_FALSE(new_object_references.find(&shared_object2) ==
-               new_object_references.end());
+  EXPECT_EQ(0, new_object_references.size());
 }
 
 }  // namespace

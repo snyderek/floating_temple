@@ -92,6 +92,9 @@ class PlaybackThread : private MethodContext {
   const CommittedEvent* GetNextEvent();
   bool CheckNextEventType(CommittedEvent::Type actual_event_type);
 
+  ObjectReferenceImpl* GetNewObjectReference(
+      const std::string& new_object_name);
+
   void SetConflictDetected(const std::string& description);
 
   bool BeginTransaction() override;

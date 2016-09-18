@@ -405,6 +405,38 @@ bool PlaybackThread::CheckNextEventType(
   return true;
 }
 
+ObjectReferenceImpl* PlaybackThread::GetNewObjectReference(
+    const string& new_object_name) {
+  if (conflict_detected_.Get()) {
+    return nullptr;
+  }
+
+  if (!CheckNextEventType(CommittedEvent::SUB_OBJECT_CREATION)) {
+    return nullptr;
+  }
+
+  const string* expected_name = nullptr;
+  ObjectReferenceImpl* new_object = nullptr;
+
+  GetNextEvent()->GetSubObjectCreation(&expected_name, &new_object);
+
+  if (new_object_name != *expected_name) {
+    string description;
+    SStringPrintf(
+        &description,
+        "Expected object \"%s\" to be created, but instead object \"%s\" was "
+        "created.",
+        CEscape(*expected_name).c_str(),
+        CEscape(new_object_name).c_str());
+
+    SetConflictDetected(description);
+
+    return nullptr;
+  }
+
+  return new_object;
+}
+
 void PlaybackThread::SetConflictDetected(const string& description) {
   if (FLAGS_treat_conflicts_as_fatal_for_debugging) {
     LOG(FATAL) << "CONFLICT: " << description;
@@ -441,7 +473,10 @@ ObjectReference* PlaybackThread::CreateObject(LocalObject* initial_version,
 
   delete initial_version;
 
-  // TODO(dss): Expect a SUB_OBJECT_CREATION event.
+  ObjectReferenceImpl* const new_object = GetNewObjectReference(name);
+  if (new_object != nullptr) {
+    return new_object;
+  }
 
   if (name.empty()) {
     ObjectReferenceImpl* const object_reference =

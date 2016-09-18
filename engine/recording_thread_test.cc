@@ -36,6 +36,7 @@
 #include "include/c++/value.h"
 #include "third_party/gmock-1.7.0/gtest/include/gtest/gtest.h"
 #include "third_party/gmock-1.7.0/include/gmock/gmock.h"
+#include "util/dump_context.h"
 
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
@@ -163,8 +164,12 @@ class TestLocalObject : public LocalObject {
   }
 
   void Dump(DumpContext* dc) const override {
-    // TODO(dss): Implement this method in case verbose logging is enabled.
-    LOG(FATAL) << "Not implemented.";
+    CHECK(dc != nullptr);
+
+    dc->BeginMap();
+    dc->AddString("type");
+    dc->AddString("TestLocalObject");
+    dc->End();
   }
 };
 

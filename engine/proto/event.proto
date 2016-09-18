@@ -23,6 +23,10 @@ message ObjectCreationEventProto {
   repeated floating_temple.engine.Uuid referenced_object_id = 2;
 }
 
+message SubObjectCreationEventProto {
+  required floating_temple.engine.Uuid new_object_id = 1;
+}
+
 message BeginTransactionEventProto {
 }
 
@@ -64,19 +68,41 @@ message EventProto {
   enum Type {
     UNKNOWN = 0;
 
+    // <Object> was created.
     OBJECT_CREATION = 1;
+
+    // <Object> created another object.
+    SUB_OBJECT_CREATION = 11;
+
+    // <Object> began a transaction (possibly nested).
     BEGIN_TRANSACTION = 2;
+
+    // <Object> ended the current transaction (possibly nested).
     END_TRANSACTION = 3;
+
+    // A method was called on <Object>.
     METHOD_CALL = 4;
+
+    // A method on <Object> returned.
     METHOD_RETURN = 5;
+
+    // <Object> called a method on another object.
     SUB_METHOD_CALL = 6;
+
+    // A method on another object returned to <Object>.
     SUB_METHOD_RETURN = 7;
+
+    // <Object> called a method on itself.
     SELF_METHOD_CALL = 8;
+
+    // A self-method call on <Object> returned.
     SELF_METHOD_RETURN = 9;
   }
 
   // Exactly one of the following fields must be set.
   optional floating_temple.engine.ObjectCreationEventProto object_creation = 1;
+  optional floating_temple.engine.SubObjectCreationEventProto
+      sub_object_creation = 11;
   optional floating_temple.engine.BeginTransactionEventProto
       begin_transaction = 2;
   optional floating_temple.engine.EndTransactionEventProto end_transaction = 3;

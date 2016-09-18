@@ -1110,9 +1110,15 @@ void TransactionStore::ConvertCommittedEventToEventProto(
       break;
     }
 
-    case CommittedEvent::SUB_OBJECT_CREATION:
-      LOG(FATAL) << "Not implemented yet.";
+    case CommittedEvent::SUB_OBJECT_CREATION: {
+      ObjectReferenceImpl* new_object = nullptr;
+      in->GetSubObjectCreation(&new_object);
+      const SharedObject* const shared_object =
+          GetSharedObjectForObjectReference(new_object);
+      out->mutable_sub_object_creation()->mutable_new_object_id()->CopyFrom(
+          shared_object->object_id());
       break;
+    }
 
     case CommittedEvent::BEGIN_TRANSACTION:
       out->mutable_begin_transaction();
@@ -1272,6 +1278,13 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
                   object_references)));
 
       return new ObjectCreationCommittedEvent(live_object);
+    }
+
+    case EventProto::SUB_OBJECT_CREATION: {
+      const Uuid& object_id = event_proto.sub_object_creation().new_object_id();
+      SharedObject* const shared_object = GetOrCreateSharedObject(object_id);
+      return new SubObjectCreationCommittedEvent(
+          shared_object->GetOrCreateObjectReference());
     }
 
     case EventProto::BEGIN_TRANSACTION:

@@ -51,7 +51,10 @@ namespace {
 void AddEventToMap(ObjectReferenceImpl* object_reference, CommittedEvent* event,
                    unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>>*
                        object_events) {
+  CHECK(object_reference != nullptr);
+  CHECK(event != nullptr);
   CHECK(object_events != nullptr);
+
   (*object_events)[object_reference].push_back(event);
 }
 

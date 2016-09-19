@@ -16,9 +16,6 @@
 #include "engine/event_matching.h"
 
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include "base/escape.h"
@@ -28,28 +25,20 @@
 #include "include/c++/value.h"
 
 using std::string;
-using std::unordered_map;
-using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
 namespace engine {
 
-bool MethodCallMatches(
-    SharedObject* expected_shared_object,
-    const string& expected_method_name,
-    const vector<Value>& expected_parameters,
-    ObjectReferenceImpl* object_reference,
-    const string& method_name,
-    const vector<Value>& parameters,
-    const unordered_set<SharedObject*>& new_shared_objects,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
-    unordered_set<ObjectReferenceImpl*>* unbound_object_references) {
+bool MethodCallMatches(SharedObject* expected_shared_object,
+                       const string& expected_method_name,
+                       const vector<Value>& expected_parameters,
+                       ObjectReferenceImpl* object_reference,
+                       const string& method_name,
+                       const vector<Value>& parameters) {
   CHECK(object_reference != nullptr);
 
-  if (!ObjectMatches(expected_shared_object, object_reference,
-                     new_shared_objects, new_object_references,
-                     unbound_object_references)) {
+  if (!ObjectMatches(expected_shared_object, object_reference)) {
     VLOG(2) << "Objects don't match.";
     return false;
   }
@@ -69,8 +58,7 @@ bool MethodCallMatches(
   for (vector<Value>::size_type i = 0; i < expected_parameters.size(); ++i) {
     const Value& expected_parameter = expected_parameters[i];
 
-    if (!ValueMatches(expected_parameter, parameters[i], new_shared_objects,
-                      new_object_references, unbound_object_references)) {
+    if (!ValueMatches(expected_parameter, parameters[i])) {
       VLOG(2) << "Parameter " << i << ": values don't match.";
       return false;
     }
@@ -83,12 +71,7 @@ bool MethodCallMatches(
   case Value::enum_const: \
     return committed_value.getter_method() == pending_value.getter_method();
 
-bool ValueMatches(
-    const Value& committed_value,
-    const Value& pending_value,
-    const unordered_set<SharedObject*>& new_shared_objects,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
-    unordered_set<ObjectReferenceImpl*>* unbound_object_references) {
+bool ValueMatches(const Value& committed_value, const Value& pending_value) {
   if (committed_value.local_type() != pending_value.local_type()) {
     return false;
   }
@@ -116,8 +99,7 @@ bool ValueMatches(
       return ObjectMatches(
           static_cast<ObjectReferenceImpl*>(committed_value.object_reference())
               ->shared_object(),
-          static_cast<ObjectReferenceImpl*>(pending_value.object_reference()),
-          new_shared_objects, new_object_references, unbound_object_references);
+          static_cast<ObjectReferenceImpl*>(pending_value.object_reference()));
 
     default:
       LOG(FATAL) << "Unexpected committed value type: "
@@ -127,47 +109,8 @@ bool ValueMatches(
 
 #undef COMPARE_FIELDS
 
-bool ObjectMatches(
-    SharedObject* shared_object,
-    ObjectReferenceImpl* object_reference,
-    const unordered_set<SharedObject*>& new_shared_objects,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
-    unordered_set<ObjectReferenceImpl*>* unbound_object_references) {
-  CHECK(shared_object != nullptr);
-  CHECK(object_reference != nullptr);
-  CHECK(new_object_references != nullptr);
-  CHECK(unbound_object_references != nullptr);
-
-  const bool shared_object_is_new =
-      (new_shared_objects.find(shared_object) != new_shared_objects.end());
-
-  const unordered_set<ObjectReferenceImpl*>::iterator unbound_it =
-      unbound_object_references->find(object_reference);
-  const bool object_reference_is_unbound =
-      (unbound_it != unbound_object_references->end());
-
-  if (shared_object_is_new && object_reference_is_unbound) {
-    const auto insert_result = new_object_references->emplace(shared_object,
-                                                              nullptr);
-
-    if (!insert_result.second) {
-      return false;
-    }
-
-    insert_result.first->second = object_reference;
-    unbound_object_references->erase(unbound_it);
-
-    return true;
-  }
-
-  const unordered_map<SharedObject*, ObjectReferenceImpl*>::const_iterator
-      new_object_reference_it = new_object_references->find(shared_object);
-
-  if (new_object_reference_it != new_object_references->end() &&
-      new_object_reference_it->second == object_reference) {
-    return true;
-  }
-
+bool ObjectMatches(SharedObject* shared_object,
+                   ObjectReferenceImpl* object_reference) {
   return shared_object->HasObjectReference(object_reference);
 }
 

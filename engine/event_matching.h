@@ -17,8 +17,6 @@
 #define ENGINE_EVENT_MATCHING_H_
 
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "include/c++/value.h"
@@ -29,33 +27,17 @@ namespace engine {
 class ObjectReferenceImpl;
 class SharedObject;
 
-bool MethodCallMatches(
-    SharedObject* expected_shared_object,
-    const std::string& expected_method_name,
-    const std::vector<Value>& expected_parameters,
-    ObjectReferenceImpl* object_reference,
-    const std::string& method_name,
-    const std::vector<Value>& parameters,
-    const std::unordered_set<SharedObject*>& new_shared_objects,
-    std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-        new_object_references,
-    std::unordered_set<ObjectReferenceImpl*>* unbound_object_references);
+bool MethodCallMatches(SharedObject* expected_shared_object,
+                       const std::string& expected_method_name,
+                       const std::vector<Value>& expected_parameters,
+                       ObjectReferenceImpl* object_reference,
+                       const std::string& method_name,
+                       const std::vector<Value>& parameters);
 
-bool ValueMatches(
-    const Value& committed_value,
-    const Value& pending_value,
-    const std::unordered_set<SharedObject*>& new_shared_objects,
-    std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-        new_object_references,
-    std::unordered_set<ObjectReferenceImpl*>* unbound_object_references);
+bool ValueMatches(const Value& committed_value, const Value& pending_value);
 
-bool ObjectMatches(
-    SharedObject* shared_object,
-    ObjectReferenceImpl* object_reference,
-    const std::unordered_set<SharedObject*>& new_shared_objects,
-    std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-        new_object_references,
-    std::unordered_set<ObjectReferenceImpl*>* unbound_object_references);
+bool ObjectMatches(SharedObject* shared_object,
+                   ObjectReferenceImpl* object_reference);
 
 }  // namespace engine
 }  // namespace floating_temple

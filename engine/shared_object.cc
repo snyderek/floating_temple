@@ -146,7 +146,6 @@ ObjectReferenceImpl* SharedObject::GetOrCreateObjectReference() {
 shared_ptr<const LiveObject> SharedObject::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   ObjectContent* const object_content_temp = GetObjectContent();
 
@@ -156,7 +155,6 @@ shared_ptr<const LiveObject> SharedObject::GetWorkingVersion(
 
   return object_content_temp->GetWorkingVersion(transaction_store_version_map,
                                                 sequence_point,
-                                                new_object_references,
                                                 transactions_to_reject);
 }
 

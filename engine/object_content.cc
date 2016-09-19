@@ -84,7 +84,6 @@ ObjectContent::~ObjectContent() {
 shared_ptr<const LiveObject> ObjectContent::GetWorkingVersion(
     const MaxVersionMap& transaction_store_version_map,
     const SequencePointImpl& sequence_point,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   MutexLock lock(&committed_versions_mu_);
 
@@ -107,7 +106,6 @@ shared_ptr<const LiveObject> ObjectContent::GetWorkingVersion(
   }
 
   return GetWorkingVersion_Locked(sequence_point.version_map(),
-                                  new_object_references,
                                   transactions_to_reject);
 }
 
@@ -176,12 +174,7 @@ void ObjectContent::StoreTransactions(
           << (should_replay_transactions ? "true" : "false");
 
   if (should_replay_transactions) {
-    // TODO(dss): Use the 'new_object_references' parameter here instead of
-    // creating a temporary map?
-    unordered_map<SharedObject*, ObjectReferenceImpl*>
-        new_object_references_temp;
-    GetWorkingVersion_Locked(version_map_, &new_object_references_temp,
-                             transactions_to_reject);
+    GetWorkingVersion_Locked(version_map_, transactions_to_reject);
   }
 }
 
@@ -208,12 +201,7 @@ void ObjectContent::InsertTransaction(
   up_to_date_peers_.insert(origin_peer);
 
   if (transaction_id <= max_requested_transaction_id_) {
-    // TODO(dss): Use the 'new_object_references' parameter here instead of
-    // creating a temporary map?
-    unordered_map<SharedObject*, ObjectReferenceImpl*>
-        new_object_references_temp;
-    GetWorkingVersion_Locked(version_map_, &new_object_references_temp,
-                             transactions_to_reject);
+    GetWorkingVersion_Locked(version_map_, transactions_to_reject);
   } else {
     if (transaction_is_local) {
       max_requested_transaction_id_ = transaction_id;
@@ -273,7 +261,6 @@ void ObjectContent::Dump(DumpContext* dc) const {
 
 shared_ptr<const LiveObject> ObjectContent::GetWorkingVersion_Locked(
     const MaxVersionMap& desired_version,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   for (;;) {
     PlaybackThread playback_thread;

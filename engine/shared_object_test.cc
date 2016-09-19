@@ -198,14 +198,12 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
     sequence_point.AddPeerTransactionId(&canonical_peer2,
                                         MakeTransactionId(20, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_TRUE(shared_object_->GetWorkingVersion(
-                    MaxVersionMap(), sequence_point, &new_object_references,
+                    MaxVersionMap(), sequence_point,
                     &transactions_to_reject).get() == nullptr);
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
   }
 
@@ -216,18 +214,15 @@ TEST_F(SharedObjectTest, InsertObjectCreationAfterTransaction) {
     sequence_point.AddPeerTransactionId(&canonical_peer2,
                                         MakeTransactionId(20, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.banana.",
               static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
-                                                    &new_object_references,
                                                     &transactions_to_reject)->
                   local_object())->s());
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
   }
 }
@@ -253,18 +248,15 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
     sequence_point.AddPeerTransactionId(&canonical_peer1,
                                         MakeTransactionId(10, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
               static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
-                                                    &new_object_references,
                                                     &transactions_to_reject)->
                   local_object())->s());
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
   }
 
@@ -275,18 +267,15 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
     sequence_point.AddPeerTransactionId(&canonical_peer2,
                                         MakeTransactionId(20, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
               static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
-                                                    &new_object_references,
                                                     &transactions_to_reject)->
                   local_object())->s());
 
-    EXPECT_EQ(0u, new_object_references.size());
     ASSERT_EQ(1u, transactions_to_reject.size());
 
     EXPECT_EQ(&canonical_peer2, transactions_to_reject[0].first);
@@ -300,18 +289,15 @@ TEST_F(SharedObjectTest, InsertObjectCreationWithConflict) {
     sequence_point.AddPeerTransactionId(&canonical_peer2,
                                         MakeTransactionId(20, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.cherry.",
               static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
-                                                    &new_object_references,
                                                     &transactions_to_reject)->
                   local_object())->s());
 
-    EXPECT_EQ(0u, new_object_references.size());
     ASSERT_EQ(1u, transactions_to_reject.size());
 
     EXPECT_EQ(&canonical_peer2, transactions_to_reject[0].first);
@@ -338,18 +324,15 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
     sequence_point.AddPeerTransactionId(&canonical_peer1,
                                         MakeTransactionId(10, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
               static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
-                                                    &new_object_references,
                                                     &transactions_to_reject)->
                   local_object())->s());
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
   }
 
@@ -360,18 +343,15 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
     sequence_point.AddPeerTransactionId(&canonical_peer3,
                                         MakeTransactionId(30, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.",
               static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
-                                                    &new_object_references,
                                                     &transactions_to_reject)->
                   local_object())->s());
 
-    EXPECT_EQ(0u, new_object_references.size());
     ASSERT_EQ(1u, transactions_to_reject.size());
 
     EXPECT_EQ(&canonical_peer3, transactions_to_reject[0].first);
@@ -387,18 +367,15 @@ TEST_F(SharedObjectTest, GetWorkingVersionWithConflict) {
     sequence_point.AddPeerTransactionId(&canonical_peer3,
                                         MakeTransactionId(30, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("apple.banana.cherry.",
               static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
-                                                    &new_object_references,
                                                     &transactions_to_reject)->
                   local_object())->s());
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
   }
 }
@@ -439,15 +416,12 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
     sequence_point.AddPeerTransactionId(&canonical_peer,
                                         MakeTransactionId(100, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     const shared_ptr<const LiveObject> live_object =
         shared_object_->GetWorkingVersion(MaxVersionMap(), sequence_point,
-                                          &new_object_references,
                                           &transactions_to_reject);
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
 
     EXPECT_EQ("Hey Ash, whatcha playin'?",
@@ -507,15 +481,12 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
     sequence_point.AddPeerTransactionId(&canonical_peer,
                                         MakeTransactionId(200, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     const shared_ptr<const LiveObject> live_object =
         shared_object_->GetWorkingVersion(MaxVersionMap(), sequence_point,
-                                          &new_object_references,
                                           &transactions_to_reject);
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
 
     EXPECT_EQ("I don't know. Third base.",
@@ -602,15 +573,12 @@ TEST_F(SharedObjectTest, BackingUp) {
     sequence_point.AddPeerTransactionId(&canonical_peer,
                                         MakeTransactionId(300, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     const shared_ptr<const LiveObject> live_object =
         shared_object_->GetWorkingVersion(MaxVersionMap(), sequence_point,
-                                          &new_object_references,
                                           &transactions_to_reject);
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
 
     EXPECT_EQ("Game. Set. Match.",
@@ -647,18 +615,15 @@ TEST_F(SharedObjectTest, MultipleObjectCreationEvents) {
     sequence_point.AddPeerTransactionId(&canonical_peer2,
                                         MakeTransactionId(30, 0, 0));
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
 
     EXPECT_EQ("batman.",
               static_cast<const FakeLocalObject*>(
                   shared_object_->GetWorkingVersion(MaxVersionMap(),
                                                     sequence_point,
-                                                    &new_object_references,
                                                     &transactions_to_reject)->
                   local_object())->s());
 
-    EXPECT_EQ(0u, new_object_references.size());
     EXPECT_EQ(0u, transactions_to_reject.size());
   }
 }

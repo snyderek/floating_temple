@@ -705,7 +705,6 @@ TransactionStore::GetLiveObjectAtSequencePoint_Helper(
   vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
   const shared_ptr<const LiveObject> live_object =
       shared_object->GetWorkingVersion(current_version_map, sequence_point_impl,
-                                       new_object_references,
                                        &transactions_to_reject);
 
   all_transactions_to_reject->insert(all_transactions_to_reject->end(),

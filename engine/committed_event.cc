@@ -31,17 +31,10 @@
 
 using std::shared_ptr;
 using std::string;
-using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
 namespace engine {
-
-CommittedEvent::CommittedEvent(
-    const unordered_set<ObjectReferenceImpl*>& new_objects)
-    : new_objects_(new_objects) {
-  CHECK(new_objects.find(nullptr) == new_objects.end());
-}
 
 void CommittedEvent::GetObjectCreation(
     shared_ptr<const LiveObject>* live_object) const {
@@ -120,20 +113,9 @@ string CommittedEvent::GetTypeString(Type event_type) {
 
 #undef CHECK_EVENT_TYPE
 
-void CommittedEvent::DumpNewObjects(DumpContext* dc) const {
-  CHECK(dc != nullptr);
-
-  dc->BeginList();
-  for (const ObjectReferenceImpl* const object_reference : new_objects_) {
-    object_reference->Dump(dc);
-  }
-  dc->End();
-}
-
 ObjectCreationCommittedEvent::ObjectCreationCommittedEvent(
     const shared_ptr<const LiveObject>& live_object)
-    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
-      live_object_(live_object) {
+    : live_object_(live_object) {
   CHECK(live_object.get() != nullptr);
 }
 
@@ -155,9 +137,6 @@ void ObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("OBJECT_CREATION");
 
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
-
   dc->AddString("live_object");
   live_object_->Dump(dc);
 
@@ -166,8 +145,7 @@ void ObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
 
 SubObjectCreationCommittedEvent::SubObjectCreationCommittedEvent(
     const string& new_object_name, ObjectReferenceImpl* new_object)
-    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
-      new_object_name_(new_object_name),
+    : new_object_name_(new_object_name),
       new_object_(CHECK_NOTNULL(new_object)) {
 }
 
@@ -201,8 +179,7 @@ void SubObjectCreationCommittedEvent::Dump(DumpContext* dc) const {
   dc->End();
 }
 
-BeginTransactionCommittedEvent::BeginTransactionCommittedEvent()
-    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()) {
+BeginTransactionCommittedEvent::BeginTransactionCommittedEvent() {
 }
 
 CommittedEvent* BeginTransactionCommittedEvent::Clone() const {
@@ -217,14 +194,10 @@ void BeginTransactionCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("BEGIN_TRANSACTION");
 
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
-
   dc->End();
 }
 
-EndTransactionCommittedEvent::EndTransactionCommittedEvent()
-    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()) {
+EndTransactionCommittedEvent::EndTransactionCommittedEvent() {
 }
 
 CommittedEvent* EndTransactionCommittedEvent::Clone() const {
@@ -239,16 +212,12 @@ void EndTransactionCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("END_TRANSACTION");
 
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
-
   dc->End();
 }
 
 MethodCallCommittedEvent::MethodCallCommittedEvent(
     const string& method_name, const vector<Value>& parameters)
-    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
-      method_name_(method_name),
+    : method_name_(method_name),
       parameters_(parameters) {
   CHECK(!method_name.empty());
 }
@@ -279,9 +248,6 @@ void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("METHOD_CALL");
 
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
-
   dc->AddString("method_name");
   dc->AddString(method_name_);
 
@@ -296,10 +262,8 @@ void MethodCallCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 MethodReturnCommittedEvent::MethodReturnCommittedEvent(
-    const unordered_set<ObjectReferenceImpl*>& new_objects,
     const Value& return_value)
-    : CommittedEvent(new_objects),
-      return_value_(return_value) {
+    : return_value_(return_value) {
 }
 
 void MethodReturnCommittedEvent::GetMethodReturn(
@@ -309,7 +273,7 @@ void MethodReturnCommittedEvent::GetMethodReturn(
 }
 
 CommittedEvent* MethodReturnCommittedEvent::Clone() const {
-  return new MethodReturnCommittedEvent(new_objects(), return_value_);
+  return new MethodReturnCommittedEvent(return_value_);
 }
 
 void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
@@ -320,9 +284,6 @@ void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("METHOD_RETURN");
 
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
-
   dc->AddString("return_value");
   return_value_.Dump(dc);
 
@@ -330,12 +291,9 @@ void MethodReturnCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SubMethodCallCommittedEvent::SubMethodCallCommittedEvent(
-    const unordered_set<ObjectReferenceImpl*>& new_objects,
-    ObjectReferenceImpl* callee,
-    const string& method_name,
+    ObjectReferenceImpl* callee, const string& method_name,
     const vector<Value>& parameters)
-    : CommittedEvent(new_objects),
-      callee_(CHECK_NOTNULL(callee)),
+    : callee_(CHECK_NOTNULL(callee)),
       method_name_(method_name),
       parameters_(parameters) {
   CHECK(!method_name.empty());
@@ -354,8 +312,7 @@ void SubMethodCallCommittedEvent::GetSubMethodCall(
 }
 
 CommittedEvent* SubMethodCallCommittedEvent::Clone() const {
-  return new SubMethodCallCommittedEvent(new_objects(), callee_, method_name_,
-                                         parameters_);
+  return new SubMethodCallCommittedEvent(callee_, method_name_, parameters_);
 }
 
 string SubMethodCallCommittedEvent::DebugString() const {
@@ -370,9 +327,6 @@ void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("type");
   dc->AddString("SUB_METHOD_CALL");
-
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
 
   dc->AddString("callee");
   callee_->Dump(dc);
@@ -392,8 +346,7 @@ void SubMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 
 SubMethodReturnCommittedEvent::SubMethodReturnCommittedEvent(
     const Value& return_value)
-    : CommittedEvent(unordered_set<ObjectReferenceImpl*>()),
-      return_value_(return_value) {
+    : return_value_(return_value) {
 }
 
 void SubMethodReturnCommittedEvent::GetSubMethodReturn(
@@ -414,9 +367,6 @@ void SubMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("SUB_METHOD_RETURN");
 
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
-
   dc->AddString("return_value");
   return_value_.Dump(dc);
 
@@ -424,10 +374,8 @@ void SubMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SelfMethodCallCommittedEvent::SelfMethodCallCommittedEvent(
-    const unordered_set<ObjectReferenceImpl*>& new_objects,
     const string& method_name, const vector<Value>& parameters)
-    : CommittedEvent(new_objects),
-      method_name_(method_name),
+    : method_name_(method_name),
       parameters_(parameters) {
   CHECK(!method_name.empty());
 }
@@ -443,8 +391,7 @@ void SelfMethodCallCommittedEvent::GetSelfMethodCall(
 }
 
 CommittedEvent* SelfMethodCallCommittedEvent::Clone() const {
-  return new SelfMethodCallCommittedEvent(new_objects(), method_name_,
-                                          parameters_);
+  return new SelfMethodCallCommittedEvent(method_name_, parameters_);
 }
 
 string SelfMethodCallCommittedEvent::DebugString() const {
@@ -460,9 +407,6 @@ void SelfMethodCallCommittedEvent::Dump(DumpContext* dc) const {
   dc->AddString("type");
   dc->AddString("SELF_METHOD_CALL");
 
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
-
   dc->AddString("method_name");
   dc->AddString(method_name_);
 
@@ -477,10 +421,8 @@ void SelfMethodCallCommittedEvent::Dump(DumpContext* dc) const {
 }
 
 SelfMethodReturnCommittedEvent::SelfMethodReturnCommittedEvent(
-    const unordered_set<ObjectReferenceImpl*>& new_objects,
     const Value& return_value)
-    : CommittedEvent(new_objects),
-      return_value_(return_value) {
+    : return_value_(return_value) {
 }
 
 void SelfMethodReturnCommittedEvent::GetSelfMethodReturn(
@@ -490,7 +432,7 @@ void SelfMethodReturnCommittedEvent::GetSelfMethodReturn(
 }
 
 CommittedEvent* SelfMethodReturnCommittedEvent::Clone() const {
-  return new SelfMethodReturnCommittedEvent(new_objects(), return_value_);
+  return new SelfMethodReturnCommittedEvent(return_value_);
 }
 
 void SelfMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
@@ -500,9 +442,6 @@ void SelfMethodReturnCommittedEvent::Dump(DumpContext* dc) const {
 
   dc->AddString("type");
   dc->AddString("SELF_METHOD_RETURN");
-
-  dc->AddString("new_objects");
-  DumpNewObjects(dc);
 
   dc->AddString("return_value");
   return_value_.Dump(dc);

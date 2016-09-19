@@ -1253,19 +1253,10 @@ void TransactionStore::ConvertCommittedEventToEventProto(
 
 CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
     const EventProto& event_proto) {
-  unordered_set<ObjectReferenceImpl*> new_objects;
-  for (int i = 0; i < event_proto.new_object_id_size(); ++i) {
-    const Uuid& object_id = event_proto.new_object_id(i);
-    SharedObject* const shared_object = GetOrCreateSharedObject(object_id);
-    new_objects.insert(shared_object->GetOrCreateObjectReference());
-  }
-
   const EventProto::Type type = GetEventProtoType(event_proto);
 
   switch (type) {
     case EventProto::OBJECT_CREATION: {
-      CHECK_EQ(new_objects.size(), 0u);
-
       const ObjectCreationEventProto& object_creation_event_proto =
           event_proto.object_creation();
 
@@ -1303,16 +1294,12 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
     }
 
     case EventProto::BEGIN_TRANSACTION:
-      CHECK_EQ(new_objects.size(), 0u);
       return new BeginTransactionCommittedEvent();
 
     case EventProto::END_TRANSACTION:
-      CHECK_EQ(new_objects.size(), 0u);
       return new EndTransactionCommittedEvent();
 
     case EventProto::METHOD_CALL: {
-      CHECK_EQ(new_objects.size(), 0u);
-
       const MethodCallEventProto& method_call_event_proto =
           event_proto.method_call();
 
@@ -1337,7 +1324,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       ConvertValueProtoToValue(method_return_event_proto.return_value(),
                                &return_value);
 
-      return new MethodReturnCommittedEvent(new_objects, return_value);
+      return new MethodReturnCommittedEvent(return_value);
     }
 
     case EventProto::SUB_METHOD_CALL: {
@@ -1357,13 +1344,10 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       }
 
       return new SubMethodCallCommittedEvent(
-          new_objects, callee->GetOrCreateObjectReference(), method_name,
-          parameters);
+          callee->GetOrCreateObjectReference(), method_name, parameters);
     }
 
     case EventProto::SUB_METHOD_RETURN: {
-      CHECK_EQ(new_objects.size(), 0u);
-
       const SubMethodReturnEventProto& sub_method_return_event_proto =
           event_proto.sub_method_return();
 
@@ -1388,8 +1372,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
                                  &parameters[i]);
       }
 
-      return new SelfMethodCallCommittedEvent(new_objects, method_name,
-                                              parameters);
+      return new SelfMethodCallCommittedEvent(method_name, parameters);
     }
 
     case EventProto::SELF_METHOD_RETURN: {
@@ -1400,7 +1383,7 @@ CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(
       ConvertValueProtoToValue(self_method_return_event_proto.return_value(),
                                &return_value);
 
-      return new SelfMethodReturnCommittedEvent(new_objects, return_value);
+      return new SelfMethodReturnCommittedEvent(return_value);
     }
 
     default:

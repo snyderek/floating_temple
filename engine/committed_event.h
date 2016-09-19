@@ -69,8 +69,7 @@ class CommittedEvent {
     SELF_METHOD_RETURN
   };
 
-  explicit CommittedEvent(
-      const std::unordered_set<ObjectReferenceImpl*>& new_objects);
+  CommittedEvent() {}
   virtual ~CommittedEvent() {}
 
   const std::unordered_set<ObjectReferenceImpl*>& new_objects() const
@@ -99,9 +98,6 @@ class CommittedEvent {
   virtual void Dump(DumpContext* dc) const = 0;
 
   static std::string GetTypeString(Type event_type);
-
- protected:
-  void DumpNewObjects(DumpContext* dc) const;
 
  private:
   const std::unordered_set<ObjectReferenceImpl*> new_objects_;
@@ -187,9 +183,7 @@ class MethodCallCommittedEvent : public CommittedEvent {
 
 class MethodReturnCommittedEvent : public CommittedEvent {
  public:
-  MethodReturnCommittedEvent(
-      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
-      const Value& return_value);
+  explicit MethodReturnCommittedEvent(const Value& return_value);
 
   Type type() const override { return METHOD_RETURN; }
   void GetMethodReturn(const Value** return_value) const override;
@@ -204,11 +198,9 @@ class MethodReturnCommittedEvent : public CommittedEvent {
 
 class SubMethodCallCommittedEvent : public CommittedEvent {
  public:
-  SubMethodCallCommittedEvent(
-      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
-      ObjectReferenceImpl* callee,
-      const std::string& method_name,
-      const std::vector<Value>& parameters);
+  SubMethodCallCommittedEvent(ObjectReferenceImpl* callee,
+                              const std::string& method_name,
+                              const std::vector<Value>& parameters);
 
   Type type() const override { return SUB_METHOD_CALL; }
   void GetSubMethodCall(ObjectReferenceImpl** callee,
@@ -243,9 +235,8 @@ class SubMethodReturnCommittedEvent : public CommittedEvent {
 
 class SelfMethodCallCommittedEvent : public CommittedEvent {
  public:
-  SelfMethodCallCommittedEvent(
-      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
-      const std::string& method_name, const std::vector<Value>& parameters);
+  SelfMethodCallCommittedEvent(const std::string& method_name,
+                               const std::vector<Value>& parameters);
 
   Type type() const override { return SELF_METHOD_CALL; }
   void GetSelfMethodCall(const std::string** method_name,
@@ -263,9 +254,7 @@ class SelfMethodCallCommittedEvent : public CommittedEvent {
 
 class SelfMethodReturnCommittedEvent : public CommittedEvent {
  public:
-  SelfMethodReturnCommittedEvent(
-      const std::unordered_set<ObjectReferenceImpl*>& new_objects,
-      const Value& return_value);
+  explicit SelfMethodReturnCommittedEvent(const Value& return_value);
 
   Type type() const override { return SELF_METHOD_RETURN; }
   void GetSelfMethodReturn(const Value** return_value) const override;

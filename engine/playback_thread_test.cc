@@ -18,7 +18,6 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include <gflags/gflags.h>
@@ -42,7 +41,6 @@ using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
 using std::shared_ptr;
 using std::unordered_map;
-using std::unordered_set;
 using std::vector;
 using testing::AnyNumber;
 using testing::InitGoogleMock;
@@ -99,14 +97,12 @@ TEST(PlaybackThreadTest, SubMethodCallWithoutReturn) {
   ObjectReferenceImpl* const object_reference2 =
       shared_object2.GetOrCreateObjectReference();
 
-  const unordered_set<ObjectReferenceImpl*> new_objects {};
-
   vector<Value> method_parameters(1);
   method_parameters[0].set_object_reference(0, object_reference2);
   const MethodCallCommittedEvent event1("test_method1", method_parameters);
 
-  const SubMethodCallCommittedEvent event2(new_objects, object_reference2,
-                                           "test_method2", vector<Value>());
+  const SubMethodCallCommittedEvent event2(object_reference2, "test_method2",
+                                           vector<Value>());
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
@@ -136,14 +132,12 @@ TEST(PlaybackThreadTest, FlushEvents) {
   EXPECT_CALL(local_object_core, InvokeMethod(_, _, "test_method2", _, _))
       .WillRepeatedly(SetArgPointee<4>(canned_return_value));
 
-  const unordered_set<ObjectReferenceImpl*> new_objects {};
-
   const MethodCallCommittedEvent event1("test_method2", vector<Value>());
 
   Value expected_return_value;
   expected_return_value.set_empty(0);
 
-  const MethodReturnCommittedEvent event2(new_objects, expected_return_value);
+  const MethodReturnCommittedEvent event2(expected_return_value);
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
@@ -168,8 +162,6 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   FakeLocalObject* const local_object = new FakeLocalObject("snap.");
   shared_ptr<LiveObject> live_object(new LiveObject(local_object));
 
-  const unordered_set<ObjectReferenceImpl*> new_objects {};
-
   Value empty_return_value;
   empty_return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
@@ -178,14 +170,14 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
                                         "crackle.");
 
   const MethodCallCommittedEvent event1("append", event1_parameters);
-  const MethodReturnCommittedEvent event2(new_objects, empty_return_value);
+  const MethodReturnCommittedEvent event2(empty_return_value);
 
   vector<Value> event3_parameters(1);
   event3_parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
                                         "pop.");
 
   const MethodCallCommittedEvent event3("append", event3_parameters);
-  const MethodReturnCommittedEvent event4(new_objects, empty_return_value);
+  const MethodReturnCommittedEvent event4(empty_return_value);
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
@@ -215,8 +207,6 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   shared_ptr<LiveObject> live_object(
       new LiveObject(new FakeLocalObject("peter.")));
 
-  const unordered_set<ObjectReferenceImpl*> new_objects {};
-
   Value empty_return_value;
   empty_return_value.set_empty(FakeLocalObject::kVoidLocalType);
 
@@ -225,7 +215,7 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
                                         "paul.");
 
   const MethodCallCommittedEvent event1("append", event1_parameters);
-  const MethodReturnCommittedEvent event2(new_objects, empty_return_value);
+  const MethodReturnCommittedEvent event2(empty_return_value);
 
   Value bogus_return_value;
   bogus_return_value.set_string_value(FakeLocalObject::kStringLocalType,
@@ -233,14 +223,14 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
 
   const MethodCallCommittedEvent event3("get", vector<Value>());
   // This event should cause a conflict.
-  const MethodReturnCommittedEvent event4(new_objects, bogus_return_value);
+  const MethodReturnCommittedEvent event4(bogus_return_value);
 
   vector<Value> event5_parameters(1);
   event5_parameters[0].set_string_value(FakeLocalObject::kStringLocalType,
                                         "mary.");
 
   const MethodCallCommittedEvent event5("append", event5_parameters);
-  const MethodReturnCommittedEvent event6(new_objects, empty_return_value);
+  const MethodReturnCommittedEvent event6(empty_return_value);
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
@@ -287,10 +277,8 @@ TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
   Value expected_return_value;
   expected_return_value.set_empty(0);
 
-  const unordered_set<ObjectReferenceImpl*> new_objects {};
-
   const MethodCallCommittedEvent event1("test_method1", vector<Value>());
-  const MethodReturnCommittedEvent event2(new_objects, expected_return_value);
+  const MethodReturnCommittedEvent event2(expected_return_value);
   const MethodCallCommittedEvent event3("test_method2", vector<Value>());
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
@@ -324,14 +312,11 @@ TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
   ObjectReferenceImpl* const object_reference =
       shared_object.GetOrCreateObjectReference();
 
-  const unordered_set<ObjectReferenceImpl*> new_objects {};
-
   vector<Value> method_parameters(1);
   method_parameters[0].set_object_reference(0, object_reference);
   const MethodCallCommittedEvent event1("test_method1", method_parameters);
 
-  const SelfMethodCallCommittedEvent event2(new_objects, "test_method2",
-                                            vector<Value>());
+  const SelfMethodCallCommittedEvent event2("test_method2", vector<Value>());
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
@@ -388,8 +373,6 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
   ObjectReferenceImpl* const object_reference2 =
       shared_object2.GetOrCreateObjectReference();
 
-  const unordered_set<ObjectReferenceImpl*> new_objects {};
-
   vector<Value> method_parameters(1);
   method_parameters[0].set_object_reference(0, object_reference2);
 
@@ -398,11 +381,11 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
 
   const MethodCallCommittedEvent event1("test_method3", method_parameters);
   const BeginTransactionCommittedEvent event2;
-  const SubMethodCallCommittedEvent event3(new_objects, object_reference2,
+  const SubMethodCallCommittedEvent event3(object_reference2,
                                            "test_method4", vector<Value>());
   const SubMethodReturnCommittedEvent event4(empty_return_value);
   const EndTransactionCommittedEvent event5;
-  const MethodReturnCommittedEvent event6(new_objects, empty_return_value);
+  const MethodReturnCommittedEvent event6(empty_return_value);
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 
@@ -478,16 +461,13 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
 
   const MethodCallCommittedEvent event1("test_method5", method_parameters);
   const SubObjectCreationCommittedEvent event2("", object_reference2);
-  const SubMethodCallCommittedEvent event3(
-      unordered_set<ObjectReferenceImpl*>(), object_reference2, "test_method6",
-      vector<Value>());
+  const SubMethodCallCommittedEvent event3(object_reference2, "test_method6",
+                                           vector<Value>());
   const SubMethodReturnCommittedEvent event4(empty_return_value);
-  const SubMethodCallCommittedEvent event5(
-      unordered_set<ObjectReferenceImpl*>(), object_reference2, "test_method7",
-      vector<Value>());
+  const SubMethodCallCommittedEvent event5(object_reference2, "test_method7",
+                                           vector<Value>());
   const SubMethodReturnCommittedEvent event6(empty_return_value);
-  const MethodReturnCommittedEvent event7(unordered_set<ObjectReferenceImpl*>(),
-                                          empty_return_value);
+  const MethodReturnCommittedEvent event7(empty_return_value);
 
   unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
 

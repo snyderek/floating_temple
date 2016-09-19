@@ -192,19 +192,15 @@ bool RecordingThread::CallMethod(
     unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
 
     if (caller_object_reference == callee_object_reference) {
-      AddEventToMap(
-          caller_object_reference,
-          new SelfMethodCallCommittedEvent(
-              unordered_set<ObjectReferenceImpl*>(), method_name, parameters),
-          &object_events);
+      AddEventToMap(caller_object_reference,
+                    new SelfMethodCallCommittedEvent(method_name, parameters),
+                    &object_events);
     } else{
       if (caller_object_reference != nullptr) {
-        AddEventToMap(
-            caller_object_reference,
-            new SubMethodCallCommittedEvent(
-                unordered_set<ObjectReferenceImpl*>(), callee_object_reference,
-                method_name, parameters),
-            &object_events);
+        AddEventToMap(caller_object_reference,
+                      new SubMethodCallCommittedEvent(callee_object_reference,
+                                                      method_name, parameters),
+                      &object_events);
       }
 
       AddEventToMap(callee_object_reference,
@@ -232,11 +228,9 @@ bool RecordingThread::CallMethod(
     unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
 
     if (caller_object_reference == callee_object_reference) {
-      AddEventToMap(
-          caller_object_reference,
-          new SelfMethodReturnCommittedEvent(
-              unordered_set<ObjectReferenceImpl*>(), *return_value),
-          &object_events);
+      AddEventToMap(caller_object_reference,
+                    new SelfMethodReturnCommittedEvent(*return_value),
+                    &object_events);
     } else{
       if (caller_object_reference != nullptr) {
         AddEventToMap(caller_object_reference,
@@ -244,11 +238,9 @@ bool RecordingThread::CallMethod(
                       &object_events);
       }
 
-      AddEventToMap(
-          callee_object_reference,
-          new MethodReturnCommittedEvent(unordered_set<ObjectReferenceImpl*>(),
-                                         *return_value),
-          &object_events);
+      AddEventToMap(callee_object_reference,
+                    new MethodReturnCommittedEvent(*return_value),
+                    &object_events);
     }
 
     AddTransactionEvents(object_events, callee_object_reference,

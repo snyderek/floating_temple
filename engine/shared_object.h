@@ -84,8 +84,6 @@ class SharedObject {
       const std::map<TransactionId, std::unique_ptr<SharedObjectTransaction>>&
           transactions,
       const MaxVersionMap& version_map,
-      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-          new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject);
 

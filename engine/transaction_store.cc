@@ -561,11 +561,9 @@ void TransactionStore::HandleStoreObjectMessage(
         canonical_peer_map_->GetCanonicalPeer(peer_id), last_transaction_id);
   }
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
   vector<pair<const CanonicalPeer*, TransactionId>> all_transactions_to_reject;
 
   shared_object->StoreTransactions(remote_peer, transactions, version_map,
-                                   &new_object_references,
                                    &all_transactions_to_reject);
 
   for (int i = 0; i < store_object_message.interested_peer_id_size(); ++i) {
@@ -585,8 +583,6 @@ void TransactionStore::HandleStoreObjectMessage(
                                     new_transaction_id);
 
   transaction_sequencer_.ReleaseTransaction(new_transaction_id);
-
-  CreateNewObjectReferences(new_object_references);
 
   {
     MutexLock lock(&current_sequence_point_mu_);

@@ -135,7 +135,6 @@ void ObjectContent::StoreTransactions(
     const CanonicalPeer* remote_peer,
     const map<TransactionId, unique_ptr<SharedObjectTransaction>>& transactions,
     const MaxVersionMap& version_map,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(remote_peer != nullptr);
 

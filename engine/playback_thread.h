@@ -20,8 +20,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -53,12 +51,9 @@ class PlaybackThread : private MethodContext {
   // Be sure to call FlushEvents() or Stop() before calling this method.
   bool conflict_detected() const { return conflict_detected_.Get(); }
 
-  void Start(
-      TransactionStoreInternalInterface* transaction_store,
-      SharedObject* shared_object,
-      const std::shared_ptr<LiveObject>& live_object,
-      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-          new_object_references);
+  void Start(TransactionStoreInternalInterface* transaction_store,
+             SharedObject* shared_object,
+             const std::shared_ptr<LiveObject>& live_object);
   void Stop();
 
   void QueueEvent(const CommittedEvent* event);
@@ -122,12 +117,9 @@ class PlaybackThread : private MethodContext {
   TransactionStoreInternalInterface* transaction_store_;
   SharedObject* shared_object_;
   std::shared_ptr<LiveObject> live_object_;
-  std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-      new_object_references_;
 
   pthread_t replay_thread_;
   EventQueue event_queue_;
-  std::unordered_set<ObjectReferenceImpl*> unbound_object_references_;
 
   BoolVariable conflict_detected_;
 

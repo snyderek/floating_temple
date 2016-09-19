@@ -19,8 +19,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include <gflags/gflags.h>
@@ -43,7 +41,6 @@
 
 using std::shared_ptr;
 using std::string;
-using std::unordered_map;
 using std::vector;
 
 DEFINE_bool(treat_conflicts_as_fatal_for_debugging, false,
@@ -56,7 +53,6 @@ namespace engine {
 PlaybackThread::PlaybackThread()
     : transaction_store_(nullptr),
       shared_object_(nullptr),
-      new_object_references_(nullptr),
       conflict_detected_(false),
       state_(NOT_STARTED) {
   state_.AddStateTransition(NOT_STARTED, STARTING);
@@ -75,21 +71,17 @@ shared_ptr<const LiveObject> PlaybackThread::live_object() const {
   return live_object_;
 }
 
-void PlaybackThread::Start(
-    TransactionStoreInternalInterface* transaction_store,
-    SharedObject* shared_object,
-    const shared_ptr<LiveObject>& live_object,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references) {
+void PlaybackThread::Start(TransactionStoreInternalInterface* transaction_store,
+                           SharedObject* shared_object,
+                           const shared_ptr<LiveObject>& live_object) {
   CHECK(transaction_store != nullptr);
   CHECK(shared_object != nullptr);
-  CHECK(new_object_references != nullptr);
 
   state_.ChangeState(STARTING);
 
   transaction_store_ = transaction_store;
   shared_object_ = shared_object;
   live_object_ = live_object;
-  new_object_references_ = new_object_references;
 
   // TODO(dss): There may be a performance cost associated with creating and
   // destroying threads. Consider recycling the threads that are used by the
@@ -137,7 +129,6 @@ void PlaybackThread::ReplayEvents() {
   }
 
   state_.Mutate(&PlaybackThread::ChangeRunningToPaused);
-  unbound_object_references_.clear();
 }
 
 void PlaybackThread::DoMethodCall() {
@@ -444,10 +435,7 @@ ObjectReference* PlaybackThread::CreateObject(LocalObject* initial_version,
   }
 
   if (name.empty()) {
-    ObjectReferenceImpl* const object_reference =
-        transaction_store_->CreateUnboundObjectReference();
-    CHECK(unbound_object_references_.insert(object_reference).second);
-    return object_reference;
+    return transaction_store_->CreateUnboundObjectReference();
   } else {
     return transaction_store_->CreateBoundObjectReference(name);
   }

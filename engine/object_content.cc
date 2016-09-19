@@ -278,8 +278,7 @@ shared_ptr<const LiveObject> ObjectContent::GetWorkingVersion_Locked(
   for (;;) {
     PlaybackThread playback_thread;
     playback_thread.Start(transaction_store_, shared_object_,
-                          shared_ptr<LiveObject>(nullptr),
-                          new_object_references);
+                          shared_ptr<LiveObject>(nullptr));
 
     const bool success = ApplyTransactionsToWorkingVersion_Locked(
         &playback_thread, desired_version, transactions_to_reject);

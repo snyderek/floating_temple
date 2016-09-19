@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include <gflags/gflags.h>
@@ -40,7 +39,6 @@
 using google::InitGoogleLogging;
 using google::ParseCommandLineFlags;
 using std::shared_ptr;
-using std::unordered_map;
 using std::vector;
 using testing::AnyNumber;
 using testing::InitGoogleMock;
@@ -104,11 +102,8 @@ TEST(PlaybackThreadTest, SubMethodCallWithoutReturn) {
   const SubMethodCallCommittedEvent event2(object_reference2, "test_method2",
                                            vector<Value>());
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-
   PlaybackThread playback_thread;
-  playback_thread.Start(&transaction_store, &shared_object1, live_object1,
-                        &new_object_references);
+  playback_thread.Start(&transaction_store, &shared_object1, live_object1);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -139,11 +134,8 @@ TEST(PlaybackThreadTest, FlushEvents) {
 
   const MethodReturnCommittedEvent event2(expected_return_value);
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-
   PlaybackThread playback_thread;
-  playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_object_references);
+  playback_thread.Start(&transaction_store, &shared_object, live_object);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -179,11 +171,8 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   const MethodCallCommittedEvent event3("append", event3_parameters);
   const MethodReturnCommittedEvent event4(empty_return_value);
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-
   PlaybackThread playback_thread;
-  playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_object_references);
+  playback_thread.Start(&transaction_store, &shared_object, live_object);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -196,7 +185,6 @@ TEST(PlaybackThreadTest, MultipleTransactions) {
   playback_thread.Stop();
 
   EXPECT_FALSE(playback_thread.conflict_detected());
-  EXPECT_EQ(0u, new_object_references.size());
   EXPECT_EQ("snap.crackle.pop.", local_object->s());
 }
 
@@ -232,11 +220,8 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   const MethodCallCommittedEvent event5("append", event5_parameters);
   const MethodReturnCommittedEvent event6(empty_return_value);
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-
   PlaybackThread playback_thread;
-  playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_object_references);
+  playback_thread.Start(&transaction_store, &shared_object, live_object);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -253,7 +238,6 @@ TEST(PlaybackThreadTest, TransactionAfterConflictDetected) {
   playback_thread.Stop();
 
   EXPECT_TRUE(playback_thread.conflict_detected());
-  EXPECT_EQ(0u, new_object_references.size());
 }
 
 TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
@@ -281,11 +265,8 @@ TEST(PlaybackThreadTest, MethodCallWithoutReturn) {
   const MethodReturnCommittedEvent event2(expected_return_value);
   const MethodCallCommittedEvent event3("test_method2", vector<Value>());
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-
   PlaybackThread playback_thread;
-  playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_object_references);
+  playback_thread.Start(&transaction_store, &shared_object, live_object);
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
   playback_thread.QueueEvent(&event3);
@@ -318,11 +299,8 @@ TEST(PlaybackThreadTest, SelfMethodCallWithoutReturn) {
 
   const SelfMethodCallCommittedEvent event2("test_method2", vector<Value>());
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-
   PlaybackThread playback_thread;
-  playback_thread.Start(&transaction_store, &shared_object, live_object,
-                        &new_object_references);
+  playback_thread.Start(&transaction_store, &shared_object, live_object);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -387,11 +365,8 @@ TEST(PlaybackThreadTest, TransactionInsideMethodCall) {
   const EndTransactionCommittedEvent event5;
   const MethodReturnCommittedEvent event6(empty_return_value);
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-
   PlaybackThread playback_thread;
-  playback_thread.Start(&transaction_store, &shared_object1, live_object1,
-                        &new_object_references);
+  playback_thread.Start(&transaction_store, &shared_object1, live_object1);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -469,11 +444,8 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
   const SubMethodReturnCommittedEvent event6(empty_return_value);
   const MethodReturnCommittedEvent event7(empty_return_value);
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
-
   PlaybackThread playback_thread;
-  playback_thread.Start(&transaction_store, &shared_object1, live_object1,
-                        &new_object_references);
+  playback_thread.Start(&transaction_store, &shared_object1, live_object1);
 
   playback_thread.QueueEvent(&event1);
   playback_thread.QueueEvent(&event2);
@@ -486,7 +458,6 @@ TEST(PlaybackThreadTest, NewObjectIsUsedInTwoEvents) {
   playback_thread.Stop();
 
   EXPECT_FALSE(playback_thread.conflict_detected());
-  EXPECT_EQ(0, new_object_references.size());
 }
 
 }  // namespace

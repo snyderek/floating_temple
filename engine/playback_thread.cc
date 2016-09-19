@@ -434,11 +434,7 @@ ObjectReference* PlaybackThread::CreateObject(LocalObject* initial_version,
     return new_object;
   }
 
-  if (name.empty()) {
-    return transaction_store_->CreateUnboundObjectReference();
-  } else {
-    return transaction_store_->CreateBoundObjectReference(name);
-  }
+  return transaction_store_->CreateBoundObjectReference(name);
 }
 
 bool PlaybackThread::CallMethod(ObjectReference* object_reference,

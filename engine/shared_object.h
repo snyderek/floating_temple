@@ -18,7 +18,6 @@
 
 #include <map>
 #include <memory>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -64,10 +63,6 @@ class SharedObject {
   void AddObjectReference(ObjectReferenceImpl* new_object_reference);
   ObjectReferenceImpl* GetOrCreateObjectReference();
 
-  // TODO(dss): In the public methods below, 'new_object_references' is both an
-  // input parameter and an output parameter. This is confusing. Try to come up
-  // with a more intuitive API.
-
   std::shared_ptr<const LiveObject> GetWorkingVersion(
       const MaxVersionMap& transaction_store_version_map,
       const SequencePointImpl& sequence_point,
@@ -92,8 +87,6 @@ class SharedObject {
       const TransactionId& transaction_id,
       const std::vector<std::unique_ptr<CommittedEvent>>& events,
       bool transaction_is_local,
-      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-          new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject);
 

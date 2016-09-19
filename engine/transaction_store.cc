@@ -756,7 +756,6 @@ void TransactionStore::ApplyTransaction(
   // TODO(dss): Make sure that the transaction has a later timestamp than the
   // previous transaction received from the same originating peer.
 
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
   vector<pair<const CanonicalPeer*, TransactionId>> all_transactions_to_reject;
 
   for (const auto& transaction_pair : shared_object_transactions) {
@@ -770,7 +769,6 @@ void TransactionStore::ApplyTransaction(
     shared_object->InsertTransaction(origin_peer, transaction_id,
                                      shared_object_transaction->events(),
                                      origin_peer == local_peer_,
-                                     &new_object_references,
                                      &transactions_to_reject);
 
     all_transactions_to_reject.insert(all_transactions_to_reject.end(),
@@ -785,8 +783,6 @@ void TransactionStore::ApplyTransaction(
                                     new_transaction_id);
 
   transaction_sequencer_.ReleaseTransaction(new_transaction_id);
-
-  CreateNewObjectReferences(new_object_references);
 
   UpdateCurrentSequencePoint(local_peer_, new_transaction_id);
 }

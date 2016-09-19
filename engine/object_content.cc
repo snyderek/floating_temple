@@ -182,7 +182,6 @@ void ObjectContent::InsertTransaction(
     const TransactionId& transaction_id,
     const vector<unique_ptr<CommittedEvent>>& events,
     bool transaction_is_local,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   CHECK(origin_peer != nullptr);
   CHECK(IsValidTransactionId(transaction_id));

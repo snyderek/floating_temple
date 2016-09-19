@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -47,7 +46,6 @@ using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
-using std::unordered_map;
 using std::vector;
 using testing::AnyNumber;
 using testing::InitGoogleMock;
@@ -92,11 +90,9 @@ class SharedObjectTest : public Test {
         new ObjectCreationCommittedEvent(MakeLocalObject(initial_string)),
         &events);
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(origin_peer, transaction_id, events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   void InsertAppendTransaction(const CanonicalPeer* origin_peer,
@@ -118,11 +114,9 @@ class SharedObjectTest : public Test {
         new MethodReturnCommittedEvent(return_value),
         &events);
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(origin_peer, transaction_id, events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   void InsertAppendGetTransaction(const CanonicalPeer* origin_peer,
@@ -160,11 +154,9 @@ class SharedObjectTest : public Test {
           &events);
     }
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(origin_peer, transaction_id, events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   void AddEventToVector(CommittedEvent* event,
@@ -400,12 +392,10 @@ TEST_F(SharedObjectTest, InsertTransactionWithInitialVersion) {
         new MethodReturnCommittedEvent(return_value),
         &events);
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(&canonical_peer,
                                       MakeTransactionId(100, 0, 0), events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   InsertObjectCreationTransaction(&canonical_peer, MakeTransactionId(50, 0, 0),
@@ -450,12 +440,10 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
         new MethodCallCommittedEvent("append", parameters),
         &events);
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(&canonical_peer,
                                       MakeTransactionId(100, 0, 0), events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   {
@@ -468,12 +456,10 @@ TEST_F(SharedObjectTest, MethodCallAndMethodReturnAsSeparateTransactions) {
         new MethodReturnCommittedEvent(return_value),
         &events);
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(&canonical_peer,
                                       MakeTransactionId(200, 0, 0), events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   {
@@ -518,12 +504,10 @@ TEST_F(SharedObjectTest, BackingUp) {
         new MethodCallCommittedEvent("append", parameters),
         &events);
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(&canonical_peer,
                                       MakeTransactionId(100, 0, 0), events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   {
@@ -542,12 +526,10 @@ TEST_F(SharedObjectTest, BackingUp) {
         new MethodCallCommittedEvent("append", parameters),
         &events);
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(&canonical_peer,
                                       MakeTransactionId(200, 0, 0), events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   {
@@ -560,12 +542,10 @@ TEST_F(SharedObjectTest, BackingUp) {
         new MethodReturnCommittedEvent(return_value),
         &events);
 
-    unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
     vector<pair<const CanonicalPeer*, TransactionId>> transactions_to_reject;
     shared_object_->InsertTransaction(&canonical_peer,
                                       MakeTransactionId(300, 0, 0), events,
-                                      false, &new_object_references,
-                                      &transactions_to_reject);
+                                      false, &transactions_to_reject);
   }
 
   {

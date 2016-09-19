@@ -18,7 +18,6 @@
 
 #include <map>
 #include <memory>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -78,8 +77,6 @@ class ObjectContent {
       const TransactionId& transaction_id,
       const std::vector<std::unique_ptr<CommittedEvent>>& events,
       bool transaction_is_local,
-      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-          new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           transactions_to_reject);
 

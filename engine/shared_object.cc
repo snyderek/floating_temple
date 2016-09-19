@@ -18,7 +18,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -46,7 +45,6 @@ using std::map;
 using std::pair;
 using std::shared_ptr;
 using std::unique_ptr;
-using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
@@ -187,7 +185,6 @@ void SharedObject::InsertTransaction(
     const TransactionId& transaction_id,
     const vector<unique_ptr<CommittedEvent>>& events,
     bool transaction_is_local,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>* transactions_to_reject) {
   const vector<unique_ptr<CommittedEvent>>::size_type event_count =
       events.size();
@@ -201,7 +198,6 @@ void SharedObject::InsertTransaction(
 
   GetOrCreateObjectContent()->InsertTransaction(origin_peer, transaction_id,
                                                 events, transaction_is_local,
-                                                new_object_references,
                                                 transactions_to_reject);
 }
 

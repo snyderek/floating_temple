@@ -205,13 +205,11 @@ shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
       static_cast<const SequencePointImpl*>(sequence_point);
 
   uint64 current_version_number = 0;
-  unordered_map<SharedObject*, ObjectReferenceImpl*> new_object_references;
   vector<pair<const CanonicalPeer*, TransactionId>> all_transactions_to_reject;
 
   shared_ptr<const LiveObject> live_object =
       GetLiveObjectAtSequencePoint_Helper(shared_object, *sequence_point_impl,
                                           &current_version_number,
-                                          &new_object_references,
                                           &all_transactions_to_reject);
 
   if (live_object.get() == nullptr) {
@@ -228,7 +226,7 @@ shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
       while (live_object.get() == nullptr) {
         live_object = GetLiveObjectAtSequencePoint_Helper(
             shared_object, *sequence_point_impl, &current_version_number,
-            &new_object_references, &all_transactions_to_reject);
+            &all_transactions_to_reject);
       }
     }
   }
@@ -242,8 +240,6 @@ shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
   transaction_sequencer_.ReleaseTransaction(new_transaction_id);
 
   UpdateCurrentSequencePoint(local_peer_, new_transaction_id);
-
-  CreateNewObjectReferences(new_object_references);
 
   return live_object;
 }
@@ -675,7 +671,6 @@ TransactionStore::GetLiveObjectAtSequencePoint_Helper(
     SharedObject* shared_object,
     const SequencePointImpl& sequence_point_impl,
     uint64* current_version_number,
-    unordered_map<SharedObject*, ObjectReferenceImpl*>* new_object_references,
     vector<pair<const CanonicalPeer*, TransactionId>>*
         all_transactions_to_reject) {
   CHECK(shared_object != nullptr);
@@ -910,20 +905,6 @@ void TransactionStore::UpdateCurrentSequencePoint(
 void TransactionStore::IncrementVersionNumber_Locked() {
   ++version_number_;
   version_number_changed_cond_.Broadcast();
-}
-
-void TransactionStore::CreateNewObjectReferences(
-    const unordered_map<SharedObject*, ObjectReferenceImpl*>&
-        new_object_references) {
-  for (const auto& new_object_reference_pair : new_object_references) {
-    SharedObject* const shared_object = new_object_reference_pair.first;
-    ObjectReferenceImpl* const object_reference =
-        new_object_reference_pair.second;
-
-    shared_object->AddObjectReference(object_reference);
-    CHECK_EQ(object_reference->SetSharedObjectIfUnset(shared_object),
-             shared_object);
-  }
 }
 
 SharedObject* TransactionStore::GetSharedObjectForObjectReference(

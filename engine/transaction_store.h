@@ -139,8 +139,6 @@ class TransactionStore : public ConnectionHandler,
       SharedObject* shared_object,
       const SequencePointImpl& sequence_point_impl,
       uint64* current_version_number,
-      std::unordered_map<SharedObject*, ObjectReferenceImpl*>*
-          new_object_references,
       std::vector<std::pair<const CanonicalPeer*, TransactionId>>*
           all_transactions_to_reject);
 
@@ -175,10 +173,6 @@ class TransactionStore : public ConnectionHandler,
 
   // current_sequence_point_mu_ must be locked.
   void IncrementVersionNumber_Locked();
-
-  void CreateNewObjectReferences(
-      const std::unordered_map<SharedObject*, ObjectReferenceImpl*>&
-          new_object_references);
 
   SharedObject* GetSharedObjectForObjectReference(
       ObjectReferenceImpl* object_reference);

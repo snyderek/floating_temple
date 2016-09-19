@@ -115,6 +115,4 @@ message EventProto {
   optional floating_temple.engine.SelfMethodCallEventProto self_method_call = 8;
   optional floating_temple.engine.SelfMethodReturnEventProto
       self_method_return = 9;
-
-  repeated floating_temple.engine.Uuid new_object_id = 10;
 }

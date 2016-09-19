@@ -1243,12 +1243,6 @@ void TransactionStore::ConvertCommittedEventToEventProto(
     default:
       LOG(FATAL) << "Invalid committed event type: " << static_cast<int>(type);
   }
-
-  for (ObjectReferenceImpl* const object_reference : in->new_objects()) {
-    const SharedObject* const shared_object = GetSharedObjectForObjectReference(
-        object_reference);
-    out->add_new_object_id()->CopyFrom(shared_object->object_id());
-  }
 }
 
 CommittedEvent* TransactionStore::ConvertEventProtoToCommittedEvent(

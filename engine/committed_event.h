@@ -18,7 +18,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -72,9 +71,6 @@ class CommittedEvent {
   CommittedEvent() {}
   virtual ~CommittedEvent() {}
 
-  const std::unordered_set<ObjectReferenceImpl*>& new_objects() const
-      { return new_objects_; }
-
   virtual Type type() const = 0;
 
   virtual void GetObjectCreation(
@@ -98,9 +94,6 @@ class CommittedEvent {
   virtual void Dump(DumpContext* dc) const = 0;
 
   static std::string GetTypeString(Type event_type);
-
- private:
-  const std::unordered_set<ObjectReferenceImpl*> new_objects_;
 };
 
 class ObjectCreationCommittedEvent : public CommittedEvent {

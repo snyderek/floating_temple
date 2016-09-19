@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "base/escape.h"

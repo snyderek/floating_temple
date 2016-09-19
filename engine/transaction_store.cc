@@ -1042,10 +1042,6 @@ void TransactionStore::EnsureSharedObjectsInEventExist(
     default:
       LOG(FATAL) << "Invalid committed event type: " << static_cast<int>(type);
   }
-
-  for (ObjectReferenceImpl* const object_reference : event->new_objects()) {
-    GetSharedObjectForObjectReference(object_reference);
-  }
 }
 
 void TransactionStore::EnsureSharedObjectInValueExists(const Value& value) {

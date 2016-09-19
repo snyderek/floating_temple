@@ -19,12 +19,10 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
 #include "engine/recording_thread_internal_interface.h"
-#include "include/c++/method_context.h"
 #include "include/c++/value.h"
 
 namespace floating_temple {
@@ -51,11 +49,6 @@ class RecordingThread : private RecordingThreadInternalInterface {
                   bool linger);
 
  private:
-  struct NewObject {
-    std::shared_ptr<const LiveObject> live_object;
-    bool object_is_named;
-  };
-
   bool BeginTransaction(
       ObjectReferenceImpl* caller_object_reference,
       const std::shared_ptr<LiveObject>& caller_live_object) override;
@@ -97,23 +90,11 @@ class RecordingThread : private RecordingThreadInternalInterface {
 
   void CommitTransaction();
 
-  void CheckIfValueIsNew(
-      const Value& value,
-      std::unordered_map<ObjectReferenceImpl*,
-                         std::shared_ptr<const LiveObject>>* live_objects,
-      std::unordered_set<ObjectReferenceImpl*>* new_object_references);
-  void CheckIfObjectIsNew(
-      ObjectReferenceImpl* object_reference,
-      std::unordered_map<ObjectReferenceImpl*,
-                         std::shared_ptr<const LiveObject>>* live_objects,
-      std::unordered_set<ObjectReferenceImpl*>* new_object_references);
-
   bool Rewinding();
 
   TransactionStoreInternalInterface* const transaction_store_;
 
   std::unique_ptr<PendingTransaction> pending_transaction_;
-  std::unordered_map<ObjectReferenceImpl*, NewObject> new_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(RecordingThread);
 };

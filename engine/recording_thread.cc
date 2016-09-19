@@ -25,12 +25,9 @@
 #include "base/logging.h"
 #include "engine/committed_event.h"
 #include "engine/live_object.h"
-#include "engine/object_reference_impl.h"
 #include "engine/pending_transaction.h"
 #include "engine/proto/transaction_id.pb.h"
 #include "engine/recording_method_context.h"
-#include "engine/shared_object.h"
-#include "engine/shared_object_transaction.h"
 #include "engine/transaction_id_util.h"
 #include "engine/transaction_store_internal_interface.h"
 #include "include/c++/value.h"
@@ -42,9 +39,6 @@ using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
-
-class ObjectReference;
-
 namespace engine {
 namespace {
 
@@ -148,44 +142,8 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
   // Take ownership of *initial_version.
   shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
 
-  ObjectReferenceImpl* new_object_reference = nullptr;
-
-  if (name.empty()) {
-    new_object_reference = transaction_store_->CreateUnboundObjectReference();
-
-    NewObject new_object;
-    new_object.live_object = new_live_object;
-    new_object.object_is_named = false;
-
-    CHECK(new_objects_.emplace(new_object_reference, new_object).second);
-  } else {
-    new_object_reference = transaction_store_->CreateBoundObjectReference(name);
-
-    NewObject new_object;
-    new_object.live_object = new_live_object;
-    new_object.object_is_named = true;
-
-    const auto insert_result = new_objects_.emplace(new_object_reference,
-                                                    new_object);
-
-    if (insert_result.second) {
-      // The named object has not yet been created in this thread.
-
-      // Check if the named object is already known to this peer. As a side
-      // effect, send a GET_OBJECT message to remote peers so that the content
-      // of the named object can eventually be synchronized with other peers.
-      if (pending_transaction_->IsObjectKnown(new_object_reference)) {
-        // The named object was already known to this peer. Remove the map entry
-        // that was just added.
-        const unordered_map<ObjectReferenceImpl*, NewObject>::iterator
-            new_object_it = insert_result.first;
-        CHECK(new_object_it != new_objects_.end());
-
-        new_objects_.erase(new_object_it);
-      }
-    }
-  }
-
+  ObjectReferenceImpl* const new_object_reference =
+      transaction_store_->CreateBoundObjectReference(name);
   CHECK(new_object_reference != nullptr);
 
   unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
@@ -200,6 +158,14 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
                 &object_events);
   AddTransactionEvents(object_events, caller_object_reference,
                        caller_live_object);
+
+  pending_transaction_->AddNewObject(new_object_reference, new_live_object);
+
+  if (!name.empty()) {
+    // Send a GET_OBJECT message to remote peers so that the content of the
+    // named object can eventually be synchronized with other peers.
+    pending_transaction_->IsObjectKnown(new_object_reference);
+  }
 
   return new_object_reference;
 }
@@ -223,31 +189,22 @@ bool RecordingThread::CallMethod(
   {
     unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>
         live_objects;
-    unordered_set<ObjectReferenceImpl*> new_object_references;
-
-    CheckIfObjectIsNew(caller_object_reference, &live_objects,
-                       &new_object_references);
-    CheckIfObjectIsNew(callee_object_reference, &live_objects,
-                       &new_object_references);
-
-    for (const Value& parameter : parameters) {
-      CheckIfValueIsNew(parameter, &live_objects, &new_object_references);
-    }
-
     unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
 
     if (caller_object_reference == callee_object_reference) {
-      AddEventToMap(caller_object_reference,
-                    new SelfMethodCallCommittedEvent(new_object_references,
-                                                     method_name, parameters),
-                    &object_events);
+      AddEventToMap(
+          caller_object_reference,
+          new SelfMethodCallCommittedEvent(
+              unordered_set<ObjectReferenceImpl*>(), method_name, parameters),
+          &object_events);
     } else{
       if (caller_object_reference != nullptr) {
-        AddEventToMap(caller_object_reference,
-                      new SubMethodCallCommittedEvent(new_object_references,
-                                                      callee_object_reference,
-                                                      method_name, parameters),
-                      &object_events);
+        AddEventToMap(
+            caller_object_reference,
+            new SubMethodCallCommittedEvent(
+                unordered_set<ObjectReferenceImpl*>(), callee_object_reference,
+                method_name, parameters),
+            &object_events);
       }
 
       AddEventToMap(callee_object_reference,
@@ -272,17 +229,14 @@ bool RecordingThread::CallMethod(
   {
     unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>
         live_objects;
-    unordered_set<ObjectReferenceImpl*> new_object_references;
-
-    CheckIfValueIsNew(*return_value, &live_objects, &new_object_references);
-
     unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;
 
     if (caller_object_reference == callee_object_reference) {
-      AddEventToMap(caller_object_reference,
-                    new SelfMethodReturnCommittedEvent(new_object_references,
-                                                       *return_value),
-                    &object_events);
+      AddEventToMap(
+          caller_object_reference,
+          new SelfMethodReturnCommittedEvent(
+              unordered_set<ObjectReferenceImpl*>(), *return_value),
+          &object_events);
     } else{
       if (caller_object_reference != nullptr) {
         AddEventToMap(caller_object_reference,
@@ -290,10 +244,11 @@ bool RecordingThread::CallMethod(
                       &object_events);
       }
 
-      AddEventToMap(callee_object_reference,
-                    new MethodReturnCommittedEvent(new_object_references,
-                                                   *return_value),
-                    &object_events);
+      AddEventToMap(
+          callee_object_reference,
+          new MethodReturnCommittedEvent(unordered_set<ObjectReferenceImpl*>(),
+                                         *return_value),
+          &object_events);
     }
 
     AddTransactionEvents(object_events, callee_object_reference,
@@ -403,52 +358,9 @@ void RecordingThread::CommitTransaction() {
   unordered_set<ObjectReferenceImpl*> transaction_new_objects;
   pending_transaction_->Commit(&transaction_id, &transaction_new_objects);
 
-  for (ObjectReferenceImpl* const object_reference : transaction_new_objects) {
-    CHECK_EQ(new_objects_.erase(object_reference), 1u);
-  }
-
   pending_transaction_.reset(
       new PendingTransaction(transaction_store_, transaction_id,
                              transaction_store_->GetCurrentSequencePoint()));
-}
-
-void RecordingThread::CheckIfValueIsNew(
-    const Value& value,
-    unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>*
-        live_objects,
-    unordered_set<ObjectReferenceImpl*>* new_object_references) {
-  if (value.type() == Value::OBJECT_REFERENCE) {
-    CheckIfObjectIsNew(
-        static_cast<ObjectReferenceImpl*>(value.object_reference()),
-        live_objects, new_object_references);
-  }
-}
-
-void RecordingThread::CheckIfObjectIsNew(
-    ObjectReferenceImpl* object_reference,
-    unordered_map<ObjectReferenceImpl*, shared_ptr<const LiveObject>>*
-        live_objects,
-    unordered_set<ObjectReferenceImpl*>* new_object_references) {
-  CHECK(live_objects != nullptr);
-  CHECK(new_object_references != nullptr);
-
-  if (object_reference != nullptr) {
-    const unordered_map<ObjectReferenceImpl*, NewObject>::iterator it =
-        new_objects_.find(object_reference);
-
-    if (it != new_objects_.end()) {
-      const NewObject& new_object = it->second;
-      const shared_ptr<const LiveObject>& live_object = new_object.live_object;
-
-      if (pending_transaction_->AddNewObject(object_reference, live_object)) {
-        live_objects->emplace(object_reference, live_object);
-
-        if (!new_object.object_is_named) {
-          new_object_references->insert(object_reference);
-        }
-      }
-    }
-  }
 }
 
 bool RecordingThread::Rewinding() {

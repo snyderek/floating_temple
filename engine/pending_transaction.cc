@@ -66,17 +66,9 @@ shared_ptr<LiveObject> PendingTransaction::GetLiveObject(
   return live_object;
 }
 
-bool PendingTransaction::IsObjectKnown(ObjectReferenceImpl* object_reference) {
-  const shared_ptr<const LiveObject> existing_live_object =
-      transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
-                                                       sequence_point_.get(),
-                                                       false);
-  return existing_live_object.get() != nullptr;
-}
-
-bool PendingTransaction::AddNewObject(
+void PendingTransaction::AddNewObject(
     ObjectReferenceImpl* object_reference,
-    const shared_ptr<const LiveObject>& live_object) {
+    const shared_ptr<const LiveObject>& live_object, bool object_is_named) {
   CHECK(object_reference != nullptr);
   CHECK(live_object.get() != nullptr);
 
@@ -85,7 +77,14 @@ bool PendingTransaction::AddNewObject(
   const shared_ptr<LiveObject> modified_object = live_object->Clone();
   CHECK(modified_objects_.emplace(object_reference, modified_object).second);
 
-  return true;
+  // If the object is a named object, send a GET_OBJECT message to remote peers
+  // so that the content of the object can eventually be synchronized with other
+  // peers.
+  if (object_is_named) {
+    transaction_store_->GetLiveObjectAtSequencePoint(object_reference,
+                                                     sequence_point_.get(),
+                                                     false);
+  }
 }
 
 void PendingTransaction::UpdateLiveObject(

@@ -47,11 +47,10 @@ class PendingTransaction {
 
   std::shared_ptr<LiveObject> GetLiveObject(
       ObjectReferenceImpl* object_reference);
-  bool IsObjectKnown(ObjectReferenceImpl* object_reference);
 
-  // TODO(dss): AddNewObject doesn't need to return a value.
-  bool AddNewObject(ObjectReferenceImpl* object_reference,
-                    const std::shared_ptr<const LiveObject>& live_object);
+  void AddNewObject(ObjectReferenceImpl* object_reference,
+                    const std::shared_ptr<const LiveObject>& live_object,
+                    bool object_is_named);
   void UpdateLiveObject(ObjectReferenceImpl* object_reference,
                         const std::shared_ptr<LiveObject>& live_object);
 

@@ -157,13 +157,8 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
   AddTransactionEvents(object_events, caller_object_reference,
                        caller_live_object);
 
-  pending_transaction_->AddNewObject(new_object_reference, new_live_object);
-
-  if (!name.empty()) {
-    // Send a GET_OBJECT message to remote peers so that the content of the
-    // named object can eventually be synchronized with other peers.
-    pending_transaction_->IsObjectKnown(new_object_reference);
-  }
+  pending_transaction_->AddNewObject(new_object_reference, new_live_object,
+                                     !name.empty());
 
   return new_object_reference;
 }

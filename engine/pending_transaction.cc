@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -33,7 +32,6 @@
 using std::shared_ptr;
 using std::unique_ptr;
 using std::unordered_map;
-using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
@@ -82,10 +80,6 @@ bool PendingTransaction::AddNewObject(
   CHECK(object_reference != nullptr);
   CHECK(live_object.get() != nullptr);
 
-  if (!new_objects_.insert(object_reference).second) {
-    return false;
-  }
-
   // Make the object available to other methods in the same transaction. (Later
   // transactions will be able to fetch the object from the transaction store.)
   const shared_ptr<LiveObject> modified_object = live_object->Clone();
@@ -132,11 +126,8 @@ bool PendingTransaction::DecrementTransactionLevel() {
   return transaction_level_ == 0;
 }
 
-void PendingTransaction::Commit(
-    TransactionId* transaction_id,
-    unordered_set<ObjectReferenceImpl*>* new_objects) {
+void PendingTransaction::Commit(TransactionId* transaction_id) {
   CHECK(transaction_id != nullptr);
-  CHECK(new_objects != nullptr);
 
   TransactionId committed_transaction_id;
   while (!object_transactions_.empty()) {
@@ -156,7 +147,6 @@ void PendingTransaction::Commit(
   }
 
   transaction_id->Swap(&committed_transaction_id);
-  new_objects->swap(new_objects_);
 }
 
 void PendingTransaction::LogDebugInfo() const {

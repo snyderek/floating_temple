@@ -18,7 +18,6 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -35,7 +34,6 @@
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;
-using std::unordered_set;
 using std::vector;
 
 namespace floating_temple {
@@ -347,8 +345,7 @@ void RecordingThread::CommitTransaction() {
   VLOG(2) << "RecordingThread::CommitTransaction";
 
   TransactionId transaction_id;
-  unordered_set<ObjectReferenceImpl*> transaction_new_objects;
-  pending_transaction_->Commit(&transaction_id, &transaction_new_objects);
+  pending_transaction_->Commit(&transaction_id);
 
   pending_transaction_.reset(
       new PendingTransaction(transaction_store_, transaction_id,

@@ -18,7 +18,6 @@
 
 #include <memory>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "base/macros.h"
 #include "engine/proto/transaction_id.pb.h"
@@ -50,6 +49,7 @@ class PendingTransaction {
       ObjectReferenceImpl* object_reference);
   bool IsObjectKnown(ObjectReferenceImpl* object_reference);
 
+  // TODO(dss): AddNewObject doesn't need to return a value.
   bool AddNewObject(ObjectReferenceImpl* object_reference,
                     const std::shared_ptr<const LiveObject>& live_object);
   void UpdateLiveObject(ObjectReferenceImpl* object_reference,
@@ -60,8 +60,7 @@ class PendingTransaction {
   void IncrementTransactionLevel();
   bool DecrementTransactionLevel();
 
-  void Commit(TransactionId* transaction_id,
-              std::unordered_set<ObjectReferenceImpl*>* new_objects);
+  void Commit(TransactionId* transaction_id);
 
  private:
   void LogDebugInfo() const;
@@ -76,7 +75,6 @@ class PendingTransaction {
       object_transactions_;
   std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
       modified_objects_;
-  std::unordered_set<ObjectReferenceImpl*> new_objects_;
 
   int transaction_level_;
 

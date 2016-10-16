@@ -426,7 +426,6 @@ bool PlaybackThread::EndTransaction() {
 ObjectReference* PlaybackThread::CreateObject(LocalObject* initial_version,
                                               const string& name) {
   CHECK(initial_version != nullptr);
-
   delete initial_version;
 
   ObjectReferenceImpl* const new_object = GetNewObjectReference(name);

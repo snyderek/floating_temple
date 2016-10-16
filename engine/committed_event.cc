@@ -189,10 +189,8 @@ void BeginTransactionCommittedEvent::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   dc->BeginMap();
-
   dc->AddString("type");
   dc->AddString("BEGIN_TRANSACTION");
-
   dc->End();
 }
 
@@ -207,10 +205,8 @@ void EndTransactionCommittedEvent::Dump(DumpContext* dc) const {
   CHECK(dc != nullptr);
 
   dc->BeginMap();
-
   dc->AddString("type");
   dc->AddString("END_TRANSACTION");
-
   dc->End();
 }
 

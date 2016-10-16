@@ -301,8 +301,7 @@ void TransactionStore::CreateTransaction(
     const SharedObjectTransaction* const transaction =
         transaction_pair.second.get();
 
-    SharedObject* const shared_object = GetSharedObjectForObjectReference(
-        object_reference);
+    SharedObject* const shared_object = object_reference->shared_object();
 
     unique_ptr<SharedObjectTransaction>& transaction_clone =
         shared_object_transactions[shared_object];
@@ -905,15 +904,6 @@ void TransactionStore::IncrementVersionNumber_Locked() {
   version_number_changed_cond_.Broadcast();
 }
 
-SharedObject* TransactionStore::GetSharedObjectForObjectReference(
-    ObjectReferenceImpl* object_reference) {
-  if (object_reference == nullptr) {
-    return nullptr;
-  }
-
-  return object_reference->shared_object();
-}
-
 void TransactionStore::ConvertCommittedEventToEventProto(
     const CommittedEvent* in, EventProto* out) {
   CHECK(in != nullptr);
@@ -934,8 +924,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
                              &object_references);
 
       for (ObjectReferenceImpl* const object_reference : object_references) {
-        SharedObject* const shared_object = GetSharedObjectForObjectReference(
-            object_reference);
+        SharedObject* const shared_object = object_reference->shared_object();
         object_creation_event_proto->add_referenced_object_id()->CopyFrom(
             shared_object->object_id());
       }
@@ -953,8 +942,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
 
       sub_object_creation_event_proto->set_new_object_name(*new_object_name);
 
-      const SharedObject* const shared_object =
-          GetSharedObjectForObjectReference(new_object);
+      const SharedObject* const shared_object = new_object->shared_object();
       sub_object_creation_event_proto->mutable_new_object_id()->CopyFrom(
           shared_object->object_id());
 
@@ -1016,8 +1004,7 @@ void TransactionStore::ConvertCommittedEventToEventProto(
                                  sub_method_call_event_proto->add_parameter());
       }
 
-      const SharedObject* const callee_shared_object =
-          GetSharedObjectForObjectReference(callee);
+      const SharedObject* const callee_shared_object = callee->shared_object();
       CHECK(callee_shared_object != nullptr);
       sub_method_call_event_proto->mutable_callee_object_id()->CopyFrom(
           callee_shared_object->object_id());

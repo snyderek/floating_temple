@@ -173,10 +173,6 @@ class TransactionStore : public ConnectionHandler,
   // current_sequence_point_mu_ must be locked.
   void IncrementVersionNumber_Locked();
 
-  // TODO(dss): Consider deleting this method.
-  SharedObject* GetSharedObjectForObjectReference(
-      ObjectReferenceImpl* object_reference);
-
   void ConvertCommittedEventToEventProto(const CommittedEvent* in,
                                          EventProto* out);
 

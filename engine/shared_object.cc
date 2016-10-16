@@ -36,7 +36,6 @@
 #include "engine/proto/uuid.pb.h"
 #include "engine/shared_object_transaction.h"
 #include "engine/transaction_id_util.h"
-#include "engine/transaction_store_internal_interface.h"
 #include "engine/uuid_util.h"
 #include "util/dump_context.h"
 #include "util/dump_context_impl.h"
@@ -123,8 +122,7 @@ ObjectReferenceImpl* SharedObject::GetOrCreateObjectReference() {
     }
   }
 
-  ObjectReferenceImpl* const new_object_reference =
-      transaction_store_->CreateUnboundObjectReference();
+  ObjectReferenceImpl* const new_object_reference = new ObjectReferenceImpl();
   CHECK_EQ(new_object_reference->SetSharedObjectIfUnset(this), this);
 
   {

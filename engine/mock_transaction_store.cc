@@ -66,14 +66,6 @@ shared_ptr<const LiveObject> MockTransactionStore::GetLiveObjectAtSequencePoint(
   return it->second;
 }
 
-ObjectReferenceImpl* MockTransactionStore::CreateUnboundObjectReference() {
-  core_->CreateUnboundObjectReference();
-
-  ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl();
-  unnamed_objects_.emplace_back(object_reference);
-  return object_reference;
-}
-
 ObjectReferenceImpl* MockTransactionStore::CreateBoundObjectReference(
     const string& name) {
   core_->CreateBoundObjectReference(name);

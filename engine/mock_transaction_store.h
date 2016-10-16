@@ -45,7 +45,6 @@ class MockTransactionStoreCore {
   MOCK_CONST_METHOD3(GetLiveObjectAtSequencePoint,
                      void(ObjectReferenceImpl* object_reference,
                           const SequencePoint* sequence_point, bool wait));
-  MOCK_CONST_METHOD0(CreateUnboundObjectReference, void());
   MOCK_CONST_METHOD1(CreateBoundObjectReference, void(const std::string& name));
   MOCK_CONST_METHOD4(
       CreateTransaction,
@@ -79,7 +78,6 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       ObjectReferenceImpl* object_reference,
       const SequencePoint* sequence_point, bool wait) override;
-  ObjectReferenceImpl* CreateUnboundObjectReference() override;
   ObjectReferenceImpl* CreateBoundObjectReference(
       const std::string& name) override;
   void CreateTransaction(

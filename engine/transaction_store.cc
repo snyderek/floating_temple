@@ -244,26 +244,26 @@ shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
   return live_object;
 }
 
-ObjectReferenceImpl* TransactionStore::CreateUnboundObjectReference() {
-  ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl();
-  CHECK(object_reference != nullptr);
-
-  {
-    MutexLock lock(&object_references_mu_);
-    // TODO(dss): [BUG] Garbage-collect ObjectReferenceImpl instances when
-    // they're no longer being used.
-    object_references_.emplace_back(object_reference);
-  }
-
-  return object_reference;
-}
-
 ObjectReferenceImpl* TransactionStore::CreateBoundObjectReference(
     const string& name) {
   if (name.empty()) {
-    ObjectReferenceImpl* const object_reference =
-        CreateUnboundObjectReference();
-    GetSharedObjectForObjectReference(object_reference);
+    Uuid object_id;
+    GenerateUuid(&object_id);
+
+    SharedObject* const shared_object = new SharedObject(this, object_id);
+    // TODO(dss): [BUG] Garbage-collect ObjectReferenceImpl instances when
+    // they're no longer being used.
+    ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl();
+    CHECK_EQ(object_reference->SetSharedObjectIfUnset(shared_object),
+             shared_object);
+    shared_object->AddObjectReference(object_reference);
+
+    {
+      MutexLock lock(&shared_objects_mu_);
+      CHECK(shared_objects_.emplace(
+                object_id, unique_ptr<SharedObject>(shared_object)).second);
+    }
+
     return object_reference;
   } else {
     Uuid object_id;

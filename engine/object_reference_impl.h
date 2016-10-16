@@ -27,6 +27,7 @@ namespace engine {
 
 class SharedObject;
 
+// TODO(dss): Consider merging this class into SharedObject.
 class ObjectReferenceImpl : public ObjectReference {
  public:
   ObjectReferenceImpl();

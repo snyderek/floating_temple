@@ -99,7 +99,6 @@ class TransactionStore : public ConnectionHandler,
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       ObjectReferenceImpl* object_reference,
       const SequencePoint* sequence_point, bool wait) override;
-  ObjectReferenceImpl* CreateUnboundObjectReference() override;
   ObjectReferenceImpl* CreateBoundObjectReference(
       const std::string& name) override;
   void CreateTransaction(
@@ -216,9 +215,6 @@ class TransactionStore : public ConnectionHandler,
 
   std::unordered_set<SharedObject*> named_objects_;
   mutable Mutex named_objects_mu_;
-
-  std::vector<std::unique_ptr<ObjectReferenceImpl>> object_references_;
-  mutable Mutex object_references_mu_;
 
   SequencePointImpl current_sequence_point_;
   uint64 version_number_;

@@ -253,9 +253,8 @@ ObjectReferenceImpl* TransactionStore::CreateBoundObjectReference(
     SharedObject* const shared_object = new SharedObject(this, object_id);
     // TODO(dss): [BUG] Garbage-collect ObjectReferenceImpl instances when
     // they're no longer being used.
-    ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl();
-    CHECK_EQ(object_reference->SetSharedObjectIfUnset(shared_object),
-             shared_object);
+    ObjectReferenceImpl* const object_reference = new ObjectReferenceImpl(
+        shared_object);
     shared_object->AddObjectReference(object_reference);
 
     {
@@ -913,32 +912,7 @@ SharedObject* TransactionStore::GetSharedObjectForObjectReference(
     return nullptr;
   }
 
-  SharedObject* shared_object = object_reference->shared_object();
-
-  if (shared_object != nullptr) {
-    return shared_object;
-  }
-
-  Uuid object_id;
-  GenerateUuid(&object_id);
-
-  SharedObject* const new_shared_object = new SharedObject(this, object_id);
-  new_shared_object->AddObjectReference(object_reference);
-
-  shared_object = object_reference->SetSharedObjectIfUnset(new_shared_object);
-
-  if (shared_object != new_shared_object) {
-    delete new_shared_object;
-    return shared_object;
-  }
-
-  {
-    MutexLock lock(&shared_objects_mu_);
-    CHECK(shared_objects_.emplace(
-        object_id, unique_ptr<SharedObject>(shared_object)).second);
-  }
-
-  return shared_object;
+  return object_reference->shared_object();
 }
 
 void TransactionStore::EnsureSharedObjectsInTransactionExist(

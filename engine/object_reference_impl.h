@@ -19,7 +19,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/mutex.h"
 #include "include/c++/object_reference.h"
 
 namespace floating_temple {
@@ -30,23 +29,18 @@ class SharedObject;
 // TODO(dss): Consider merging this class into SharedObject.
 class ObjectReferenceImpl : public ObjectReference {
  public:
-  ObjectReferenceImpl();
+  explicit ObjectReferenceImpl(SharedObject* shared_object);
   ~ObjectReferenceImpl() override;
 
-  const SharedObject* shared_object() const { return PrivateGetSharedObject(); }
-  SharedObject* shared_object() { return PrivateGetSharedObject(); }
-
-  SharedObject* SetSharedObjectIfUnset(SharedObject* shared_object);
+  const SharedObject* shared_object() const { return shared_object_; }
+  SharedObject* shared_object() { return shared_object_; }
 
   std::string DebugString() const;
 
   void Dump(DumpContext* dc) const override;
 
  private:
-  SharedObject* PrivateGetSharedObject() const;
-
-  SharedObject* shared_object_;
-  mutable Mutex shared_object_mu_;
+  SharedObject* const shared_object_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectReferenceImpl);
 };

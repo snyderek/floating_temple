@@ -26,6 +26,8 @@
 #include "engine/mock_sequence_point.h"
 #include "engine/object_reference_impl.h"
 #include "engine/proto/transaction_id.pb.h"
+#include "engine/proto/uuid.pb.h"
+#include "engine/shared_object.h"
 #include "engine/shared_object_transaction.h"
 
 using std::shared_ptr;
@@ -39,6 +41,7 @@ namespace engine {
 
 MockTransactionStore::MockTransactionStore(MockTransactionStoreCore* core)
     : core_(CHECK_NOTNULL(core)),
+      next_object_id_(1),
       next_transaction_id_(1) {
 }
 
@@ -80,7 +83,15 @@ ObjectReferenceImpl* MockTransactionStore::CreateBoundObjectReference(
   }
 
   if (object_reference->get() == nullptr) {
-    object_reference->reset(new ObjectReferenceImpl());
+    Uuid object_id;
+    object_id.set_high_word(0);
+    object_id.set_low_word(next_object_id_);
+    ++next_object_id_;
+
+    SharedObject* const shared_object = new SharedObject(this, object_id);
+    shared_objects_.emplace_back(shared_object);
+    object_reference->reset(new ObjectReferenceImpl(shared_object));
+    shared_object->AddObjectReference(object_reference->get());
   }
 
   return object_reference->get();

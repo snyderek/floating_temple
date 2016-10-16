@@ -122,8 +122,8 @@ ObjectReferenceImpl* SharedObject::GetOrCreateObjectReference() {
     }
   }
 
-  ObjectReferenceImpl* const new_object_reference = new ObjectReferenceImpl();
-  CHECK_EQ(new_object_reference->SetSharedObjectIfUnset(this), this);
+  ObjectReferenceImpl* const new_object_reference = new ObjectReferenceImpl(
+      this);
 
   {
     MutexLock lock(&object_references_mu_);

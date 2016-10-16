@@ -33,6 +33,7 @@ class CanonicalPeer;
 class LiveObject;
 class ObjectReferenceImpl;
 class SequencePoint;
+class SharedObject;
 class SharedObjectTransaction;
 class TransactionId;
 
@@ -97,11 +98,13 @@ class MockTransactionStore : public TransactionStoreInternalInterface {
  private:
   MockTransactionStoreCore* const core_;
 
+  std::vector<std::unique_ptr<SharedObject>> shared_objects_;
   std::vector<std::unique_ptr<ObjectReferenceImpl>> unnamed_objects_;
   std::unordered_map<std::string, std::unique_ptr<ObjectReferenceImpl>>
       named_objects_;
   std::unordered_map<ObjectReferenceImpl*, std::shared_ptr<LiveObject>>
       live_objects_;
+  uint64 next_object_id_;
   uint64 next_transaction_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransactionStore);

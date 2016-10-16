@@ -433,7 +433,7 @@ ObjectReference* PlaybackThread::CreateObject(LocalObject* initial_version,
     return new_object;
   }
 
-  return transaction_store_->CreateBoundObjectReference(name);
+  return transaction_store_->CreateObjectReference(name);
 }
 
 bool PlaybackThread::CallMethod(ObjectReference* object_reference,

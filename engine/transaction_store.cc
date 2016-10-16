@@ -244,7 +244,7 @@ shared_ptr<const LiveObject> TransactionStore::GetLiveObjectAtSequencePoint(
   return live_object;
 }
 
-ObjectReferenceImpl* TransactionStore::CreateBoundObjectReference(
+ObjectReferenceImpl* TransactionStore::CreateObjectReference(
     const string& name) {
   if (name.empty()) {
     Uuid object_id;

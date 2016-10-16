@@ -99,8 +99,7 @@ class TransactionStore : public ConnectionHandler,
   std::shared_ptr<const LiveObject> GetLiveObjectAtSequencePoint(
       ObjectReferenceImpl* object_reference,
       const SequencePoint* sequence_point, bool wait) override;
-  ObjectReferenceImpl* CreateBoundObjectReference(
-      const std::string& name) override;
+  ObjectReferenceImpl* CreateObjectReference(const std::string& name) override;
   void CreateTransaction(
       const std::unordered_map<ObjectReferenceImpl*,
                                std::unique_ptr<SharedObjectTransaction>>&

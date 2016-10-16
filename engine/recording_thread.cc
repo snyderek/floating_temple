@@ -141,7 +141,7 @@ ObjectReferenceImpl* RecordingThread::CreateObject(
   shared_ptr<const LiveObject> new_live_object(new LiveObject(initial_version));
 
   ObjectReferenceImpl* const new_object_reference =
-      transaction_store_->CreateBoundObjectReference(name);
+      transaction_store_->CreateObjectReference(name);
   CHECK(new_object_reference != nullptr);
 
   unordered_map<ObjectReferenceImpl*, vector<CommittedEvent*>> object_events;

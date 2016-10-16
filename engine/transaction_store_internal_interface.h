@@ -47,8 +47,7 @@ class TransactionStoreInternalInterface {
       ObjectReferenceImpl* object_reference,
       const SequencePoint* sequence_point, bool wait) = 0;
 
-  // TODO(dss): Rename this method to CreateObjectReference.
-  virtual ObjectReferenceImpl* CreateBoundObjectReference(
+  virtual ObjectReferenceImpl* CreateObjectReference(
       const std::string& name) = 0;
 
   virtual void CreateTransaction(

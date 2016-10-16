@@ -303,7 +303,6 @@ void TransactionStore::CreateTransaction(
 
     SharedObject* const shared_object = GetSharedObjectForObjectReference(
         object_reference);
-    EnsureSharedObjectsInTransactionExist(transaction);
 
     unique_ptr<SharedObjectTransaction>& transaction_clone =
         shared_object_transactions[shared_object];
@@ -913,117 +912,6 @@ SharedObject* TransactionStore::GetSharedObjectForObjectReference(
   }
 
   return object_reference->shared_object();
-}
-
-void TransactionStore::EnsureSharedObjectsInTransactionExist(
-    const SharedObjectTransaction* transaction) {
-  CHECK(transaction != nullptr);
-
-  for (const unique_ptr<CommittedEvent>& event : transaction->events()) {
-    EnsureSharedObjectsInEventExist(event.get());
-  }
-}
-
-void TransactionStore::EnsureSharedObjectsInEventExist(
-    const CommittedEvent* event) {
-  const CommittedEvent::Type type = event->type();
-
-  switch (type) {
-    case CommittedEvent::OBJECT_CREATION:
-    case CommittedEvent::BEGIN_TRANSACTION:
-    case CommittedEvent::END_TRANSACTION:
-      break;
-
-    case CommittedEvent::SUB_OBJECT_CREATION: {
-      const string* new_object_name = nullptr;
-      ObjectReferenceImpl* new_object = nullptr;
-
-      event->GetSubObjectCreation(&new_object_name, &new_object);
-
-      GetSharedObjectForObjectReference(new_object);
-
-      break;
-    }
-
-    case CommittedEvent::METHOD_CALL: {
-      const string* method_name = nullptr;
-      const vector<Value>* parameters = nullptr;
-
-      event->GetMethodCall(&method_name, &parameters);
-
-      for (const Value& parameter : *parameters) {
-        EnsureSharedObjectInValueExists(parameter);
-      }
-
-      break;
-    }
-
-    case CommittedEvent::METHOD_RETURN: {
-      const Value* return_value = nullptr;
-      event->GetMethodReturn(&return_value);
-
-      EnsureSharedObjectInValueExists(*return_value);
-
-      break;
-    }
-
-    case CommittedEvent::SUB_METHOD_CALL: {
-      ObjectReferenceImpl* callee = nullptr;
-      const string* method_name = nullptr;
-      const vector<Value>* parameters = nullptr;
-
-      event->GetSubMethodCall(&callee, &method_name, &parameters);
-
-      GetSharedObjectForObjectReference(callee);
-      for (const Value& parameter : *parameters) {
-        EnsureSharedObjectInValueExists(parameter);
-      }
-
-      break;
-    }
-
-    case CommittedEvent::SUB_METHOD_RETURN: {
-      const Value* return_value = nullptr;
-      event->GetSubMethodReturn(&return_value);
-
-      EnsureSharedObjectInValueExists(*return_value);
-
-      break;
-    }
-
-    case CommittedEvent::SELF_METHOD_CALL: {
-      const string* method_name = nullptr;
-      const vector<Value>* parameters = nullptr;
-
-      event->GetSelfMethodCall(&method_name, &parameters);
-
-      for (const Value& parameter : *parameters) {
-        EnsureSharedObjectInValueExists(parameter);
-      }
-
-      break;
-    }
-
-    case CommittedEvent::SELF_METHOD_RETURN: {
-      const Value* return_value = nullptr;
-      event->GetSelfMethodReturn(&return_value);
-
-      EnsureSharedObjectInValueExists(*return_value);
-
-      break;
-    }
-
-    default:
-      LOG(FATAL) << "Invalid committed event type: " << static_cast<int>(type);
-  }
-}
-
-void TransactionStore::EnsureSharedObjectInValueExists(const Value& value) {
-  if (value.type() == Value::OBJECT_REFERENCE) {
-    ObjectReferenceImpl* const object_reference =
-        static_cast<ObjectReferenceImpl*>(value.object_reference());
-    GetSharedObjectForObjectReference(object_reference);
-  }
 }
 
 void TransactionStore::ConvertCommittedEventToEventProto(

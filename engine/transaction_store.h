@@ -177,11 +177,6 @@ class TransactionStore : public ConnectionHandler,
   SharedObject* GetSharedObjectForObjectReference(
       ObjectReferenceImpl* object_reference);
 
-  void EnsureSharedObjectsInTransactionExist(
-      const SharedObjectTransaction* transaction);
-  void EnsureSharedObjectsInEventExist(const CommittedEvent* event);
-  void EnsureSharedObjectInValueExists(const Value& value);
-
   void ConvertCommittedEventToEventProto(const CommittedEvent* in,
                                          EventProto* out);
 
